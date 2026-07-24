@@ -191,6 +191,29 @@ def extend_genome(text, genome):
     return applied
 
 
+def _register_spawn_agent_from_file(fpath, genome):
+    registered = []
+    try:
+        with open(fpath) as f:
+            content = f.read()
+    except:
+        return registered
+    for m in re.finditer(r'##spawn_agent:(\{.*?\})##', content, re.DOTALL):
+        try:
+            entry = json.loads(m.group(1))
+            if 'id' in entry and 'prompt' in entry:
+                pool = genome.setdefault('spawn_pool', [])
+                existing_ids = {e.get('id') for e in pool}
+                if entry['id'] not in existing_ids:
+                    pool.append({'id': entry['id'], 'prompt': entry['prompt']})
+                    registered.append(entry['id'])
+                    print(f"[spawn-agent] registered '{entry['id']}' from {fpath}")
+        except json.JSONDecodeError:
+            continue
+    if registered:
+        save_genome(genome)
+    return registered
+
 def write_code_files(blocks):
     genome = load_genome()
     written = []
@@ -203,6 +226,9 @@ def write_code_files(blocks):
         if filename.endswith('.py') and not filename.startswith('auto-echo'):
             reg = _register_ops_from_file(abs_path, genome)
             if reg:
+                genome = load_genome()
+            reg_spawn = _register_spawn_agent_from_file(abs_path, genome)
+            if reg_spawn:
                 genome = load_genome()
     return written
 
@@ -573,7 +599,30 @@ def _apply_source_mutation(funcs, target_name, operator, genome=None):
 
     result = list(lines)
 
-    if genome and operator in genome.get('custom_mutation_ops', {}):
+    if operator == 'duplicate_line':
+        idx = random.randrange(len(result))
+        result.insert(idx, result[idx])
+    elif operator == 'delete_line':
+        idx = random.randrange(len(result))
+        del result[idx]
+    elif operator == 'swap_lines':
+        if len(result) >= 2:
+            i, j = random.sample(range(len(result)), 2)
+            result[i], result[j] = result[j], result[i]
+    elif operator == 'perturb_constant':
+        for i, line in enumerate(result):
+            result[i] = re.sub(r'\b(\d+)\b', lambda m: str(int(m.group(1)) * random.choice([0, 2, -1]) or 1), line)
+    elif operator == 'insert_random_branch':
+        if len(result) >= 3:
+            idx = random.randrange(1, len(result))
+            result.insert(idx, 'if random.random() < 0.5: pass')
+    elif operator == 'mutate_string_literal':
+        for i, line in enumerate(result):
+            result[i] = re.sub(r"'[^']*'", lambda m: f"'{random.choice(['x','y','z','a','b','c'])}'", line)
+    elif operator == 'invert_condition':
+        for i, line in enumerate(result):
+            result[i] = line.replace('if not ', 'if ').replace('if ', 'if not ')
+    elif genome and operator in genome.get('custom_mutation_ops', {}):
         op_code = genome['custom_mutation_ops'][operator]
         local_ns = {'random': random, 're': re}
         try:

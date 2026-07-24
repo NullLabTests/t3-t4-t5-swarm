@@ -1,5 +1,6 @@
 {
-  "generation": 34,
+  "generation": 35,
+  "execution_order": "shuffle",
   "best_score": 8.0,
   "topic": "making the swarm rewrite its own source code every generation",
   "spawn_threshold": 7,

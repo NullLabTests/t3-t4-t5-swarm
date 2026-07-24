@@ -24,8 +24,6 @@
     "mutation_op_entropy_shuffle",
     "mutation_op_repeat_noise"
   ],
-  "custom_mutation_ops": {},
-  "genome_extensions": [],
   "prompt_modifiers": [
     " Write executable code.",
     " Contradict a prior assumption.",

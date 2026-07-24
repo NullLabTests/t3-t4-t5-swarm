@@ -8,7 +8,7 @@ Agents can write code files which get committed alongside utterances.
 Run:  python3 auto-echo.py
 Stop: Ctrl+C (graceful shutdown after current utterance)
 """
-import pyaudio, wave, struct, os, sys, json, subprocess, re, time, signal, random, math, zlib
+import os, sys, json, subprocess, re, time, signal, random, math
 from datetime import datetime, timezone
 
 BASE = os.path.dirname(os.path.abspath(__file__))

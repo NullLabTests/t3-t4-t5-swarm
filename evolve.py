@@ -36,23 +36,6 @@ def load_log():
     with open(LOG) as f:
         return [json.loads(line) for line in f if line.strip()]
 
-def next_agent(gen, log_entries):
-    """Determine which agent should speak next in the current generation."""
-    gen_num = gen['generation']
-    # Count how many utterances exist for this generation
-    gen_entries = [e for e in log_entries if f'Generation {gen_num}' in e.get('text', '')[:30] or
-                   any(e['time'].startswith(t) for t in ['2026-07-24T13:3'])]
-    # Simpler: count agents that have spoken since last genome update
-    # Actually, just look at the last utterances and see where we are
-    spoken = set()
-    for e in log_entries:
-        role = e.get('role', '')
-        if role in AGENT_ORDER:
-            spoken.add(role)
-    # Check how many unique agents have spoken
-    # Better approach: check the log for gen marker
-    return None
-
 def cmd_status():
     gen = load_genome()
     log_entries = load_log()

@@ -589,7 +589,7 @@ def code_path_mutation(genome, gen):
 
         target = random.choice(available)
         attempted.add(target)
-        operator = random.choice(_MUTATION_OPS)
+        operator = random.choice(_get_mutation_ops(genome))
 
         try:
             new_body = _apply_source_mutation(funcs, target, operator)

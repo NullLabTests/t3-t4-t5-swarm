@@ -442,15 +442,9 @@ def _extract_functions(source=None):
 
 
 def _get_mutation_ops(genome=None):
-    """Read mutation operators from genome, falling back to defaults."""
     if genome is None:
-        try:
-            genome = load_genome()
-        except:
-            pass
-    if genome and 'mutation_ops' in genome and genome['mutation_ops']:
-        return list(genome['mutation_ops'])
-    return ['duplicate_line', 'delete_line', 'swap_lines', 'perturb_constant', 'insert_random_branch', 'mutate_string_literal', 'invert_condition']
+        genome = load_genome()
+    return list(genome.get('mutation_ops', []))
 
 
 def _get_forbidden_targets(genome=None):

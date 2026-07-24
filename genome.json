@@ -6,6 +6,92 @@
   "prune_threshold": 4,
   "prune_generations": 2,
   "mutation_rate": 0.12,
+  "mutation_ops": [
+    "duplicate_line",
+    "delete_line",
+    "swap_lines",
+    "perturb_constant",
+    "insert_random_branch",
+    "mutate_string_literal",
+    "invert_condition",
+    "mutation_op_swap_agent_properties",
+    "mutation_op_invert_thresholds",
+    "mutation_op_shuffle_agent_order"
+  ],
+  "custom_mutation_ops": {},
+  "genome_extensions": [],
+  "prompt_modifiers": [
+    " Write executable code.",
+    " Contradict a prior assumption.",
+    " Reference a specific file.",
+    " Keep under 50 words.",
+    " Use concrete examples.",
+    " Propose a measurable metric.",
+    " Use a specific Python function name.",
+    " Reference a line number in auto-echo.py.",
+    " Suggest a new mutation operator name.",
+    " Write a mutation_op_* function in a .py file.",
+    " Modify the genome.json structure directly."
+  ],
+  "forbidden_targets": [
+    "load_genome",
+    "save_genome",
+    "sigint_handler",
+    "main",
+    "_read_auto_echo",
+    "_write_target",
+    "run_generation"
+  ],
+  "spawn_pool": [
+    {
+      "id": "clockwork",
+      "prompt": "You add time-based triggers and scheduling to the swarm loop."
+    },
+    {
+      "id": "mirror",
+      "prompt": "You create feedback that reflects the swarm's own behavior back into the genome."
+    },
+    {
+      "id": "nomad",
+      "prompt": "You rewrite agent prompts to be more unpredictable and divergent."
+    },
+    {
+      "id": "hollow",
+      "prompt": "You remove redundant structure from the codebase."
+    },
+    {
+      "id": "echo",
+      "prompt": "You add delay-line feedback that makes the swarm react to its own past outputs."
+    },
+    {
+      "id": "rift",
+      "prompt": "You inject randomness into the topic selection or mutation targeting."
+    },
+    {
+      "id": "tide",
+      "prompt": "You implement a decay function that lowers scores over time unless refreshed."
+    },
+    {
+      "id": "spire",
+      "prompt": "You create a new file type the system can write to extend itself."
+    },
+    {
+      "id": "drift",
+      "prompt": "You change the topic or mutation_rate using ##set blocks in your output."
+    },
+    {
+      "id": "seed",
+      "prompt": "You propose new spawn_pool entries using ##extend:spawn_pool blocks in your output."
+    },
+    {
+      "id": "weld",
+      "prompt": "You merge genome extension proposals from multiple agents into coherent changes."
+    },
+    {
+      "id": "flux",
+      "prompt": "You add new fields to genome.json using ##set and ##extend blocks."
+    }
+  ],
   "agents": [
     {
       "id": "explorer",
@@ -677,7 +763,7 @@
       "mutation": ""
     },
     {
-      "generation": 34,
+  "generation": 35,
       "scores": {
         "explorer": 6,
         "analyzer": 5,

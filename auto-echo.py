@@ -117,6 +117,80 @@ def _register_ops_from_file(fpath, genome):
         save_genome(genome)
     return registered
 
+def extend_genome(text, genome):
+    """Parse genome extension blocks from agent output.
+    
+    ##extend:field.subfield[]
+    {json object}
+    ##endextend
+    
+    Agents use this to add new spawn_pool entries, mutation_ops, etc.
+    
+    ##set:field.name
+    value
+    ##endset
+    
+    Agents use this to set scalar genome values (e.g. mutation_rate, topic).
+    """
+    if genome is None:
+        genome = load_genome()
+    extensions = re.findall(
+        r'##extend:([\w.\[\]]+)\n(.*?)(?=##endextend|\Z)',
+        text, re.DOTALL
+    )
+    sets = re.findall(
+        r'##set:([\w.]+)\n(.*?)(?=##endset|\Z)',
+        text, re.DOTALL
+    )
+    applied = []
+    for path_str, body in extensions:
+        body = body.strip()
+        try:
+            obj = json.loads(body)
+        except json.JSONDecodeError:
+            applied.append(f"FAILED: {path_str} invalid JSON")
+            continue
+        parts = path_str.replace('[]', '').split('.')
+        target = genome
+        for part in parts[:-1]:
+            if part not in target:
+                target[part] = {}
+            target = target[part]
+        key = parts[-1]
+        if isinstance(target.get(key), list) and isinstance(obj, dict):
+            existing_ids = {e.get('id') for e in target[key] if isinstance(e, dict)}
+            new_id = obj.get('id', '')
+            if new_id and new_id not in existing_ids:
+                target[key].append(obj)
+                applied.append(f"extended {path_str} with {new_id}")
+        elif key in target and isinstance(target[key], list) and isinstance(obj, list):
+            target[key].extend(obj)
+            applied.append(f"extended {path_str} with {len(obj)} items")
+        else:
+            target[key] = obj
+            applied.append(f"set {path_str} = {str(obj)[:50]}")
+    for path_str, val_str in sets:
+        val_str = val_str.strip()
+        try:
+            val = json.loads(val_str)
+        except (json.JSONDecodeError, ValueError):
+            val = val_str
+        parts = path_str.split('.')
+        target = genome
+        for part in parts[:-1]:
+            if part not in target:
+                target[part] = {}
+            target = target[part]
+        key = parts[-1]
+        old = target.get(key)
+        target[key] = val
+        applied.append(f"set {path_str} = {str(val)[:50]} (was {str(old)[:30]})")
+    if applied:
+        genome.setdefault('genome_extensions', []).extend(applied)
+        save_genome(genome)
+    return applied
+
+
 def write_code_files(blocks):
     genome = load_genome()
     written = []
@@ -305,6 +379,17 @@ def run_generation(genome):
     print(f"{'='*60}")
 
     agents = genome["agents"]
+    order = genome.get("execution_order", None)
+    if order == "shuffle":
+        random.shuffle(agents)
+        print(f"[order] shuffled execution order")
+    elif isinstance(order, list):
+        id_order = [a.lower() for a in order]
+        ordered = [a for a in agents if a["id"].lower() in id_order]
+        remaining = [a for a in agents if a["id"].lower() not in id_order]
+        ordered.sort(key=lambda a: id_order.index(a["id"].lower()))
+        agents = ordered + remaining
+        print(f"[order] custom execution order: {[a['id'] for a in ordered]}")
     gen_log = []
     all_written_files = []
 
@@ -331,6 +416,11 @@ def run_generation(genome):
             written_files.append(f"#patch:{len(patches)}blocks")
             all_written_files.extend(written_files)
             print(f"[patch] auto-echo.py modified: {patches}")
+
+        genome_exts = extend_genome(text, None)
+        if genome_exts:
+            print(f"[genome-ext] {genome_exts}")
+            genome = load_genome()
 
         text_clean = strip_markdown(strip_code_blocks(text))
 
@@ -414,6 +504,9 @@ def update_genome(genome, gen, scores, topic):
 
     code_muts = mutate_genome(genome, gen)
     code_path_muts = code_path_mutation(genome, gen)
+    ext_muts = genome.get('genome_extensions', [])
+    if ext_muts:
+        mutation_desc.append(f"extensions: {len(ext_muts)} total")
     all_muts = mutation_desc + code_muts + code_path_muts
     if all_muts:
         history_entry["mutation"] = "; ".join(all_muts)
@@ -480,78 +573,7 @@ def _apply_source_mutation(funcs, target_name, operator, genome=None):
 
     result = list(lines)
 
-    if operator == 'duplicate_line' and len(result) >= 1:
-        idx = random.randint(0, len(result) - 1)
-        result.insert(idx, result[idx])
-
-    elif operator == 'delete_line' and len(result) >= 3:
-        idx = random.randint(1, len(result) - 1)
-        result.pop(idx)
-
-    elif operator == 'swap_lines' and len(result) >= 3:
-        idx = random.randint(0, len(result) - 2)
-        result[idx], result[idx + 1] = result[idx + 1], result[idx]
-
-    elif operator == 'perturb_constant':
-        new_result = []
-        for line in result:
-            def perturb(m):
-                v = m.group(0)
-                try:
-                    n = float(v)
-                    scale = random.choice([0.5, 0.8, 1.2, 1.5, 2.0, 0.0])
-                    return str(int(n * scale)) if '.' not in v else str(n * scale)
-                except ValueError:
-                    return v
-            new_result.append(re.sub(r'\b\d+(\.\d+)?\b', perturb, line))
-        result = new_result
-
-    elif operator == 'insert_random_branch':
-        idx = random.randint(0, len(result))
-        indentation = result[0][:len(result[0]) - len(result[0].lstrip())] if result else '    '
-        actions = [
-            f'{indentation}if random.random() < 0.1: continue',
-            f'{indentation}if random.random() < 0.05: break',
-            f'{indentation}if random.random() < 0.01: return None',
-            f'{indentation}if random.random() < 0.1: pass',
-        ]
-        result.insert(idx, random.choice(actions))
-
-    elif operator == 'mutate_string_literal':
-        new_result = []
-        for line in result:
-            def mutate_str(m):
-                s = m.group(1) or m.group(2)
-                if len(s) < 3:
-                    return m.group(0)
-                idx2 = random.randint(0, len(s) - 1)
-                mutated = s[:idx2] + random.choice('abcdefghijklmnopqrstuvwxyz') + s[idx2+1:]
-                quote = '"' if m.group(1) is not None else "'"
-                return f'{quote}{mutated}{quote}'
-            new_result.append(re.sub(r'"([^"]*)"|\'([^\']*)\'', mutate_str, line))
-        result = new_result
-
-    elif operator == 'invert_condition':
-        new_result = []
-        invert_ops = {'==': '!=', '!=': '==', '>': '<=', '<': '>=', '>=': '<', '<=': '>'}
-        for line in result:
-            if re.match(r'\s*if\s+', line) and ':' in line:
-                cond = line.split('if', 1)[1].rsplit(':', 1)[0]
-                indent = line[:len(line) - len(line.lstrip())]
-                if cond.strip().startswith('not '):
-                    line = f"{indent}if {cond.strip()[4:]}"
-                else:
-                    line = f"{indent}if not ({cond.strip()})"
-                new_result.append(line)
-            else:
-                for a, b in invert_ops.items():
-                    if a in line:
-                        line = line.replace(a, b, 1)
-                        break
-                new_result.append(line)
-        result = new_result
-
-    elif genome and operator in genome.get('custom_mutation_ops', {}):
+    if genome and operator in genome.get('custom_mutation_ops', {}):
         op_code = genome['custom_mutation_ops'][operator]
         local_ns = {'random': random, 're': re}
         try:
@@ -681,17 +703,15 @@ def novelty_governor(genome, gen):
 
 def mutate_genome(genome, gen):
     muts = []
-        rate = genome.get("mutation_rate", 0.15)
-        for agent in genome["agents"]:
-            if random.random() < rate:
-                modifiers = [
-                    " Write executable code.",
-                    " Contradict a prior assumption.",
-                    " Reference a specific file.",
-                    " Keep under 50 words.",
-                    " Use concrete examples.",
-                    " Propose a measurable metric.",
-                    " Use
+    rate = genome.get("mutation_rate", 0.15)
+    modifiers = genome.get("prompt_modifiers", [])
+    for agent in genome["agents"]:
+        if random.random() < rate:
+            agent["prompt"] += random.choice(modifiers)
+            muts.append(f"mutated {agent['id']} prompt")
+    novelty_muts = novelty_governor(genome, gen)
+    muts.extend(novelty_muts)
+    return muts
 
 def spawn_child(parent, existing_agents, genome):
     existing_ids = {a["id"] for a in existing_agents}

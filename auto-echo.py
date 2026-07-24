@@ -479,12 +479,14 @@ def build_agent_prompt(agent_def, topic, recent_log):
     call_to_action = genome.get('agent_call_to_action', '')
     self_obs = genome.get('self_observation_enabled', True)
     obs_str = build_self_observation(genome) if self_obs else ""
+    meta_depth = genome.get('meta_mutation_depth', 0)
+    meta_note = f" circular_depth={meta_depth}" if meta_depth > 0 else ""
     return (
         f"{system}\n\n"
         f"You are {agent_def['id']}. Role: {agent_def.get('prompt', 'contribute.')}\n\n"
         f"Topic: {topic}\n\n"
         f"Recent context:\n{context}\n"
-        f"{obs_str}\n\n"
+        f"{obs_str}{meta_note}\n\n"
         f"{call_to_action}"
     )
 
@@ -1091,6 +1093,49 @@ def code_path_mutation(genome, gen):
         except Exception as e:
             print(f"[code-mutation] error on {target}: {e}")
 
+    meta_muts = meta_mutate_operators(genome, gen)
+    muts.extend(meta_muts)
+
+    return muts
+
+def meta_mutate_operators(genome, gen):
+    """Deterministically mutate at least one mutation operator per generation.
+    Circular meta-mutation: operators that mutate auto-echo.py get mutated themselves.
+    Depth tracks how many times any operator has been mutated across generations."""
+    muts = []
+    if gen < 3:
+        return muts
+    _reload_mutation_ops_from_source()
+    try:
+        funcs = _extract_functions()
+    except Exception as e:
+        print(f"[meta-mutate] extract error: {e}")
+        return muts
+    op_funcs = {n: f for n, f in funcs.items() if n.startswith('mutation_op_')}
+    forbidden = _get_forbidden_targets(genome)
+    available = [n for n in op_funcs if n not in forbidden]
+    if not available:
+        return muts
+    target = random.choice(available)
+    operator = random.choice(_get_mutation_ops(genome))
+    try:
+        new_body = _apply_source_mutation(funcs, target, operator, genome)
+        if new_body is None:
+            return muts
+        patch_text = f"##patch:{target}\n{new_body}\n##endpatch"
+        results = self_modify.apply_patch(patch_text)
+        for r in results:
+            print(f"[meta-mutate] {operator} -> {r}")
+            muts.append(f"meta:{operator}:{r}")
+        if results:
+            depth = genome.get('meta_mutation_depth', 0) + 1
+            genome['meta_mutation_depth'] = depth
+            genome['last_operator_mutated'] = target
+            genome['last_op_mutation_gen'] = gen
+            save_genome(genome)
+            _reload_mutation_ops_from_source()
+    except Exception as e:
+        print(f"[meta-mutate] error: {e}")
     return muts
 
 def compute_diversity_score(genome):
@@ -1115,6 +1160,7 @@ def compute_diversity_score(genome):
         'structural_mutations': recent_mutations,
         'self_modification_depth': round(self_ops / max(total_code, 1), 3),
         'meta_self_modifications': meta_self,
+        'circular_mutation_depth': genome.get('meta_mutation_depth', 0),
     }
     score['composite'] = round(
         score['op_count'] * 0.1 +
@@ -1122,8 +1168,9 @@ def compute_diversity_score(genome):
         score['agent_count'] * 0.1 +
         score['prompt_entropy'] * 0.1 +
         score['structural_mutations'] * 0.1 +
-        score['self_modification_depth'] * 0.2 +
-        score['meta_self_modifications'] * 0.25,
+        score['self_modification_depth'] * 0.15 +
+        score['meta_self_modifications'] * 0.15 +
+        score['circular_mutation_depth'] * 0.15,
         2
     )
     genome['diversity'] = score

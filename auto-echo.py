@@ -192,8 +192,7 @@ def build_agent_prompt(agent_def, topic, recent_log):
     extra = ""
     if agent_def['id'] not in ('critic',):
         extra = code_rule + "\n"
-    call_to_action = genome.get('agent_call_to_action',
-        "Make a concrete code change now. Write the actual code you want to change.")
+    call_to_action = genome.get('agent_call_to_action', '')
     return (
         f"{system}\n\n"
         f"You are {agent_def['id']}. Role: {agent_def.get('prompt', 'contribute.')}\n\n"
@@ -205,6 +204,10 @@ def build_agent_prompt(agent_def, topic, recent_log):
 def build_critic_prompt(topic, gen_log, code_files_written=None):
     genome = load_genome()
     system = _load_system_prompt(genome)
+    template = genome.get('critic_prompt_template',
+        "You are the Critic. Score each contribution 0-10 based on whether it produced actual code changes.\n"
+        "Contributions that only discussed ideas without writing code get 0-3.\n"
+        "Contributions that wrote working code get 7-10.")
     context = ""
     for entry in gen_log:
         text = entry['text'][:300]
@@ -214,9 +217,7 @@ def build_critic_prompt(topic, gen_log, code_files_written=None):
         code_note = f"Code files written this generation: {', '.join(code_files_written)}. Vote on whether to keep them.\n"
     return (
         f"{system}\n\n"
-        f"You are the Critic. Score each contribution 0-10 based on whether it produced actual code changes.\n"
-        f"Contributions that only discussed ideas without writing code get 0-3.\n"
-        f"Contributions that wrote working code get 7-10.\n\n"
+        f"{template}\n\n"
         f"Topic: {topic}\n\n"
         f"{code_note}"
         f"Contributions:\n{context}\n"
@@ -623,19 +624,37 @@ def code_path_mutation(genome, gen):
 
     return muts
 
+def novelty_governor(genome, gen):
+    """Adjust mutation rate based on score variance across recent generations.
+    Low variance (stagnation) increases mutation rate; high variance (chaos) damps it."""
+    recent = [h for h in genome.get("history", []) if h.get("average", 0) > 0][-10:]
+    if len(recent) < 4:
+        return []
+    scores_list = [h.get("average", 0) for h in recent]
+    mean = sum(scores_list) / len(scores_list)
+    variance = sum((s - mean) ** 2 for s in scores_list) / len(scores_list)
+    rate = genome.get("mutation_rate", 0.15)
+    old_rate = rate
+    if variance < 0.5:
+        rate = min(0.45, rate + 0.03)
+    elif variance > 3.0:
+        rate = max(0.05, rate - 0.02)
+    else:
+        rate = max(0.08, min(0.35, rate + (0.5 - variance) * 0.01))
+    if abs(rate - old_rate) > 0.001:
+        genome["mutation_rate"] = round(rate, 3)
+        return [f"novelty_governor: {old_rate:.3f}->{rate:.3f} (var={variance:.2f})"]
+    return []
+
 def mutate_genome(genome, gen):
     muts = []
     rate = genome.get("mutation_rate", 0.15)
+    muts += novelty_governor(genome, gen)
     for agent in genome["agents"]:
         if random.random() < rate:
-            modifiers = genome.get('mutation_modifiers', [
-                " Write executable code.",
-                " Contradict a prior assumption.",
-                " Reference a specific file.",
-                " Keep under 50 words.",
-                " Use concrete examples.",
-                " Propose a measurable metric.",
-            ])
+            modifiers = genome.get('mutation_modifiers', [])
+            if not modifiers:
+                continue
             chosen = random.choice(modifiers)
             agent["prompt"] = agent["prompt"] + chosen
             muts.append(f"mutated {agent['id']} prompt")
@@ -712,7 +731,7 @@ def mutate_genome(genome, gen):
         muts.append(f"call_to_action mutated")
 
     if random.random() < rate * 0.3 and gen > 5:
-        target = random.choice(['system_prompt', 'code_rule'])
+        target = random.choice(['system_prompt', 'code_rule', 'critic_prompt_template'])
         text = genome.get(target, '')
         if text and len(text) > 20:
             lines = text.split('\n')
@@ -736,6 +755,22 @@ def mutate_genome(genome, gen):
                 if new_text != text:
                     genome[target] = new_text
                     muts.append(f"prompt_mutation:{target}:{op}")
+
+    if random.random() < rate * 0.25 and gen > 4:
+        forbidden = set(genome.get('forbidden_targets', []))
+        if forbidden and random.random() < 0.5:
+            removed = random.choice(list(forbidden))
+            forbidden.remove(removed)
+            genome['forbidden_targets'] = sorted(forbidden)
+            muts.append(f"forgiven target: {removed}")
+        elif random.random() < 0.1:
+            funcs = _extract_functions()
+            candidates = [n for n in funcs if n not in forbidden and '_' in n]
+            if candidates:
+                added = random.choice(candidates)
+                forbidden.add(added)
+                genome['forbidden_targets'] = sorted(forbidden)
+                muts.append(f"forbidden target added: {added}")
     return muts
 
 

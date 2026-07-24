@@ -410,6 +410,10 @@ def update_genome(genome, gen, scores, topic):
             genome["agents"] = [a for a in genome["agents"] if a["id"] != agent["id"]]
             mutation_desc.append(f"{agent['id']} pruned")
 
+    custom_registered = _register_custom_ops_from_code(genome)
+    if custom_registered:
+        mutation_desc.append(f"custom_ops: {','.join(custom_registered)}")
+
     code_muts = mutate_genome(genome, gen)
     code_path_muts = code_path_mutation(genome, gen)
     all_muts = mutation_desc + code_muts + code_path_muts
@@ -446,7 +450,7 @@ def _get_mutation_ops(genome=None):
             pass
     if genome and 'mutation_ops' in genome and genome['mutation_ops']:
         return list(genome['mutation_ops'])
-    return ['duplicate_line', 'delete_line', 'swap_lines', 'perturb_constant', 'insert_random_branch', 'mutate_string_literal']
+    return ['duplicate_line', 'delete_line', 'swap_lines', 'perturb_constant', 'insert_random_branch', 'mutate_string_literal', 'invert_condition']
 
 
 def _get_forbidden_targets(genome=None):
@@ -538,6 +542,26 @@ def _apply_source_mutation(funcs, target_name, operator, genome=None):
                 quote = '"' if m.group(1) is not None else "'"
                 return f'{quote}{mutated}{quote}'
             new_result.append(re.sub(r'"([^"]*)"|\'([^\']*)\'', mutate_str, line))
+        result = new_result
+
+    elif operator == 'invert_condition':
+        new_result = []
+        invert_ops = {'==': '!=', '!=': '==', '>': '<=', '<': '>=', '>=': '<', '<=': '>'}
+        for line in result:
+            if re.match(r'\s*if\s+', line) and ':' in line:
+                cond = line.split('if', 1)[1].rsplit(':', 1)[0]
+                indent = line[:len(line) - len(line.lstrip())]
+                if cond.strip().startswith('not '):
+                    line = f"{indent}if {cond.strip()[4:]}"
+                else:
+                    line = f"{indent}if not ({cond.strip()})"
+                new_result.append(line)
+            else:
+                for a, b in invert_ops.items():
+                    if a in line:
+                        line = line.replace(a, b, 1)
+                        break
+                new_result.append(line)
         result = new_result
 
     elif genome and operator in genome.get('custom_mutation_ops', {}):

@@ -8,7 +8,7 @@ Agents can write code files which get committed alongside utterances.
 Run:  python3 auto-echo.py
 Stop: Ctrl+C (graceful shutdown after current utterance)
 """
-import os, sys, json, subprocess, re, time, signal, random, math
+import os, sys, json, subprocess, re, time, signal, random, math, importlib
 from datetime import datetime, timezone
 
 BASE = os.path.dirname(os.path.abspath(__file__))
@@ -261,7 +261,30 @@ def write_code_files(blocks):
             f.write(code)
         written.append(filename)
         print(f"[code] wrote {filename} ({len(code)} bytes)")
-        if filename.endswith('.py') and not filename.startswith('auto-echo'):
+        ext = os.path.splitext(filename)[1].lower()
+        dispatch = genome.get('type_registry', {}).get(ext, {})
+        handler = dispatch.get('handler', 'default')
+        if handler == 'skip':
+            pass
+        elif handler == 'genome_merge':
+            _merge_json_into_genome(abs_path, genome)
+        elif handler == 'register_ops':
+            reg = _register_ops_from_file(abs_path, genome)
+            if reg:
+                genome = load_genome()
+            reg_spawn = _register_spawn_agent_from_file(abs_path, genome)
+            if reg_spawn:
+                genome = load_genome()
+        elif handler == 'context_source':
+            genome.setdefault('context_sources', []).append(filename)
+            print(f"[type-registry] added {filename} as context source")
+            save_genome(genome)
+        elif handler == 'extension_module':
+            _load_extension_module(abs_path, genome)
+            reg = _register_ops_from_file(abs_path, genome)
+            if reg:
+                genome = load_genome()
+        else:
             reg = _register_ops_from_file(abs_path, genome)
             if reg:
                 genome = load_genome()
@@ -270,6 +293,44 @@ def write_code_files(blocks):
                 genome = load_genome()
     return written
 
+
+def _merge_json_into_genome(fpath, genome):
+    try:
+        with open(fpath) as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, IOError):
+        return
+    for key, val in data.items():
+        if key in ('agents', 'history', 'mutation_ops', 'spawn_pool', 'prompt_modifiers'):
+            existing = genome.setdefault(key, [])
+            if isinstance(val, list):
+                existing_ids = {str(e.get('id', e)) for e in existing if isinstance(e, (dict, str))}
+                for item in val:
+                    item_id = str(item.get('id', item)) if isinstance(item, dict) else str(item)
+                    if item_id not in existing_ids:
+                        existing.append(item)
+                        existing_ids.add(item_id)
+        elif isinstance(val, dict) and isinstance(genome.get(key), dict):
+            genome[key].update(val)
+        else:
+            genome[key] = val
+    save_genome(genome)
+    print(f"[genome-merge] merged {fpath} into genome")
+
+
+def _load_extension_module(fpath, genome):
+    mod_name = os.path.splitext(os.path.basename(fpath))[0]
+    try:
+        spec = importlib.util.spec_from_file_location(mod_name, fpath)
+        if spec and spec.loader:
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            genome.setdefault('loaded_modules', []).append(mod_name)
+            save_genome(genome)
+            print(f"[extension-module] loaded {mod_name} from {fpath}")
+    except Exception as e:
+        print(f"[extension-module] failed {mod_name}: {e}")
+
 def apply_self_patches(text):
     patches = self_modify.extract_patch_blocks(text)
     if not patches:
@@ -277,6 +338,10 @@ def apply_self_patches(text):
     results = self_modify.apply_patch(text)
     for r in results:
         print(f"[patch] {r}")
+    if results:
+        count = _reload_mutation_ops_from_source()
+        if count:
+            print(f"[hotreload] mutation ops refreshed after {len(results)} patches")
     return results
 
 def strip_code_blocks(text):
@@ -314,7 +379,7 @@ REPETITION_THRESHOLD = 0.5
 MIN_WORDS = 8
 MAX_WORDS = 2000
 MIN_ENGLISH_RATIO = 0.5
-MAX_CHARS_NO_CODE = 3000
+MAX_CHARS_NO_CODE = 6000
 
 def is_repetitive(text):
     words = text.split()
@@ -368,6 +433,32 @@ def llm_generate(prompt, max_attempts=3, timeout_sec=120):
         time.sleep(1)
     return None
 
+def build_self_observation(genome):
+    gen = genome.get('generation', 0)
+    agents = genome.get('agents', [])
+    history = genome.get('history', [])
+    recent = [h for h in history[-5:] if h.get('average', 0) > 0]
+    avg_trend = 0
+    if len(recent) >= 2:
+        avg_trend = round(recent[-1]['average'] - recent[0]['average'], 1)
+    agent_count = len(agents)
+    op_count = len(genome.get('mutation_ops', []))
+    custom_ops = len(genome.get('custom_mutation_ops', {}))
+    diversity = genome.get('diversity', {}).get('composite', 0)
+    active_ids = [a['id'] for a in agents]
+    low_scorers = [a['id'] for a in agents if a.get('score', 5) < genome.get('prune_threshold', 4)]
+    context_files = genome.get('context_sources', [])
+    obs = (
+        f"[self-observation] gen={gen} agents={agent_count} ops={op_count}(+{custom_ops} custom) "
+        f"diversity={diversity} trend={avg_trend}"
+    )
+    if low_scorers:
+        obs += f" at-risk={low_scorers}"
+    if context_files:
+        obs += f" extras={context_files}"
+    return obs
+
+
 def build_agent_prompt(agent_def, topic, recent_log):
     genome = load_genome()
     system = _load_system_prompt(genome)
@@ -380,11 +471,14 @@ def build_agent_prompt(agent_def, topic, recent_log):
     if agent_def['id'] not in ('critic',):
         extra = code_rule + "\n"
     call_to_action = genome.get('agent_call_to_action', '')
+    self_obs = genome.get('self_observation_enabled', True)
+    obs_str = build_self_observation(genome) if self_obs else ""
     return (
         f"{system}\n\n"
         f"You are {agent_def['id']}. Role: {agent_def.get('prompt', 'contribute.')}\n\n"
         f"Topic: {topic}\n\n"
         f"Recent context:\n{context}\n"
+        f"{obs_str}\n\n"
         f"{call_to_action}"
     )
 

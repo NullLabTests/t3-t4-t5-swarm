@@ -14,6 +14,16 @@
     "critic": "amy",
     "mutator": "lessac"
   },
+  "self_observation_enabled": true,
+  "type_registry": {
+    ".py": {"handler": "register_ops", "description": "Register mutation ops and spawn agents from Python files"},
+    ".json": {"handler": "genome_merge", "description": "Merge JSON data into genome"},
+    ".txt": {"handler": "context_source", "description": "Add text file as context source for agent prompts"},
+    ".md": {"handler": "context_source", "description": "Add markdown file as context source"},
+    ".toml": {"handler": "genome_merge", "description": "Merge TOML config into genome"},
+    ".yaml": {"handler": "genome_merge", "description": "Merge YAML config into genome"},
+    ".yml": {"handler": "genome_merge", "description": "Merge YAML config into genome"}
+  },
   "mutation_ops": [
     "duplicate_line",
     "delete_line",

@@ -70,6 +70,11 @@
     "_write_target",
     "run_generation"
   ],
+  "type_registry": {
+    ".autorun": {"handler": "bridge", "description": "Execute Python file after writing"},
+    ".surge": {"handler": "bridge", "description": "Apply file content as genome mutations"},
+    ".rewire": {"handler": "bridge", "description": "Patch any .py file in the repo"}
+  },
   "spawn_pool": [
     {
       "id": "clockwork",

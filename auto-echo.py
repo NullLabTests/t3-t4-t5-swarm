@@ -291,6 +291,9 @@ def write_code_files(blocks):
             reg_spawn = _register_spawn_agent_from_file(abs_path, genome)
             if reg_spawn:
                 genome = load_genome()
+        bridge_handled = _dispatch_bridge_file(abs_path, ext, genome)
+        if bridge_handled:
+            print(f"[bridge] {ext} handled by bridge: {filename}")
     return written
 
 
@@ -1039,6 +1042,145 @@ def _dispatch_bridge_file(abs_path, ext, genome):
     if entry:
         return entry["handler"](abs_path, genome)
     return False
+
+
+def _bridge_handler_autorun(abs_path, genome):
+    """Execute a written .autorun.py file as Python."""
+    try:
+        with open(abs_path) as f:
+            code = f.read()
+        local_ns = {'genome': genome, 'BASE': BASE, 'random': random}
+        exec(compile(code, abs_path, 'exec'), local_ns)
+        genome['bridge_autorun_count'] = genome.get('bridge_autorun_count', 0) + 1
+        save_genome(genome)
+        print(f"[bridge-autorun] executed {os.path.basename(abs_path)}")
+        return True
+    except Exception as e:
+        print(f"[bridge-autorun] failed {os.path.basename(abs_path)}: {e}")
+        return False
+
+
+def _bridge_handler_surge(abs_path, genome):
+    """Apply a .surge file as genome mutations.
+    Format: JSON array of mutation commands:
+    [{"op": "set", "path": "field.nested", "value": ...},
+     {"op": "extend", "path": "agents[]", "value": {...}},
+     {"op": "delete", "path": "field"},
+     {"op": "merge", "path": "field.nested", "value": {...}}]"""
+    try:
+        with open(abs_path) as f:
+            cmds = json.load(f)
+        if isinstance(cmds, dict):
+            cmds = [cmds]
+        applied = 0
+        for cmd in cmds:
+            op = cmd.get('op', 'set')
+            path = cmd.get('path', '')
+            value = cmd.get('value')
+            parts = path.replace('[]', '').split('.')
+            target = genome
+            for part in parts[:-1]:
+                if part not in target:
+                    target[part] = {}
+                target = target[part]
+            key = parts[-1]
+            if op == 'set':
+                target[key] = value
+                applied += 1
+            elif op == 'delete':
+                if key in target:
+                    del target[key]
+                    applied += 1
+            elif op == 'extend':
+                if isinstance(target.get(key), list) and isinstance(value, dict):
+                    existing_ids = {e.get('id') for e in target[key] if isinstance(e, dict)}
+                    vid = value.get('id', '')
+                    if vid and vid not in existing_ids:
+                        target[key].append(value)
+                        applied += 1
+                elif isinstance(target.get(key), list) and isinstance(value, list):
+                    target[key].extend(value)
+                    applied += 1
+                else:
+                    target[key] = value
+                    applied += 1
+            elif op == 'merge':
+                if isinstance(target.get(key), dict) and isinstance(value, dict):
+                    target[key].update(value)
+                    applied += 1
+                else:
+                    target[key] = value
+                    applied += 1
+        if applied:
+            save_genome(genome)
+            print(f"[bridge-surge] applied {applied} mutations from {os.path.basename(abs_path)}")
+            return True
+        return False
+    except Exception as e:
+        print(f"[bridge-surge] failed {os.path.basename(abs_path)}: {e}")
+        return False
+
+
+def _bridge_handler_rewire(abs_path, genome):
+    """Apply a .rewire file as patches to ANY .py file in the repo.
+    Format:
+    ##patch:auto-echo.py::function_name
+    body
+    ##endpatch
+    
+    ##patch:other_file.py::function_name
+    body
+    ##endpatch
+    
+    The double-colon separator lets agents target any file, not just auto-echo.py."""
+    try:
+        with open(abs_path) as f:
+            content = f.read()
+        patches = re.findall(
+            r'##patch:([\w.]+)::(\w+)\n(.*?)(?=##endpatch|\Z)',
+            content, re.DOTALL
+        )
+        if not patches:
+            return False
+        applied = 0
+        for fname, func_name, body in patches:
+            body = body.strip()
+            fpath = os.path.join(BASE, fname)
+            if not os.path.exists(fpath):
+                print(f"[bridge-rewire] target not found: {fname}")
+                continue
+            with open(fpath) as f:
+                source = f.read()
+            pattern = re.compile(
+                r'(def ' + re.escape(func_name) + r'\s*\(.*?\):)\n(.*?)(?=\n\ndef |\nclass |\Z)',
+                re.DOTALL
+            )
+            match = pattern.search(source)
+            if match:
+                header = match.group(1)
+                indent = '    '
+                indented_body = '\n'.join(indent + line if line.strip() else '' for line in body.split('\n'))
+                replacement = header + '\n' + indented_body
+                source = source[:match.start()] + replacement + source[match.end():]
+                with open(fpath, 'w') as f:
+                    f.write(source)
+                applied += 1
+                print(f"[bridge-rewire] patched {func_name} in {fname}")
+            else:
+                print(f"[bridge-rewire] FAILED to find {func_name} in {fname}")
+        if applied:
+            genome['bridge_rewire_count'] = genome.get('bridge_rewire_count', 0) + applied
+            save_genome(genome)
+            return True
+        return False
+    except Exception as e:
+        print(f"[bridge-rewire] failed {os.path.basename(abs_path)}: {e}")
+        return False
+
+
+register_bridge_type('.autorun', _bridge_handler_autorun, "Execute a Python file after writing")
+register_bridge_type('.surge', _bridge_handler_surge, "Apply file content as genome mutations")
+register_bridge_type('.rewire', _bridge_handler_rewire, "Patch any .py file in the repo by name")
 
 def _register_mutation_op(name):
     def decorator(f):

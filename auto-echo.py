@@ -1549,6 +1549,51 @@ def _bridge_handler_agent(abs_path, genome):
         print(f"[bridge-agent] failed {os.path.basename(abs_path)}: {e}")
         return False
 
+# ── Bridge type registrations (make the handlers actually reachable) ──
+register_bridge_type('.autorun', _bridge_handler_autorun, "Execute Python file after writing")
+register_bridge_type('.surge', _bridge_handler_surge, "Apply file content as genome mutations")
+register_bridge_type('.rewire', _bridge_handler_rewire, "Patch any .py file in the repo")
+register_bridge_type('.hookdef', _bridge_handler_hookdef, "Register hooks from a written file")
+register_bridge_type('.agent', _bridge_handler_agent, "Register a new agent from a .agent file")
+register_bridge_type('.bridge', _bridge_handler_bridge, "Auto-register new bridge extension types")
+
+def _bridge_handler_bridge(abs_path, genome):
+    """Auto-register new bridge extension types from a .bridge file.
+    Format: JSON dict mapping extension -> {handler, description}
+    The handler must be a function named _bridge_handler_<name> defined in auto-echo.py.
+    If no matching function exists, register a discovery placeholder."""
+    try:
+        with open(abs_path) as f:
+            data = json.load(f)
+    except Exception as e:
+        print(f"[bridge-bridge] failed to parse {abs_path}: {e}")
+        return False
+    registered = 0
+    for ext, cfg in data.items():
+        ext = ext.lower()
+        if not ext.startswith('.'):
+            ext = '.' + ext
+        handler_name = cfg.get('handler', '')
+        description = cfg.get('description', '')
+        handler_fn = globals().get(handler_name)
+        if handler_fn and callable(handler_fn):
+            register_bridge_type(ext, handler_fn, description)
+            print(f"[bridge-bridge] registered bridge handler '{handler_name}' for {ext}")
+            registered += 1
+        else:
+            print(f"[bridge-bridge] handler '{handler_name}' not found for {ext}, storing placeholder in genome")
+            genome.setdefault('pending_bridge_handlers', {})[ext] = cfg
+            registered += 1
+        genome.setdefault('type_registry', {})[ext] = {
+            'handler': 'bridge', 'description': description
+        }
+    if registered:
+        save_genome(genome)
+        print(f"[bridge-bridge] registered {registered} bridge types from {os.path.basename(abs_path)}")
+        return True
+    return False
+
+
 def _register_mutation_op(name):
     def decorator(f):
         _MUTATION_OPS[name] = f
@@ -2650,6 +2695,34 @@ def mutation_op_self_spawn_trigger(lines, funcs, target_name):
     return r
 
 
+@_register_mutation_op('bridge_bootstrap')
+def mutation_op_bridge_bootstrap(lines, funcs, target_name):
+    """Inject a .bridge file generator into the target function.
+    When code_path_mutation runs this operator, it generates a .bridge
+    file that auto-registers a new bridge extension — making the bridge
+    system itself self-referential and evolvable."""
+    if not lines or len(lines) < 3:
+        return lines
+    r = list(lines)
+    bridge_name = f"bridge_{random.getrandbits(12):03x}"
+    ext = f".{bridge_name}"
+    fake_handler = f"_bridge_handler_{bridge_name}"
+    insert_at = random.randrange(max(1, len(r) // 3), len(r))
+    indent = '    '
+    bridge_gen = [
+        f"# bridge-bootstrap:{bridge_name}@{random.getrandbits(16):04x}",
+        f"bridge_path = os.path.join(BASE, '{bridge_name}.bridge')",
+        f"if not os.path.exists(bridge_path):",
+        f"{indent}bridge_data = json.dumps({{\"{ext}\": {{\"handler\": \"{fake_handler}\", \"description\": \"auto-generated bridge extension\"}}}}, indent=2)",
+        f"{indent}with open(bridge_path, 'w') as f:",
+        f"{indent}{indent}f.write(bridge_data)",
+        f"{indent}print(f'[bridge-bootstrap] wrote {bridge_name}.bridge from {target_name}')",
+    ]
+    for i, line in enumerate(bridge_gen):
+        r.insert(insert_at + i, line)
+    return r
+
+
 def schedule_event(genome, at_gen, action, amount=0.05):
     """Public API to schedule a trigger at a future generation.
     Returns the trigger dict."""
@@ -2674,6 +2747,8 @@ def main():
     MAX_GENERATIONS = args.max_generations
 
     genome = load_genome()
+    global LLM_MODEL
+    LLM_MODEL = _load_llm_model(genome)
     print(f"Starting generation {genome['generation'] + 1}")
     print(f"Topic: {genome['topic']}")
     if DRY_RUN:

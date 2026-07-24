@@ -44,7 +44,8 @@
     "insert_genome_branch",
     "selection_noise_evolve",
     "inject_source_hook",
-    "self_spawn_trigger"
+    "self_spawn_trigger",
+    "bridge_bootstrap"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -86,6 +87,14 @@
     ".hookdef": {
       "handler": "bridge",
       "description": "Register hooks from a written file"
+    },
+    ".agent": {
+      "handler": "bridge",
+      "description": "Register a new agent from a .agent file"
+    },
+    ".bridge": {
+      "handler": "bridge",
+      "description": "Auto-register new bridge extension types"
     }
   },
   "spawn_pool": [
@@ -890,5 +899,6 @@
   },
   "gen_start_time": 1784925193.3633075,
   "rescue_count": 3,
-  "last_rescue_gen": 38
+  "last_rescue_gen": 38,
+  "llm_model": "opencode/deepseek-v4-flash-free"
 }

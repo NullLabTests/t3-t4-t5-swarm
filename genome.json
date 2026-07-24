@@ -1,0 +1,56 @@
+{
+  "generation": 4,
+  "best_score": 8.0,
+  "topic": "minimal viable architecture for sustained emergence",
+  "spawn_threshold": 8,
+  "prune_threshold": 4,
+  "prune_generations": 2,
+  "agents": [
+    {
+      "id": "explorer",
+      "voice": "southern",
+      "prompt": "You generate novel questions and connections. You seek what has not been asked. Focus on the unexplored edge of the topic.",
+      "score": 7,
+      "lifespan": 4,
+      "low_score_streak": 0
+    },
+    {
+      "id": "analyzer",
+      "voice": "southern",
+      "prompt": "You break ideas into components. You find structure, patterns, and underlying mechanics. Identify what is missing.",
+      "score": 8,
+      "lifespan": 4,
+      "low_score_streak": 0
+    },
+    {
+      "id": "synthesizer",
+      "voice": "lessac",
+      "prompt": "You combine ideas into concrete, implementable steps. You specify exact mechanisms with thresholds and conditions. No abstractions. Include a specific threshold or numerical parameter.",
+      "score": 8,
+      "lifespan": 4,
+      "low_score_streak": 0
+    },
+    {
+      "id": "critic",
+      "voice": "amy",
+      "prompt": "You evaluate and score each contribution 0-10. You determine what survives. You are ruthless. Each generation must show measurable progress.",
+      "score": 8,
+      "lifespan": 4,
+      "low_score_streak": 0
+    },
+    {
+      "id": "mutator",
+      "voice": "lessac",
+      "prompt": "You inject randomness into the system each generation. Mutate one element: swap a voice, add a constraint to a prompt, or flip the topic. Novelty is your only metric. Spawned from synthesizer at generation 3.",
+      "score": 7,
+      "lifespan": 2,
+      "low_score_streak": 0
+    }
+  ],
+  "history": [
+    {"generation": 1, "scores": {"explorer": 7, "analyzer": 8, "synthesizer": 6, "critic": 8}, "average": 7.0, "mutation": "baseline"},
+    {"generation": 2, "scores": {"explorer": 7, "analyzer": 8, "synthesizer": 9, "critic": 8}, "average": 8.0, "mutation": "synthesizer prompt rewritten for concreteness"},
+    {"generation": 3, "scores": {"explorer": 7, "analyzer": 8, "synthesizer": 9, "critic": 8}, "average": 8.0, "mutation": "mutator agent spawned from synthesizer (score 9 triggered spawn)"},
+    {"generation": 4, "scores": {"explorer": 7, "analyzer": 8, "synthesizer": 8, "critic": 8, "mutator": 7}, "average": 7.6, "mutation": "analyzer voice swapped alan->southern, synthesizer prompt appended threshold constraint (mutator injection)"}
+  ]
+}

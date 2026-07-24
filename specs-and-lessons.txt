@@ -1,0 +1,228 @@
+================================================================================
+ECHO: T3-T4-T5 SELF-DIALOGUING INTELLIGENCE SYSTEM
+================================================================================
+Created: 2026-07-24
+Location: ~/t3-t4/
+Status: Active development
+
+================================================================================
+FILES IN THIS DIRECTORY
+================================================================================
+
+  echo.py               - Main engine: record mic, speak as agent, log
+  genome.json           - Agent definitions, scores, generation history
+  specs-and-lessons.txt - This file
+  echo_conversation.jsonl - Running log of all exchanges (appended)
+  voices/               - Piper TTS voice models (~240MB total)
+    amy.onnx + .json      - American female voice
+    alan.onnx + .json     - British male voice
+    lessac.onnx + .json   - American female voice
+    southern.onnx + .json - British female voice (user favorite)
+
+================================================================================
+HARDWARE / LOCAL DEVICE SETUP
+================================================================================
+
+Machine:
+  - OS: Ubuntu 26.04 LTS (Resolute Raccoon)
+  - CPU only (no NVIDIA GPU - torch 2.13.0+cpu)
+  - RAM: (verify with free -h)
+
+Microphone (Input):
+  - USB PnP Sound Device (C-Media Electronics)
+  - ALSA card 1, device 0
+  - PyAudio device index 19 (ALSA hw:1,0)
+  - Default PulseAudio source: alsa_input.usb-C-Media_Electronics_Inc.
+    _USB_PnP_Sound_Device-00.analog-mono
+  - Channels: 1 (mono), Sample rate: 48000Hz (native)
+  - Software gain: 5x applied post-capture
+
+Speakers (Output):
+  - Default sink: alsa_output.pci-0000_00_1f.3.analog-stereo
+  - Laptop analog stereo (HDA Intel PCH, ALC257 codec)
+
+Recording params:
+  - Format: paInt16, 44100Hz, mono, 1024-frame chunks
+  - Duration: 6 seconds per capture
+  - Whisper tiny model (CPU, ~10s first load, ~3-5s inference)
+
+Playback commands that work:
+  - aplay /tmp/file.wav           (basic playback)
+  - paplay /tmp/file.wav          (PulseAudio playback)
+  - Piper raw: piper --model ... --output-raw | aplay -r 22050 -f S16_LE -c 1
+  - Piper + pitch shift: ... | sox ... pitch -300 | aplay ...
+
+================================================================================
+ARCHITECTURE OVERVIEW
+================================================================================
+
+Sensory Layer (Input):
+  PyAudio USB mic capture (44.1kHz, mono, 16-bit)
+  -> 5x software gain
+  -> Whisper tiny model (CPU STT)
+  -> Output: text string
+
+Motor Layer (Output):
+  Piper TTS with sox pitch shift (-300 cents = -3 semitones)
+  4 voice models for distinct agent personas
+  -> Output: audible speech via aplay/paplay
+
+Reasoning Layer (LLM):
+  opencode agent running on deepseek-v4-flash-free
+  No API keys needed - completely self-contained
+  Each agent persona is a prompt/role adopted by the same LLM
+  The LLM generates all agent responses sequentially
+
+Storage Layer:
+  ~/t3-t4/genome.json - evolutionary state, agents, scores
+  ~/t3-t4/echo_conversation.jsonl - running log of exchanges
+  ~/t3-t4/specs-and-lessons.txt - this documentation
+
+================================================================================
+AGENT ROLES (T3 Graph)
+================================================================================
+
+1. Explorer (southern voice)
+   Generates novel questions. Seeks what has not been asked.
+   Focuses on unexplored edges of the topic.
+
+2. Analyzer (alan voice)
+   Breaks ideas into components. Finds structure and patterns.
+   Identifies what is missing.
+
+3. Synthesizer (lessac voice)
+   Combines ideas into new wholes. Bridges domains.
+   After mutation: produces concrete, implementable steps with thresholds.
+
+4. Critic (amy voice)
+   Scores each contribution 0-10. Determines what survives.
+   Ruthless evaluation. Measures progress toward emergence.
+
+================================================================================
+GENOME FORMAT (genome.json)
+================================================================================
+
+{
+  "generation": N,              // current generation number
+  "best_score": X.X,            // highest average score so far
+  "topic": "...",               // current discussion topic
+  "spawn_threshold": 8,         // score above this triggers spawning
+  "prune_threshold": 4,         // score below this risks pruning
+  "prune_generations": 2,       // consecutive low scores before pruning
+  "agents": [                   // the agent graph
+    {
+      "id": "explorer",
+      "voice": "southern",
+      "prompt": "...",          // the agent's instruction/genome
+      "score": 7,               // last generation's score
+      "lifespan": 2,            // generations survived
+      "low_score_streak": 0     // consecutive generations below threshold
+    },
+    ...
+  ],
+  "history": [                  // full evolutionary record
+    {
+      "generation": 1,
+      "scores": {"explorer": 7, ...},
+      "average": 7.0,
+      "mutation": "description of what changed"
+    },
+    ...
+  ]
+}
+
+================================================================================
+T5 EVOLUTION MECHANISM
+================================================================================
+
+After each generation:
+  1. Critic scores each agent contribution (0-10)
+  2. If any agent score >= spawn_threshold (8):
+     - That agent spawns a child with a mutated prompt
+     - Child added to roster for next generation
+  3. If any agent has low_score_streak >= prune_generations (2):
+     - That agent is deleted from the roster
+  4. If average score < threshold (5.0):
+     - Select lowest-scoring agent
+     - Generate mutant variants (tweak prompt)
+     - Run variants, keep best, discard rest
+  5. Save genome with new generation number
+  6. Log all responses and scores
+
+Mutation operators:
+  - Prompt rewrite: change the agent's instruction
+  - Voice change: swap to a different Piper voice
+  - Domain shift: change the agent's expertise area
+  - Connection change: rewire which agents feed into which
+  - Temperature change: adjust how creative/conservative the agent is
+
+Selection pressure:
+  - Agents with consistently low scores get pruned (death)
+  - High-scoring agents reproduce (spawn children)
+  - The Critic enforces the standard each generation
+
+================================================================================
+LESSONS LEARNED
+================================================================================
+
+1. Mic recording must start IMMEDIATELY after GO prompt - any delay
+   causes empty transcriptions. Fixed by inline recording, not external scripts.
+
+2. Shell quoting in subprocess calls breaks with long text.
+   Use list form: subprocess.run(['cmd', 'arg1', 'arg2', text]) not shell=True.
+
+3. Piper TTS needs .onnx.json config alongside the .onnx model file.
+   Model auto-loads config from model_path + '.json'
+
+4. Whisper tiny model is sufficient for clean speech but struggles
+   with background noise. 5x gain helps. ~10s model load on CPU.
+
+5. espeak is reliable, always works, but sounds robotic.
+   Piper sounds natural but occasionally silent (pipelines need explicit file output).
+   sox pitch -300 (-3 semitones) fixes the high-pitched issue on all voices.
+
+6. Disk space: 4 Piper voices = ~240MB. Whisper tiny = 72MB download.
+   No GPU needed - all CPU inference.
+   When last checked: 50GB free on root (28% used of 68GB pool).
+
+7. The key insight: emergence comes from recursive self-modeling
+   under constraint (T5 meta-loop), not from multiple voices talking.
+   The genome is the heredity. The Critic is the selection pressure.
+   Each generation selects for higher-quality thought.
+
+8. opencode (deepseek-v4-flash-free) is the LLM engine. No API keys needed.
+   Each agent response is generated by adopting a different persona prompt.
+   The LLM does not call itself - the user/opencode orchestrates the turns.
+
+================================================================================
+USAGE
+================================================================================
+
+Record mic input:
+  python3 ~/t3-t4/echo.py record
+  -> prints transcribed text to stdout
+
+Speak as an agent:
+  python3 ~/t3-t4/echo.py speak <role> "<text>"
+  -> speaks via Piper with sox pitch shift, logs to conversation file
+  Roles: philosopher, mathematician, coder, critic
+  (maps to voices: southern, alan, lessac, amy respectively)
+
+View conversation log:
+  python3 ~/t3-t4/echo.py log
+
+Manual piper speak:
+  echo "text" | piper --model ~/t3-t4/voices/NAME.onnx --output-raw \
+    | sox -t raw -r 22050 -e signed -b 16 -c 1 - -t raw - pitch -300 \
+    | aplay -r 22050 -f S16_LE -c 1
+
+================================================================================
+CURRENT STATE (as of last generation)
+================================================================================
+
+Generation 1: avg 7.0/10 - Baseline. Synthesizer was too abstract.
+Generation 2: avg 8.0/10 - Synthesizer mutated. Scores rising.
+Spawn threshold: score >= 8 triggers child agent creation
+Prune threshold: score <= 4 for 2 consecutive generations deletes agent
+
+================================================================================

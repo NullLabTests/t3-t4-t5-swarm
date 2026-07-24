@@ -1,0 +1,4 @@
+# Voice models are large (~60MB each). Download separately.
+# See README.md for Piper setup instructions.
+voices/*.onnx
+ssh-fix-note.txt

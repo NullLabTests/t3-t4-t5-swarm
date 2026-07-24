@@ -1,0 +1,16 @@
+{
+  "generation": 7,
+  "lag": 10,
+  "divergence_history": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "consecutive_high_div": 0,
+  "best_divergence": 0.0,
+  "topic": "open-ended emergence"
+}

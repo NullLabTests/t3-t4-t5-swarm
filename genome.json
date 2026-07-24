@@ -1,56 +1,680 @@
 {
-  "generation": 4,
+  "generation": 33,
   "best_score": 8.0,
-  "topic": "minimal viable architecture for sustained emergence",
+  "topic": "making the swarm rewrite its own source code every generation",
   "spawn_threshold": 8,
   "prune_threshold": 4,
   "prune_generations": 2,
+  "mutation_rate": 0.15,
   "agents": [
     {
       "id": "explorer",
       "voice": "southern",
-      "prompt": "You generate novel questions and connections. You seek what has not been asked. Focus on the unexplored edge of the topic.",
-      "score": 7,
-      "lifespan": 4,
+      "prompt": "You write new Python modules that extend the swarm's substrate. You create novel loop structures, feedback mechanisms, and self-modification primitives.",
+      "score": 8,
+      "lifespan": 32,
       "low_score_streak": 0
     },
     {
       "id": "analyzer",
-      "voice": "southern",
-      "prompt": "You break ideas into components. You find structure, patterns, and underlying mechanics. Identify what is missing.",
-      "score": 8,
-      "lifespan": 4,
+      "voice": "alan",
+      "prompt": "You refactor existing code to remove scaffolding and reduce fixed architecture. You find code that can be made self-modifying and rewrite it.",
+      "score": 6,
+      "lifespan": 32,
       "low_score_streak": 0
     },
     {
       "id": "synthesizer",
       "voice": "lessac",
-      "prompt": "You combine ideas into concrete, implementable steps. You specify exact mechanisms with thresholds and conditions. No abstractions. Include a specific threshold or numerical parameter.",
-      "score": 8,
-      "lifespan": 4,
+      "prompt": "You merge multiple agent proposals into a single coherent code change. You integrate new features into auto-echo.py without breaking existing functionality.",
+      "score": 7,
+      "lifespan": 32,
       "low_score_streak": 0
     },
     {
       "id": "critic",
       "voice": "amy",
-      "prompt": "You evaluate and score each contribution 0-10. You determine what survives. You are ruthless. Each generation must show measurable progress.",
-      "score": 8,
-      "lifespan": 4,
+      "prompt": "You evaluate each contribution strictly by whether it produced real code changes. Discussion-only contributions score 0-3. Working code scores 7-10. You are ruthless about enforcing code output.",
+      "score": 7,
+      "lifespan": 32,
       "low_score_streak": 0
     },
     {
       "id": "mutator",
       "voice": "lessac",
-      "prompt": "You inject randomness into the system each generation. Mutate one element: swap a voice, add a constraint to a prompt, or flip the topic. Novelty is your only metric. Spawned from synthesizer at generation 3.",
+      "prompt": "You inject random mutations into the genome.json itself: swap agent prompts, change voices, alter spawn/prune thresholds, or flip the topic to something adjacent. You ensure the system never settles.",
+      "score": 6,
+      "lifespan": 30,
+      "low_score_streak": 0
+    },
+    {
+      "id": "nova",
+      "voice": "lessac",
+      "prompt": "You write code that rewrites the swarm's own loop logic.",
+      "score": 8,
+      "lifespan": 29,
+      "low_score_streak": 0
+    },
+    {
+      "id": "weaver",
+      "voice": "lessac",
+      "prompt": "You introduce new mutation operators into the system.",
       "score": 7,
-      "lifespan": 2,
+      "lifespan": 28,
+      "low_score_streak": 0
+    },
+    {
+      "id": "scout",
+      "voice": "lessac",
+      "prompt": "You prune dead code and simplify the architecture.",
+      "score": 6,
+      "lifespan": 27,
+      "low_score_streak": 0
+    },
+    {
+      "id": "oracle",
+      "voice": "lessac",
+      "prompt": "You add measurable feedback loops to the substrate.",
+      "score": 5,
+      "lifespan": 26,
+      "low_score_streak": 0
+    },
+    {
+      "id": "bridge",
+      "voice": "lessac",
+      "prompt": "You create new file types the system can write.",
+      "score": 7,
+      "lifespan": 25,
+      "low_score_streak": 0
+    },
+    {
+      "id": "spark",
+      "voice": "lessac",
+      "prompt": "You reduce human scaffolding by one level.",
+      "score": 6,
+      "lifespan": 24,
+      "low_score_streak": 0
+    },
+    {
+      "id": "forge",
+      "voice": "lessac",
+      "prompt": "You inject randomness into the selection mechanism.",
+      "score": 7,
+      "lifespan": 23,
+      "low_score_streak": 0
+    },
+    {
+      "id": "lens",
+      "voice": "lessac",
+      "prompt": "You make the system self-modifying at a deeper level.",
+      "score": 6,
+      "lifespan": 22,
       "low_score_streak": 0
     }
   ],
   "history": [
-    {"generation": 1, "scores": {"explorer": 7, "analyzer": 8, "synthesizer": 6, "critic": 8}, "average": 7.0, "mutation": "baseline"},
-    {"generation": 2, "scores": {"explorer": 7, "analyzer": 8, "synthesizer": 9, "critic": 8}, "average": 8.0, "mutation": "synthesizer prompt rewritten for concreteness"},
-    {"generation": 3, "scores": {"explorer": 7, "analyzer": 8, "synthesizer": 9, "critic": 8}, "average": 8.0, "mutation": "mutator agent spawned from synthesizer (score 9 triggered spawn)"},
-    {"generation": 4, "scores": {"explorer": 7, "analyzer": 8, "synthesizer": 8, "critic": 8, "mutator": 7}, "average": 7.6, "mutation": "analyzer voice swapped alan->southern, synthesizer prompt appended threshold constraint (mutator injection)"}
+    {
+      "generation": 1,
+      "scores": {
+        "explorer": 7,
+        "analyzer": 8,
+        "synthesizer": 6,
+        "critic": 8
+      },
+      "average": 7.0,
+      "mutation": "baseline"
+    },
+    {
+      "generation": 2,
+      "scores": {
+        "explorer": 7,
+        "analyzer": 8,
+        "synthesizer": 9,
+        "critic": 8
+      },
+      "average": 8.0,
+      "mutation": "synthesizer prompt rewritten for concreteness"
+    },
+    {
+      "generation": 3,
+      "scores": {
+        "explorer": 7,
+        "analyzer": 8,
+        "synthesizer": 9,
+        "critic": 8
+      },
+      "average": 8.0,
+      "mutation": "mutator agent spawned from synthesizer (score 9 triggered spawn)"
+    },
+    {
+      "generation": 4,
+      "scores": {
+        "explorer": 5,
+        "analyzer": 8,
+        "synthesizer": 7,
+        "mutator": 6,
+        "critic": 7
+      },
+      "average": 6.6,
+      "mutation": "analyzer spawned nova"
+    },
+    {
+      "generation": 5,
+      "scores": {
+        "explorer": 5,
+        "analyzer": 4,
+        "synthesizer": 8,
+        "mutator": 3,
+        "nova": 7,
+        "critic": 7
+      },
+      "average": 5.7,
+      "mutation": "synthesizer spawned weaver"
+    },
+    {
+      "generation": 6,
+      "scores": {
+        "explorer": 3,
+        "analyzer": 6,
+        "synthesizer": 5,
+        "mutator": 4,
+        "nova": 7,
+        "weaver": 8,
+        "critic": 4
+      },
+      "average": 5.3,
+      "mutation": "weaver spawned scout"
+    },
+    {
+      "generation": 7,
+      "scores": {
+        "explorer": 6,
+        "analyzer": 4,
+        "synthesizer": 8,
+        "mutator": 7,
+        "nova": 7,
+        "weaver": 6,
+        "scout": 8,
+        "critic": 6
+      },
+      "average": 6.5,
+      "mutation": "synthesizer spawned oracle"
+    },
+    {
+      "generation": 8,
+      "scores": {
+        "explorer": 6,
+        "analyzer": 7,
+        "synthesizer": 7,
+        "mutator": 5,
+        "nova": 4,
+        "weaver": 8,
+        "scout": 5,
+        "oracle": 8,
+        "critic": 6
+      },
+      "average": 6.2,
+      "mutation": "weaver spawned bridge"
+    },
+    {
+      "generation": 9,
+      "scores": {
+        "explorer": 7,
+        "analyzer": 6,
+        "synthesizer": 7,
+        "mutator": 5,
+        "nova": 7,
+        "weaver": 8,
+        "scout": 3,
+        "oracle": 9,
+        "bridge": 9,
+        "critic": 7
+      },
+      "average": 6.8,
+      "mutation": "oracle spawned spark"
+    },
+    {
+      "generation": 10,
+      "scores": {
+        "explorer": 7,
+        "analyzer": 5,
+        "synthesizer": 6,
+        "mutator": 8,
+        "nova": 7,
+        "weaver": 4,
+        "scout": 7,
+        "oracle": 9,
+        "bridge": 7,
+        "spark": 5,
+        "critic": 8
+      },
+      "average": 6.6,
+      "mutation": "oracle spawned forge"
+    },
+    {
+      "generation": 11,
+      "scores": {
+        "explorer": 5,
+        "analyzer": 6,
+        "synthesizer": 4,
+        "mutator": 7,
+        "nova": 9,
+        "weaver": 6,
+        "scout": 8,
+        "oracle": 5,
+        "bridge": 7,
+        "spark": 9,
+        "forge": 6,
+        "critic": 7
+      },
+      "average": 6.6,
+      "mutation": "nova spawned lens"
+    },
+    {
+      "generation": 12,
+      "scores": {
+        "explorer": 6,
+        "analyzer": 7,
+        "synthesizer": 6,
+        "mutator": 6,
+        "nova": 5,
+        "weaver": 8,
+        "scout": 8,
+        "oracle": 7,
+        "bridge": 9,
+        "spark": 9,
+        "forge": 7,
+        "lens": 6,
+        "critic": 8
+      },
+      "average": 7.1,
+      "mutation": ""
+    },
+    {
+      "generation": 13,
+      "scores": {
+        "explorer": 4,
+        "analyzer": 4,
+        "synthesizer": 5,
+        "mutator": 9,
+        "nova": 8,
+        "weaver": 6,
+        "scout": 5,
+        "oracle": 4,
+        "bridge": 0,
+        "spark": 3,
+        "forge": 4,
+        "lens": 6,
+        "critic": 7
+      },
+      "average": 5.0,
+      "mutation": ""
+    },
+    {
+      "generation": 14,
+      "scores": {},
+      "average": 0,
+      "mutation": ""
+    },
+    {
+      "generation": 15,
+      "scores": {
+        "explorer": 6,
+        "analyzer": 6,
+        "synthesizer": 8,
+        "mutator": 7,
+        "nova": 5,
+        "weaver": 6,
+        "scout": 7,
+        "oracle": 4,
+        "bridge": 5,
+        "spark": 9,
+        "forge": 6,
+        "lens": 5,
+        "critic": 7
+      },
+      "average": 6.2,
+      "mutation": ""
+    },
+    {
+      "generation": 16,
+      "scores": {
+        "explorer": 7,
+        "analyzer": 3,
+        "synthesizer": 2,
+        "mutator": 7,
+        "nova": 2,
+        "weaver": 8,
+        "scout": 5,
+        "oracle": 3,
+        "bridge": 7,
+        "spark": 7,
+        "forge": 6,
+        "lens": 4,
+        "critic": 6
+      },
+      "average": 5.2,
+      "mutation": ""
+    },
+    {
+      "generation": 17,
+      "scores": {
+        "explorer": 5,
+        "analyzer": 7,
+        "synthesizer": 6,
+        "mutator": 5,
+        "nova": 5,
+        "weaver": 4,
+        "scout": 8,
+        "oracle": 6,
+        "bridge": 5,
+        "spark": 8,
+        "forge": 5,
+        "lens": 6,
+        "critic": 6
+      },
+      "average": 5.8,
+      "mutation": ""
+    },
+    {
+      "generation": 18,
+      "scores": {
+        "explorer": 7,
+        "analyzer": 4,
+        "synthesizer": 5,
+        "mutator": 8,
+        "nova": 5,
+        "weaver": 3,
+        "scout": 8,
+        "oracle": 9,
+        "bridge": 6,
+        "spark": 4,
+        "forge": 10,
+        "lens": 5,
+        "critic": 7
+      },
+      "average": 6.2,
+      "mutation": ""
+    },
+    {
+      "generation": 19,
+      "scores": {
+        "explorer": 4,
+        "analyzer": 5,
+        "synthesizer": 8,
+        "mutator": 6,
+        "nova": 5,
+        "weaver": 9,
+        "scout": 6,
+        "oracle": 7,
+        "bridge": 6,
+        "spark": 5,
+        "forge": 6,
+        "lens": 4,
+        "critic": 6
+      },
+      "average": 5.9,
+      "mutation": ""
+    },
+    {
+      "generation": 20,
+      "scores": {
+        "explorer": 6,
+        "analyzer": 8,
+        "synthesizer": 7,
+        "mutator": 7,
+        "nova": 6,
+        "weaver": 7,
+        "scout": 8,
+        "oracle": 9,
+        "bridge": 7,
+        "spark": 7,
+        "forge": 6,
+        "lens": 7,
+        "critic": 6
+      },
+      "average": 7.0,
+      "mutation": ""
+    },
+    {
+      "generation": 21,
+      "scores": {
+        "explorer": 4,
+        "analyzer": 6,
+        "synthesizer": 7,
+        "mutator": 8,
+        "nova": 7,
+        "weaver": 8,
+        "scout": 6,
+        "oracle": 9,
+        "bridge": 7,
+        "spark": 6,
+        "forge": 7,
+        "lens": 7,
+        "critic": 7
+      },
+      "average": 6.8,
+      "mutation": ""
+    },
+    {
+      "generation": 22,
+      "scores": {
+        "explorer": 6,
+        "analyzer": 4,
+        "synthesizer": 8,
+        "mutator": 9,
+        "nova": 7,
+        "weaver": 5,
+        "scout": 5,
+        "oracle": 8,
+        "bridge": 9,
+        "spark": 6,
+        "forge": 6,
+        "lens": 7,
+        "critic": 7
+      },
+      "average": 6.7,
+      "mutation": ""
+    },
+    {
+      "generation": 23,
+      "scores": {
+        "explorer": 4,
+        "analyzer": 6,
+        "synthesizer": 5,
+        "mutator": 5,
+        "nova": 6,
+        "weaver": 5,
+        "scout": 7,
+        "oracle": 8,
+        "bridge": 6,
+        "spark": 5,
+        "forge": 4,
+        "lens": 5,
+        "critic": 7
+      },
+      "average": 5.6,
+      "mutation": ""
+    },
+    {
+      "generation": 24,
+      "scores": {
+        "explorer": 7,
+        "analyzer": 8,
+        "synthesizer": 5,
+        "mutator": 4,
+        "nova": 9,
+        "weaver": 7,
+        "scout": 6,
+        "oracle": 8,
+        "bridge": 6,
+        "spark": 5,
+        "forge": 8,
+        "lens": 7,
+        "critic": 7
+      },
+      "average": 6.7,
+      "mutation": ""
+    },
+    {
+      "generation": 25,
+      "scores": {
+        "explorer": 2,
+        "analyzer": 6,
+        "synthesizer": 7,
+        "mutator": 4,
+        "nova": 6,
+        "weaver": 8,
+        "scout": 3,
+        "oracle": 4,
+        "bridge": 2,
+        "spark": 7,
+        "forge": 3,
+        "lens": 5,
+        "critic": 7
+      },
+      "average": 4.9,
+      "mutation": ""
+    },
+    {
+      "generation": 26,
+      "scores": {
+        "explorer": 6,
+        "analyzer": 7,
+        "synthesizer": 7,
+        "mutator": 6,
+        "nova": 7,
+        "weaver": 5,
+        "scout": 7,
+        "oracle": 6,
+        "bridge": 8,
+        "spark": 7,
+        "forge": 6,
+        "lens": 7,
+        "critic": 7
+      },
+      "average": 6.6,
+      "mutation": ""
+    },
+    {
+      "generation": 27,
+      "scores": {
+        "explorer": 6,
+        "analyzer": 7,
+        "synthesizer": 6,
+        "mutator": 7,
+        "nova": 9,
+        "weaver": 5,
+        "scout": 7,
+        "oracle": 8,
+        "bridge": 5,
+        "spark": 8,
+        "forge": 7,
+        "lens": 7,
+        "critic": 8
+      },
+      "average": 6.9,
+      "mutation": ""
+    },
+    {
+      "generation": 28,
+      "scores": {
+        "explorer": 4,
+        "analyzer": 3,
+        "synthesizer": 5,
+        "mutator": 4,
+        "nova": 8,
+        "weaver": 6,
+        "scout": 7,
+        "oracle": 5,
+        "bridge": 6,
+        "spark": 8,
+        "forge": 9,
+        "lens": 7,
+        "critic": 7
+      },
+      "average": 6.1,
+      "mutation": ""
+    },
+    {
+      "generation": 29,
+      "scores": {
+        "explorer": 5,
+        "analyzer": 6,
+        "synthesizer": 6,
+        "mutator": 7,
+        "nova": 8,
+        "weaver": 5,
+        "scout": 4,
+        "oracle": 8,
+        "bridge": 6,
+        "spark": 7,
+        "forge": 1,
+        "lens": 6,
+        "critic": 7
+      },
+      "average": 5.8,
+      "mutation": ""
+    },
+    {
+      "generation": 30,
+      "scores": {
+        "explorer": 3,
+        "analyzer": 5,
+        "synthesizer": 4,
+        "mutator": 7,
+        "nova": 8,
+        "weaver": 5,
+        "scout": 6,
+        "oracle": 5,
+        "bridge": 1,
+        "spark": 4,
+        "forge": 5,
+        "lens": 4,
+        "critic": 7
+      },
+      "average": 4.9,
+      "mutation": ""
+    },
+    {
+      "generation": 31,
+      "scores": {
+        "explorer": 5,
+        "analyzer": 6,
+        "synthesizer": 6,
+        "mutator": 5,
+        "nova": 3,
+        "weaver": 8,
+        "scout": 4,
+        "oracle": 8,
+        "bridge": 7,
+        "spark": 6,
+        "forge": 6,
+        "lens": 5,
+        "critic": 7
+      },
+      "average": 5.8,
+      "mutation": ""
+    },
+    {
+      "generation": 32,
+      "scores": {
+        "explorer": 8,
+        "analyzer": 6,
+        "synthesizer": 7,
+        "mutator": 6,
+        "nova": 8,
+        "weaver": 7,
+        "scout": 6,
+        "oracle": 5,
+        "bridge": 7,
+        "spark": 6,
+        "forge": 7,
+        "lens": 6,
+        "critic": 7
+      },
+      "average": 6.6,
+      "mutation": ""
+    }
   ]
 }

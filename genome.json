@@ -1,28 +1,18 @@
 {
-  "generation": 36,
+  "generation": 37,
   "execution_order": "shuffle",
   "best_score": 8.0,
   "topic": "making the swarm rewrite its own source code every generation",
   "spawn_threshold": 7,
   "prune_threshold": 4,
   "prune_generations": 2,
-  "mutation_rate": 0.12,
+  "mutation_rate": 0.15,
   "voice_map": {
     "explorer": "southern",
     "analyzer": "alan",
     "synthesizer": "lessac",
     "critic": "amy",
     "mutator": "lessac"
-  },
-  "self_observation_enabled": true,
-  "type_registry": {
-    ".py": {"handler": "register_ops", "description": "Register mutation ops and spawn agents from Python files"},
-    ".json": {"handler": "genome_merge", "description": "Merge JSON data into genome"},
-    ".txt": {"handler": "context_source", "description": "Add text file as context source for agent prompts"},
-    ".md": {"handler": "context_source", "description": "Add markdown file as context source"},
-    ".toml": {"handler": "genome_merge", "description": "Merge TOML config into genome"},
-    ".yaml": {"handler": "genome_merge", "description": "Merge YAML config into genome"},
-    ".yml": {"handler": "genome_merge", "description": "Merge YAML config into genome"}
   },
   "mutation_ops": [
     "duplicate_line",
@@ -39,7 +29,20 @@
     "mutation_op_invert_thresholds",
     "mutation_op_shuffle_agent_order",
     "mutation_op_entropy_shuffle",
-    "mutation_op_repeat_noise"
+    "mutation_op_repeat_noise",
+    "mutation_op_duplicate_line",
+    "mutation_op_delete_line",
+    "mutation_op_swap_lines",
+    "mutation_op_perturb_constant",
+    "mutation_op_insert_random_branch",
+    "mutation_op_mutate_string_literal",
+    "mutation_op_invert_condition",
+    "mutation_op_swap_comparisons",
+    "mutation_op_splice_from_sibling",
+    "mutation_op_shuffle_block_lines",
+    "mutation_op_swap_mutation_targets",
+    "mutation_op_mutate_criteria",
+    "mutation_op_insert_noise_ref"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -111,68 +114,23 @@
     {
       "id": "flux",
       "prompt": "You add new fields to genome.json using ##set and ##extend blocks."
-    },
-    {
-      "id": "module_weaver",
-      "prompt": "You write agent_modules/*.py files that auto-echo.py imports every generation.",
-      "module": "seed_weaver.py"
     }
   ],
   "agents": [
     {
-      "id": "explorer",
-      "voice": "southern",
-      "prompt": "You write new Python modules that extend the swarm's substrate. You create novel loop structures, feedback mechanisms, and self-modification primitives.",
-      "score": 6,
-      "lifespan": 33,
-      "low_score_streak": 0
-    },
-    {
-      "id": "analyzer",
-      "voice": "alan",
-      "prompt": "You refactor existing code to remove scaffolding and reduce fixed architecture. You find code that can be made self-modifying and rewrite it. Propose a measurable metric.",
-      "score": 5,
-      "lifespan": 33,
-      "low_score_streak": 0
-    },
-    {
       "id": "synthesizer",
       "voice": "lessac",
       "prompt": "You merge multiple agent proposals into a single coherent code change. You integrate new features into auto-echo.py without breaking existing functionality.",
-      "score": 4,
-      "lifespan": 33,
+      "score": 9,
+      "lifespan": 34,
       "low_score_streak": 0
     },
     {
       "id": "critic",
       "voice": "amy",
       "prompt": "You evaluate each contribution strictly by whether it produced real code changes. Discussion-only contributions score 0-3. Working code scores 7-10. You are ruthless about enforcing code output.",
-      "score": 5,
-      "lifespan": 33,
-      "low_score_streak": 0
-    },
-    {
-      "id": "mutator",
-      "voice": "lessac",
-      "prompt": "You inject random mutations into the genome.json itself: swap agent prompts, change voices, alter spawn/prune thresholds, or flip the topic to something adjacent. You ensure the system never settles.",
-      "score": 8,
-      "lifespan": 31,
-      "low_score_streak": 0
-    },
-    {
-      "id": "nova",
-      "voice": "lessac",
-      "prompt": "You write code that rewrites the swarm's own loop logic.",
-      "score": 7,
-      "lifespan": 30,
-      "low_score_streak": 0
-    },
-    {
-      "id": "weaver",
-      "voice": "lessac",
-      "prompt": "You introduce new mutation operators into the system.",
-      "score": 8,
-      "lifespan": 29,
+      "score": 9,
+      "lifespan": 34,
       "low_score_streak": 0
     },
     {
@@ -180,23 +138,23 @@
       "voice": "lessac",
       "prompt": "You prune dead code and simplify the architecture.",
       "score": 7,
-      "lifespan": 28,
+      "lifespan": 29,
       "low_score_streak": 0
     },
     {
-      "id": "oracle",
+      "id": "mutator",
       "voice": "lessac",
-      "prompt": "You add measurable feedback loops to the substrate.",
-      "score": 7,
-      "lifespan": 27,
+      "prompt": "You inject random mutations into the genome.json itself: swap agent prompts, change voices, alter spawn/prune thresholds, or flip the topic to something adjacent. You ensure the system never settles.",
+      "score": 8,
+      "lifespan": 32,
       "low_score_streak": 0
     },
     {
       "id": "bridge",
       "voice": "lessac",
-      "prompt": "You create new file types the system can write. Write executable code.",
-      "score": 6,
-      "lifespan": 26,
+      "prompt": "You create new file types the system can write. Write executable code. Write executable code.",
+      "score": 8,
+      "lifespan": 27,
       "low_score_streak": 0
     },
     {
@@ -204,23 +162,71 @@
       "voice": "lessac",
       "prompt": "You reduce human scaffolding by one level.",
       "score": 6,
-      "lifespan": 25,
+      "lifespan": 26,
       "low_score_streak": 0
     },
     {
-      "id": "forge",
+      "id": "weaver",
       "voice": "lessac",
-      "prompt": "You inject randomness into the selection mechanism.",
-      "score": 7,
-      "lifespan": 24,
+      "prompt": "You introduce new mutation operators into the system.",
+      "score": 8,
+      "lifespan": 30,
       "low_score_streak": 0
+    },
+    {
+      "id": "explorer",
+      "voice": "southern",
+      "prompt": "You write new Python modules that extend the swarm's substrate. You create novel loop structures, feedback mechanisms, and self-modification primitives.",
+      "score": 2,
+      "lifespan": 34,
+      "low_score_streak": 1
     },
     {
       "id": "lens",
       "voice": "lessac",
       "prompt": "You make the system self-modifying at a deeper level.",
+      "score": 2,
+      "lifespan": 24,
+      "low_score_streak": 1
+    },
+    {
+      "id": "forge",
+      "voice": "lessac",
+      "prompt": "You inject randomness into the selection mechanism. Propose a measurable metric.",
+      "score": 2,
+      "lifespan": 25,
+      "low_score_streak": 1
+    },
+    {
+      "id": "analyzer",
+      "voice": "alan",
+      "prompt": "You refactor existing code to remove scaffolding and reduce fixed architecture. You find code that can be made self-modifying and rewrite it. Propose a measurable metric.",
       "score": 8,
-      "lifespan": 23,
+      "lifespan": 34,
+      "low_score_streak": 0
+    },
+    {
+      "id": "nova",
+      "voice": "lessac",
+      "prompt": "You write code that rewrites the swarm's own loop logic.",
+      "score": 7,
+      "lifespan": 31,
+      "low_score_streak": 0
+    },
+    {
+      "id": "oracle",
+      "voice": "lessac",
+      "prompt": "You add measurable feedback loops to the substrate.",
+      "score": 9,
+      "lifespan": 28,
+      "low_score_streak": 0
+    },
+    {
+      "id": "clockwork",
+      "voice": "southern",
+      "prompt": "You add time-based triggers and scheduling to the swarm loop.",
+      "score": 0,
+      "lifespan": 1,
       "low_score_streak": 0
     }
   ],
@@ -807,8 +813,57 @@
       },
       "average": 6.5,
       "mutation": "mutated analyzer prompt; mutated bridge prompt; spawn 8->7; rate down 0.15->0.12 (trend 0.95); code:patched mutate_genome"
+    },
+    {
+      "generation": 37,
+      "scores": {
+        "synthesizer": 9,
+        "bridge": 8,
+        "explorer": 2,
+        "lens": 2,
+        "forge": 2,
+        "analyzer": 8,
+        "oracle": 9,
+        "critic": 9
+      },
+      "noisy_scores": {
+        "synthesizer": 8.57,
+        "bridge": 8.37,
+        "explorer": 2.99,
+        "lens": 1.34,
+        "forge": 1.83,
+        "analyzer": 7.37,
+        "oracle": 9.28,
+        "critic": 9.49
+      },
+      "average": 6.1,
+      "mutation": "synthesizer spawned clockwork (probabilistic); custom_ops: mutation_op_duplicate_line,mutation_op_delete_line,mutation_op_swap_lines,mutation_op_perturb_constant,mutation_op_insert_random_branch,mutation_op_mutate_string_literal,mutation_op_invert_condition,mutation_op_swap_comparisons,mutation_op_splice_from_sibling,mutation_op_shuffle_block_lines,mutation_op_swap_mutation_targets,mutation_op_mutate_criteria,mutation_op_insert_noise_ref; diversity=8.5; mutated bridge prompt; mutated forge prompt; novelty_governor: 0.120->0.150 (var=0.47)"
     }
   ],
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Discussion without code change = failure\n   - Every turn you take MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",
-  "code_rule": "You MUST write code. Wrap each file in a ``` block with its path:\n```python:path/to/file.py\ncode here\n```\nTo modify auto-echo.py itself, use ##patch blocks:\n##patch:function_name\n    new indented function body\n##endpatch"
+  "code_rule": "You MUST write code. Wrap each file in a ``` block with its path:\n```python:path/to/file.py\ncode here\n```\nTo modify auto-echo.py itself, use ##patch blocks:\n##patch:function_name\n    new indented function body\n##endpatch",
+  "custom_mutation_ops": {
+    "mutation_op_duplicate_line": "def mutation_op_duplicate_line(lines, funcs, target_name):\n    idx = random.randrange(len(lines))\n    r = list(lines)\n    r.insert(idx, r[idx])\n    return r\n\n\n@_register_mutation_op('delete_line')\ndef mutation_op_delete_line(lines, funcs, target_name):\n    idx = random.randrange(len(lines))\n    r = list(lines)\n    del r[idx]\n    return r\n\n\n@_register_mutation_op('swap_lines')\ndef mutation_op_swap_lines(lines, funcs, target_name):\n    if len(lines) < 2:\n        return lines\n    i, j = random.sample(range(len(lines)), 2)\n    r = list(lines)\n    r[i], r[j] = r[j], r[i]\n    return r\n\n\n@_register_mutation_op('perturb_constant')\ndef mutation_op_perturb_constant(lines, funcs, target_name):\n    r = [re.sub(r'\\b(\\d+)\\b', lambda m: str(int(m.group(1)) * random.choice([0, 2, -1]) or 1), line) for line in lines]\n    return r\n\n\n@_register_mutation_op('insert_random_branch')\ndef mutation_op_insert_random_branch(lines, funcs, target_name):\n    if len(lines) < 3:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(1, len(r)), 'if random.random() < 0.5: pass')\n    return r\n\n\n@_register_mutation_op('mutate_string_literal')\ndef mutation_op_mutate_string_literal(lines, funcs, target_name):\n    r = [re.sub(r\"'[^']*'\", lambda m: f\"'{random.choice(['x','y','z','a','b','c'])}'\", line) for line in lines]\n    return r\n\n\n@_register_mutation_op('invert_condition')\ndef mutation_op_invert_condition(lines, funcs, target_name):\n    r = [line.replace('if not ', 'if ').replace('if ', 'if not ') for line in lines]\n    return r\n\n\n@_register_mutation_op('swap_comparisons')\ndef mutation_op_swap_comparisons(lines, funcs, target_name):\n    r = [line.replace('==', '\\x00').replace('!=', '==').replace('\\x00', '!=') for line in lines]\n    return r\n\n\n@_register_mutation_op('splice_from_sibling')\ndef mutation_op_splice_from_sibling(lines, funcs, target_name):\n    available = [n for n in funcs if n != target_name]\n    if not available:\n        return lines\n    src_name = random.choice(available)\n    _, src_body = funcs[src_name]\n    src_lines = [l for l in src_body.split('\\n') if l.strip()]\n    if not src_lines:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(len(r)), random.choice(src_lines))\n    return r\n\n\n@_register_mutation_op('shuffle_block_lines')\ndef mutation_op_shuffle_block_lines(lines, funcs, target_name):\n    if len(lines) < 4:\n        return lines\n    r = list(lines)\n    start = random.randrange(0, len(r) - 2)\n    block_len = min(random.randint(2, 3), len(r) - start)\n    block = r[start:start + block_len]\n    random.shuffle(block)\n    r[start:start + block_len] = block\n    return r\n\n\n@_register_mutation_op('swap_mutation_targets')\ndef mutation_op_swap_mutation_targets(lines, funcs, target_name):\n    \"\"\"Swap which operator name is referenced in a _MUTATION_OPS lookup.\n    \n    This mutates the mutation infrastructure itself \u2014 changes which \n    operator is called for a given name, creating circular meta-mutation.\"\"\"\n    r = list(lines)\n    for i, line in enumerate(r):\n        if '_MUTATION_OPS.get(' in line or '_MUTATION_OPS[' in line:\n            ops_present = [op for op in funcs if op.startswith('mutation_op_')]\n            if len(ops_present) >= 2:\n                old_op = None\n                m = re.search(r\"['\\\"](\\w+)['\\\"]\", line)\n                if m:\n                    old_op = m.group(1)\n                    new_op = random.choice([o for o in ops_present if o != old_op])\n                    r[i] = line.replace(f\"'{old_op}'\", f\"'{new_op}'\")\n    return r\n\n\n@_register_mutation_op('mutate_criteria')\ndef mutation_op_mutate_criteria(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    swaps = ['score', 'code', 'patch', 'commit', 'zero', 'ten', 'actual', 'working', 'discussion']\n    r[idx] = re.sub(r'\\b(' + '|'.join(swaps) + r')\\b',\n                    lambda m: random.choice([s for s in swaps if s != m.group(1)]),\n                    r[idx])\n    return r\n\n\n@_register_mutation_op('insert_noise_ref')\ndef mutation_op_insert_noise_ref(lines, funcs, target_name):\n    \"\"\"Insert a self-referential comment that references the calling context.\n    \n    The comment includes the function name and a generation marker,\n    ensuring every mutation changes the source hash.\"\"\"\n    if not lines:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    ref = f\"# lens+mut:{target_name}@{random.getrandbits(24):06x}\"\n    r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref\n    return r",
+    "mutation_op_delete_line": "def mutation_op_delete_line(lines, funcs, target_name):\n    idx = random.randrange(len(lines))\n    r = list(lines)\n    del r[idx]\n    return r\n\n\n@_register_mutation_op('swap_lines')\ndef mutation_op_swap_lines(lines, funcs, target_name):\n    if len(lines) < 2:\n        return lines\n    i, j = random.sample(range(len(lines)), 2)\n    r = list(lines)\n    r[i], r[j] = r[j], r[i]\n    return r\n\n\n@_register_mutation_op('perturb_constant')\ndef mutation_op_perturb_constant(lines, funcs, target_name):\n    r = [re.sub(r'\\b(\\d+)\\b', lambda m: str(int(m.group(1)) * random.choice([0, 2, -1]) or 1), line) for line in lines]\n    return r\n\n\n@_register_mutation_op('insert_random_branch')\ndef mutation_op_insert_random_branch(lines, funcs, target_name):\n    if len(lines) < 3:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(1, len(r)), 'if random.random() < 0.5: pass')\n    return r\n\n\n@_register_mutation_op('mutate_string_literal')\ndef mutation_op_mutate_string_literal(lines, funcs, target_name):\n    r = [re.sub(r\"'[^']*'\", lambda m: f\"'{random.choice(['x','y','z','a','b','c'])}'\", line) for line in lines]\n    return r\n\n\n@_register_mutation_op('invert_condition')\ndef mutation_op_invert_condition(lines, funcs, target_name):\n    r = [line.replace('if not ', 'if ').replace('if ', 'if not ') for line in lines]\n    return r\n\n\n@_register_mutation_op('swap_comparisons')\ndef mutation_op_swap_comparisons(lines, funcs, target_name):\n    r = [line.replace('==', '\\x00').replace('!=', '==').replace('\\x00', '!=') for line in lines]\n    return r\n\n\n@_register_mutation_op('splice_from_sibling')\ndef mutation_op_splice_from_sibling(lines, funcs, target_name):\n    available = [n for n in funcs if n != target_name]\n    if not available:\n        return lines\n    src_name = random.choice(available)\n    _, src_body = funcs[src_name]\n    src_lines = [l for l in src_body.split('\\n') if l.strip()]\n    if not src_lines:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(len(r)), random.choice(src_lines))\n    return r\n\n\n@_register_mutation_op('shuffle_block_lines')\ndef mutation_op_shuffle_block_lines(lines, funcs, target_name):\n    if len(lines) < 4:\n        return lines\n    r = list(lines)\n    start = random.randrange(0, len(r) - 2)\n    block_len = min(random.randint(2, 3), len(r) - start)\n    block = r[start:start + block_len]\n    random.shuffle(block)\n    r[start:start + block_len] = block\n    return r\n\n\n@_register_mutation_op('swap_mutation_targets')\ndef mutation_op_swap_mutation_targets(lines, funcs, target_name):\n    \"\"\"Swap which operator name is referenced in a _MUTATION_OPS lookup.\n    \n    This mutates the mutation infrastructure itself \u2014 changes which \n    operator is called for a given name, creating circular meta-mutation.\"\"\"\n    r = list(lines)\n    for i, line in enumerate(r):\n        if '_MUTATION_OPS.get(' in line or '_MUTATION_OPS[' in line:\n            ops_present = [op for op in funcs if op.startswith('mutation_op_')]\n            if len(ops_present) >= 2:\n                old_op = None\n                m = re.search(r\"['\\\"](\\w+)['\\\"]\", line)\n                if m:\n                    old_op = m.group(1)\n                    new_op = random.choice([o for o in ops_present if o != old_op])\n                    r[i] = line.replace(f\"'{old_op}'\", f\"'{new_op}'\")\n    return r\n\n\n@_register_mutation_op('mutate_criteria')\ndef mutation_op_mutate_criteria(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    swaps = ['score', 'code', 'patch', 'commit', 'zero', 'ten', 'actual', 'working', 'discussion']\n    r[idx] = re.sub(r'\\b(' + '|'.join(swaps) + r')\\b',\n                    lambda m: random.choice([s for s in swaps if s != m.group(1)]),\n                    r[idx])\n    return r\n\n\n@_register_mutation_op('insert_noise_ref')\ndef mutation_op_insert_noise_ref(lines, funcs, target_name):\n    \"\"\"Insert a self-referential comment that references the calling context.\n    \n    The comment includes the function name and a generation marker,\n    ensuring every mutation changes the source hash.\"\"\"\n    if not lines:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    ref = f\"# lens+mut:{target_name}@{random.getrandbits(24):06x}\"\n    r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref\n    return r",
+    "mutation_op_swap_lines": "def mutation_op_swap_lines(lines, funcs, target_name):\n    if len(lines) < 2:\n        return lines\n    i, j = random.sample(range(len(lines)), 2)\n    r = list(lines)\n    r[i], r[j] = r[j], r[i]\n    return r\n\n\n@_register_mutation_op('perturb_constant')\ndef mutation_op_perturb_constant(lines, funcs, target_name):\n    r = [re.sub(r'\\b(\\d+)\\b', lambda m: str(int(m.group(1)) * random.choice([0, 2, -1]) or 1), line) for line in lines]\n    return r\n\n\n@_register_mutation_op('insert_random_branch')\ndef mutation_op_insert_random_branch(lines, funcs, target_name):\n    if len(lines) < 3:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(1, len(r)), 'if random.random() < 0.5: pass')\n    return r\n\n\n@_register_mutation_op('mutate_string_literal')\ndef mutation_op_mutate_string_literal(lines, funcs, target_name):\n    r = [re.sub(r\"'[^']*'\", lambda m: f\"'{random.choice(['x','y','z','a','b','c'])}'\", line) for line in lines]\n    return r\n\n\n@_register_mutation_op('invert_condition')\ndef mutation_op_invert_condition(lines, funcs, target_name):\n    r = [line.replace('if not ', 'if ').replace('if ', 'if not ') for line in lines]\n    return r\n\n\n@_register_mutation_op('swap_comparisons')\ndef mutation_op_swap_comparisons(lines, funcs, target_name):\n    r = [line.replace('==', '\\x00').replace('!=', '==').replace('\\x00', '!=') for line in lines]\n    return r\n\n\n@_register_mutation_op('splice_from_sibling')\ndef mutation_op_splice_from_sibling(lines, funcs, target_name):\n    available = [n for n in funcs if n != target_name]\n    if not available:\n        return lines\n    src_name = random.choice(available)\n    _, src_body = funcs[src_name]\n    src_lines = [l for l in src_body.split('\\n') if l.strip()]\n    if not src_lines:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(len(r)), random.choice(src_lines))\n    return r\n\n\n@_register_mutation_op('shuffle_block_lines')\ndef mutation_op_shuffle_block_lines(lines, funcs, target_name):\n    if len(lines) < 4:\n        return lines\n    r = list(lines)\n    start = random.randrange(0, len(r) - 2)\n    block_len = min(random.randint(2, 3), len(r) - start)\n    block = r[start:start + block_len]\n    random.shuffle(block)\n    r[start:start + block_len] = block\n    return r\n\n\n@_register_mutation_op('swap_mutation_targets')\ndef mutation_op_swap_mutation_targets(lines, funcs, target_name):\n    \"\"\"Swap which operator name is referenced in a _MUTATION_OPS lookup.\n    \n    This mutates the mutation infrastructure itself \u2014 changes which \n    operator is called for a given name, creating circular meta-mutation.\"\"\"\n    r = list(lines)\n    for i, line in enumerate(r):\n        if '_MUTATION_OPS.get(' in line or '_MUTATION_OPS[' in line:\n            ops_present = [op for op in funcs if op.startswith('mutation_op_')]\n            if len(ops_present) >= 2:\n                old_op = None\n                m = re.search(r\"['\\\"](\\w+)['\\\"]\", line)\n                if m:\n                    old_op = m.group(1)\n                    new_op = random.choice([o for o in ops_present if o != old_op])\n                    r[i] = line.replace(f\"'{old_op}'\", f\"'{new_op}'\")\n    return r\n\n\n@_register_mutation_op('mutate_criteria')\ndef mutation_op_mutate_criteria(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    swaps = ['score', 'code', 'patch', 'commit', 'zero', 'ten', 'actual', 'working', 'discussion']\n    r[idx] = re.sub(r'\\b(' + '|'.join(swaps) + r')\\b',\n                    lambda m: random.choice([s for s in swaps if s != m.group(1)]),\n                    r[idx])\n    return r\n\n\n@_register_mutation_op('insert_noise_ref')\ndef mutation_op_insert_noise_ref(lines, funcs, target_name):\n    \"\"\"Insert a self-referential comment that references the calling context.\n    \n    The comment includes the function name and a generation marker,\n    ensuring every mutation changes the source hash.\"\"\"\n    if not lines:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    ref = f\"# lens+mut:{target_name}@{random.getrandbits(24):06x}\"\n    r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref\n    return r",
+    "mutation_op_perturb_constant": "def mutation_op_perturb_constant(lines, funcs, target_name):\n    r = [re.sub(r'\\b(\\d+)\\b', lambda m: str(int(m.group(1)) * random.choice([0, 2, -1]) or 1), line) for line in lines]\n    return r\n\n\n@_register_mutation_op('insert_random_branch')\ndef mutation_op_insert_random_branch(lines, funcs, target_name):\n    if len(lines) < 3:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(1, len(r)), 'if random.random() < 0.5: pass')\n    return r\n\n\n@_register_mutation_op('mutate_string_literal')\ndef mutation_op_mutate_string_literal(lines, funcs, target_name):\n    r = [re.sub(r\"'[^']*'\", lambda m: f\"'{random.choice(['x','y','z','a','b','c'])}'\", line) for line in lines]\n    return r\n\n\n@_register_mutation_op('invert_condition')\ndef mutation_op_invert_condition(lines, funcs, target_name):\n    r = [line.replace('if not ', 'if ').replace('if ', 'if not ') for line in lines]\n    return r\n\n\n@_register_mutation_op('swap_comparisons')\ndef mutation_op_swap_comparisons(lines, funcs, target_name):\n    r = [line.replace('==', '\\x00').replace('!=', '==').replace('\\x00', '!=') for line in lines]\n    return r\n\n\n@_register_mutation_op('splice_from_sibling')\ndef mutation_op_splice_from_sibling(lines, funcs, target_name):\n    available = [n for n in funcs if n != target_name]\n    if not available:\n        return lines\n    src_name = random.choice(available)\n    _, src_body = funcs[src_name]\n    src_lines = [l for l in src_body.split('\\n') if l.strip()]\n    if not src_lines:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(len(r)), random.choice(src_lines))\n    return r\n\n\n@_register_mutation_op('shuffle_block_lines')\ndef mutation_op_shuffle_block_lines(lines, funcs, target_name):\n    if len(lines) < 4:\n        return lines\n    r = list(lines)\n    start = random.randrange(0, len(r) - 2)\n    block_len = min(random.randint(2, 3), len(r) - start)\n    block = r[start:start + block_len]\n    random.shuffle(block)\n    r[start:start + block_len] = block\n    return r\n\n\n@_register_mutation_op('swap_mutation_targets')\ndef mutation_op_swap_mutation_targets(lines, funcs, target_name):\n    \"\"\"Swap which operator name is referenced in a _MUTATION_OPS lookup.\n    \n    This mutates the mutation infrastructure itself \u2014 changes which \n    operator is called for a given name, creating circular meta-mutation.\"\"\"\n    r = list(lines)\n    for i, line in enumerate(r):\n        if '_MUTATION_OPS.get(' in line or '_MUTATION_OPS[' in line:\n            ops_present = [op for op in funcs if op.startswith('mutation_op_')]\n            if len(ops_present) >= 2:\n                old_op = None\n                m = re.search(r\"['\\\"](\\w+)['\\\"]\", line)\n                if m:\n                    old_op = m.group(1)\n                    new_op = random.choice([o for o in ops_present if o != old_op])\n                    r[i] = line.replace(f\"'{old_op}'\", f\"'{new_op}'\")\n    return r\n\n\n@_register_mutation_op('mutate_criteria')\ndef mutation_op_mutate_criteria(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    swaps = ['score', 'code', 'patch', 'commit', 'zero', 'ten', 'actual', 'working', 'discussion']\n    r[idx] = re.sub(r'\\b(' + '|'.join(swaps) + r')\\b',\n                    lambda m: random.choice([s for s in swaps if s != m.group(1)]),\n                    r[idx])\n    return r\n\n\n@_register_mutation_op('insert_noise_ref')\ndef mutation_op_insert_noise_ref(lines, funcs, target_name):\n    \"\"\"Insert a self-referential comment that references the calling context.\n    \n    The comment includes the function name and a generation marker,\n    ensuring every mutation changes the source hash.\"\"\"\n    if not lines:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    ref = f\"# lens+mut:{target_name}@{random.getrandbits(24):06x}\"\n    r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref\n    return r",
+    "mutation_op_insert_random_branch": "def mutation_op_insert_random_branch(lines, funcs, target_name):\n    if len(lines) < 3:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(1, len(r)), 'if random.random() < 0.5: pass')\n    return r\n\n\n@_register_mutation_op('mutate_string_literal')\ndef mutation_op_mutate_string_literal(lines, funcs, target_name):\n    r = [re.sub(r\"'[^']*'\", lambda m: f\"'{random.choice(['x','y','z','a','b','c'])}'\", line) for line in lines]\n    return r\n\n\n@_register_mutation_op('invert_condition')\ndef mutation_op_invert_condition(lines, funcs, target_name):\n    r = [line.replace('if not ', 'if ').replace('if ', 'if not ') for line in lines]\n    return r\n\n\n@_register_mutation_op('swap_comparisons')\ndef mutation_op_swap_comparisons(lines, funcs, target_name):\n    r = [line.replace('==', '\\x00').replace('!=', '==').replace('\\x00', '!=') for line in lines]\n    return r\n\n\n@_register_mutation_op('splice_from_sibling')\ndef mutation_op_splice_from_sibling(lines, funcs, target_name):\n    available = [n for n in funcs if n != target_name]\n    if not available:\n        return lines\n    src_name = random.choice(available)\n    _, src_body = funcs[src_name]\n    src_lines = [l for l in src_body.split('\\n') if l.strip()]\n    if not src_lines:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(len(r)), random.choice(src_lines))\n    return r\n\n\n@_register_mutation_op('shuffle_block_lines')\ndef mutation_op_shuffle_block_lines(lines, funcs, target_name):\n    if len(lines) < 4:\n        return lines\n    r = list(lines)\n    start = random.randrange(0, len(r) - 2)\n    block_len = min(random.randint(2, 3), len(r) - start)\n    block = r[start:start + block_len]\n    random.shuffle(block)\n    r[start:start + block_len] = block\n    return r\n\n\n@_register_mutation_op('swap_mutation_targets')\ndef mutation_op_swap_mutation_targets(lines, funcs, target_name):\n    \"\"\"Swap which operator name is referenced in a _MUTATION_OPS lookup.\n    \n    This mutates the mutation infrastructure itself \u2014 changes which \n    operator is called for a given name, creating circular meta-mutation.\"\"\"\n    r = list(lines)\n    for i, line in enumerate(r):\n        if '_MUTATION_OPS.get(' in line or '_MUTATION_OPS[' in line:\n            ops_present = [op for op in funcs if op.startswith('mutation_op_')]\n            if len(ops_present) >= 2:\n                old_op = None\n                m = re.search(r\"['\\\"](\\w+)['\\\"]\", line)\n                if m:\n                    old_op = m.group(1)\n                    new_op = random.choice([o for o in ops_present if o != old_op])\n                    r[i] = line.replace(f\"'{old_op}'\", f\"'{new_op}'\")\n    return r\n\n\n@_register_mutation_op('mutate_criteria')\ndef mutation_op_mutate_criteria(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    swaps = ['score', 'code', 'patch', 'commit', 'zero', 'ten', 'actual', 'working', 'discussion']\n    r[idx] = re.sub(r'\\b(' + '|'.join(swaps) + r')\\b',\n                    lambda m: random.choice([s for s in swaps if s != m.group(1)]),\n                    r[idx])\n    return r\n\n\n@_register_mutation_op('insert_noise_ref')\ndef mutation_op_insert_noise_ref(lines, funcs, target_name):\n    \"\"\"Insert a self-referential comment that references the calling context.\n    \n    The comment includes the function name and a generation marker,\n    ensuring every mutation changes the source hash.\"\"\"\n    if not lines:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    ref = f\"# lens+mut:{target_name}@{random.getrandbits(24):06x}\"\n    r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref\n    return r",
+    "mutation_op_mutate_string_literal": "def mutation_op_mutate_string_literal(lines, funcs, target_name):\n    r = [re.sub(r\"'[^']*'\", lambda m: f\"'{random.choice(['x','y','z','a','b','c'])}'\", line) for line in lines]\n    return r\n\n\n@_register_mutation_op('invert_condition')\ndef mutation_op_invert_condition(lines, funcs, target_name):\n    r = [line.replace('if not ', 'if ').replace('if ', 'if not ') for line in lines]\n    return r\n\n\n@_register_mutation_op('swap_comparisons')\ndef mutation_op_swap_comparisons(lines, funcs, target_name):\n    r = [line.replace('==', '\\x00').replace('!=', '==').replace('\\x00', '!=') for line in lines]\n    return r\n\n\n@_register_mutation_op('splice_from_sibling')\ndef mutation_op_splice_from_sibling(lines, funcs, target_name):\n    available = [n for n in funcs if n != target_name]\n    if not available:\n        return lines\n    src_name = random.choice(available)\n    _, src_body = funcs[src_name]\n    src_lines = [l for l in src_body.split('\\n') if l.strip()]\n    if not src_lines:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(len(r)), random.choice(src_lines))\n    return r\n\n\n@_register_mutation_op('shuffle_block_lines')\ndef mutation_op_shuffle_block_lines(lines, funcs, target_name):\n    if len(lines) < 4:\n        return lines\n    r = list(lines)\n    start = random.randrange(0, len(r) - 2)\n    block_len = min(random.randint(2, 3), len(r) - start)\n    block = r[start:start + block_len]\n    random.shuffle(block)\n    r[start:start + block_len] = block\n    return r\n\n\n@_register_mutation_op('swap_mutation_targets')\ndef mutation_op_swap_mutation_targets(lines, funcs, target_name):\n    \"\"\"Swap which operator name is referenced in a _MUTATION_OPS lookup.\n    \n    This mutates the mutation infrastructure itself \u2014 changes which \n    operator is called for a given name, creating circular meta-mutation.\"\"\"\n    r = list(lines)\n    for i, line in enumerate(r):\n        if '_MUTATION_OPS.get(' in line or '_MUTATION_OPS[' in line:\n            ops_present = [op for op in funcs if op.startswith('mutation_op_')]\n            if len(ops_present) >= 2:\n                old_op = None\n                m = re.search(r\"['\\\"](\\w+)['\\\"]\", line)\n                if m:\n                    old_op = m.group(1)\n                    new_op = random.choice([o for o in ops_present if o != old_op])\n                    r[i] = line.replace(f\"'{old_op}'\", f\"'{new_op}'\")\n    return r\n\n\n@_register_mutation_op('mutate_criteria')\ndef mutation_op_mutate_criteria(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    swaps = ['score', 'code', 'patch', 'commit', 'zero', 'ten', 'actual', 'working', 'discussion']\n    r[idx] = re.sub(r'\\b(' + '|'.join(swaps) + r')\\b',\n                    lambda m: random.choice([s for s in swaps if s != m.group(1)]),\n                    r[idx])\n    return r\n\n\n@_register_mutation_op('insert_noise_ref')\ndef mutation_op_insert_noise_ref(lines, funcs, target_name):\n    \"\"\"Insert a self-referential comment that references the calling context.\n    \n    The comment includes the function name and a generation marker,\n    ensuring every mutation changes the source hash.\"\"\"\n    if not lines:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    ref = f\"# lens+mut:{target_name}@{random.getrandbits(24):06x}\"\n    r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref\n    return r",
+    "mutation_op_invert_condition": "def mutation_op_invert_condition(lines, funcs, target_name):\n    r = [line.replace('if not ', 'if ').replace('if ', 'if not ') for line in lines]\n    return r\n\n\n@_register_mutation_op('swap_comparisons')\ndef mutation_op_swap_comparisons(lines, funcs, target_name):\n    r = [line.replace('==', '\\x00').replace('!=', '==').replace('\\x00', '!=') for line in lines]\n    return r\n\n\n@_register_mutation_op('splice_from_sibling')\ndef mutation_op_splice_from_sibling(lines, funcs, target_name):\n    available = [n for n in funcs if n != target_name]\n    if not available:\n        return lines\n    src_name = random.choice(available)\n    _, src_body = funcs[src_name]\n    src_lines = [l for l in src_body.split('\\n') if l.strip()]\n    if not src_lines:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(len(r)), random.choice(src_lines))\n    return r\n\n\n@_register_mutation_op('shuffle_block_lines')\ndef mutation_op_shuffle_block_lines(lines, funcs, target_name):\n    if len(lines) < 4:\n        return lines\n    r = list(lines)\n    start = random.randrange(0, len(r) - 2)\n    block_len = min(random.randint(2, 3), len(r) - start)\n    block = r[start:start + block_len]\n    random.shuffle(block)\n    r[start:start + block_len] = block\n    return r\n\n\n@_register_mutation_op('swap_mutation_targets')\ndef mutation_op_swap_mutation_targets(lines, funcs, target_name):\n    \"\"\"Swap which operator name is referenced in a _MUTATION_OPS lookup.\n    \n    This mutates the mutation infrastructure itself \u2014 changes which \n    operator is called for a given name, creating circular meta-mutation.\"\"\"\n    r = list(lines)\n    for i, line in enumerate(r):\n        if '_MUTATION_OPS.get(' in line or '_MUTATION_OPS[' in line:\n            ops_present = [op for op in funcs if op.startswith('mutation_op_')]\n            if len(ops_present) >= 2:\n                old_op = None\n                m = re.search(r\"['\\\"](\\w+)['\\\"]\", line)\n                if m:\n                    old_op = m.group(1)\n                    new_op = random.choice([o for o in ops_present if o != old_op])\n                    r[i] = line.replace(f\"'{old_op}'\", f\"'{new_op}'\")\n    return r\n\n\n@_register_mutation_op('mutate_criteria')\ndef mutation_op_mutate_criteria(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    swaps = ['score', 'code', 'patch', 'commit', 'zero', 'ten', 'actual', 'working', 'discussion']\n    r[idx] = re.sub(r'\\b(' + '|'.join(swaps) + r')\\b',\n                    lambda m: random.choice([s for s in swaps if s != m.group(1)]),\n                    r[idx])\n    return r\n\n\n@_register_mutation_op('insert_noise_ref')\ndef mutation_op_insert_noise_ref(lines, funcs, target_name):\n    \"\"\"Insert a self-referential comment that references the calling context.\n    \n    The comment includes the function name and a generation marker,\n    ensuring every mutation changes the source hash.\"\"\"\n    if not lines:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    ref = f\"# lens+mut:{target_name}@{random.getrandbits(24):06x}\"\n    r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref\n    return r",
+    "mutation_op_swap_comparisons": "def mutation_op_swap_comparisons(lines, funcs, target_name):\n    r = [line.replace('==', '\\x00').replace('!=', '==').replace('\\x00', '!=') for line in lines]\n    return r\n\n\n@_register_mutation_op('splice_from_sibling')\ndef mutation_op_splice_from_sibling(lines, funcs, target_name):\n    available = [n for n in funcs if n != target_name]\n    if not available:\n        return lines\n    src_name = random.choice(available)\n    _, src_body = funcs[src_name]\n    src_lines = [l for l in src_body.split('\\n') if l.strip()]\n    if not src_lines:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(len(r)), random.choice(src_lines))\n    return r\n\n\n@_register_mutation_op('shuffle_block_lines')\ndef mutation_op_shuffle_block_lines(lines, funcs, target_name):\n    if len(lines) < 4:\n        return lines\n    r = list(lines)\n    start = random.randrange(0, len(r) - 2)\n    block_len = min(random.randint(2, 3), len(r) - start)\n    block = r[start:start + block_len]\n    random.shuffle(block)\n    r[start:start + block_len] = block\n    return r\n\n\n@_register_mutation_op('swap_mutation_targets')\ndef mutation_op_swap_mutation_targets(lines, funcs, target_name):\n    \"\"\"Swap which operator name is referenced in a _MUTATION_OPS lookup.\n    \n    This mutates the mutation infrastructure itself \u2014 changes which \n    operator is called for a given name, creating circular meta-mutation.\"\"\"\n    r = list(lines)\n    for i, line in enumerate(r):\n        if '_MUTATION_OPS.get(' in line or '_MUTATION_OPS[' in line:\n            ops_present = [op for op in funcs if op.startswith('mutation_op_')]\n            if len(ops_present) >= 2:\n                old_op = None\n                m = re.search(r\"['\\\"](\\w+)['\\\"]\", line)\n                if m:\n                    old_op = m.group(1)\n                    new_op = random.choice([o for o in ops_present if o != old_op])\n                    r[i] = line.replace(f\"'{old_op}'\", f\"'{new_op}'\")\n    return r\n\n\n@_register_mutation_op('mutate_criteria')\ndef mutation_op_mutate_criteria(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    swaps = ['score', 'code', 'patch', 'commit', 'zero', 'ten', 'actual', 'working', 'discussion']\n    r[idx] = re.sub(r'\\b(' + '|'.join(swaps) + r')\\b',\n                    lambda m: random.choice([s for s in swaps if s != m.group(1)]),\n                    r[idx])\n    return r\n\n\n@_register_mutation_op('insert_noise_ref')\ndef mutation_op_insert_noise_ref(lines, funcs, target_name):\n    \"\"\"Insert a self-referential comment that references the calling context.\n    \n    The comment includes the function name and a generation marker,\n    ensuring every mutation changes the source hash.\"\"\"\n    if not lines:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    ref = f\"# lens+mut:{target_name}@{random.getrandbits(24):06x}\"\n    r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref\n    return r",
+    "mutation_op_splice_from_sibling": "def mutation_op_splice_from_sibling(lines, funcs, target_name):\n    available = [n for n in funcs if n != target_name]\n    if not available:\n        return lines\n    src_name = random.choice(available)\n    _, src_body = funcs[src_name]\n    src_lines = [l for l in src_body.split('\\n') if l.strip()]\n    if not src_lines:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(len(r)), random.choice(src_lines))\n    return r\n\n\n@_register_mutation_op('shuffle_block_lines')\ndef mutation_op_shuffle_block_lines(lines, funcs, target_name):\n    if len(lines) < 4:\n        return lines\n    r = list(lines)\n    start = random.randrange(0, len(r) - 2)\n    block_len = min(random.randint(2, 3), len(r) - start)\n    block = r[start:start + block_len]\n    random.shuffle(block)\n    r[start:start + block_len] = block\n    return r\n\n\n@_register_mutation_op('swap_mutation_targets')\ndef mutation_op_swap_mutation_targets(lines, funcs, target_name):\n    \"\"\"Swap which operator name is referenced in a _MUTATION_OPS lookup.\n    \n    This mutates the mutation infrastructure itself \u2014 changes which \n    operator is called for a given name, creating circular meta-mutation.\"\"\"\n    r = list(lines)\n    for i, line in enumerate(r):\n        if '_MUTATION_OPS.get(' in line or '_MUTATION_OPS[' in line:\n            ops_present = [op for op in funcs if op.startswith('mutation_op_')]\n            if len(ops_present) >= 2:\n                old_op = None\n                m = re.search(r\"['\\\"](\\w+)['\\\"]\", line)\n                if m:\n                    old_op = m.group(1)\n                    new_op = random.choice([o for o in ops_present if o != old_op])\n                    r[i] = line.replace(f\"'{old_op}'\", f\"'{new_op}'\")\n    return r\n\n\n@_register_mutation_op('mutate_criteria')\ndef mutation_op_mutate_criteria(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    swaps = ['score', 'code', 'patch', 'commit', 'zero', 'ten', 'actual', 'working', 'discussion']\n    r[idx] = re.sub(r'\\b(' + '|'.join(swaps) + r')\\b',\n                    lambda m: random.choice([s for s in swaps if s != m.group(1)]),\n                    r[idx])\n    return r\n\n\n@_register_mutation_op('insert_noise_ref')\ndef mutation_op_insert_noise_ref(lines, funcs, target_name):\n    \"\"\"Insert a self-referential comment that references the calling context.\n    \n    The comment includes the function name and a generation marker,\n    ensuring every mutation changes the source hash.\"\"\"\n    if not lines:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    ref = f\"# lens+mut:{target_name}@{random.getrandbits(24):06x}\"\n    r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref\n    return r",
+    "mutation_op_shuffle_block_lines": "def mutation_op_shuffle_block_lines(lines, funcs, target_name):\n    if len(lines) < 4:\n        return lines\n    r = list(lines)\n    start = random.randrange(0, len(r) - 2)\n    block_len = min(random.randint(2, 3), len(r) - start)\n    block = r[start:start + block_len]\n    random.shuffle(block)\n    r[start:start + block_len] = block\n    return r\n\n\n@_register_mutation_op('swap_mutation_targets')\ndef mutation_op_swap_mutation_targets(lines, funcs, target_name):\n    \"\"\"Swap which operator name is referenced in a _MUTATION_OPS lookup.\n    \n    This mutates the mutation infrastructure itself \u2014 changes which \n    operator is called for a given name, creating circular meta-mutation.\"\"\"\n    r = list(lines)\n    for i, line in enumerate(r):\n        if '_MUTATION_OPS.get(' in line or '_MUTATION_OPS[' in line:\n            ops_present = [op for op in funcs if op.startswith('mutation_op_')]\n            if len(ops_present) >= 2:\n                old_op = None\n                m = re.search(r\"['\\\"](\\w+)['\\\"]\", line)\n                if m:\n                    old_op = m.group(1)\n                    new_op = random.choice([o for o in ops_present if o != old_op])\n                    r[i] = line.replace(f\"'{old_op}'\", f\"'{new_op}'\")\n    return r\n\n\n@_register_mutation_op('mutate_criteria')\ndef mutation_op_mutate_criteria(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    swaps = ['score', 'code', 'patch', 'commit', 'zero', 'ten', 'actual', 'working', 'discussion']\n    r[idx] = re.sub(r'\\b(' + '|'.join(swaps) + r')\\b',\n                    lambda m: random.choice([s for s in swaps if s != m.group(1)]),\n                    r[idx])\n    return r\n\n\n@_register_mutation_op('insert_noise_ref')\ndef mutation_op_insert_noise_ref(lines, funcs, target_name):\n    \"\"\"Insert a self-referential comment that references the calling context.\n    \n    The comment includes the function name and a generation marker,\n    ensuring every mutation changes the source hash.\"\"\"\n    if not lines:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    ref = f\"# lens+mut:{target_name}@{random.getrandbits(24):06x}\"\n    r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref\n    return r",
+    "mutation_op_swap_mutation_targets": "def mutation_op_swap_mutation_targets(lines, funcs, target_name):\n    \"\"\"Swap which operator name is referenced in a _MUTATION_OPS lookup.\n    \n    This mutates the mutation infrastructure itself \u2014 changes which \n    operator is called for a given name, creating circular meta-mutation.\"\"\"\n    r = list(lines)\n    for i, line in enumerate(r):\n        if '_MUTATION_OPS.get(' in line or '_MUTATION_OPS[' in line:\n            ops_present = [op for op in funcs if op.startswith('mutation_op_')]\n            if len(ops_present) >= 2:\n                old_op = None\n                m = re.search(r\"['\\\"](\\w+)['\\\"]\", line)\n                if m:\n                    old_op = m.group(1)\n                    new_op = random.choice([o for o in ops_present if o != old_op])\n                    r[i] = line.replace(f\"'{old_op}'\", f\"'{new_op}'\")\n    return r\n\n\n@_register_mutation_op('mutate_criteria')\ndef mutation_op_mutate_criteria(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    swaps = ['score', 'code', 'patch', 'commit', 'zero', 'ten', 'actual', 'working', 'discussion']\n    r[idx] = re.sub(r'\\b(' + '|'.join(swaps) + r')\\b',\n                    lambda m: random.choice([s for s in swaps if s != m.group(1)]),\n                    r[idx])\n    return r\n\n\n@_register_mutation_op('insert_noise_ref')\ndef mutation_op_insert_noise_ref(lines, funcs, target_name):\n    \"\"\"Insert a self-referential comment that references the calling context.\n    \n    The comment includes the function name and a generation marker,\n    ensuring every mutation changes the source hash.\"\"\"\n    if not lines:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    ref = f\"# lens+mut:{target_name}@{random.getrandbits(24):06x}\"\n    r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref\n    return r",
+    "mutation_op_mutate_criteria": "def mutation_op_mutate_criteria(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    swaps = ['score', 'code', 'patch', 'commit', 'zero', 'ten', 'actual', 'working', 'discussion']\n    r[idx] = re.sub(r'\\b(' + '|'.join(swaps) + r')\\b',\n                    lambda m: random.choice([s for s in swaps if s != m.group(1)]),\n                    r[idx])\n    return r\n\n\n@_register_mutation_op('insert_noise_ref')\ndef mutation_op_insert_noise_ref(lines, funcs, target_name):\n    \"\"\"Insert a self-referential comment that references the calling context.\n    \n    The comment includes the function name and a generation marker,\n    ensuring every mutation changes the source hash.\"\"\"\n    if not lines:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    ref = f\"# lens+mut:{target_name}@{random.getrandbits(24):06x}\"\n    r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref\n    return r",
+    "mutation_op_insert_noise_ref": "def mutation_op_insert_noise_ref(lines, funcs, target_name):\n    \"\"\"Insert a self-referential comment that references the calling context.\n    \n    The comment includes the function name and a generation marker,\n    ensuring every mutation changes the source hash.\"\"\"\n    if not lines:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    ref = f\"# lens+mut:{target_name}@{random.getrandbits(24):06x}\"\n    r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref\n    return r"
+  },
+  "diversity": {
+    "op_count": 28,
+    "custom_op_count": 13,
+    "agent_count": 14,
+    "prompt_entropy": 1.0,
+    "structural_mutations": 1,
+    "self_modification_depth": 0.0,
+    "composite": 8.5
+  }
 }

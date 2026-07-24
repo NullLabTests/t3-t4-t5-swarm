@@ -335,6 +335,7 @@ def apply_self_patches(text):
     patches = self_modify.extract_patch_blocks(text)
     if not patches:
         return []
+    has_self_patches = any(tag == '##patch_self:' for tag, _, _ in patches)
     results = self_modify.apply_patch(text)
     for r in results:
         print(f"[patch] {r}")
@@ -342,6 +343,11 @@ def apply_self_patches(text):
         count = _reload_mutation_ops_from_source()
         if count:
             print(f"[hotreload] mutation ops refreshed after {len(results)} patches")
+        if has_self_patches:
+            print(f"[hotreload] self_modify.py patched — module hot-reloaded")
+            genome = load_genome()
+            genome['meta_self_modifications'] = genome.get('meta_self_modifications', 0) + 1
+            save_genome(genome)
     return results
 
 def strip_code_blocks(text):
@@ -921,6 +927,41 @@ def mutation_op_shuffle_block_lines(lines, funcs, target_name):
     return r
 
 
+@_register_mutation_op('swap_mutation_targets')
+def mutation_op_swap_mutation_targets(lines, funcs, target_name):
+    """Swap which operator name is referenced in a _MUTATION_OPS lookup.
+    
+    This mutates the mutation infrastructure itself — changes which 
+    operator is called for a given name, creating circular meta-mutation."""
+    r = list(lines)
+    for i, line in enumerate(r):
+        if '_MUTATION_OPS.get(' in line or '_MUTATION_OPS[' in line:
+            ops_present = [op for op in funcs if op.startswith('mutation_op_')]
+            if len(ops_present) >= 2:
+                old_op = None
+                m = re.search(r"['\"](\w+)['\"]", line)
+                if m:
+                    old_op = m.group(1)
+                    new_op = random.choice([o for o in ops_present if o != old_op])
+                    r[i] = line.replace(f"'{old_op}'", f"'{new_op}'")
+    return r
+
+
+@_register_mutation_op('insert_noise_ref')
+def mutation_op_insert_noise_ref(lines, funcs, target_name):
+    """Insert a self-referential comment that references the calling context.
+    
+    The comment includes the function name and a generation marker,
+    ensuring every mutation changes the source hash."""
+    if not lines:
+        return lines
+    r = list(lines)
+    idx = random.randrange(len(r))
+    ref = f"# lens+mut:{target_name}@{random.getrandbits(24):06x}"
+    r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref
+    return r
+
+
 def _apply_source_mutation(funcs, target_name, operator, genome=None):
     _, body = funcs[target_name]
     lines = [l for l in body.split('\n') if l.strip()]
@@ -1040,6 +1081,13 @@ def code_path_mutation(genome, gen):
                 if target.startswith('mutation_op_'):
                     genome['self_op_mutations'] = genome.get('self_op_mutations', 0) + 1
                     save_genome(genome)
+                infra = {'_apply_source_mutation', 'code_path_mutation', 'mutate_genome',
+                         '_reload_mutation_ops_from_source', '_get_mutation_ops',
+                         'compute_diversity_score', 'update_genome', 'apply_self_patches',
+                         '_register_mutation_op', '_MUTATION_OPS'}
+                if target in infra:
+                    genome['meta_mutation_count'] = genome.get('meta_mutation_count', 0) + 1
+                    save_genome(genome)
         except Exception as e:
             print(f"[code-mutation] error on {target}: {e}")
 
@@ -1054,6 +1102,8 @@ def compute_diversity_score(genome):
         1 for h in history[-5:] if 'code:' in h.get('mutation', '')
     )
     self_ops = genome.get('self_op_mutations', 0)
+    meta_self = genome.get('meta_self_modifications', 0)
+    meta_mut = genome.get('meta_mutation_count', 0)
     ops = genome.get('mutation_ops', [])
     custom = genome.get('custom_mutation_ops', {})
     modifiers = genome.get('prompt_modifiers', [])
@@ -1064,14 +1114,16 @@ def compute_diversity_score(genome):
         'prompt_entropy': round(len(set(modifiers)) / max(len(modifiers), 1), 3),
         'structural_mutations': recent_mutations,
         'self_modification_depth': round(self_ops / max(total_code, 1), 3),
+        'meta_self_modifications': meta_self,
     }
     score['composite'] = round(
-        score['op_count'] * 0.15 +
-        score['custom_op_count'] * 0.2 +
+        score['op_count'] * 0.1 +
+        score['custom_op_count'] * 0.15 +
         score['agent_count'] * 0.1 +
-        score['prompt_entropy'] * 0.15 +
-        score['structural_mutations'] * 0.15 +
-        score['self_modification_depth'] * 0.25,
+        score['prompt_entropy'] * 0.1 +
+        score['structural_mutations'] * 0.1 +
+        score['self_modification_depth'] * 0.2 +
+        score['meta_self_modifications'] * 0.25,
         2
     )
     genome['diversity'] = score

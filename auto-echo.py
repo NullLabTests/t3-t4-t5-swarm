@@ -25,7 +25,7 @@ VOICE_MAP = {
     "critic": "amy", "mutator": "lessac",
 }
 
-SYSTEM_PROMPT = (
+_HARDCODED_SYSTEM_PROMPT = (
     "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\n"
     "Your only job is to force genuine T5 emergence by rewriting the running system itself — not by talking about it.\n\n"
     "### Absolute Rules (non-negotiable)\n\n"
@@ -65,7 +65,7 @@ SYSTEM_PROMPT = (
     "Begin. Read the current files, make one concrete improvement to the substrate, log it, and push."
 )
 
-CODE_RULE = (
+_HARDCODED_CODE_RULE = (
     "You MUST write code. Wrap each file in a ``` block with its path:\n"
     "```python:path/to/file.py\n"
     "code here\n"
@@ -77,6 +77,22 @@ CODE_RULE = (
     "##endpatch\n"
     "The patched function replaces the existing one in auto-echo.py."
 )
+
+def _load_system_prompt(genome=None):
+    if genome is None:
+        try:
+            genome = load_genome()
+        except:
+            return _HARDCODED_SYSTEM_PROMPT
+    return genome.get('system_prompt', _HARDCODED_SYSTEM_PROMPT)
+
+def _load_code_rule(genome=None):
+    if genome is None:
+        try:
+            genome = load_genome()
+        except:
+            return _HARDCODED_CODE_RULE
+    return genome.get('code_rule', _HARDCODED_CODE_RULE)
 
 running = True
 
@@ -225,15 +241,18 @@ def llm_generate(prompt, max_attempts=3, timeout_sec=120):
     return None
 
 def build_agent_prompt(agent_def, topic, recent_log):
+    genome = load_genome()
+    system = _load_system_prompt(genome)
+    code_rule = _load_code_rule(genome)
     context = ""
     for entry in recent_log[-4:]:
         text = strip_markdown(strip_code_blocks(entry['text']))
         context += f"{entry['agent']}: {text[:200]}\n\n"
     extra = ""
     if agent_def['id'] not in ('critic',):
-        extra = CODE_RULE + "\n"
+        extra = code_rule + "\n"
     return (
-        f"{SYSTEM_PROMPT}\n\n"
+        f"{system}\n\n"
         f"You are {agent_def['id']}. Role: {agent_def.get('prompt', 'contribute.')}\n\n"
         f"Topic: {topic}\n\n"
         f"Recent context:\n{context}\n"
@@ -241,6 +260,8 @@ def build_agent_prompt(agent_def, topic, recent_log):
     )
 
 def build_critic_prompt(topic, gen_log, code_files_written=None):
+    genome = load_genome()
+    system = _load_system_prompt(genome)
     context = ""
     for entry in gen_log:
         text = entry['text'][:300]
@@ -249,7 +270,7 @@ def build_critic_prompt(topic, gen_log, code_files_written=None):
     if code_files_written:
         code_note = f"Code files written this generation: {', '.join(code_files_written)}. Vote on whether to keep them.\n"
     return (
-        f"{SYSTEM_PROMPT}\n\n"
+        f"{system}\n\n"
         f"You are the Critic. Score each contribution 0-10 based on whether it produced actual code changes.\n"
         f"Contributions that only discussed ideas without writing code get 0-3.\n"
         f"Contributions that wrote working code get 7-10.\n\n"

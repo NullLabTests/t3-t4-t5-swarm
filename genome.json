@@ -6,6 +6,8 @@
   "prune_threshold": 4,
   "prune_generations": 2,
   "mutation_rate": 0.15,
+  "system_prompt": null,
+  "code_rule": null,
   "mutation_ops": [
     "duplicate_line",
     "delete_line",
@@ -22,6 +24,8 @@
     "_apply_source_mutation",
     "_get_mutation_ops",
     "_get_forbidden_targets",
+    "_load_system_prompt",
+    "_load_code_rule",
     "main",
     "run_generation",
     "llm_generate",

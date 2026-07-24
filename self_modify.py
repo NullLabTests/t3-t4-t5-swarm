@@ -1,137 +1,188 @@
-"""Self-modification engine: agents patch auto-echo.py via ##patch blocks.
-
-Usage in agent output:
-    ##patch:function_name
-    new function body here
-    ##endpatch
-
-    ##patch_block:block_name
-    replacement code block
-    ##endblock_patch
-
-    ##patch_self:function_name
-    (patches self_modify.py itself)
-    ##endpatch
-
-The engine finds the target function by name and replaces its body.
-Supports appending new functions with ##add instead of ##patch.
+#!/usr/bin/env python3
 """
-import re, os, shutil, sys, importlib
+Safer self-modification engine for the T3-T4-T5 swarm.
 
-BASE = os.path.dirname(os.path.abspath(__file__))
-TARGET = os.path.join(BASE, 'auto-echo.py')
-SELF_TARGET = os.path.join(BASE, 'self_modify.py')
+Improvements over the original:
+- AST validation before any write
+- Timestamped backups
+- Clear success/failure reporting
+- Support for both ##patch (replace body) and ##add (append function)
+- Dry-run friendly
+"""
 
-def _read_target():
-    with open(TARGET) as f:
-        return f.read()
+from __future__ import annotations
 
-def _write_target(content):
-    with open(TARGET, 'w') as f:
-        f.write(content)
+import ast
+import os
+import re
+import shutil
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import List, Tuple, Optional
 
-def _read_self_target():
-    with open(SELF_TARGET) as f:
-        return f.read()
 
-def _write_self_target(content):
-    with open(SELF_TARGET, 'w') as f:
-        f.write(content)
+class PatchResult:
+    def __init__(self, success: bool, message: str, target: str = ""):
+        self.success = success
+        self.message = message
+        self.target = target
 
-def _hotreload_self_modify():
-    """Reload self_modify module after self-patch so new code takes effect immediately."""
-    if 'self_modify' in sys.modules:
-        importlib.reload(sys.modules['self_modify'])
-    return True
+    def __str__(self):
+        status = "OK" if self.success else "FAIL"
+        return f"[{status}] {self.target}: {self.message}"
 
-def apply_patch(patch_text):
-    source = _read_target()
-    patches = re.findall(r'##patch:(\w+)\n(.*?)(?=##endpatch|##patch:|##add:|##patch_self:|\Z)', patch_text, re.DOTALL)
-    adds = re.findall(r'##add:(\w+)\n(.*?)(?=##endpatch|##patch:|##add:|##patch_self:|\Z)', patch_text, re.DOTALL)
-    block_patches = re.findall(r'##patch_block:(\w+)\n(.*?)(?=##endblock_patch|##patch:|##add:|##patch_self:|\Z)', patch_text, re.DOTALL)
-    self_patches = re.findall(r'##patch_self:(\w+)\n(.*?)(?=##endpatch|##patch:|##patch_self:|\Z)', patch_text, re.DOTALL)
-    mutated = []
 
-    for func_name, body in patches:
-        body = body.strip()
+def _timestamp() -> str:
+    return datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+
+
+def backup_file(path: str | Path) -> Optional[str]:
+    """Create a timestamped backup. Returns backup path or None."""
+    path = Path(path)
+    if not path.exists():
+        return None
+    bak = path.with_suffix(path.suffix + f".bak.{_timestamp()}")
+    shutil.copy2(path, bak)
+    return str(bak)
+
+
+def validate_python(source: str) -> Tuple[bool, str]:
+    """Return (ok, error_message)."""
+    try:
+        ast.parse(source)
+        return True, ""
+    except SyntaxError as e:
+        return False, f"SyntaxError at line {e.lineno}: {e.msg}"
+    except Exception as e:
+        return False, str(e)
+
+
+def extract_patches(text: str) -> List[dict]:
+    """
+    Parse ##patch:name ... ##endpatch and ##add:name ... ##endpatch blocks.
+    Returns list of {"kind": "patch"|"add", "name": str, "body": str}
+    """
+    patches = []
+    # ##patch:func_name\n body \n##endpatch
+    for m in re.finditer(
+        r"##(patch|add):([a-zA-Z_][a-zA-Z0-9_]*)\n(.*?)(?=##end(?:patch|add)|\Z)",
+        text,
+        re.DOTALL | re.IGNORECASE,
+    ):
+        kind = m.group(1).lower()
+        name = m.group(2).strip()
+        body = m.group(3).strip()
+        # strip trailing ##end... if present
+        body = re.sub(r"\n##end(?:patch|add)\s*$", "", body, flags=re.IGNORECASE).strip()
+        if name and body:
+            patches.append({"kind": kind, "name": name, "body": body})
+    return patches
+
+
+def apply_patches(
+    source_path: str | Path,
+    patch_text: str,
+    *,
+    dry_run: bool = False,
+    create_backup: bool = True,
+) -> List[PatchResult]:
+    """
+    Apply all valid patches found in patch_text to source_path.
+    Returns list of PatchResult.
+    """
+    source_path = Path(source_path)
+    results: List[PatchResult] = []
+
+    if not source_path.exists():
+        results.append(PatchResult(False, "source file does not exist", str(source_path)))
+        return results
+
+    original = source_path.read_text(encoding="utf-8")
+    patches = extract_patches(patch_text)
+
+    if not patches:
+        results.append(PatchResult(False, "no ##patch or ##add blocks found", ""))
+        return results
+
+    current = original
+    applied_any = False
+
+    for p in patches:
+        name = p["name"]
+        body = p["body"]
+        kind = p["kind"]
+
+        # Ensure body is properly indented as a function body (4 spaces)
+        indented_body = "\n".join(
+            ("    " + line if line.strip() else line) for line in body.splitlines()
+        )
+
+        if kind == "add":
+            new_func = f"\n\ndef {name}():\n{indented_body}\n"
+            # Quick syntax check of the new function alone
+            ok, err = validate_python(f"def {name}():\n{indented_body}\n")
+            if not ok:
+                results.append(PatchResult(False, f"new function invalid: {err}", name))
+                continue
+            candidate = current + new_func
+            ok, err = validate_python(candidate)
+            if not ok:
+                results.append(PatchResult(False, f"file would become invalid after add: {err}", name))
+                continue
+            current = candidate
+            results.append(PatchResult(True, "function added", name))
+            applied_any = True
+            continue
+
+        # kind == "patch" — replace existing function body
+        # Match def name(...): followed by body until next def/class or end
         pattern = re.compile(
-            r'(def ' + re.escape(func_name) + r'\s*\(.*?\):)\n(.*?)(?=\n\ndef |\nclass |\Z)',
-            re.DOTALL
+            rf"(def {re.escape(name)}\s*\([^)]*\)\s*(?:->\s*[^:]+)?\s*:)\n(.*?)(?=\n(?:def |class |@)|\Z)",
+            re.DOTALL,
         )
-        match = pattern.search(source)
-        if match:
-            header = match.group(1)
-            indent = '    '
-            indented_body = '\n'.join(indent + line if line.strip() else '' for line in body.split('\n'))
-            replacement = header + '\n' + indented_body
-            source = source[:match.start()] + replacement + source[match.end():]
-            mutated.append(f"patched {func_name}")
-        else:
-            mutated.append(f"FAILED to find {func_name}")
+        m = pattern.search(current)
+        if not m:
+            results.append(PatchResult(False, "function not found in source", name))
+            continue
 
-    for func_name, body in adds:
-        body = body.strip()
-        indent = '    '
-        indented_body = '\n'.join(indent + line if line.strip() else '' for line in body.split('\n'))
-        new_func = f'\n\ndef {func_name}():\n{indented_body}\n'
-        source += new_func
-        mutated.append(f"added {func_name}")
+        header = m.group(1)
+        # Build replacement
+        replacement = header + "\n" + indented_body + "\n"
+        candidate = current[: m.start()] + replacement + current[m.end() :]
 
-    for block_name, body in block_patches:
-        body = body.strip()
-        block_pattern = re.compile(
-            r'# block: ' + re.escape(block_name) + r'\n(.*?)\n# endblock',
-            re.DOTALL
-        )
-        match = block_pattern.search(source)
-        if match:
-            indent = '    '
-            indented_body = '\n'.join(indent + line if line.strip() else '' for line in body.split('\n'))
-            replacement = f'# block: {block_name}\n{indented_body}\n# endblock'
-            source = source[:match.start()] + replacement + source[match.end():]
-            mutated.append(f"patched block {block_name}")
-        else:
-            mutated.append(f"FAILED to find block {block_name}")
+        ok, err = validate_python(candidate)
+        if not ok:
+            results.append(PatchResult(False, f"patch would make file invalid: {err}", name))
+            continue
 
-    for func_name, body in self_patches:
-        body = body.strip()
-        self_source = _read_self_target()
-        pattern = re.compile(
-            r'(def ' + re.escape(func_name) + r'\s*\(.*?\):)\n(.*?)(?=\n\ndef |\nclass |\Z)',
-            re.DOTALL
-        )
-        match = pattern.search(self_source)
-        if match:
-            header = match.group(1)
-            indent = '    '
-            indented_body = '\n'.join(indent + line if line.strip() else '' for line in body.split('\n'))
-            replacement = header + '\n' + indented_body
-            self_source = self_source[:match.start()] + replacement + self_source[match.end():]
-            bkp = SELF_TARGET + '.bak'
-            if not os.path.exists(bkp):
-                shutil.copy2(SELF_TARGET, bkp)
-            _write_self_target(self_source)
-            _hotreload_self_modify()
-            mutated.append(f"self-patched {func_name}")
-        else:
-            mutated.append(f"FAILED to find {func_name} in self_modify.py")
+        current = candidate
+        results.append(PatchResult(True, "function body replaced", name))
+        applied_any = True
 
-    if any(x for x in mutated if not x.startswith('FAILED')):
-        if any(p.startswith('self-patched') for p in mutated):
-            pass
-        else:
-            backup = TARGET + '.bak'
-            if not os.path.exists(backup):
-                shutil.copy2(TARGET, backup)
-            _write_target(source)
-    return mutated
+    if applied_any and not dry_run:
+        if create_backup:
+            bak = backup_file(source_path)
+            if bak:
+                results.append(PatchResult(True, f"backup created at {bak}", "backup"))
+        source_path.write_text(current, encoding="utf-8")
+        results.append(PatchResult(True, "source written to disk", str(source_path)))
+    elif applied_any and dry_run:
+        results.append(PatchResult(True, "dry-run: changes NOT written", str(source_path)))
 
-def extract_patch_blocks(text):
-    blocks = []
-    pattern = re.compile(r'(##patch:|##add:|##patch_self:|##patch_block:)(\w+)\n(.*?)(?=##endpatch|##endblock_patch|##patch:|##add:|##patch_self:|\Z)', re.DOTALL)
-    for match in pattern.finditer(text):
-        tag = match.group(1)
-        target = match.group(2).strip()
-        body = match.group(3).strip()
-        blocks.append((tag, target, body))
-    return blocks
+    return results
+
+
+# Convenience entry point used by the main engine
+def apply_patch(patch_text: str, target: str = "auto-echo.py", dry_run: bool = False) -> List[str]:
+    """
+    Backwards-compatible wrapper. Returns list of human-readable result strings.
+    """
+    base = Path(__file__).resolve().parent
+    path = base / target if not Path(target).is_absolute() else Path(target)
+    results = apply_patches(path, patch_text, dry_run=dry_run, create_backup=not dry_run)
+    return [str(r) for r in results]
+
+
+if __name__ == "__main__":
+    # Tiny self-test
+    print("self_modify.py loaded. AST validation and safe patching ready.")

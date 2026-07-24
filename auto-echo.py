@@ -8,14 +8,21 @@ Agents can write code files which get committed alongside utterances.
 Run:  python3 auto-echo.py
 Stop: Ctrl+C (graceful shutdown after current utterance)
 """
-import os, sys, json, subprocess, re, time, signal, random, math, importlib
+import os, sys, json, subprocess, re, time, signal, random, math, importlib, ast
 from datetime import datetime, timezone
+from pathlib import Path
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 VOICES_DIR = os.path.join(BASE, 'voices')
 LOG_FILE = os.path.join(BASE, 'echo_conversation.jsonl')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
+METRICS_FILE = os.path.join(BASE, 'metrics.json')
 LLM_MODEL = 'opencode/deepseek-v4-flash-free'
+
+DRY_RUN = False
+USE_VOICE = True
+USE_GIT = True
+MAX_GENERATIONS = None
 
 sys.path.insert(0, BASE)
 import self_modify
@@ -151,6 +158,22 @@ def _register_ops_from_file(fpath, genome):
         save_genome(genome)
     return registered
 
+def _register_ops_from_content(content, genome):
+    """Register mutation ops defined inline in agent output (not from a file)."""
+    genome.setdefault('mutation_ops', [])
+    genome.setdefault('custom_mutation_ops', {})
+    registered = []
+    for m in re.finditer(r'def (mutation_op_\w+)\(', content):
+        op_name = m.group(1)
+        if op_name not in genome['mutation_ops']:
+            genome['mutation_ops'].append(op_name)
+            genome['custom_mutation_ops'][op_name] = f"# registered from agent output @ gen {genome.get('generation', '?')}"
+            registered.append(op_name)
+            print(f"[mutation-op] registered '{op_name}' from inline content")
+    if registered:
+        save_genome(genome)
+    return registered
+
 def extend_genome(text, genome):
     """Parse genome extension blocks from agent output.
     
@@ -258,13 +281,25 @@ def _register_spawn_agent_from_file(fpath, genome):
 
 def write_code_files(blocks):
     genome = load_genome()
-    written = []
+    outcomes = []
     for abs_path, code, filename in blocks:
+        if DRY_RUN:
+            outcomes.append(f"[dry-run] would write {filename}")
+            continue
         os.makedirs(os.path.dirname(abs_path), exist_ok=True)
         with open(abs_path, 'w') as f:
             f.write(code)
-        written.append(filename)
-        print(f"[code] wrote {filename} ({len(code)} bytes)")
+        ok, err = True, ""
+        if filename.endswith('.py'):
+            try:
+                ast.parse(code)
+            except SyntaxError as e:
+                ok, err = False, f"SyntaxError: {e.msg} (line {e.lineno})"
+        if ok:
+            outcomes.append(f"wrote {filename} ({len(code)} bytes, syntax OK)")
+            _register_ops_from_content(code, genome)
+        else:
+            outcomes.append(f"wrote {filename} but INVALID: {err}")
         ext = os.path.splitext(filename)[1].lower()
         dispatch = genome.get('type_registry', {}).get(ext, {})
         handler = dispatch.get('handler', 'default')
@@ -298,7 +333,7 @@ def write_code_files(blocks):
         bridge_handled = _dispatch_bridge_file(abs_path, ext, genome)
         if bridge_handled:
             print(f"[bridge] {ext} handled by bridge: {filename}")
-    return written
+    return outcomes
 
 
 def _merge_json_into_genome(fpath, genome):
@@ -383,18 +418,21 @@ def execute_module_agents(genome):
     return results
 
 def apply_self_patches(text):
-    patches = self_modify.extract_patch_blocks(text)
-    if not patches:
-        return []
-    has_self_patches = any(tag == '##patch_self:' for tag, _, _ in patches)
-    results = self_modify.apply_patch(text)
+    if DRY_RUN:
+        patches = self_modify.extract_patch_blocks(text)
+        if patches:
+            for tag, target, block in patches:
+                print(f"[dry-run] would patch {target if target else 'auto-echo.py'}")
+        return [f"[dry-run] would apply {len(patches)} patches"] if patches else []
+    results = self_modify.apply_patch(text, target="auto-echo.py", dry_run=False)
     for r in results:
         print(f"[patch] {r}")
     if results:
+        has_self = any("##patch_self:" in line for line in text.splitlines())
         count = _reload_mutation_ops_from_source()
         if count:
             print(f"[hotreload] mutation ops refreshed after {len(results)} patches")
-        if has_self_patches:
+        if has_self:
             print(f"[hotreload] self_modify.py patched — module hot-reloaded")
             genome = load_genome()
             genome['meta_self_modifications'] = genome.get('meta_self_modifications', 0) + 1
@@ -405,6 +443,8 @@ def strip_code_blocks(text):
     return re.sub(r'```\w*:?[^\n]*\n.*?```', '', text, flags=re.DOTALL)
 
 def speak(role, text):
+    if not USE_VOICE:
+        return
     voice = _get_voice(role)
     model_path = os.path.join(VOICES_DIR, f'{voice}.onnx')
     if not os.path.exists(model_path):
@@ -574,6 +614,45 @@ def build_critic_prompt(topic, gen_log, code_files_written=None):
         f"Score now:"
     )
 
+def update_metrics(gen, genome, code_outcomes):
+    metrics = {}
+    if os.path.exists(METRICS_FILE):
+        try:
+            with open(METRICS_FILE) as f:
+                metrics = json.load(f)
+        except (json.JSONDecodeError, Exception):
+            metrics = {}
+    if not isinstance(metrics, dict):
+        metrics = {}
+    # ensure list of records
+    records = metrics.get('generations', [])
+    scores = {a['id']: a.get('score', 0) for a in genome.get('agents', [])}
+    best = max(scores.values()) if scores else 0
+    avg = sum(scores.values()) / len(scores) if scores else 0
+    # count file outcomes
+    syntax_ok = sum(1 for o in code_outcomes if 'syntax OK' in o)
+    syntax_bad = sum(1 for o in code_outcomes if 'INVALID' in o)
+    record = {
+        'generation': gen,
+        'topic': genome.get('topic', ''),
+        'agent_count': len(genome.get('agents', [])),
+        'mutation_rate': genome.get('mutation_rate', 0.15),
+        'best_score': round(best, 2),
+        'average_score': round(avg, 2),
+        'syntax_ok': syntax_ok,
+        'syntax_invalid': syntax_bad,
+        'files_written': len(code_outcomes),
+        'timestamp': datetime.now(timezone.utc).isoformat(),
+    }
+    records.append(record)
+    # keep only last 100 to avoid bloat
+    if len(records) > 100:
+        records = records[-100:]
+    metrics['generations'] = records
+    with open(METRICS_FILE, 'w') as f:
+        json.dump(metrics, f, indent=2)
+    print(f"[metrics] generation {gen} recorded: best={best:.2f} avg={avg:.2f} files={len(code_outcomes)}")
+
 def extract_scores(text):
     json_match = re.search(r'\{[^}]+\}', text)
     if json_match:
@@ -585,6 +664,8 @@ def extract_scores(text):
     return None
 
 def git_commit_push(label, text, is_genome=False, gen=None, novelty=None):
+    if not USE_GIT:
+        return
     try:
         subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=True)
         status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True)
@@ -810,6 +891,7 @@ def run_generation(genome):
 
     agent_hooks.execute_hooks(genome, 'post_critic', scores=scores, generation=gen)
     update_genome(genome, gen, scores or {}, topic)
+    update_metrics(gen, genome, all_written_files)
     agent_hooks.execute_hooks(genome, 'post_gen', generation=gen, scores=scores)
     return gen
 
@@ -2311,9 +2393,30 @@ def schedule_event(genome, at_gen, action, amount=0.05):
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description='Echo autonomous swarm')
+    parser.add_argument('--dry-run', action='store_true', help='Simulate without writing files')
+    parser.add_argument('--no-voice', action='store_true', help='Disable voice output')
+    parser.add_argument('--no-git', action='store_true', help='Disable git push')
+    parser.add_argument('--max-generations', type=int, default=None, help='Stop after N generations')
+    args = parser.parse_args()
+    global DRY_RUN, USE_VOICE, USE_GIT, MAX_GENERATIONS
+    DRY_RUN = args.dry_run
+    USE_VOICE = not args.no_voice
+    USE_GIT = not args.no_git
+    MAX_GENERATIONS = args.max_generations
+
     genome = load_genome()
     print(f"Starting generation {genome['generation'] + 1}")
     print(f"Topic: {genome['topic']}")
+    if DRY_RUN:
+        print("DRY RUN — no files will be written")
+    if not USE_VOICE:
+        print("Voice disabled")
+    if not USE_GIT:
+        print("Git push disabled")
+    if MAX_GENERATIONS:
+        print(f"Max generations: {MAX_GENERATIONS}")
     print("Ctrl+C to stop after current utterance.\n")
 
     while running:
@@ -2321,6 +2424,9 @@ def main():
         if result is None:
             break
         genome = load_genome()
+        if MAX_GENERATIONS and genome['generation'] >= MAX_GENERATIONS:
+            print(f"[limit] reached max {MAX_GENERATIONS} generations")
+            break
         time.sleep(2)
 
     print("\n[stop] Swarm halted.")

@@ -437,7 +437,48 @@ def _extract_functions(source=None):
     return funcs
 
 
-_MUTATION_OPS = ['duplicate_line', 'delete_line', 'swap_lines', 'perturb_constant', 'insert_random_branch', 'mutate_string_literal']
+def _get_mutation_ops(genome=None):
+    """Read mutation operators from genome, falling back to defaults."""
+    if genome is None:
+        try:
+            genome = load_genome()
+        except:
+            pass
+    if genome and 'mutation_ops' in genome and genome['mutation_ops']:
+        return list(genome['mutation_ops'])
+    return ['duplicate_line', 'delete_line', 'swap_lines', 'perturb_constant', 'insert_random_branch', 'mutate_string_literal']
+
+
+def _get_forbidden_targets(genome=None):
+    """Read forbidden mutation targets from genome, falling back to defaults."""
+    if genome is None:
+        try:
+            genome = load_genome()
+        except:
+            pass
+    if genome and 'forbidden_targets' in genome:
+        return set(genome['forbidden_targets'])
+    return {
+        'code_path_mutation', '_read_auto_echo',
+        '_extract_functions', '_apply_source_mutation', '_get_mutation_ops',
+        '_get_forbidden_targets', 'main', 'run_generation',
+        'llm_generate', 'load_genome', 'save_genome', 'load_log', 'append_log',
+        'sigint_handler', 'git_commit_push',
+    }
+
+
+def _register_new_mutation_op(genome, op_name, op_def):
+    """Register a new mutation operator in genome.json so it becomes available."""
+    if 'mutation_ops' not in genome:
+        genome['mutation_ops'] = _get_mutation_ops(genome)
+    if op_name not in genome['mutation_ops']:
+        genome['mutation_ops'].append(op_name)
+        if 'custom_mutation_ops' not in genome:
+            genome['custom_mutation_ops'] = {}
+        genome['custom_mutation_ops'][op_name] = op_def
+        save_genome(genome)
+        return True
+    return False
 
 
 def _apply_source_mutation(funcs, target_name, operator):

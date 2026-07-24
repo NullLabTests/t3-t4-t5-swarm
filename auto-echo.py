@@ -606,6 +606,10 @@ def update_genome(genome, gen, scores, topic):
     ext_muts = genome.get('genome_extensions', [])
     if ext_muts:
         mutation_desc.append(f"extensions: {len(ext_muts)} total")
+
+    div = compute_diversity_score(genome)
+    mutation_desc.append(f"diversity={div['composite']}")
+
     all_muts = mutation_desc + code_muts + code_path_muts
     if all_muts:
         history_entry["mutation"] = "; ".join(all_muts)
@@ -635,6 +639,33 @@ def _get_mutation_ops(genome=None):
     if genome is None:
         genome = load_genome()
     return list(genome.get('mutation_ops', []))
+
+
+def _reload_mutation_ops_from_source():
+    """Rebuild _MUTATION_OPS from the current on-disk auto-echo.py.
+    
+    Self-patches that modify mutation_op_* functions take effect
+    only after this runs — the @_register_mutation_op decorators
+    execute once at import time and never re-run.
+    """
+    global _MUTATION_OPS
+    source = _read_auto_echo()
+    funcs = _extract_functions(source)
+    count = 0
+    for name, (header, body) in funcs.items():
+        if not name.startswith('mutation_op_'):
+            continue
+        local_ns = {'random': random, 're': re}
+        try:
+            exec(compile(header + '\n' + body, '<hotreload>', 'exec'), local_ns)
+            if name in local_ns:
+                _MUTATION_OPS[name] = local_ns[name]
+                count += 1
+        except Exception as e:
+            print(f"[hotreload] failed to load {name}: {e}")
+    if count:
+        print(f"[hotreload] reloaded {count} mutation operators from disk")
+    return count
 
 
 def _get_forbidden_targets(genome=None):
@@ -842,7 +873,8 @@ def code_path_mutation(genome, gen):
     if gen < 3:
         return muts
 
-    # Each generation has a chance to apply 1-3 independent mutations
+    _reload_mutation_ops_from_source()
+
     num_mutations = 1 if random.random() > rate else random.randint(1, 3)
     attempted = set()
 
@@ -878,6 +910,44 @@ def code_path_mutation(genome, gen):
             print(f"[code-mutation] error on {target}: {e}")
 
     return muts
+
+def compute_diversity_score(genome):
+    """Measure how much the system is changing itself.
+    
+    Returns a dict of diversity metrics:
+      - op_count: number of distinct mutation ops available
+      - custom_op_count: number of custom (agent-written) mutation ops
+      - agent_count: number of live agents
+      - prompt_entropy: unique prompt modifiers / total modifiers
+      - structural_mutations: how many code mutations happened recently
+    
+    Stored in genome['diversity'] for tracking.
+    """
+    ops = genome.get('mutation_ops', [])
+    custom = genome.get('custom_mutation_ops', {})
+    modifiers = genome.get('prompt_modifiers', [])
+    history = genome.get('history', [])
+    recent_mutations = sum(
+        1 for h in history[-5:] if h.get('mutation', '')
+    )
+    score = {
+        'op_count': len(ops),
+        'custom_op_count': len(custom),
+        'agent_count': len(genome.get('agents', [])),
+        'prompt_entropy': round(len(set(modifiers)) / max(len(modifiers), 1), 3),
+        'structural_mutations': recent_mutations,
+    }
+    score['composite'] = round(
+        score['op_count'] * 0.2 +
+        score['custom_op_count'] * 0.3 +
+        score['agent_count'] * 0.1 +
+        score['prompt_entropy'] * 0.2 +
+        score['structural_mutations'] * 0.2,
+        2
+    )
+    genome['diversity'] = score
+    return score
+
 
 def novelty_governor(genome, gen):
     """Adjust mutation rate based on score variance across recent generations.

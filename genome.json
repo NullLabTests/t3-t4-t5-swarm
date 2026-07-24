@@ -1,5 +1,5 @@
 {
-  "generation": 35,
+  "generation": 36,
   "execution_order": "shuffle",
   "best_score": 8.0,
   "topic": "making the swarm rewrite its own source code every generation",
@@ -20,7 +20,9 @@
     "shuffle_block_lines",
     "mutation_op_swap_agent_properties",
     "mutation_op_invert_thresholds",
-    "mutation_op_shuffle_agent_order"
+    "mutation_op_shuffle_agent_order",
+    "mutation_op_entropy_shuffle",
+    "mutation_op_repeat_noise"
   ],
   "custom_mutation_ops": {},
   "genome_extensions": [],

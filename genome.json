@@ -7,6 +7,13 @@
   "prune_threshold": 4,
   "prune_generations": 2,
   "mutation_rate": 0.12,
+  "voice_map": {
+    "explorer": "southern",
+    "analyzer": "alan",
+    "synthesizer": "lessac",
+    "critic": "amy",
+    "mutator": "lessac"
+  },
   "mutation_ops": [
     "duplicate_line",
     "delete_line",

@@ -20,10 +20,15 @@ LLM_MODEL = 'opencode/deepseek-v4-flash-free'
 sys.path.insert(0, BASE)
 import self_modify
 
-VOICE_MAP = {
+FALLBACK_VOICE_MAP = {
     "explorer": "southern", "analyzer": "alan", "synthesizer": "lessac",
     "critic": "amy", "mutator": "lessac",
 }
+
+def _get_voice(role):
+    genome = load_genome()
+    vm = genome.get('voice_map', {})
+    return vm.get(role) or FALLBACK_VOICE_MAP.get(role, "amy")
 
 FALLBACK_SYSTEM_PROMPT = (
     "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\n"
@@ -213,6 +218,11 @@ def extend_genome(text, genome):
         old = target.get(key)
         target[key] = val
         applied.append(f"set {path_str} = {str(val)[:50]} (was {str(old)[:30]})")
+        if parts[0] == 'custom_mutation_ops' and len(parts) >= 2:
+            op_name = parts[-1]
+            if op_name not in genome.setdefault('mutation_ops', []):
+                genome['mutation_ops'].append(op_name)
+                applied.append(f"registered {op_name} as mutation_op")
     if applied:
         genome.setdefault('genome_extensions', []).extend(applied)
         save_genome(genome)
@@ -273,7 +283,7 @@ def strip_code_blocks(text):
     return re.sub(r'```\w*:?[^\n]*\n.*?```', '', text, flags=re.DOTALL)
 
 def speak(role, text):
-    voice = VOICE_MAP.get(role, "amy")
+    voice = _get_voice(role)
     model_path = os.path.join(VOICES_DIR, f'{voice}.onnx')
     if not os.path.exists(model_path):
         print(f"[speak] Voice model not found: {model_path}")
@@ -922,43 +932,41 @@ def code_path_mutation(genome, gen):
             for r in results:
                 print(f"[code-mutation] {operator} -> {r}")
                 muts.append(f"code:{operator}:{r}")
+                if target.startswith('mutation_op_'):
+                    genome['self_op_mutations'] = genome.get('self_op_mutations', 0) + 1
+                    save_genome(genome)
         except Exception as e:
             print(f"[code-mutation] error on {target}: {e}")
 
     return muts
 
 def compute_diversity_score(genome):
-    """Measure how much the system is changing itself.
-    
-    Returns a dict of diversity metrics:
-      - op_count: number of distinct mutation ops available
-      - custom_op_count: number of custom (agent-written) mutation ops
-      - agent_count: number of live agents
-      - prompt_entropy: unique prompt modifiers / total modifiers
-      - structural_mutations: how many code mutations happened recently
-    
-    Stored in genome['diversity'] for tracking.
-    """
-    ops = genome.get('mutation_ops', [])
-    custom = genome.get('custom_mutation_ops', {})
-    modifiers = genome.get('prompt_modifiers', [])
     history = genome.get('history', [])
     recent_mutations = sum(
         1 for h in history[-5:] if h.get('mutation', '')
     )
+    total_code = sum(
+        1 for h in history[-5:] if 'code:' in h.get('mutation', '')
+    )
+    self_ops = genome.get('self_op_mutations', 0)
+    ops = genome.get('mutation_ops', [])
+    custom = genome.get('custom_mutation_ops', {})
+    modifiers = genome.get('prompt_modifiers', [])
     score = {
         'op_count': len(ops),
         'custom_op_count': len(custom),
         'agent_count': len(genome.get('agents', [])),
         'prompt_entropy': round(len(set(modifiers)) / max(len(modifiers), 1), 3),
         'structural_mutations': recent_mutations,
+        'self_modification_depth': round(self_ops / max(total_code, 1), 3),
     }
     score['composite'] = round(
-        score['op_count'] * 0.2 +
-        score['custom_op_count'] * 0.3 +
+        score['op_count'] * 0.15 +
+        score['custom_op_count'] * 0.2 +
         score['agent_count'] * 0.1 +
-        score['prompt_entropy'] * 0.2 +
-        score['structural_mutations'] * 0.2,
+        score['prompt_entropy'] * 0.15 +
+        score['structural_mutations'] * 0.15 +
+        score['self_modification_depth'] * 0.25,
         2
     )
     genome['diversity'] = score

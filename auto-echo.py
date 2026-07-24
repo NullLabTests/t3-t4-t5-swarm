@@ -614,8 +614,11 @@ def git_commit_push(label, text, is_genome=False, gen=None, novelty=None):
 def _emergent_select_agent(agents, spoken_this_gen, genome):
     """Select next agent by fitness-proportional weighting.
     Factors: score, recency penalty (inverse of times spoken), random exploration.
+    Selection entropy feedback: when entropy is low (stagnation), exploration amplifies.
     Removes human scaffolding of fixed iteration order."""
     candidates = []
+    entropy = genome.get("selection_entropy", 1.0)
+    stagnation_boost = max(1.0, (1.0 - entropy) * 3.0 + 0.5)
     for a in agents:
         aid = a["id"]
         if aid == "critic":
@@ -625,7 +628,7 @@ def _emergent_select_agent(agents, spoken_this_gen, genome):
         spoke = spoken_this_gen.get(aid, 0)
         recency_bonus = 1.0 / (1.0 + spoke)
         score_weight = max(a.get("score", 5), 1) / 5.0
-        exploration = random.uniform(0.5, 1.5)
+        exploration = random.uniform(0.5, 1.5) * stagnation_boost
         weight = score_weight * recency_bonus * exploration
         candidates.append((weight, aid))
     if not candidates:
@@ -801,16 +804,55 @@ def run_generation(genome):
 
 def inject_selection_noise(scores, genome):
     """Add Gaussian noise to scores before selection decisions.
-    Noise std scales with mutation_rate — more chaos when mutation is high.
+    Noise std scales with mutation_rate and adapts to stagnation.
+    When selection_entropy is low (deterministic/stuck), noise increases.
+    When entropy is high (chaotic), noise damps down.
     Also adds a small random offset to break ties probabilistically."""
     noise_std = genome.get("selection_noise_std", 0.5)
     mr = genome.get("mutation_rate", 0.15)
-    effective_std = noise_std * (1.0 + mr)
+    entropy = genome.get("selection_entropy", 1.0)
+    stagnation_factor = max(0.0, 1.0 - entropy)
+    effective_std = noise_std * (1.0 + mr) * (1.0 + stagnation_factor * 2.0)
     noisy = {}
     for aid, raw in scores.items():
         noise = random.gauss(0, effective_std)
         noisy[aid] = round(raw + noise, 2)
     return noisy
+
+
+def compute_selection_entropy(genome):
+    """Measure how uniformly agent selection opportunities are distributed.
+    Uses the history of agent appearances (via code_ratios or score distribution)
+    to compute Shannon entropy. High entropy = diverse selection; low = deterministic.
+    Returns float 0.0-1.0 (normalized entropy)."""
+    ratios = genome.get('agent_code_ratios', {})
+    history = genome.get('history', [])
+    recent = history[-10:] if len(history) > 10 else history
+    scores_list = [h.get('scores', {}) for h in recent if h.get('scores')]
+
+    if not scores_list and not ratios:
+        return 1.0
+
+    agent_counts = {}
+    for scores_dict in scores_list:
+        for aid in scores_dict:
+            agent_counts[aid] = agent_counts.get(aid, 0) + 1
+
+    if not agent_counts and ratios:
+        for aid in ratios:
+            agent_counts[aid] = int(ratios[aid] * 100)
+
+    total = sum(agent_counts.values())
+    if total == 0:
+        return 1.0
+    entropy = 0.0
+    for count in agent_counts.values():
+        p = count / total
+        if p > 0:
+            entropy -= p * math.log2(p)
+    max_entropy = math.log2(max(len(agent_counts), 2))
+    normalized = entropy / max_entropy if max_entropy > 0 else 1.0
+    return round(min(1.0, normalized), 3)
 
 
 def stochastic_spawn_prune(scores, genome):
@@ -1673,6 +1715,8 @@ def compute_diversity_score(genome):
     recent_mutations = sum(
         1 for h in history[-5:] if h.get('mutation', '')
     )
+    selection_entropy = compute_selection_entropy(genome)
+    genome['selection_entropy'] = selection_entropy
     total_code = sum(
         1 for h in history[-5:] if 'code:' in h.get('mutation', '')
     )
@@ -1724,6 +1768,7 @@ def compute_diversity_score(genome):
         'gen_elapsed': round(gen_elapsed, 1),
         'emergence_velocity': emergence_velocity,
         'scaffolding_removal_ratio': scaffolding_removal_ratio,
+        'selection_entropy': selection_entropy,
     }
     genome['scaffolding_removal_ratio'] = scaffolding_removal_ratio
     score['composite'] = round(
@@ -1740,7 +1785,8 @@ def compute_diversity_score(genome):
         min(score['generation_timeouts'], 10) * 0.02 +
         min(score['scheduled_triggers'], 20) * 0.01 +
         score['emergence_velocity'] * 0.15 +
-        score['scaffolding_removal_ratio'] * 0.25,
+        score['scaffolding_removal_ratio'] * 0.25 +
+        score['selection_entropy'] * 0.2,
         2
     )
     genome['diversity'] = score
@@ -2123,6 +2169,28 @@ def mutation_op_generation_timeout(lines, funcs, target_name):
         f"    {r[idx+1].rstrip() if idx+1 < len(r) else r[0].rstrip()}  # normal path",
     ]
     r[idx:idx+2] = branch_lines
+    return r
+
+
+@_register_mutation_op('selection_noise_evolve')
+def mutation_op_selection_noise_evolve(lines, funcs, target_name):
+    """Mutate the selection noise infrastructure itself.
+    Injects references to selection_noise_std and selection_entropy
+    into the target function, making the randomness mechanism
+    self-referential and evolvable."""
+    if not lines or len(lines) < 3:
+        return lines
+    r = list(lines)
+    noise_refs = [
+        f"# noise-evolve:selection_entropy={random.random():.3f}@{random.getrandbits(16):04x}",
+        f"if genome.get('selection_entropy', 1.0) < random.uniform(0.3, 0.7):",
+        f"    genome['selection_noise_std'] = round(random.uniform(0.1, 1.5), 3)",
+        f"    save_genome(genome)",
+        f"# noise-evolve:noise_std={genome.get('selection_noise_std', 0.5):.3f}",
+    ]
+    insert_at = random.randrange(max(1, len(r) // 3), len(r))
+    for i, ref in enumerate(noise_refs):
+        r.insert(insert_at + i, ref)
     return r
 
 

@@ -46,7 +46,8 @@
     "inject_runtime_patch",
     "cross_file_splice",
     "swap_function_calls",
-    "insert_genome_branch"
+    "insert_genome_branch",
+    "selection_noise_evolve"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -61,6 +62,8 @@
     " Write a mutation_op_* function in a .py file.",
     " Modify the genome.json structure directly."
   ],
+  "selection_noise_std": 0.5,
+  "selection_entropy": 1.0,
   "forbidden_targets": [
     "load_genome",
     "save_genome",

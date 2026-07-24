@@ -2,3 +2,5 @@
 # See README.md for Piper setup instructions.
 voices/*.onnx
 ssh-fix-note.txt
+__pycache__/
+*.pyc

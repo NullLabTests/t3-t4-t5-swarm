@@ -298,9 +298,13 @@ def speak(role, text):
     except Exception as e:
         print(f"[speak] Error: {e}")
 
+import re
+
 REPETITION_THRESHOLD = 0.5
 MIN_WORDS = 8
-MAX_WORDS = 2000  # allow code blocks
+MAX_WORDS = 2000
+MIN_ENGLISH_RATIO = 0.5
+MAX_CHARS_NO_CODE = 3000
 
 def is_repetitive(text):
     words = text.split()
@@ -318,6 +322,18 @@ def has_gibberish(text):
     unique = len(set(w.lower() for w in words))
     return unique < 3
 
+def is_garbage(text):
+    """Multi-signal garbage detection. Returns True if text is likely garbled."""
+    if has_gibberish(text):
+        return True
+    latin = len(re.findall(r'[a-zA-Z]', text))
+    if len(text) > 0 and latin / len(text) < MIN_ENGLISH_RATIO:
+        return True
+    has_code = '```' in text or '##patch:' in text
+    if len(text) > MAX_CHARS_NO_CODE and not has_code:
+        return True
+    return False
+
 def llm_generate(prompt, max_attempts=3, timeout_sec=120):
     for attempt in range(max_attempts):
         try:
@@ -328,7 +344,7 @@ def llm_generate(prompt, max_attempts=3, timeout_sec=120):
                 text = result.stdout.strip()
                 wc = len(text.split())
                 has_code = '```' in text
-                bad = (wc < MIN_WORDS and not has_code) or is_repetitive(text) or has_gibberish(text)
+                bad = (wc < MIN_WORDS and not has_code) or is_repetitive(text) or is_garbage(text)
                 if text and not bad:
                     return text
                 else:

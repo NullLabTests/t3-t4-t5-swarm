@@ -104,6 +104,10 @@ True emergence means:
 - **T4 (multi-agent)**: Stable — specialized roles (explorer, analyzer, synthesizer, critic, mutator)
 - **T5 (self-evolving)**: Active — autonomous loop running, genome tracking generations, spawn/prune/mutation rules defined
 
+## Known Events
+
+- **Gen 36, Bridge agent** (2026-07-24): Prompt degradation caused the Bridge agent to produce 15K characters of multilingual garbled output (Chinese, Spanish, Russian, German, English mixed) spanning URLs, typewriter models, and fragmented technical prose. The system self-corrected — later agents in the generation surfaced coherent output and the loop continued. Root cause: agent self-modification removed prompt constraints faster than the quality guardrails could detect. Post-event: added Latin-character ratio check, max-length-without-code rejection, and code-block requirement for non-critic agents.
+
 ---
 
 *Built by NullLabTests. Origin: biology. Target: open-ended emergence.*

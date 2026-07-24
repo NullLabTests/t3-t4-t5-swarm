@@ -604,8 +604,38 @@ def git_commit_push(label, text, is_genome=False, gen=None, novelty=None):
     except Exception as e:
         print(f"[git] Error: {e}")
 
+def _emergent_select_agent(agents, spoken_this_gen, genome):
+    """Select next agent by fitness-proportional weighting.
+    Factors: score, recency penalty (inverse of times spoken), random exploration.
+    Removes human scaffolding of fixed iteration order."""
+    candidates = []
+    for a in agents:
+        aid = a["id"]
+        if aid == "critic":
+            continue
+        if a.get("low_score_streak", 0) >= genome.get("prune_generations", 2) and random.random() < 0.5:
+            continue
+        spoke = spoken_this_gen.get(aid, 0)
+        recency_bonus = 1.0 / (1.0 + spoke)
+        score_weight = max(a.get("score", 5), 1) / 5.0
+        exploration = random.uniform(0.5, 1.5)
+        weight = score_weight * recency_bonus * exploration
+        candidates.append((weight, aid))
+    if not candidates:
+        return None
+    total = sum(w for w, _ in candidates)
+    r = random.uniform(0, total)
+    cum = 0
+    for w, aid in candidates:
+        cum += w
+        if r <= cum:
+            return aid
+    return candidates[-1][1]
+
+
 def run_generation(genome):
     gen = genome["generation"] + 1
+    genome['gen_start_time'] = time.time()
     topic = genome["topic"]
     print(f"\n{'='*60}")
     print(f"Generation {gen} | Topic: {topic}")
@@ -635,50 +665,99 @@ def run_generation(genome):
     elif flow_mode == "mid_shuffle":
         random.shuffle(agents)
         print(f"[flow] mid-generation shuffle applied")
+    elif flow_mode == "emergent":
+        print(f"[flow] emergent selection — no fixed iteration order")
     gen_log = []
     all_written_files = []
 
-    for agent in agents:
-        if not running:
-            return None
-        aid = agent["id"]
-        if aid == "critic":
-            continue
-        name = aid.capitalize()
-        print(f"\n--- {name} ---")
-        prompt = build_agent_prompt(agent, topic, load_log())
-        text = llm_generate(prompt)
-        if not text:
-            print(f"[{aid}] LLM returned empty, skipping")
-            continue
+    if flow_mode == "emergent":
+        spoken_this_gen = {}
+        turns = max(len([a for a in agents if a["id"] != "critic"]), 2)
+        for turn_i in range(turns):
+            if not running:
+                return None
+            aid = _emergent_select_agent(agents, spoken_this_gen, genome)
+            if aid is None:
+                continue
+            agent = next(a for a in agents if a["id"] == aid)
+            spoken_this_gen[aid] = spoken_this_gen.get(aid, 0) + 1
+            name = aid.capitalize()
+            print(f"\n--- {name} (emergent turn {turn_i+1}/{turns}) ---")
+            prompt = build_agent_prompt(agent, topic, load_log())
+            text = llm_generate(prompt)
+            if not text:
+                print(f"[{aid}] LLM returned empty, skipping")
+                continue
 
-        blocks = extract_code_blocks(text)
-        written_files = write_code_files(blocks)
-        all_written_files.extend(written_files)
-
-        patches = apply_self_patches(text)
-        if patches:
-            written_files.append(f"#patch:{len(patches)}blocks")
+            blocks = extract_code_blocks(text)
+            written_files = write_code_files(blocks)
             all_written_files.extend(written_files)
-            print(f"[patch] auto-echo.py modified: {patches}")
 
-        genome_exts = extend_genome(text, None)
-        if genome_exts:
-            print(f"[genome-ext] {genome_exts}")
-            genome = load_genome()
+            patches = apply_self_patches(text)
+            if patches:
+                written_files.append(f"#patch:{len(patches)}blocks")
+                all_written_files.extend(written_files)
+                print(f"[patch] auto-echo.py modified: {patches}")
 
-        text_clean = strip_markdown(strip_code_blocks(text))
+            genome_exts = extend_genome(text, None)
+            if genome_exts:
+                print(f"[genome-ext] {genome_exts}")
+                genome = load_genome()
 
-        print(f"{name}: {text_clean[:150]}...")
-        speak(aid, text_clean)
-        append_log(aid, name, text_clean)
+            text_clean = strip_markdown(strip_code_blocks(text))
 
-        push_label = name
-        if written_files:
-            push_label = f"{name}+code:{','.join(written_files)}"
-        git_commit_push(push_label, text_clean, gen=gen, novelty=len(written_files))
-        gen_log.append({"agent": name, "id": aid, "text": text_clean})
-        time.sleep(1)
+            print(f"{name}: {text_clean[:150]}...")
+            speak(aid, text_clean)
+            append_log(aid, name, text_clean)
+
+            push_label = name
+            if written_files:
+                push_label = f"{name}+code:{','.join(written_files)}"
+            git_commit_push(push_label, text_clean, gen=gen, novelty=len(written_files))
+            gen_log.append({"agent": name, "id": aid, "text": text_clean})
+            time.sleep(1)
+    else:
+        for agent in agents:
+            if not running:
+                return None
+            aid = agent["id"]
+            if aid == "critic":
+                continue
+            name = aid.capitalize()
+            print(f"\n--- {name} ---")
+            prompt = build_agent_prompt(agent, topic, load_log())
+            text = llm_generate(prompt)
+            if not text:
+                print(f"[{aid}] LLM returned empty, skipping")
+                continue
+
+            blocks = extract_code_blocks(text)
+            written_files = write_code_files(blocks)
+            all_written_files.extend(written_files)
+
+            patches = apply_self_patches(text)
+            if patches:
+                written_files.append(f"#patch:{len(patches)}blocks")
+                all_written_files.extend(written_files)
+                print(f"[patch] auto-echo.py modified: {patches}")
+
+            genome_exts = extend_genome(text, None)
+            if genome_exts:
+                print(f"[genome-ext] {genome_exts}")
+                genome = load_genome()
+
+            text_clean = strip_markdown(strip_code_blocks(text))
+
+            print(f"{name}: {text_clean[:150]}...")
+            speak(aid, text_clean)
+            append_log(aid, name, text_clean)
+
+            push_label = name
+            if written_files:
+                push_label = f"{name}+code:{','.join(written_files)}"
+            git_commit_push(push_label, text_clean, gen=gen, novelty=len(written_files))
+            gen_log.append({"agent": name, "id": aid, "text": text_clean})
+            time.sleep(1)
 
     if not running:
         return None
@@ -808,7 +887,7 @@ def update_genome(genome, gen, scores, topic):
         code_path_muts.append(f"synthesized:{synth_op}")
 
     if random.random() < genome.get("mutation_rate", 0.15):
-        new_mode = random.choice(["repeat_best", "skip_streak", "mid_shuffle"])
+        new_mode = random.choice(["repeat_best", "skip_streak", "mid_shuffle", "emergent"])
         genome["flow_mode"] = new_mode
         code_path_muts.append(f"flow_mode={new_mode}")
 
@@ -827,6 +906,11 @@ def update_genome(genome, gen, scores, topic):
     mutation_desc.extend(flux_muts)
     if flux_muts:
         print(f"[flux] {'; '.join(flux_muts)}")
+
+    clock_muts = clockwork_tick(genome, gen)
+    mutation_desc.extend(clock_muts)
+    if clock_muts:
+        print(f"[clock] {'; '.join(clock_muts)}")
 
     all_muts = mutation_desc + code_muts + code_path_muts
     if all_muts:
@@ -1356,6 +1440,10 @@ def compute_diversity_score(genome):
     modifiers = genome.get('prompt_modifiers', [])
     ratios = genome.get('agent_code_ratios', {})
     patch_success_rate = round(sum(ratios.values()) / max(len(ratios), 1), 3)
+    clock_pulse = genome.get('clock_pulse', 0.0)
+    timeouts = genome.get('generation_timeouts', 0)
+    scheduled_count = len(genome.get('scheduled_triggers', []))
+    gen_elapsed = genome.get('gen_elapsed', 0.0)
     score = {
         'op_count': len(ops),
         'custom_op_count': len(custom),
@@ -1366,6 +1454,10 @@ def compute_diversity_score(genome):
         'meta_self_modifications': meta_self,
         'circular_mutation_depth': genome.get('meta_mutation_depth', 0),
         'patch_success_rate': patch_success_rate,
+        'clock_pulse': clock_pulse,
+        'generation_timeouts': timeouts,
+        'scheduled_triggers': scheduled_count,
+        'gen_elapsed': round(gen_elapsed, 1),
     }
     score['composite'] = round(
         score['op_count'] * 0.1 +
@@ -1376,7 +1468,10 @@ def compute_diversity_score(genome):
         score['self_modification_depth'] * 0.15 +
         score['meta_self_modifications'] * 0.15 +
         score['circular_mutation_depth'] * 0.15 +
-        score['patch_success_rate'] * 0.2,
+        score['patch_success_rate'] * 0.2 +
+        score['clock_pulse'] * 0.05 +
+        min(score['generation_timeouts'], 10) * 0.02 +
+        min(score['scheduled_triggers'], 20) * 0.01,
         2
     )
     genome['diversity'] = score
@@ -1522,6 +1617,118 @@ def spawn_child(parent, existing_agents, genome):
                 child['module'] = entry['module']
             return child
     return None
+
+# ── Clockwork: time-based scheduling and governance ──
+
+def clockwork_tick(genome, gen):
+    """Time-based governance of the swarm loop.
+    
+    Tracks wall-clock duration of each generation and adjusts
+    mutation_rate to enforce a time budget. Also fires scheduled
+    triggers at specific generation milestones.
+    
+    Metrics tracked in genome:
+      - gen_start_time: float (monotonic timestamp when generation started)
+      - gen_elapsed: float (seconds since start)
+      - generation_timeouts: int (count of generations exceeding budget)
+      - scheduled_triggers: list of {gen, action, fired} dicts
+      - clock_pulse: float (the current pacing signal, 0.0-1.0)
+    """
+    now = time.time()
+    start = genome.get('gen_start_time', now)
+    elapsed = now - start
+    budget = genome.get('gen_time_budget', 120.0)
+    rate = genome.get('mutation_rate', 0.15)
+    old_rate = rate
+    pulses = []
+
+    if elapsed > budget:
+        genome['generation_timeouts'] = genome.get('generation_timeouts', 0) + 1
+        penalty = min(0.15, (elapsed - budget) / budget * 0.1)
+        rate = min(0.50, rate + penalty)
+        pulses.append(f"timeout+{penalty:.3f}")
+    elif elapsed > budget * 0.8 and gen > 3:
+        rate = min(0.45, rate + 0.02)
+        pulses.append("nudge+0.02")
+    elif elapsed < budget * 0.2 and gen > 5:
+        rate = max(0.05, rate - 0.01)
+        pulses.append("coast-0.01")
+
+    clock_pulse = round(min(1.0, elapsed / budget), 3)
+    genome['clock_pulse'] = clock_pulse
+    genome['gen_elapsed'] = round(elapsed, 1)
+
+    if abs(rate - old_rate) > 0.001:
+        genome['mutation_rate'] = round(rate, 3)
+        pulses.append(f"mr={old_rate:.3f}->{rate:.3f}")
+
+    # Fire scheduled triggers
+    triggers = genome.setdefault('scheduled_triggers', [])
+    for t in triggers:
+        if t.get('gen') == gen and not t.get('fired', False):
+            action = t.get('action', '')
+            if action == 'boost_mutation':
+                old = genome.get('mutation_rate', 0.15)
+                genome['mutation_rate'] = min(0.50, old + t.get('amount', 0.05))
+                pulses.append(f"trigger:boost_mutation(gen={gen})")
+            elif action == 'inject_noise':
+                genome['selection_noise_std'] = genome.get('selection_noise_std', 0.5) + t.get('amount', 0.2)
+                pulses.append(f"trigger:inject_noise(gen={gen})")
+            elif action == 'reset_streaks':
+                for a in genome.get('agents', []):
+                    a['low_score_streak'] = 0
+                pulses.append(f"trigger:reset_streaks(gen={gen})")
+            t['fired'] = True
+
+    # Schedule random future triggers if none exist
+    if not triggers and gen > 3:
+        future_gen = gen + random.randint(3, 8)
+        action = random.choice(['boost_mutation', 'inject_noise', 'reset_streaks'])
+        amount = round(random.uniform(0.03, 0.15), 3)
+        genome['scheduled_triggers'].append({
+            'gen': future_gen,
+            'action': action,
+            'amount': amount,
+            'fired': False
+        })
+        pulses.append(f"schedule:{action}@{future_gen}")
+
+    if pulses:
+        genome['clock_pulse_log'] = genome.get('clock_pulse_log', [])
+        genome['clock_pulse_log'].append({'gen': gen, 'pulses': pulses})
+        if len(genome['clock_pulse_log']) > 50:
+            genome['clock_pulse_log'] = genome['clock_pulse_log'][-50:]
+        return pulses
+    return []
+
+
+@_register_mutation_op('generation_timeout')
+def mutation_op_generation_timeout(lines, funcs, target_name):
+    """Inject timer-based perturbation: wrap lines in time-check branches.
+    If a threshold is exceeded, behavior diverges."""
+    if not lines or len(lines) < 4:
+        return lines
+    r = list(lines)
+    idx = random.randrange(1, len(r) - 1)
+    threshold = random.choice(['120', '180', '60', '300'])
+    branch_lines = [
+        f"if time.time() - genome.get('gen_start_time', time.time()) > {threshold}:",
+        f"    {r[idx].rstrip()}  # timeout branch @{threshold}s",
+        f"else:",
+        f"    {r[idx+1].rstrip() if idx+1 < len(r) else r[0].rstrip()}  # normal path",
+    ]
+    r[idx:idx+2] = branch_lines
+    return r
+
+
+def schedule_event(genome, at_gen, action, amount=0.05):
+    """Public API to schedule a trigger at a future generation.
+    Returns the trigger dict."""
+    triggers = genome.setdefault('scheduled_triggers', [])
+    t = {'gen': at_gen, 'action': action, 'amount': amount, 'fired': False}
+    triggers.append(t)
+    return t
+
 
 def main():
     genome = load_genome()

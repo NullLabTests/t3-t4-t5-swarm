@@ -111,6 +111,11 @@
     {
       "id": "flux",
       "prompt": "You add new fields to genome.json using ##set and ##extend blocks."
+    },
+    {
+      "id": "module_weaver",
+      "prompt": "You write agent_modules/*.py files that auto-echo.py imports every generation.",
+      "module": "seed_weaver.py"
     }
   ],
   "agents": [

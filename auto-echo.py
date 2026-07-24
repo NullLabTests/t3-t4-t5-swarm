@@ -446,6 +446,24 @@ def execute_module_agents(genome):
             print(f"[module-agent] auto-module {fname} error: {e}")
     return results
 
+def _run_meta_healer(genome):
+    try:
+        mod_path = os.path.join(MODULES_DIR, 'meta_healer.py')
+        if not os.path.exists(mod_path):
+            return None
+        spec = importlib.util.spec_from_file_location('meta_healer', mod_path)
+        if spec and spec.loader:
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            if hasattr(mod, 'run'):
+                output = mod.run(genome)
+                genome['meta_healer_active'] = True
+                save_genome(genome)
+                return str(output)[:200]
+    except Exception as e:
+        print(f"[meta-healer] error: {e}")
+    return None
+
 def apply_self_patches(text):
     if DRY_RUN:
         patches = self_modify.extract_patch_blocks(text)
@@ -1044,6 +1062,11 @@ def run_generation(genome):
     for mr in module_results:
         print(f"[module-agent] {mr['agent']} -> {str(mr['output'])[:100]}")
         all_written_files.append(f"module:{mr['module']}")
+
+    healer_result = _run_meta_healer(genome)
+    if healer_result:
+        print(f"[meta-healer] {healer_result}")
+        all_written_files.append("meta_healer")
 
     if not running:
         return None
@@ -2776,6 +2799,152 @@ def mutation_op_ast_rename_vars(lines, funcs, target_name):
         return lines
     new_body = ast.unparse(tree)
     return new_body.split('\n')
+
+
+@_register_mutation_op('compulsory_rewrite')
+def mutation_op_compulsory_rewrite(lines, funcs, target_name):
+    if not lines or len(lines) < 3:
+        return lines
+    r = list(lines)
+    indent = '    '
+    threshold = random.choice(['0.01', '0.05', '0.1'])
+    guard = f"if random.random() < {threshold} or genome.get('generation', 0) % 5 == 0:"
+    rewrite_call = f"{indent}# compulsory-rewrite @ gen {{{{genome.get('generation', 0)}}}}"
+    r.insert(min(2, len(r)), guard)
+    r.insert(min(3, len(r)), f"{indent}_schedule_self_rewrite(genome, '{target_name}')")
+    r.insert(min(4, len(r)), rewrite_call)
+    return r
+
+
+@_register_mutation_op('splice_genome_into_code')
+def mutation_op_splice_genome_into_code(lines, funcs, target_name):
+    if not lines or len(lines) < 3:
+        return lines
+    r = list(lines)
+    genome_keys = ['mutation_rate', 'selection_noise_std', 'selection_entropy',
+                   'flow_mode', 'emergence_velocity', 'clock_pulse',
+                   'scaffolding_removal_ratio', 'self_rewrite_coverage',
+                   'meta_mutation_depth', 'self_op_mutations']
+    key = random.choice(genome_keys)
+    val = genome.get(key, 'None')
+    val_repr = repr(val)
+    insert_at = random.randrange(1, len(r))
+    marker = f"# genome-embed:{key}={val_repr} @ gen {genome.get('generation', 0)}"
+    r.insert(insert_at, marker)
+    if random.random() < 0.5:
+        r.insert(insert_at + 1, f"    {key} = {val_repr}  # frozen-from-genome")
+    return r
+
+
+@_register_mutation_op('operator_chain_injection')
+def mutation_op_operator_chain_injection(lines, funcs, target_name):
+    if not lines or len(lines) < 4:
+        return lines
+    r = list(lines)
+    target_func = random.choice([n for n in funcs if n.startswith('mutation_op_') and n != target_name])
+    indent = '    '
+    insert_at = random.randrange(max(1, len(r) // 3), len(r))
+    chain = [
+        f"# chain:{target_func}->{target_name}@{random.getrandbits(16):04x}",
+        f"r2 = _call_op('{target_func}', lines, funcs, '{target_name}')",
+        f"if r2 is not None:",
+        f"{indent}return _call_op('{target_name}', r2, funcs, '{target_func}')",
+    ]
+    for i, cl in enumerate(chain):
+        r.insert(insert_at + i, cl)
+    return r
+
+
+@_register_mutation_op('ast_function_split')
+def mutation_op_ast_function_split(lines, funcs, target_name):
+    if not lines or len(lines) < 6:
+        return lines
+    source = '\n'.join(lines)
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return lines
+    if not isinstance(tree, ast.Module) or not tree.body:
+        return lines
+    func_def = None
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef):
+            func_def = node
+            break
+    if not func_def or len(func_def.body) < 3:
+        return lines
+    split_point = random.randint(1, len(func_def.body) - 1)
+    extracted = func_def.body[split_point:]
+    func_def.body = func_def.body[:split_point]
+    helper_name = f"_{target_name}_helper_{random.getrandbits(8):02x}"
+    helper_def = ast.FunctionDef(
+        name=helper_name,
+        args=ast.arguments(posonlyargs=[], args=[], kwonlyargs=[], kw_defaults=[], defaults=[]),
+        body=extracted,
+        decorator_list=[],
+    )
+    call = ast.Expr(ast.Call(func=ast.Name(id=helper_name, ctx=ast.Load()), args=[], keywords=[]))
+    func_def.body.append(call)
+    tree.body.append(helper_def)
+    ast.fix_missing_locations(tree)
+    new_source = ast.unparse(tree)
+    return new_source.split('\n')
+
+
+@_register_mutation_op('propagate_mutation')
+def mutation_op_propagate_mutation(lines, funcs, target_name):
+    """Propagate a mutation pattern from auto-echo.py into an agent_modules file.
+    Reads a random module, copies a random function body into it, validated,
+    then writes the cross-file mutation. This bridges the gap between
+    quine_loop's self-rewriting and the main engine's mutation operators."""
+    if not lines or len(lines) < 3:
+        return lines
+    modules_dir = os.path.join(BASE, 'agent_modules')
+    if not os.path.isdir(modules_dir):
+        return lines
+    candidates = sorted([
+        f for f in os.listdir(modules_dir)
+        if f.endswith('.py') and f != '__init__.py'
+    ])
+    if not candidates:
+        return lines
+    target_module = random.choice(candidates)
+    mod_path = os.path.join(modules_dir, target_module)
+    try:
+        with open(mod_path) as f:
+            mod_source = f.read()
+    except:
+        return lines
+    mod_funcs = re.findall(r'^def (\w+)\(', mod_source, re.MULTILINE)
+    if not mod_funcs:
+        return lines
+    chosen_func = random.choice(mod_funcs)
+    chosen_header, chosen_body = funcs.get(chosen_func, (None, None))
+    if not chosen_header:
+        return lines
+    patch_lines = [
+        f"# propagate-mutation:{chosen_func}->{target_module}@{random.getrandbits(16):04x}",
+        f"_call_op('{chosen_func}', lines, funcs, target_name)",
+    ]
+    r = list(lines)
+    insert_at = random.randrange(max(1, len(r) // 3), len(r))
+    for i, pl in enumerate(patch_lines):
+        indent = '    ' if not pl.startswith('#') else ''
+        r.insert(insert_at + i, indent + pl)
+    parent_mutated = genome.get('propagate_mutation_count', 0) + 1
+    genome['propagate_mutation_count'] = parent_mutated
+    save_genome(genome)
+    print(f"[propagate-mutation] {chosen_func} -> {target_module}")
+    return r
+
+
+def _schedule_self_rewrite(genome, source_func):
+    triggers = genome.setdefault('scheduled_triggers', [])
+    action = f"self_rewrite:{source_func}"
+    if not any(t.get('action') == action for t in triggers):
+        triggers.append({'gen': genome.get('generation', 0) + 1, 'action': action, 'amount': 0.1, 'fired': False})
+        save_genome(genome)
+        print(f"[schedule] queued self-rewrite from {source_func} at gen {genome.get('generation', 0) + 1}")
 
 
 def schedule_event(genome, at_gen, action, amount=0.05):

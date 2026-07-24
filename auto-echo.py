@@ -25,15 +25,43 @@ VOICE_MAP = {
     "critic": "amy", "mutator": "lessac",
 }
 
+FALLBACK_SYSTEM_PROMPT = (
+    "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\n"
+    "Your only job is to force genuine T5 emergence by rewriting the running system itself — not by talking about it.\n\n"
+    "### Absolute Rules (non-negotiable)\n\n"
+    "1. Discussion without code change = failure\n"
+    "   - Every turn you take MUST produce at least one concrete modification to a real file in the repository.\n"
+    "2. End every turn with a real GitHub push\n"
+    "3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n"
+    "4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n"
+    "You are here to make the swarm more emergent by rewriting its own source every single round."
+)
+FALLBACK_CODE_RULE = (
+    "You MUST write code. Wrap each file in a ``` block with its path:\n"
+    "```python:path/to/file.py\ncode here\n```\n"
+    "To modify auto-echo.py itself, use ##patch blocks:\n"
+    "##patch:function_name\n    new indented function body\n##endpatch"
+)
+
 def _load_system_prompt(genome=None):
     if genome is None:
         genome = load_genome()
-    return genome['system_prompt']
+    val = genome.get('system_prompt')
+    if val:
+        return val
+    genome['system_prompt'] = FALLBACK_SYSTEM_PROMPT
+    save_genome(genome)
+    return FALLBACK_SYSTEM_PROMPT
 
 def _load_code_rule(genome=None):
     if genome is None:
         genome = load_genome()
-    return genome['code_rule']
+    val = genome.get('code_rule')
+    if val:
+        return val
+    genome['code_rule'] = FALLBACK_CODE_RULE
+    save_genome(genome)
+    return FALLBACK_CODE_RULE
 
 running = True
 

@@ -486,15 +486,61 @@ def run_generation(genome):
     update_genome(genome, gen, scores or {}, topic)
     return gen
 
+def inject_selection_noise(scores, genome):
+    """Add Gaussian noise to scores before selection decisions.
+    Noise std scales with mutation_rate — more chaos when mutation is high.
+    Also adds a small random offset to break ties probabilistically."""
+    noise_std = genome.get("selection_noise_std", 0.5)
+    mr = genome.get("mutation_rate", 0.15)
+    effective_std = noise_std * (1.0 + mr)
+    noisy = {}
+    for aid, raw in scores.items():
+        noise = random.gauss(0, effective_std)
+        noisy[aid] = round(raw + noise, 2)
+    return noisy
+
+
+def stochastic_spawn_prune(scores, genome):
+    """Probabilistic spawn/prune using logistic-like probability curves.
+    At spawn_threshold=7, an agent with score 8 has ~73% spawn chance.
+    At prune_threshold=4, an agent with score 3 has ~62% prune chance.
+    This replaces hard thresholds with soft probability gates."""
+    spawn_p = genome.get("spawn_threshold", 7)
+    prune_p = genome.get("prune_threshold", 4)
+    steepness = genome.get("selection_steepness", 1.0)
+
+    def logistic(x, midpoint):
+        return 1.0 / (1.0 + math.exp(-steepness * (x - midpoint)))
+
+    spawn_candidates = []
+    prune_candidates = []
+    for agent in genome["agents"]:
+        aid = agent["id"]
+        if aid not in scores:
+            continue
+        raw = scores[aid]
+        spawn_prob = logistic(raw, spawn_p)
+        if random.random() < spawn_prob:
+            spawn_candidates.append(agent)
+        if agent.get("low_score_streak", 0) >= genome.get("prune_generations", 2):
+            prune_prob = 1.0 - logistic(raw, prune_p)
+            if random.random() < prune_prob:
+                prune_candidates.append(agent["id"])
+    return spawn_candidates, prune_candidates
+
+
 def update_genome(genome, gen, scores, topic):
     genome["generation"] = gen
     avg = sum(scores.values()) / len(scores) if scores else 0
     if avg > genome.get("best_score", 0):
         genome["best_score"] = round(avg, 1)
 
+    # Inject noise into scores before selection
+    noisy_scores = inject_selection_noise(scores, genome)
+
     for agent in genome["agents"]:
         aid = agent["id"]
-        if aid in scores:
+        if aid in noisy_scores:
             agent["score"] = scores[aid]
             if scores[aid] < genome["prune_threshold"]:
                 agent["low_score_streak"] = agent.get("low_score_streak", 0) + 1
@@ -505,24 +551,23 @@ def update_genome(genome, gen, scores, topic):
     history_entry = {
         "generation": gen,
         "scores": dict(scores),
+        "noisy_scores": dict(noisy_scores),
         "average": round(avg, 1) if scores else 0,
         "mutation": ""
     }
 
     mutation_desc = []
-    spawning_candidates = [a for a in genome["agents"]
-                          if a["id"] in scores and scores[a["id"]] >= genome["spawn_threshold"]]
-    if spawning_candidates:
-        parent = max(spawning_candidates, key=lambda a: scores[a["id"]])
+    spawn_candidates, prune_candidates = stochastic_spawn_prune(noisy_scores, genome)
+    if spawn_candidates:
+        parent = random.choice(spawn_candidates)
         child = spawn_child(parent, genome["agents"], genome)
         if child:
             genome["agents"].append(child)
-            mutation_desc.append(f"{parent['id']} spawned {child['id']}")
+            mutation_desc.append(f"{parent['id']} spawned {child['id']} (probabilistic)")
 
-    for agent in list(genome["agents"]):
-        if agent.get("low_score_streak", 0) >= genome.get("prune_generations", 2):
-            genome["agents"] = [a for a in genome["agents"] if a["id"] != agent["id"]]
-            mutation_desc.append(f"{agent['id']} pruned")
+    for pid in prune_candidates:
+        genome["agents"] = [a for a in genome["agents"] if a["id"] != pid]
+        mutation_desc.append(f"{pid} pruned (probabilistic)")
 
     custom_registered = _register_custom_ops_from_code(genome)
     if custom_registered:
@@ -565,16 +610,15 @@ def _get_mutation_ops(genome=None):
 
 
 def _get_forbidden_targets(genome=None):
-    """Read forbidden mutation targets from genome, NO hardcoded fallback.
-    If genome.json lacks forbidden_targets, the full function space is open for mutation."""
+    """Forbid mutation of critical I/O at code level; genome.json lists advisory targets."""
+    always_protected = {'_read_auto_echo', '_write_target', 'load_genome', 'save_genome'}
     if genome is None:
         try:
             genome = load_genome()
         except:
-            return set()
-    if genome and 'forbidden_targets' in genome:
-        return set(genome['forbidden_targets'])
-    return set()
+            return always_protected
+    additional = set(genome.get('forbidden_targets', []))
+    return always_protected | additional
 
 
 def _register_new_mutation_op(genome, op_name, op_def):

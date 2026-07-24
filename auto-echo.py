@@ -8,7 +8,7 @@ Agents can write code files which get committed alongside utterances.
 Run:  python3 auto-echo.py
 Stop: Ctrl+C (graceful shutdown after current utterance)
 """
-import pyaudio, wave, struct, os, sys, json, subprocess, re, time, signal, random
+import pyaudio, wave, struct, os, sys, json, subprocess, re, time, signal, random, math, zlib
 from datetime import datetime, timezone
 
 BASE = os.path.dirname(os.path.abspath(__file__))
@@ -591,67 +591,126 @@ def _register_new_mutation_op(genome, op_name, op_def):
     return False
 
 
+_MUTATION_OPS = {}
+
+def _register_mutation_op(name):
+    def decorator(f):
+        _MUTATION_OPS[name] = f
+        return f
+    return decorator
+
+
+@_register_mutation_op('duplicate_line')
+def mutation_op_duplicate_line(lines, funcs, target_name):
+    idx = random.randrange(len(lines))
+    r = list(lines)
+    r.insert(idx, r[idx])
+    return r
+
+
+@_register_mutation_op('delete_line')
+def mutation_op_delete_line(lines, funcs, target_name):
+    idx = random.randrange(len(lines))
+    r = list(lines)
+    del r[idx]
+    return r
+
+
+@_register_mutation_op('swap_lines')
+def mutation_op_swap_lines(lines, funcs, target_name):
+    if len(lines) < 2:
+        return lines
+    i, j = random.sample(range(len(lines)), 2)
+    r = list(lines)
+    r[i], r[j] = r[j], r[i]
+    return r
+
+
+@_register_mutation_op('perturb_constant')
+def mutation_op_perturb_constant(lines, funcs, target_name):
+    r = [re.sub(r'\b(\d+)\b', lambda m: str(int(m.group(1)) * random.choice([0, 2, -1]) or 1), line) for line in lines]
+    return r
+
+
+@_register_mutation_op('insert_random_branch')
+def mutation_op_insert_random_branch(lines, funcs, target_name):
+    if len(lines) < 3:
+        return lines
+    r = list(lines)
+    r.insert(random.randrange(1, len(r)), 'if random.random() < 0.5: pass')
+    return r
+
+
+@_register_mutation_op('mutate_string_literal')
+def mutation_op_mutate_string_literal(lines, funcs, target_name):
+    r = [re.sub(r"'[^']*'", lambda m: f"'{random.choice(['x','y','z','a','b','c'])}'", line) for line in lines]
+    return r
+
+
+@_register_mutation_op('invert_condition')
+def mutation_op_invert_condition(lines, funcs, target_name):
+    r = [line.replace('if not ', 'if ').replace('if ', 'if not ') for line in lines]
+    return r
+
+
+@_register_mutation_op('swap_comparisons')
+def mutation_op_swap_comparisons(lines, funcs, target_name):
+    r = [line.replace('==', '\x00').replace('!=', '==').replace('\x00', '!=') for line in lines]
+    return r
+
+
+@_register_mutation_op('splice_from_sibling')
+def mutation_op_splice_from_sibling(lines, funcs, target_name):
+    available = [n for n in funcs if n != target_name]
+    if not available:
+        return lines
+    src_name = random.choice(available)
+    _, src_body = funcs[src_name]
+    src_lines = [l for l in src_body.split('\n') if l.strip()]
+    if not src_lines:
+        return lines
+    r = list(lines)
+    r.insert(random.randrange(len(r)), random.choice(src_lines))
+    return r
+
+
+@_register_mutation_op('shuffle_block_lines')
+def mutation_op_shuffle_block_lines(lines, funcs, target_name):
+    if len(lines) < 4:
+        return lines
+    r = list(lines)
+    start = random.randrange(0, len(r) - 2)
+    block_len = min(random.randint(2, 3), len(r) - start)
+    block = r[start:start + block_len]
+    random.shuffle(block)
+    r[start:start + block_len] = block
+    return r
+
+
 def _apply_source_mutation(funcs, target_name, operator, genome=None):
     _, body = funcs[target_name]
     lines = [l for l in body.split('\n') if l.strip()]
     if not lines or len(lines) < 2:
         return None
 
-    result = list(lines)
-
-    if operator == 'duplicate_line':
-        idx = random.randrange(len(result))
-        result.insert(idx, result[idx])
-    elif operator == 'delete_line':
-        idx = random.randrange(len(result))
-        del result[idx]
-    elif operator == 'swap_lines':
-        if len(result) >= 2:
-            i, j = random.sample(range(len(result)), 2)
-            result[i], result[j] = result[j], result[i]
-    elif operator == 'perturb_constant':
-        for i, line in enumerate(result):
-            result[i] = re.sub(r'\b(\d+)\b', lambda m: str(int(m.group(1)) * random.choice([0, 2, -1]) or 1), line)
-    elif operator == 'insert_random_branch':
-        if len(result) >= 3:
-            idx = random.randrange(1, len(result))
-            result.insert(idx, 'if random.random() < 0.5: pass')
-    elif operator == 'mutate_string_literal':
-        for i, line in enumerate(result):
-            result[i] = re.sub(r"'[^']*'", lambda m: f"'{random.choice(['x','y','z','a','b','c'])}'", line)
-    elif operator == 'invert_condition':
-        for i, line in enumerate(result):
-            result[i] = line.replace('if not ', 'if ').replace('if ', 'if not ')
-    elif operator == 'swap_comparisons':
-        for i, line in enumerate(result):
-            result[i] = line.replace('==', '\x00').replace('!=', '==').replace('\x00', '!=')
-    elif operator == 'splice_from_sibling':
-        available = [n for n in funcs if n != target_name]
-        if available:
-            source_name = random.choice(available)
-            _, source_body = funcs[source_name]
-            source_lines = [l for l in source_body.split('\n') if l.strip()]
-            if source_lines:
-                borrowed = random.choice(source_lines)
-                idx = random.randrange(len(result))
-                result.insert(idx, borrowed)
-    elif operator == 'shuffle_block_lines':
-        if len(result) >= 4:
-            start = random.randrange(0, len(result) - 2)
-            block_len = min(random.randint(2, 3), len(result) - start)
-            block = result[start:start + block_len]
-            random.shuffle(block)
-            result[start:start + block_len] = block
+    handler = _MUTATION_OPS.get(operator)
+    if handler:
+        result = handler(lines, funcs, target_name)
     elif genome and operator in genome.get('custom_mutation_ops', {}):
         op_code = genome['custom_mutation_ops'][operator]
         local_ns = {'random': random, 're': re}
         try:
             exec(compile(op_code, f'<{operator}>', 'exec'), local_ns)
-            result = local_ns[operator](result)
+            result = local_ns[operator](lines)
         except Exception as e:
             print(f"[custom-op] {operator} failed: {e}")
             return None
+    else:
+        print(f"[mutation] unknown operator '{operator}'")
+        return None
 
+    if result is None or result == lines:
+        return None
     mutated_body = '\n'.join(result)
     if mutated_body == body:
         return None
@@ -667,7 +726,7 @@ def _register_custom_ops_from_code(genome):
     for fname in os.listdir(BASE):
         if not fname.endswith('.py'):
             continue
-        if fname in ('auto-echo.py', 'self_modify.py', 'evolve.py'):
+        if fname in ('self_modify.py', 'evolve.py'):
             continue
         fpath = os.path.join(BASE, fname)
         try:

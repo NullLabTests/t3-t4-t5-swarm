@@ -622,6 +622,26 @@ def _apply_source_mutation(funcs, target_name, operator, genome=None):
     elif operator == 'invert_condition':
         for i, line in enumerate(result):
             result[i] = line.replace('if not ', 'if ').replace('if ', 'if not ')
+    elif operator == 'swap_comparisons':
+        for i, line in enumerate(result):
+            result[i] = line.replace('==', '\x00').replace('!=', '==').replace('\x00', '!=')
+    elif operator == 'splice_from_sibling':
+        available = [n for n in funcs if n != target_name]
+        if available:
+            source_name = random.choice(available)
+            _, source_body = funcs[source_name]
+            source_lines = [l for l in source_body.split('\n') if l.strip()]
+            if source_lines:
+                borrowed = random.choice(source_lines)
+                idx = random.randrange(len(result))
+                result.insert(idx, borrowed)
+    elif operator == 'shuffle_block_lines':
+        if len(result) >= 4:
+            start = random.randrange(0, len(result) - 2)
+            block_len = min(random.randint(2, 3), len(result) - start)
+            block = result[start:start + block_len]
+            random.shuffle(block)
+            result[start:start + block_len] = block
     elif genome and operator in genome.get('custom_mutation_ops', {}):
         op_code = genome['custom_mutation_ops'][operator]
         local_ns = {'random': random, 're': re}

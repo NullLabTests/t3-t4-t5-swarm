@@ -105,10 +105,22 @@ def draw(std):
         else:
             std.addstr(1, 0, " LOOP STOPPED", curses.color_pair(3))
 
-        # Staleness
-        if staleness > 300:  # 5 min
-            warn = f"  STALE: {staleness//60}m since last push"
-            std.addstr(1, len(line2)+2, warn, curses.color_pair(3))
+        # Heartbeat line: time since last utterance + last push
+        last_entry = entries[-1] if entries else None
+        utt_age = "?"
+        if last_entry and last_entry.get('time'):
+            try:
+                utt_secs = (datetime.now() - datetime.fromisoformat(last_entry['time'].replace('Z','+00:00').split('.')[0])).total_seconds()
+                utt_age = f"{int(utt_secs//60)}m{int(utt_secs%60)}s"
+            except: pass
+        push_age_s = staleness if staleness > 0 else 0
+        push_age = f"{push_age_s//60}m{push_age_s%60}s" if push_age_s < 3600 else f"{push_age_s//3600}h"
+
+        hb = f" last utterance: {utt_age} ago | last push: {push_age} ago"
+        if staleness > 300:
+            std.addstr(2, 0, hb, curses.color_pair(3))
+        else:
+            std.addstr(2, 0, hb, curses.color_pair(2) if staleness < 120 else curses.color_pair(4))
 
         if g and g.get('agents'):
             agents = sorted(g['agents'], key=lambda a: a['score'], reverse=True)

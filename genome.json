@@ -15,6 +15,9 @@
     "insert_random_branch",
     "mutate_string_literal",
     "invert_condition",
+    "swap_comparisons",
+    "splice_from_sibling",
+    "shuffle_block_lines",
     "mutation_op_swap_agent_properties",
     "mutation_op_invert_thresholds",
     "mutation_op_shuffle_agent_order"

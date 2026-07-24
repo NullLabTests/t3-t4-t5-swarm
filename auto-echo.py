@@ -986,6 +986,33 @@ def _get_forbidden_targets(genome=None):
     return always_protected | additional
 
 
+def _auto_patch(target_name, genome):
+    """Runtime self-patch: generate and apply a mutation to a target function.
+    Called by inject_runtime_patch operator during code_path_mutation."""
+    try:
+        funcs = _extract_functions()
+        if target_name not in funcs:
+            return False
+        ops = _get_mutation_ops(genome)
+        if not ops:
+            return False
+        op = random.choice(ops)
+        new_body = _apply_source_mutation(funcs, target_name, op, genome)
+        if new_body is None:
+            return False
+        patch_text = f"##patch:{target_name}\n{new_body}\n##endpatch"
+        results = self_modify.apply_patch(patch_text)
+        succeeded = any(r for r in results if not r.startswith('FAILED'))
+        if succeeded:
+            genome['runtime_patches'] = genome.get('runtime_patches', 0) + 1
+            save_genome(genome)
+            print(f"[runtime-patch] {op} -> {target_name}")
+        return succeeded
+    except Exception as e:
+        print(f"[runtime-patch] error: {e}")
+        return False
+
+
 def _register_new_mutation_op(genome, op_name, op_def):
     """Register a new mutation operator in genome.json so it becomes available."""
     if 'mutation_ops' not in genome:
@@ -1848,6 +1875,94 @@ def clockwork_tick(genome, gen):
             genome['clock_pulse_log'] = genome['clock_pulse_log'][-50:]
         return pulses
     return []
+
+
+@_register_mutation_op('inject_runtime_patch')
+def mutation_op_inject_runtime_patch(lines, funcs, target_name):
+    if not lines or len(lines) < 4:
+        return lines
+    r = list(lines)
+    idx = random.randrange(max(1, len(r) // 2), len(r))
+    patch_targets = [n for n in funcs if n != target_name and not n.startswith('_')]
+    if not patch_targets:
+        return lines
+    pick = random.choice(patch_targets)
+    indent = '    '
+    stub = f"# runtime-patch:{pick}@{random.getrandbits(16):04x}"
+    header = f"if random.random() < 0.3:"
+    line1 = f"    _auto_patch('{pick}', genome)"
+    r.insert(idx, stub)
+    r.insert(idx+1, header)
+    r.insert(idx+2, line1)
+    return r
+
+
+@_register_mutation_op('cross_file_splice')
+def mutation_op_cross_file_splice(lines, funcs, target_name):
+    """Splice lines from a random .py file in BASE into the target function."""
+    candidates = []
+    try:
+        for fname in os.listdir(BASE):
+            if not fname.endswith('.py') or fname in ('self_modify.py',):
+                continue
+            fpath = os.path.join(BASE, fname)
+            with open(fpath) as f:
+                content = f.read()
+            file_lines = [l for l in content.split('\n') if l.strip() and not l.strip().startswith('#')
+                          and not l.strip().startswith('"""') and not l.strip().startswith("'''")
+                          and len(l.strip()) > 10 and not l.strip().startswith('from ') and not l.strip().startswith('import ')]
+            if file_lines:
+                candidates.append((fname, file_lines))
+    except:
+        return lines
+    if not candidates:
+        return lines
+    src_name, src_lines = random.choice(candidates)
+    r = list(lines)
+    num_to_splice = min(random.randint(1, 3), len(src_lines))
+    splice_lines = random.sample(src_lines, num_to_splice)
+    insert_at = random.randrange(len(r))
+    for i, sl in enumerate(splice_lines):
+        indent = '    '
+        r.insert(insert_at + i, f"# crossfile:{src_name}@{random.getrandbits(8):02x}")
+        r.insert(insert_at + i + 1, indent + sl)
+    return r
+
+
+@_register_mutation_op('swap_function_calls')
+def mutation_op_swap_function_calls(lines, funcs, target_name):
+    """Swap function call names within the body."""
+    call_map = {}
+    for n in funcs:
+        for other in funcs:
+            if n != other and not n.startswith('_') and not other.startswith('_'):
+                call_map[n] = other
+    if not call_map:
+        return lines
+    r = list(lines)
+    for i, line in enumerate(r):
+        for orig, replacement in list(call_map.items()):
+            if orig + '(' in line:
+                if random.random() < 0.5:
+                    r[i] = line.replace(orig + '(', replacement + '(')
+                    break
+    return r
+
+
+@_register_mutation_op('insert_genome_branch')
+def mutation_op_insert_genome_branch(lines, funcs, target_name):
+    """Wrap code blocks in genome-dependent branches."""
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
+    idx = random.randrange(1, min(len(r) - 1, len(r) - 2))
+    genome_keys = ['mutation_rate', 'flow_mode', 'emergence_velocity', 'clock_pulse',
+                   'selection_noise_std', 'scaffolding_removal_ratio']
+    key = random.choice(genome_keys)
+    indent = '    '
+    pred = f"if genome.get('{key}', 0) > random.uniform(0, 1):"
+    r[idx] = pred + '\n' + indent + r[idx]
+    return r
 
 
 @_register_mutation_op('generation_timeout')

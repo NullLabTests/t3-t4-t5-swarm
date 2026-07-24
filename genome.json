@@ -42,7 +42,11 @@
     "mutation_op_shuffle_block_lines",
     "mutation_op_swap_mutation_targets",
     "mutation_op_mutate_criteria",
-    "mutation_op_insert_noise_ref"
+    "mutation_op_insert_noise_ref",
+    "inject_runtime_patch",
+    "cross_file_splice",
+    "swap_function_calls",
+    "insert_genome_branch"
   ],
   "prompt_modifiers": [
     " Write executable code.",

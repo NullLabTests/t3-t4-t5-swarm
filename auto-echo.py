@@ -481,7 +481,7 @@ def _register_new_mutation_op(genome, op_name, op_def):
     return False
 
 
-def _apply_source_mutation(funcs, target_name, operator):
+def _apply_source_mutation(funcs, target_name, operator, genome=None):
     _, body = funcs[target_name]
     lines = [l for l in body.split('\n') if l.strip()]
     if not lines or len(lines) < 2:
@@ -540,10 +540,56 @@ def _apply_source_mutation(funcs, target_name, operator):
             new_result.append(re.sub(r'"([^"]*)"|\'([^\']*)\'', mutate_str, line))
         result = new_result
 
+    elif genome and operator in genome.get('custom_mutation_ops', {}):
+        op_code = genome['custom_mutation_ops'][operator]
+        local_ns = {'random': random, 're': re}
+        try:
+            exec(compile(op_code, f'<{operator}>', 'exec'), local_ns)
+            result = local_ns[operator](result)
+        except Exception as e:
+            print(f"[custom-op] {operator} failed: {e}")
+            return None
+
     mutated_body = '\n'.join(result)
     if mutated_body == body:
         return None
     return mutated_body
+
+
+def _register_custom_ops_from_code(genome):
+    if 'custom_mutation_ops' not in genome:
+        genome['custom_mutation_ops'] = {}
+    if 'mutation_ops' not in genome:
+        genome['mutation_ops'] = _get_mutation_ops(genome)
+    registered = []
+    for fname in os.listdir(BASE):
+        if not fname.endswith('.py'):
+            continue
+        if fname in ('auto-echo.py', 'self_modify.py', 'evolve.py'):
+            continue
+        fpath = os.path.join(BASE, fname)
+        try:
+            with open(fpath) as f:
+                content = f.read()
+        except:
+            continue
+        for m in re.finditer(r'def (mutation_op_\w+)\(', content):
+            op_name = m.group(1)
+            if op_name in genome['mutation_ops']:
+                continue
+            func_match = re.search(
+                rf'(def {re.escape(op_name)}\(.*?\):.*?)(?=\n\ndef |\nclass |\n#|\Z)',
+                content, re.DOTALL
+            )
+            if func_match:
+                op_code = func_match.group(1).strip()
+                genome['mutation_ops'].append(op_name)
+                genome['custom_mutation_ops'][op_name] = op_code
+                registered.append(op_name)
+                print(f"[mutation-op] registered '{op_name}' from {fname}")
+    if registered:
+        save_genome(genome)
+    return registered
 
 
 def code_path_mutation(genome, gen):
@@ -576,13 +622,7 @@ def code_path_mutation(genome, gen):
             print(f"[code-mutation] extract error: {e}")
             return muts
 
-        # Don't mutate self (code_path_mutation) or critical infrastructure
-        forbidden = {
-            'code_path_mutation', '_read_auto_echo',
-            '_extract_functions', '_apply_source_mutation', 'main', 'run_generation',
-            'llm_generate', 'load_genome', 'save_genome', 'load_log', 'append_log',
-            'sigint_handler', 'git_commit_push',
-        }
+        forbidden = _get_forbidden_targets(genome)
         available = [n for n in funcs if n not in forbidden and n not in attempted]
         if not available:
             continue
@@ -592,7 +632,7 @@ def code_path_mutation(genome, gen):
         operator = random.choice(_get_mutation_ops(genome))
 
         try:
-            new_body = _apply_source_mutation(funcs, target, operator)
+            new_body = _apply_source_mutation(funcs, target, operator, genome)
             if new_body is None:
                 continue
 

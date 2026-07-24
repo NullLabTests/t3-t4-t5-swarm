@@ -6,6 +6,32 @@
   "prune_threshold": 4,
   "prune_generations": 2,
   "mutation_rate": 0.15,
+  "mutation_ops": [
+    "duplicate_line",
+    "delete_line",
+    "swap_lines",
+    "perturb_constant",
+    "insert_random_branch",
+    "mutate_string_literal"
+  ],
+  "forbidden_targets": [
+    "code_path_mutation",
+    "_read_auto_echo",
+    "_extract_functions",
+    "_apply_source_mutation",
+    "_get_mutation_ops",
+    "_get_forbidden_targets",
+    "main",
+    "run_generation",
+    "llm_generate",
+    "load_genome",
+    "save_genome",
+    "load_log",
+    "append_log",
+    "sigint_handler",
+    "git_commit_push"
+  ],
+  "custom_mutation_ops": {},
   "agents": [
     {
       "id": "explorer",

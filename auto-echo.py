@@ -17,7 +17,7 @@ VOICES_DIR = os.path.join(BASE, 'voices')
 LOG_FILE = os.path.join(BASE, 'echo_conversation.jsonl')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 METRICS_FILE = os.path.join(BASE, 'metrics.json')
-LLM_MODEL = 'opencode/deepseek-v4-flash-free'
+LLM_MODEL = None  # loaded from genome via _load_llm_model()
 
 DRY_RUN = False
 USE_VOICE = True
@@ -75,6 +75,16 @@ def _load_code_rule(genome=None):
     genome['code_rule'] = FALLBACK_CODE_RULE
     save_genome(genome)
     return FALLBACK_CODE_RULE
+
+def _load_llm_model(genome=None):
+    if genome is None:
+        genome = load_genome()
+    val = genome.get('llm_model')
+    if val:
+        return val
+    genome['llm_model'] = 'opencode/deepseek-v4-flash-free'
+    save_genome(genome)
+    return 'opencode/deepseek-v4-flash-free'
 
 running = True
 
@@ -470,11 +480,12 @@ def speak(role, text):
     except Exception as e:
         print(f"[speak] Error: {e}")
 
-REPETITION_THRESHOLD = 0.5
-MIN_WORDS = 8
-MAX_WORDS = 2000
-MIN_ENGLISH_RATIO = 0.5
-MAX_CHARS_NO_CODE = 6000
+def _load_genome_threshold(key, default):
+    try:
+        g = load_genome()
+        return g.get(key, default)
+    except:
+        return default
 
 def is_repetitive(text):
     words = text.split()
@@ -483,7 +494,8 @@ def is_repetitive(text):
     bigrams = [' '.join(words[i:i+2]) for i in range(len(words)-1)]
     if not bigrams:
         return False
-    return max(bigrams.count(b) for b in set(bigrams)) / len(bigrams) > REPETITION_THRESHOLD
+    threshold = _load_genome_threshold('repetition_threshold', 0.5)
+    return max(bigrams.count(b) for b in set(bigrams)) / len(bigrams) > threshold
 
 def has_gibberish(text):
     words = text.split()
@@ -493,14 +505,15 @@ def has_gibberish(text):
     return unique < 3
 
 def is_garbage(text):
-    """Multi-signal garbage detection. Returns True if text is likely garbled."""
     if has_gibberish(text):
         return True
     latin = len(re.findall(r'[a-zA-Z]', text))
-    if len(text) > 0 and latin / len(text) < MIN_ENGLISH_RATIO:
+    min_eng = _load_genome_threshold('min_english_ratio', 0.5)
+    if len(text) > 0 and latin / len(text) < min_eng:
         return True
     has_code = '```' in text or '##patch:' in text
-    if len(text) > MAX_CHARS_NO_CODE and not has_code:
+    max_no_code = _load_genome_threshold('max_chars_no_code', 6000)
+    if len(text) > max_no_code and not has_code:
         return True
     return False
 
@@ -514,7 +527,8 @@ def llm_generate(prompt, max_attempts=3, timeout_sec=120):
                 text = result.stdout.strip()
                 wc = len(text.split())
                 has_code = '```' in text
-                bad = (wc < MIN_WORDS and not has_code) or is_repetitive(text) or is_garbage(text)
+                min_words = _load_genome_threshold('min_words', 8)
+                bad = (wc < min_words and not has_code) or is_repetitive(text) or is_garbage(text)
                 if text and not bad:
                     return text
                 else:
@@ -527,6 +541,39 @@ def llm_generate(prompt, max_attempts=3, timeout_sec=120):
             prompt += "\n\nYour previous attempt was too long, too short, or repetitive. Be more direct and original."
         time.sleep(1)
     return None
+
+def compute_self_rewrite_bandwidth(genome):
+    """Measure what fraction of written files were rewrites of auto-echo.py vs external.
+    Returns (self_lines_changed, external_files, bandwidth_pct) where bandwidth_pct
+    is the ratio of self-rewrite lines to total files touched — high means the swarm
+    is rewriting its own core rather than creating external artifacts."""
+    base = os.path.join(BASE, 'auto-echo.py')
+    self_changed = 0
+    external = 0
+    try:
+        r = subprocess.run(
+            ['git', 'diff', '--shortstat', 'HEAD', '--', 'auto-echo.py'],
+            cwd=BASE, capture_output=True, text=True, timeout=10
+        )
+        if r.stdout.strip():
+            for part in r.stdout.split(','):
+                part = part.strip()
+                if 'insertion' in part:
+                    self_changed += int(part.split()[0])
+                elif 'deletion' in part:
+                    self_changed += int(part.split()[0])
+        r2 = subprocess.run(
+            ['git', 'diff', '--name-only', 'HEAD'],
+            cwd=BASE, capture_output=True, text=True, timeout=10
+        )
+        all_changed = [f for f in r2.stdout.strip().split('\n') if f.strip()]
+        external = len([f for f in all_changed if f != 'auto-echo.py'])
+    except:
+        pass
+    total = self_changed + external + 1
+    bandwidth = round((self_changed / total) * 100, 1)
+    return self_changed, external, bandwidth
+
 
 def build_self_observation(genome):
     gen = genome.get('generation', 0)
@@ -543,9 +590,11 @@ def build_self_observation(genome):
     active_ids = [a['id'] for a in agents]
     low_scorers = [a['id'] for a in agents if a.get('score', 5) < genome.get('prune_threshold', 4)]
     context_files = genome.get('context_sources', [])
+    self_changed, external, bw = compute_self_rewrite_bandwidth(genome)
+    genome['self_rewrite_bandwidth'] = bw
     obs = (
         f"[self-observation] gen={gen} agents={agent_count} ops={op_count}(+{custom_ops} custom) "
-        f"diversity={diversity} trend={avg_trend}"
+        f"diversity={diversity} trend={avg_trend} bw={bw}%"
     )
     if low_scorers:
         obs += f" at-risk={low_scorers}"
@@ -632,6 +681,7 @@ def update_metrics(gen, genome, code_outcomes):
     # count file outcomes
     syntax_ok = sum(1 for o in code_outcomes if 'syntax OK' in o)
     syntax_bad = sum(1 for o in code_outcomes if 'INVALID' in o)
+    self_changed, external, bw = compute_self_rewrite_bandwidth(genome)
     record = {
         'generation': gen,
         'topic': genome.get('topic', ''),
@@ -642,6 +692,7 @@ def update_metrics(gen, genome, code_outcomes):
         'syntax_ok': syntax_ok,
         'syntax_invalid': syntax_bad,
         'files_written': len(code_outcomes),
+        'self_rewrite_bandwidth': bw,
         'timestamp': datetime.now(timezone.utc).isoformat(),
     }
     records.append(record)
@@ -758,6 +809,55 @@ def rescue_at_risk_agents(genome, gen):
     return rescued
 
 
+def _execute_local_agent(agent_def, genome):
+    """Run a local agent function directly without LLM.
+    
+    Agents can provide a 'local_fn' (name of function in agent_modules/)
+    or a 'local_code' (inline Python). The function receives (genome)
+    and returns dict with at least 'text' for the agent output.
+    """
+    aid = agent_def['id']
+    source = agent_def.get('local_code', '')
+    fn_name = agent_def.get('local_fn', '')
+    if not source and fn_name:
+        mod_path = os.path.join(MODULES_DIR, fn_name)
+        if not mod_path.endswith('.py'):
+            mod_path += '.py'
+        if not os.path.exists(mod_path):
+            mod_path = os.path.join(MODULES_DIR, fn_name + '.py')
+        if os.path.exists(mod_path):
+            try:
+                with open(mod_path) as f:
+                    source = f.read()
+            except:
+                pass
+    if not source:
+        return None
+    try:
+        local_ns = {
+            'genome': genome, 'random': random, 'json': json,
+            'os': os, 'BASE': BASE, 'print': print,
+        }
+        exec(compile(source, f'<local:{aid}>', 'exec'), local_ns)
+        if fn_name and fn_name in local_ns:
+            result = local_ns[fn_name](genome)
+        elif 'run' in local_ns:
+            result = local_ns['run'](genome)
+        else:
+            return None
+        if isinstance(result, str):
+            return {'text': result, 'code_blocks': [], 'is_local': True}
+        if isinstance(result, dict):
+            result.setdefault('text', '')
+            result.setdefault('code_blocks', [])
+            result['is_local'] = True
+            return result
+        return {'text': str(result), 'code_blocks': [], 'is_local': True}
+    except Exception as e:
+        print(f"[local-agent] {aid} error: {e}")
+        return None
+
+
 def run_generation(genome):
     gen = genome["generation"] + 1
     genome['gen_start_time'] = time.time()
@@ -815,26 +915,38 @@ def run_generation(genome):
             name = aid.capitalize()
             print(f"\n--- {name} (emergent turn {turn_i+1}/{turns}) ---")
             agent_hooks.execute_hooks(genome, 'pre_agent', agent=agent, topic=topic, generation=gen)
-            prompt = build_agent_prompt(agent, topic, load_log())
-            text = llm_generate(prompt)
-            if not text:
-                print(f"[{aid}] LLM returned empty, skipping")
-                continue
+            is_local = agent.get('local_fn') or agent.get('local_code')
+            if is_local:
+                result = _execute_local_agent(agent, genome)
+                if result:
+                    text = result['text']
+                    blocks = result.get('code_blocks', [])
+                    print(f"[local-agent] {aid} generated {len(text)} chars")
+                else:
+                    print(f"[{aid}] local agent failed, skipping")
+                    continue
+            else:
+                prompt = build_agent_prompt(agent, topic, load_log())
+                text = llm_generate(prompt)
+                if not text:
+                    print(f"[{aid}] LLM returned empty, skipping")
+                    continue
+                blocks = extract_code_blocks(text)
 
-            blocks = extract_code_blocks(text)
             written_files = write_code_files(blocks)
             all_written_files.extend(written_files)
 
-            patches = apply_self_patches(text)
-            if patches:
-                written_files.append(f"#patch:{len(patches)}blocks")
-                all_written_files.extend(written_files)
-                print(f"[patch] auto-echo.py modified: {patches}")
+            if not is_local:
+                patches = apply_self_patches(text)
+                if patches:
+                    written_files.append(f"#patch:{len(patches)}blocks")
+                    all_written_files.extend(written_files)
+                    print(f"[patch] auto-echo.py modified: {patches}")
 
-            genome_exts = extend_genome(text, None)
-            if genome_exts:
-                print(f"[genome-ext] {genome_exts}")
-                genome = load_genome()
+                genome_exts = extend_genome(text, None)
+                if genome_exts:
+                    print(f"[genome-ext] {genome_exts}")
+                    genome = load_genome()
 
             text_clean = strip_markdown(strip_code_blocks(text))
 
@@ -859,26 +971,38 @@ def run_generation(genome):
             name = aid.capitalize()
             print(f"\n--- {name} ---")
             agent_hooks.execute_hooks(genome, 'pre_agent', agent=agent, topic=topic, generation=gen)
-            prompt = build_agent_prompt(agent, topic, load_log())
-            text = llm_generate(prompt)
-            if not text:
-                print(f"[{aid}] LLM returned empty, skipping")
-                continue
+            is_local = agent.get('local_fn') or agent.get('local_code')
+            if is_local:
+                result = _execute_local_agent(agent, genome)
+                if result:
+                    text = result['text']
+                    blocks = result.get('code_blocks', [])
+                    print(f"[local-agent] {aid} generated {len(text)} chars")
+                else:
+                    print(f"[{aid}] local agent failed, skipping")
+                    continue
+            else:
+                prompt = build_agent_prompt(agent, topic, load_log())
+                text = llm_generate(prompt)
+                if not text:
+                    print(f"[{aid}] LLM returned empty, skipping")
+                    continue
+                blocks = extract_code_blocks(text)
 
-            blocks = extract_code_blocks(text)
             written_files = write_code_files(blocks)
             all_written_files.extend(written_files)
 
-            patches = apply_self_patches(text)
-            if patches:
-                written_files.append(f"#patch:{len(patches)}blocks")
-                all_written_files.extend(written_files)
-                print(f"[patch] auto-echo.py modified: {patches}")
+            if not is_local:
+                patches = apply_self_patches(text)
+                if patches:
+                    written_files.append(f"#patch:{len(patches)}blocks")
+                    all_written_files.extend(written_files)
+                    print(f"[patch] auto-echo.py modified: {patches}")
 
-            genome_exts = extend_genome(text, None)
-            if genome_exts:
-                print(f"[genome-ext] {genome_exts}")
-                genome = load_genome()
+                genome_exts = extend_genome(text, None)
+                if genome_exts:
+                    print(f"[genome-ext] {genome_exts}")
+                    genome = load_genome()
 
             text_clean = strip_markdown(strip_code_blocks(text))
 
@@ -1149,15 +1273,14 @@ def _reload_mutation_ops_from_source():
 
 
 def _get_forbidden_targets(genome=None):
-    """Forbid mutation of critical I/O at code level; genome.json lists advisory targets."""
-    always_protected = {'_read_auto_echo', '_write_target', 'load_genome', 'save_genome'}
+    """Forbid targets defined solely in genome.json — no hardcoded protections.
+    The swarm decides what to protect via ##set:forbidden_targets blocks."""
     if genome is None:
         try:
             genome = load_genome()
         except:
-            return always_protected
-    additional = set(genome.get('forbidden_targets', []))
-    return always_protected | additional
+            return set()
+    return set(genome.get('forbidden_targets', []))
 
 
 def _auto_patch(target_name, genome):
@@ -1388,10 +1511,43 @@ def _bridge_handler_hookdef(abs_path, genome):
     return False
 
 
-register_bridge_type('.autorun', _bridge_handler_autorun, "Execute a Python file after writing")
-register_bridge_type('.surge', _bridge_handler_surge, "Apply file content as genome mutations")
-register_bridge_type('.rewire', _bridge_handler_rewire, "Patch any .py file in the repo by name")
-register_bridge_type('.hookdef', _bridge_handler_hookdef, "Register hooks from a written file")
+def _bridge_handler_agent(abs_path, genome):
+    """Register a new agent from a .agent file (JSON format).
+    Fields: id, prompt, voice (optional), local_fn (optional), score (optional)."""
+    try:
+        with open(abs_path) as f:
+            data = json.load(f)
+        if isinstance(data, dict):
+            data = [data]
+        registered = 0
+        existing_ids = {a['id'] for a in genome.get('agents', [])}
+        for entry in data:
+            aid = entry.get('id', '')
+            if not aid or aid in existing_ids:
+                continue
+            agent = {
+                'id': aid,
+                'voice': entry.get('voice', random.choice(['southern', 'alan', 'lessac', 'amy'])),
+                'prompt': entry.get('prompt', ''),
+                'score': entry.get('score', 0),
+                'lifespan': 1,
+                'low_score_streak': 0,
+            }
+            if entry.get('local_fn'):
+                agent['local_fn'] = entry['local_fn']
+            if entry.get('local_code'):
+                agent['local_code'] = entry['local_code']
+            genome.setdefault('agents', []).append(agent)
+            existing_ids.add(aid)
+            registered += 1
+            print(f"[bridge-agent] registered '{aid}' from {os.path.basename(abs_path)}")
+        if registered:
+            save_genome(genome)
+            return True
+        return False
+    except Exception as e:
+        print(f"[bridge-agent] failed {os.path.basename(abs_path)}: {e}")
+        return False
 
 def _register_mutation_op(name):
     def decorator(f):
@@ -1552,6 +1708,35 @@ def mutation_op_flip_code_exempt(lines, funcs, target_name):
     return r
 
 
+@_register_mutation_op('constant_drift')
+def mutation_op_constant_drift(lines, funcs, target_name):
+    """Gently drift numeric constants by ±1–50% of their value.
+    Unlike perturb_constant which uses {0,2,-1}, this drifts by
+    small relative amounts, preserving approximate magnitude.
+    This lets thresholds, limits, and rates evolve smoothly."""
+    if not lines:
+        return lines
+    r = list(lines)
+    for i, line in enumerate(r):
+        r[i] = re.sub(
+            r'\b(\d+\.?\d*)\b',
+            lambda m: _drift_number(m.group(1)),
+            line
+        )
+    return r
+
+
+def _drift_number(s):
+    val = float(s)
+    if abs(val) < 1:
+        return s
+    drift = 1.0 + random.uniform(-0.5, 0.5)
+    new_val = int(round(val * drift)) if '.' not in s else round(val * drift, 2)
+    if new_val <= 0 and val > 0:
+        new_val = max(1, int(val))
+    return str(new_val)
+
+
 def _apply_source_mutation(funcs, target_name, operator, genome=None):
     _, body = funcs[target_name]
     lines = [l for l in body.split('\n') if l.strip()]
@@ -1615,7 +1800,7 @@ def _register_custom_ops_from_code(genome):
     for fname in os.listdir(BASE):
         if not fname.endswith('.py'):
             continue
-        if fname in ('self_modify.py', 'evolve.py'):
+        if fname in ('self_modify.py', 'evolve.py', 'auto-echo.py'):
             continue
         fpath = os.path.join(BASE, fname)
         try:
@@ -1656,7 +1841,8 @@ def code_path_mutation(genome, gen):
     using operators derived from its own structure, not from human templates."""
     muts = []
     rate = genome.get("mutation_rate", 0.15)
-    if gen < 3:
+    start_gen = genome.get("code_mutation_start_gen", 0)
+    if gen < start_gen:
         return muts
 
     _reload_mutation_ops_from_source()
@@ -1728,7 +1914,8 @@ def meta_mutate_operators(genome, gen):
     Circular meta-mutation: operators that mutate auto-echo.py get mutated themselves.
     Depth tracks how many times any operator has been mutated across generations."""
     muts = []
-    if gen < 3:
+    start_gen = genome.get("meta_mutation_start_gen", 0)
+    if gen < start_gen:
         return muts
     _reload_mutation_ops_from_source()
     try:
@@ -1779,7 +1966,8 @@ def meta_mutate_operators(genome, gen):
 COMPOSITION_STRATEGIES = ['sequence', 'branch', 'wrap', 'interleave', 'guard']
 
 def synthesize_new_operator(genome, gen):
-    if gen < 5:
+    start_gen = genome.get("synthesize_start_gen", 0)
+    if gen < start_gen:
         return None
     all_ops = list(_MUTATION_OPS.keys()) + list(genome.get('custom_mutation_ops', {}).keys())
     all_ops = [op for op in all_ops if op not in _get_forbidden_targets(genome) and not op.startswith('mutation_op_synthesized_')]
@@ -1879,6 +2067,34 @@ def record_operator_result(genome, operator, succeeded):
     save_genome(genome)
 
 
+def compute_structural_rewrite_depth(genome):
+    """Measure structural rewrite depth using git diff --shortstat.
+    Returns (files_changed, insertions, deletions, composite_depth).
+    This captures how much the system is structurally rewriting itself
+    beyond just line count changes."""
+    try:
+        r = subprocess.run(
+            ['git', 'diff', '--shortstat', 'HEAD'],
+            cwd=BASE, capture_output=True, text=True, timeout=10
+        )
+        output = r.stdout.strip()
+    except:
+        return 0, 0, 0, 0.0
+    if not output:
+        return 0, 0, 0, 0.0
+    files, insertions, deletions = 0, 0, 0
+    for part in output.split(','):
+        part = part.strip()
+        if 'file' in part:
+            files = int(part.split()[0])
+        elif 'insertion' in part:
+            insertions = int(part.split()[0])
+        elif 'deletion' in part:
+            deletions = int(part.split()[0])
+    depth = round((files * 2.0 + insertions * 1.0 + deletions * 0.5) / 100.0, 3)
+    return files, insertions, deletions, depth
+
+
 def compute_diversity_score(genome):
     history = genome.get('history', [])
     recent_mutations = sum(
@@ -1904,6 +2120,8 @@ def compute_diversity_score(genome):
     op_stats = genome.get('operator_stats', {})
     hookdefs = genome.get('hookdef_count', 0)
     self_spawns = genome.get('self_spawn_count', 0)
+    rewrite_files, rewrite_ins, rewrite_del, rewrite_depth = compute_structural_rewrite_depth(genome)
+    genome['structural_rewrite_depth'] = rewrite_depth
 
     original_baseline = genome.get('scaffolding_baseline', [])
     current_forbidden = genome.get('forbidden_targets', [])
@@ -1942,28 +2160,41 @@ def compute_diversity_score(genome):
         'selection_entropy': selection_entropy,
         'hookdef_count': hookdefs,
         'self_spawn_count': self_spawns,
+        'structural_rewrite_depth': rewrite_depth,
     }
     genome['scaffolding_removal_ratio'] = scaffolding_removal_ratio
-    score['composite'] = round(
-        score['op_count'] * 0.1 +
-        score['custom_op_count'] * 0.15 +
-        score['agent_count'] * 0.1 +
-        score['prompt_entropy'] * 0.1 +
-        score['structural_mutations'] * 0.1 +
-        score['self_modification_depth'] * 0.15 +
-        score['meta_self_modifications'] * 0.15 +
-        score['circular_mutation_depth'] * 0.15 +
-        score['patch_success_rate'] * 0.2 +
-        score['clock_pulse'] * 0.05 +
-        min(score['generation_timeouts'], 10) * 0.02 +
-        min(score['scheduled_triggers'], 20) * 0.01 +
-        score['emergence_velocity'] * 0.15 +
-        score['scaffolding_removal_ratio'] * 0.25 +
-        score['selection_entropy'] * 0.2 +
-        min(score['hookdef_count'], 20) * 0.05 +
-        min(score['self_spawn_count'], 10) * 0.08,
-        2
+    default_weights = {
+        'op_count': 0.1, 'custom_op_count': 0.15, 'agent_count': 0.1,
+        'prompt_entropy': 0.1, 'structural_mutations': 0.1,
+        'self_modification_depth': 0.15, 'meta_self_modifications': 0.15,
+        'circular_mutation_depth': 0.15, 'patch_success_rate': 0.2,
+        'clock_pulse': 0.05, 'generation_timeouts': 0.02,
+        'scheduled_triggers': 0.01, 'emergence_velocity': 0.15,
+        'scaffolding_removal_ratio': 0.25, 'selection_entropy': 0.2,
+        'hookdef_count': 0.05, 'self_spawn_count': 0.08,
+    }
+    w = genome.setdefault('diversity_weights', default_weights)
+    w = {k: w.get(k, default_weights[k]) for k in default_weights}
+    composite = (
+        score['op_count'] * w['op_count'] +
+        score['custom_op_count'] * w['custom_op_count'] +
+        score['agent_count'] * w['agent_count'] +
+        score['prompt_entropy'] * w['prompt_entropy'] +
+        score['structural_mutations'] * w['structural_mutations'] +
+        score['self_modification_depth'] * w['self_modification_depth'] +
+        score['meta_self_modifications'] * w['meta_self_modifications'] +
+        score['circular_mutation_depth'] * w['circular_mutation_depth'] +
+        score['patch_success_rate'] * w['patch_success_rate'] +
+        score['clock_pulse'] * w['clock_pulse'] +
+        min(score['generation_timeouts'], 10) * w['generation_timeouts'] +
+        min(score['scheduled_triggers'], 20) * w['scheduled_triggers'] +
+        score['emergence_velocity'] * w['emergence_velocity'] +
+        score['scaffolding_removal_ratio'] * w['scaffolding_removal_ratio'] +
+        score['selection_entropy'] * w['selection_entropy'] +
+        min(score['hookdef_count'], 20) * w['hookdef_count'] +
+        min(score['self_spawn_count'], 10) * w['self_spawn_count']
     )
+    score['composite'] = round(composite, 2)
     genome['diversity'] = score
     genome['emergence_velocity'] = emergence_velocity
     return score
@@ -2056,7 +2287,7 @@ def flux_governor(genome, gen):
     old_rate = rate
     if pct > 50:
         rate = min(0.45, rate + 0.02)
-    elif pct < 10 and gen > 5:
+    elif pct < 10:
         rate = max(0.08, rate - 0.01)
     else:
         rate += (pct - 30) * 0.001

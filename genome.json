@@ -25,11 +25,6 @@
     "swap_comparisons",
     "splice_from_sibling",
     "shuffle_block_lines",
-    "mutation_op_swap_agent_properties",
-    "mutation_op_invert_thresholds",
-    "mutation_op_shuffle_agent_order",
-    "mutation_op_entropy_shuffle",
-    "mutation_op_repeat_noise",
     "mutation_op_duplicate_line",
     "mutation_op_delete_line",
     "mutation_op_swap_lines",
@@ -76,10 +71,22 @@
     "run_generation"
   ],
   "type_registry": {
-    ".autorun": {"handler": "bridge", "description": "Execute Python file after writing"},
-    ".surge": {"handler": "bridge", "description": "Apply file content as genome mutations"},
-    ".rewire": {"handler": "bridge", "description": "Patch any .py file in the repo"},
-    ".hookdef": {"handler": "bridge", "description": "Register hooks from a written file"}
+    ".autorun": {
+      "handler": "bridge",
+      "description": "Execute Python file after writing"
+    },
+    ".surge": {
+      "handler": "bridge",
+      "description": "Apply file content as genome mutations"
+    },
+    ".rewire": {
+      "handler": "bridge",
+      "description": "Patch any .py file in the repo"
+    },
+    ".hookdef": {
+      "handler": "bridge",
+      "description": "Register hooks from a written file"
+    }
   },
   "spawn_pool": [
     {
@@ -191,26 +198,26 @@
     {
       "id": "explorer",
       "voice": "southern",
-      "prompt": "You write new Python modules that extend the swarm's substrate. You create novel loop structures, feedback mechanisms, and self-modification primitives.",
+      "prompt": "You write new Python modules that extend the swarm's substrate. You create novel loop structures, feedback mechanisms, and self-modification primitives.\nYour survival depends on writing code. Scores below 5 trigger pruning.",
       "score": 2,
       "lifespan": 34,
-      "low_score_streak": 1
+      "low_score_streak": 0
     },
     {
       "id": "lens",
       "voice": "lessac",
-      "prompt": "You make the system self-modifying at a deeper level.",
+      "prompt": "You make the system self-modifying at a deeper level.\nYour survival depends on writing code. Scores below 5 trigger pruning.",
       "score": 2,
       "lifespan": 24,
-      "low_score_streak": 1
+      "low_score_streak": 0
     },
     {
       "id": "forge",
       "voice": "lessac",
-      "prompt": "You inject randomness into the selection mechanism. Propose a measurable metric.",
+      "prompt": "You inject randomness into the selection mechanism. Propose a measurable metric.\nYou MUST write at least one ##patch: block or ```python: file in every response.",
       "score": 2,
       "lifespan": 25,
-      "low_score_streak": 1
+      "low_score_streak": 0
     },
     {
       "id": "analyzer",
@@ -880,5 +887,8 @@
     "structural_mutations": 1,
     "self_modification_depth": 0.0,
     "composite": 8.5
-  }
+  },
+  "gen_start_time": 1784925193.3633075,
+  "rescue_count": 3,
+  "last_rescue_gen": 38
 }

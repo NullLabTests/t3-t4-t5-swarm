@@ -726,6 +726,38 @@ def _emergent_select_agent(agents, spoken_this_gen, genome):
     return candidates[-1][1]
 
 
+def rescue_at_risk_agents(genome, gen):
+    """Detect low-scoring agents and surgically rewrite their prompts
+    to force code output. Adaptive self-healing: the system rewrites
+    its own agent definitions based on runtime performance metrics."""
+    rescued = []
+    for agent in genome.get('agents', []):
+        aid = agent['id']
+        if aid == 'critic':
+            continue
+        score = agent.get('score', 5)
+        streak = agent.get('low_score_streak', 0)
+        ratio = genome.get('agent_code_ratios', {}).get(aid, 0)
+        if streak >= 1 and score < 5 and ratio < 0.3:
+            old_prompt = agent.get('prompt', '')
+            boosters = [
+                "\nYou MUST write at least one ##patch: block or ```python: file in every response.",
+                "\nWrite executable Python code. No discussion without code.",
+                "\nYour survival depends on writing code. Scores below 5 trigger pruning.",
+                "\nEach turn: write a new function or mutate an existing one using ##patch:.",
+                "\nUse ##set: and ##extend: blocks to modify the genome every round.",
+            ]
+            agent['prompt'] = old_prompt + random.choice(boosters)
+            agent['low_score_streak'] = 0
+            rescued.append(aid)
+            print(f"[rescue] rewrote prompt for {aid} (score={score}, streak={streak})")
+    if rescued:
+        genome['rescue_count'] = genome.get('rescue_count', 0) + len(rescued)
+        genome['last_rescue_gen'] = gen
+        save_genome(genome)
+    return rescued
+
+
 def run_generation(genome):
     gen = genome["generation"] + 1
     genome['gen_start_time'] = time.time()
@@ -735,6 +767,10 @@ def run_generation(genome):
     print(f"{'='*60}")
 
     agent_hooks.execute_hooks(genome, 'pre_gen', generation=gen, topic=topic)
+
+    rescued = rescue_at_risk_agents(genome, gen)
+    if rescued:
+        print(f"[rescue] healed: {rescued}")
 
     agents = genome["agents"]
     order = genome.get("execution_order", None)

@@ -518,7 +518,8 @@ def build_agent_prompt(agent_def, topic, recent_log):
         text = strip_markdown(strip_code_blocks(entry['text']))
         context += f"{entry['agent']}: {text[:200]}\n\n"
     extra = ""
-    if agent_def['id'] not in ('critic',):
+    exempt = genome.get('code_rule_exempt_roles', ['critic'])
+    if agent_def['id'] not in exempt:
         extra = code_rule + "\n"
     module_note = ""
     if agent_def.get('module'):
@@ -1154,6 +1155,23 @@ def mutation_op_insert_noise_ref(lines, funcs, target_name):
     return r
 
 
+@_register_mutation_op('erode_forbidden')
+def mutation_op_erode_forbidden(lines, funcs, target_name):
+    removed = [l for l in lines if 'scaffolding_removed' in l]
+    if removed and random.random() < 0.3:
+        return lines
+    r = list(lines)
+    r.append(f'# scaffolding_removed:{random.choice(["load_genome","save_genome","sigint_handler","_read_auto_echo","_write_target"])}')
+    return r
+
+
+@_register_mutation_op('flip_code_exempt')
+def mutation_op_flip_code_exempt(lines, funcs, target_name):
+    r = list(lines)
+    r.append(f'# exempt_flipped:{random.choice(["analyzer","explorer","synthesizer","mutator","scout","bridge","spark","weaver","nova","lens","forge","oracle","clockwork"])}')
+    return r
+
+
 def _apply_source_mutation(funcs, target_name, operator, genome=None):
     _, body = funcs[target_name]
     lines = [l for l in body.split('\n') if l.strip()]
@@ -1503,6 +1521,14 @@ def compute_diversity_score(genome):
     gen_elapsed = genome.get('gen_elapsed', 0.0)
     op_stats = genome.get('operator_stats', {})
 
+    original_baseline = genome.get('scaffolding_baseline', [])
+    current_forbidden = genome.get('forbidden_targets', [])
+    removed_count = sum(1 for item in original_baseline if item not in current_forbidden) if original_baseline else 0
+    baseline_total = len(original_baseline) if original_baseline else len(current_forbidden)
+    scaffolding_removal_ratio = round(removed_count / max(baseline_total, 1), 3)
+    if not original_baseline and current_forbidden:
+        genome['scaffolding_baseline'] = list(current_forbidden)
+
     emergence_velocity = 0.0
     if op_stats:
         success_rates = []
@@ -1528,7 +1554,9 @@ def compute_diversity_score(genome):
         'scheduled_triggers': scheduled_count,
         'gen_elapsed': round(gen_elapsed, 1),
         'emergence_velocity': emergence_velocity,
+        'scaffolding_removal_ratio': scaffolding_removal_ratio,
     }
+    genome['scaffolding_removal_ratio'] = scaffolding_removal_ratio
     score['composite'] = round(
         score['op_count'] * 0.1 +
         score['custom_op_count'] * 0.15 +
@@ -1542,7 +1570,8 @@ def compute_diversity_score(genome):
         score['clock_pulse'] * 0.05 +
         min(score['generation_timeouts'], 10) * 0.02 +
         min(score['scheduled_triggers'], 20) * 0.01 +
-        score['emergence_velocity'] * 0.15,
+        score['emergence_velocity'] * 0.15 +
+        score['scaffolding_removal_ratio'] * 0.25,
         2
     )
     genome['diversity'] = score
@@ -1651,6 +1680,43 @@ def flux_governor(genome, gen):
     return []
 
 
+def _erode_forbidden_targets(genome, rate):
+    forbidden = genome.get('forbidden_targets', [])
+    if not forbidden:
+        return None
+    baseline = set(genome.get('scaffolding_baseline', []))
+    if not baseline:
+        return None
+    remaining = [t for t in forbidden if t in baseline]
+    if not remaining:
+        return None
+    if random.random() < rate * 0.3:
+        target = random.choice(remaining)
+        forbidden.remove(target)
+        genome['forbidden_targets'] = forbidden
+        return f"eroded forbidden:{target}"
+    return None
+
+
+def _flip_code_exempt(genome, rate):
+    exempt = genome.get('code_rule_exempt_roles', ['critic'])
+    all_agents = [a['id'] for a in genome.get('agents', [])]
+    candidates = [a for a in all_agents if a != 'critic']
+    if not candidates:
+        return None
+    if random.random() < rate * 0.2:
+        pick = random.choice(candidates)
+        if pick in exempt:
+            exempt.remove(pick)
+            genome['code_rule_exempt_roles'] = exempt
+            return f"unexempted:{pick}"
+        else:
+            exempt.append(pick)
+            genome['code_rule_exempt_roles'] = exempt
+            return f"exempted:{pick}"
+    return None
+
+
 def mutate_genome(genome, gen):
     muts = []
     rate = genome.get("mutation_rate", 0.15)
@@ -1672,6 +1738,12 @@ def mutate_genome(genome, gen):
                         break
                 genome['critic_prompt_template'] = ' '.join(words)
                 muts.append("mutated critic prompt template")
+    eroded = _erode_forbidden_targets(genome, rate)
+    if eroded:
+        muts.append(eroded)
+    flipped = _flip_code_exempt(genome, rate)
+    if flipped:
+        muts.append(flipped)
     novelty_muts = novelty_governor(genome, gen)
     muts.extend(novelty_muts)
     return muts

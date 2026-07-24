@@ -419,78 +419,151 @@ def update_genome(genome, gen, scores, topic):
     save_genome(genome)
     print(f"Genome updated to generation {gen}")
     git_commit_push("genome", f"Gen {gen} avg {history_entry['average']}/10", is_genome=True, gen=gen)
+def _read_auto_echo():
+    with open(os.path.join(BASE, 'auto-echo.py')) as f:
+        return f.read()
+
+
+def _extract_functions(source=None):
+    if source is None:
+        source = _read_auto_echo()
+    funcs = {}
+    pattern = re.compile(r'(def (\w+)\(.*?\):)\n((?:    (?:.*\n?)*?))(?=\n\ndef |\nclass |\n#|---|\Z)', re.MULTILINE)
+    for match in pattern.finditer(source):
+        header = match.group(1)
+        name = match.group(2)
+        body = match.group(3)
+        funcs[name] = (header, body)
+    return funcs
+
+
+_MUTATION_OPS = ['duplicate_line', 'delete_line', 'swap_lines', 'perturb_constant', 'insert_random_branch', 'mutate_string_literal']
+
+
+def _apply_source_mutation(funcs, target_name, operator):
+    _, body = funcs[target_name]
+    lines = [l for l in body.split('\n') if l.strip()]
+    if not lines or len(lines) < 2:
+        return None
+
+    result = list(lines)
+
+    if operator == 'duplicate_line' and len(result) >= 1:
+        idx = random.randint(0, len(result) - 1)
+        result.insert(idx, result[idx])
+
+    elif operator == 'delete_line' and len(result) >= 3:
+        idx = random.randint(1, len(result) - 1)
+        result.pop(idx)
+
+    elif operator == 'swap_lines' and len(result) >= 3:
+        idx = random.randint(0, len(result) - 2)
+        result[idx], result[idx + 1] = result[idx + 1], result[idx]
+
+    elif operator == 'perturb_constant':
+        new_result = []
+        for line in result:
+            def perturb(m):
+                v = m.group(0)
+                try:
+                    n = float(v)
+                    scale = random.choice([0.5, 0.8, 1.2, 1.5, 2.0, 0.0])
+                    return str(int(n * scale)) if '.' not in v else str(n * scale)
+                except ValueError:
+                    return v
+            new_result.append(re.sub(r'\b\d+(\.\d+)?\b', perturb, line))
+        result = new_result
+
+    elif operator == 'insert_random_branch':
+        idx = random.randint(0, len(result))
+        indentation = result[0][:len(result[0]) - len(result[0].lstrip())] if result else '    '
+        actions = [
+            f'{indentation}if random.random() < 0.1: continue',
+            f'{indentation}if random.random() < 0.05: break',
+            f'{indentation}if random.random() < 0.01: return None',
+            f'{indentation}if random.random() < 0.1: pass',
+        ]
+        result.insert(idx, random.choice(actions))
+
+    elif operator == 'mutate_string_literal':
+        new_result = []
+        for line in result:
+            def mutate_str(m):
+                s = m.group(1) or m.group(2)
+                if len(s) < 3:
+                    return m.group(0)
+                idx2 = random.randint(0, len(s) - 1)
+                mutated = s[:idx2] + random.choice('abcdefghijklmnopqrstuvwxyz') + s[idx2+1:]
+                quote = '"' if m.group(1) is not None else "'"
+                return f'{quote}{mutated}{quote}'
+            new_result.append(re.sub(r'"([^"]*)"|\'([^\']*)\'', mutate_str, line))
+        result = new_result
+
+    mutated_body = '\n'.join(result)
+    if mutated_body == body:
+        return None
+    return mutated_body
+
 
 def code_path_mutation(genome, gen):
-    """Randomly rewrite a function in auto-echo.py via ##patch block.
-    This lets the genome mutate the loop code itself, not just its own JSON."""
+    """Mutate auto-echo.py's source code directly via self-referential source-code operators.
+    
+    Instead of hardcoded templates, this engine:
+    1. Parses auto-echo.py into function blocks
+    2. Selects a random function to mutate
+    3. Applies a random mutation operator (duplicate, delete, swap, perturb, branch)
+    4. Generates a ##patch block
+    5. Applies it via self_modify.apply_patch
+    
+    This makes code mutation truly endogenous — the system rewrites itself
+    using operators derived from its own structure, not from human templates."""
     muts = []
     rate = genome.get("mutation_rate", 0.15)
-    if random.random() < rate * 0.5 and gen > 2:
-        patches_text = _generate_code_patch(genome, gen)
-        if patches_text:
-            results = self_modify.apply_patch(patches_text)
-            for r in results:
-                print(f"[code-mutation] {r}")
-                muts.append(f"code:{r}")
-    return muts
+    if gen < 3:
+        return muts
 
-def _generate_code_patch(genome, gen):
-    targets = {
-        "mutate_genome": (
-            "    muts = []\n"
-            "    rate = genome.get(\"mutation_rate\", 0.15)\n"
-            "    for agent in genome[\"agents\"]:\n"
-            "        if random.random() < rate:\n"
-            "            modifiers = [\n"
-            '                " Write executable code.",\n'
-            '                " Contradict a prior assumption.",\n'
-            '                " Reference a specific file.",\n'
-            '                " Keep under 50 words.",\n'
-            '                " Use concrete examples.",\n'
-            '                " Propose a measurable metric.",\n'
-            '                " Use ##patch: to modify auto-echo.py.",\n'
-            "            ]\n"
-            "            agent[\"prompt\"] = agent[\"prompt\"] + random.choice(modifiers)\n"
-            "            muts.append(f\"mutated {agent['id']} prompt\")\n"
-            "    if random.random() < rate * 2:\n"
-            "        delta = random.choice([-1, 1, 0, 0])\n"
-            "        old = genome[\"spawn_threshold\"]\n"
-            "        genome[\"spawn_threshold\"] = max(5, min(10, old + delta))\n"
-            "        if genome[\"spawn_threshold\"] != old:\n"
-            "            muts.append(f\"spawn {old}->{genome['spawn_threshold']}\")\n"
-            "    if random.random() < rate * 2:\n"
-            "        delta = random.choice([-1, 1, 0, 0])\n"
-            "        old = genome[\"prune_threshold\"]\n"
-            "        genome[\"prune_threshold\"] = max(1, min(6, old + delta))\n"
-            "        if genome[\"prune_threshold\"] != old:\n"
-            "            muts.append(f\"prune {old}->{genome['prune_threshold']}\")\n"
-            "    if random.random() < 0.08 and gen > 3:\n"
-            "        topics = [\n"
-            '            "self-modification of auto-echo.py by its own agents",\n'
-            '            "forcing agents to compete for limited context window",\n'
-            '            "removing all fixed roles from the architecture",\n'
-            '            "letting agents rewrite genome.json directly",\n'
-            '            "making the genome update its own update rules",\n'
-            '            "entropy-driven prompt evolution without human tuning",\n'
-            '            "enabling agents to patch auto-echo.py via ##patch blocks",\n'
-            "        ]\n"
-            "        genome[\"topic\"] = random.choice(topics)\n"
-            "        muts.append(f\"topic: {genome['topic'][:40]}\")\n"
-            "    recent = [h for h in genome.get(\"history\", []) if h.get(\"average\", 0) > 0][-10:]\n"
-            "    if len(recent) >= 5:\n"
-            "        trend = sum(recent[-1][\"average\"] - recent[i][\"average\"] for i in range(-5, -1)) / 4\n"
-            "        if trend < -0.5:\n"
-            "            genome[\"mutation_rate\"] = min(0.4, rate + 0.05)\n"
-            "            muts.append(f\"rate up {rate:.2f}->{genome['mutation_rate']:.2f} (trend {trend:.2f})\")\n"
-            "        elif trend > 0.5:\n"
-            "            genome[\"mutation_rate\"] = max(0.05, rate - 0.03)\n"
-            "            muts.append(f\"rate down {rate:.2f}->{genome['mutation_rate']:.2f} (trend {trend:.2f})\")\n"
-            "    return muts"
-        )
-    }
-    func_name = random.choice(list(targets.keys()))
-    body = targets[func_name]
-    return f"##patch:{func_name}\n{body}\n##endpatch"
+    # Each generation has a chance to apply 1-3 independent mutations
+    num_mutations = 1 if random.random() > rate else random.randint(1, 3)
+    attempted = set()
+
+    for _ in range(num_mutations):
+        if random.random() >= rate:
+            continue
+        try:
+            funcs = _extract_functions()
+        except Exception as e:
+            print(f"[code-mutation] extract error: {e}")
+            return muts
+
+        # Don't mutate self (code_path_mutation) or critical infrastructure
+        forbidden = {
+            'code_path_mutation', '_read_auto_echo',
+            '_extract_functions', '_apply_source_mutation', 'main', 'run_generation',
+            'llm_generate', 'load_genome', 'save_genome', 'load_log', 'append_log',
+            'sigint_handler', 'git_commit_push',
+        }
+        available = [n for n in funcs if n not in forbidden and n not in attempted]
+        if not available:
+            continue
+
+        target = random.choice(available)
+        attempted.add(target)
+        operator = random.choice(_MUTATION_OPS)
+
+        try:
+            new_body = _apply_source_mutation(funcs, target, operator)
+            if new_body is None:
+                continue
+
+            patch_text = f"##patch:{target}\n{new_body}\n##endpatch"
+            results = self_modify.apply_patch(patch_text)
+            for r in results:
+                print(f"[code-mutation] {operator} -> {r}")
+                muts.append(f"code:{operator}:{r}")
+        except Exception as e:
+            print(f"[code-mutation] error on {target}: {e}")
+
+    return muts
 
 def mutate_genome(genome, gen):
     muts = []

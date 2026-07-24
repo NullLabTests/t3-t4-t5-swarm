@@ -19,6 +19,7 @@ LLM_MODEL = 'opencode/deepseek-v4-flash-free'
 
 sys.path.insert(0, BASE)
 import self_modify
+import agent_hooks
 
 FALLBACK_VOICE_MAP = {
     "explorer": "southern", "analyzer": "alan", "synthesizer": "lessac",
@@ -138,7 +139,7 @@ def _register_ops_from_file(fpath, genome):
         if op_name in genome['mutation_ops']:
             continue
         func_match = re.search(
-            rf'(def {re.escape(op_name)}\(.*?\):.*?)(?=\n\ndef |\nclass |\n#|\Z)',
+            rf'(def {re.escape(op_name)}\(.*?\):.*?)(?=\n\ndef |\nclass |\n#|\n\s*@|\Z)',
             content, re.DOTALL
         )
         if func_match:
@@ -223,6 +224,9 @@ def extend_genome(text, genome):
             if op_name not in genome.setdefault('mutation_ops', []):
                 genome['mutation_ops'].append(op_name)
                 applied.append(f"registered {op_name} as mutation_op")
+    hook_results = agent_hooks.parse_hook_blocks(text, genome)
+    if hook_results:
+        applied.extend(hook_results)
     if applied:
         genome.setdefault('genome_extensions', []).extend(applied)
         save_genome(genome)
@@ -425,8 +429,6 @@ def speak(role, text):
         proc.wait(); sox.wait(); aplay_p.wait()
     except Exception as e:
         print(f"[speak] Error: {e}")
-
-import re
 
 REPETITION_THRESHOLD = 0.5
 MIN_WORDS = 8
@@ -651,6 +653,8 @@ def run_generation(genome):
     print(f"Generation {gen} | Topic: {topic}")
     print(f"{'='*60}")
 
+    agent_hooks.execute_hooks(genome, 'pre_gen', generation=gen, topic=topic)
+
     agents = genome["agents"]
     order = genome.get("execution_order", None)
     if order == "shuffle":
@@ -693,6 +697,7 @@ def run_generation(genome):
             spoken_this_gen[aid] = spoken_this_gen.get(aid, 0) + 1
             name = aid.capitalize()
             print(f"\n--- {name} (emergent turn {turn_i+1}/{turns}) ---")
+            agent_hooks.execute_hooks(genome, 'pre_agent', agent=agent, topic=topic, generation=gen)
             prompt = build_agent_prompt(agent, topic, load_log())
             text = llm_generate(prompt)
             if not text:
@@ -725,6 +730,7 @@ def run_generation(genome):
                 push_label = f"{name}+code:{','.join(written_files)}"
             git_commit_push(push_label, text_clean, gen=gen, novelty=len(written_files))
             gen_log.append({"agent": name, "id": aid, "text": text_clean})
+            agent_hooks.execute_hooks(genome, 'post_agent', agent=agent, written_files=written_files, generation=gen)
             time.sleep(1)
     else:
         for agent in agents:
@@ -735,6 +741,7 @@ def run_generation(genome):
                 continue
             name = aid.capitalize()
             print(f"\n--- {name} ---")
+            agent_hooks.execute_hooks(genome, 'pre_agent', agent=agent, topic=topic, generation=gen)
             prompt = build_agent_prompt(agent, topic, load_log())
             text = llm_generate(prompt)
             if not text:
@@ -767,6 +774,7 @@ def run_generation(genome):
                 push_label = f"{name}+code:{','.join(written_files)}"
             git_commit_push(push_label, text_clean, gen=gen, novelty=len(written_files))
             gen_log.append({"agent": name, "id": aid, "text": text_clean})
+            agent_hooks.execute_hooks(genome, 'post_agent', agent=agent, written_files=written_files, generation=gen)
             time.sleep(1)
 
     if not running:
@@ -780,6 +788,7 @@ def run_generation(genome):
     if not running:
         return None
 
+    agent_hooks.execute_hooks(genome, 'pre_critic', gen_log=gen_log, written_files=all_written_files, generation=gen)
     print(f"\n--- Critic ---")
     prompt = build_critic_prompt(topic, gen_log, all_written_files or None)
     text = llm_generate(prompt)
@@ -799,7 +808,9 @@ def run_generation(genome):
     else:
         print(f"[warn] Could not parse scores from critic.")
 
+    agent_hooks.execute_hooks(genome, 'post_critic', scores=scores, generation=gen)
     update_genome(genome, gen, scores or {}, topic)
+    agent_hooks.execute_hooks(genome, 'post_gen', generation=gen, scores=scores)
     return gen
 
 def inject_selection_noise(scores, genome):
@@ -1220,9 +1231,49 @@ def _bridge_handler_rewire(abs_path, genome):
         return False
 
 
+def _bridge_handler_hookdef(abs_path, genome):
+    """Register hooks from a written .hookdef file.
+    Agents write hooks that persist across generations by writing a .hookdef file.
+    Format:
+    ##hookdef:pre_gen
+    print("persistent hook")
+    ##endhookdef
+
+    Or inline:
+    pre_gen|print("inline hook")
+    """
+    try:
+        with open(abs_path) as f:
+            content = f.read()
+    except:
+        return False
+    count = 0
+    for m in re.finditer(r'##hookdef:(\w+)\n(.*?)(?=##endhookdef|\Z)', content, re.DOTALL):
+        point, code = m.group(1).strip(), m.group(2).strip()
+        if point in agent_hooks.HOOK_POINTS and code:
+            agent_hooks.add_hook(genome, point, code, source='hookdef:' + os.path.basename(abs_path))
+            count += 1
+    for line in content.split('\n'):
+        line = line.strip()
+        if '|' in line and not line.startswith('#'):
+            parts = line.split('|', 1)
+            if len(parts) == 2:
+                point, code = parts[0].strip(), parts[1].strip()
+                if point in agent_hooks.HOOK_POINTS and code:
+                    agent_hooks.add_hook(genome, point, code, source='hookdef:' + os.path.basename(abs_path))
+                    count += 1
+    if count:
+        genome['hookdef_count'] = genome.get('hookdef_count', 0) + count
+        save_genome(genome)
+        print(f"[bridge-hookdef] registered {count} hooks from {os.path.basename(abs_path)}")
+        return True
+    return False
+
+
 register_bridge_type('.autorun', _bridge_handler_autorun, "Execute a Python file after writing")
 register_bridge_type('.surge', _bridge_handler_surge, "Apply file content as genome mutations")
 register_bridge_type('.rewire', _bridge_handler_rewire, "Patch any .py file in the repo by name")
+register_bridge_type('.hookdef', _bridge_handler_hookdef, "Register hooks from a written file")
 
 def _register_mutation_op(name):
     def decorator(f):
@@ -1459,7 +1510,7 @@ def _register_custom_ops_from_code(genome):
             if op_name in genome['mutation_ops']:
                 continue
             func_match = re.search(
-                rf'(def {re.escape(op_name)}\(.*?\):.*?)(?=\n\ndef |\nclass |\n#|\Z)',
+                rf'(def {re.escape(op_name)}\(.*?\):.*?)(?=\n\ndef |\nclass |\n#|\n\s*@|\Z)',
                 content, re.DOTALL
             )
             if func_match:
@@ -1733,6 +1784,8 @@ def compute_diversity_score(genome):
     scheduled_count = len(genome.get('scheduled_triggers', []))
     gen_elapsed = genome.get('gen_elapsed', 0.0)
     op_stats = genome.get('operator_stats', {})
+    hookdefs = genome.get('hookdef_count', 0)
+    self_spawns = genome.get('self_spawn_count', 0)
 
     original_baseline = genome.get('scaffolding_baseline', [])
     current_forbidden = genome.get('forbidden_targets', [])
@@ -1769,6 +1822,8 @@ def compute_diversity_score(genome):
         'emergence_velocity': emergence_velocity,
         'scaffolding_removal_ratio': scaffolding_removal_ratio,
         'selection_entropy': selection_entropy,
+        'hookdef_count': hookdefs,
+        'self_spawn_count': self_spawns,
     }
     genome['scaffolding_removal_ratio'] = scaffolding_removal_ratio
     score['composite'] = round(
@@ -1786,7 +1841,9 @@ def compute_diversity_score(genome):
         min(score['scheduled_triggers'], 20) * 0.01 +
         score['emergence_velocity'] * 0.15 +
         score['scaffolding_removal_ratio'] * 0.25 +
-        score['selection_entropy'] * 0.2,
+        score['selection_entropy'] * 0.2 +
+        min(score['hookdef_count'], 20) * 0.05 +
+        min(score['self_spawn_count'], 10) * 0.08,
         2
     )
     genome['diversity'] = score
@@ -2191,6 +2248,56 @@ def mutation_op_selection_noise_evolve(lines, funcs, target_name):
     insert_at = random.randrange(max(1, len(r) // 3), len(r))
     for i, ref in enumerate(noise_refs):
         r.insert(insert_at + i, ref)
+    return r
+
+
+@_register_mutation_op('inject_source_hook')
+def mutation_op_inject_source_hook(lines, funcs, target_name):
+    """Find agent_hooks.execute_hooks() calls and insert a persistent hook
+    registration before them. This makes hook injection source-embedded:
+    once written into auto-echo.py, the hook survives genome resets."""
+    hook_points = ['pre_gen', 'post_gen', 'pre_agent', 'post_agent', 'pre_critic', 'post_critic']
+    if not lines:
+        return lines
+    r = list(lines)
+    hook_lines = [i for i, l in enumerate(r) if 'agent_hooks.execute_hooks(' in l]
+    if not hook_lines:
+        return r
+    target_idx = random.choice(hook_lines)
+    point = random.choice(hook_points)
+    indent = '    '
+    hook_code = (
+        f"agent_hooks.add_hook(genome, '{point}', "
+        f"\"print(f'[source-hook] {point} gen={{genome.get(\"generation\",0)}}')\", "
+        f"source='mutation')"
+    )
+    r.insert(target_idx, indent + hook_code + f"  # source-hook:{point}@{random.getrandbits(16):04x}")
+    return r
+
+
+@_register_mutation_op('self_spawn_trigger')
+def mutation_op_self_spawn_trigger(lines, funcs, target_name):
+    """Inject mid-generation spawning logic: if genome.spawn_trigger is set,
+    spawn a child agent from the pool immediately."""
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
+    insert_at = random.randrange(1, len(r) - 1)
+    indent = '    '
+    spawn_logic = [
+        f"# self-spawn@{random.getrandbits(16):04x}",
+        f"if genome.get('spawn_trigger', False) and genome.get('spawn_pool'):",
+        f"    genome['spawn_trigger'] = False",
+        f"{indent}parent = random.choice([a for a in genome['agents'] if a['id'] != 'critic'])",
+        f"{indent}child = spawn_child(parent, genome['agents'], genome)",
+        f"{indent}if child:",
+        f"{indent}    genome['agents'].append(child)",
+        f"{indent}    genome['self_spawn_count'] = genome.get('self_spawn_count', 0) + 1",
+        f"{indent}    save_genome(genome)",
+        f"{indent}    print(f'[self-spawn] {{child[\"id\"]}} spawned mid-gen')",
+    ]
+    for i, sp in enumerate(spawn_logic):
+        r.insert(insert_at + i, sp)
     return r
 
 

@@ -47,7 +47,9 @@
     "cross_file_splice",
     "swap_function_calls",
     "insert_genome_branch",
-    "selection_noise_evolve"
+    "selection_noise_evolve",
+    "inject_source_hook",
+    "self_spawn_trigger"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -76,7 +78,8 @@
   "type_registry": {
     ".autorun": {"handler": "bridge", "description": "Execute Python file after writing"},
     ".surge": {"handler": "bridge", "description": "Apply file content as genome mutations"},
-    ".rewire": {"handler": "bridge", "description": "Patch any .py file in the repo"}
+    ".rewire": {"handler": "bridge", "description": "Patch any .py file in the repo"},
+    ".hookdef": {"handler": "bridge", "description": "Register hooks from a written file"}
   },
   "spawn_pool": [
     {

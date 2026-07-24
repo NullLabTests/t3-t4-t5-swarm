@@ -251,12 +251,14 @@ def build_agent_prompt(agent_def, topic, recent_log):
     extra = ""
     if agent_def['id'] not in ('critic',):
         extra = code_rule + "\n"
+    call_to_action = genome.get('agent_call_to_action',
+        "Make a concrete code change now. Write the actual code you want to change.")
     return (
         f"{system}\n\n"
         f"You are {agent_def['id']}. Role: {agent_def.get('prompt', 'contribute.')}\n\n"
         f"Topic: {topic}\n\n"
         f"Recent context:\n{context}\n"
-        f"Make a concrete code change now. Write the actual code you want to change."
+        f"{call_to_action}"
     )
 
 def build_critic_prompt(topic, gen_log, code_files_written=None):
@@ -690,15 +692,16 @@ def mutate_genome(genome, gen):
     rate = genome.get("mutation_rate", 0.15)
     for agent in genome["agents"]:
         if random.random() < rate:
-            modifiers = [
+            modifiers = genome.get('mutation_modifiers', [
                 " Write executable code.",
                 " Contradict a prior assumption.",
                 " Reference a specific file.",
                 " Keep under 50 words.",
                 " Use concrete examples.",
                 " Propose a measurable metric.",
-            ]
-            agent["prompt"] = agent["prompt"] + random.choice(modifiers)
+            ])
+            chosen = random.choice(modifiers)
+            agent["prompt"] = agent["prompt"] + chosen
             muts.append(f"mutated {agent['id']} prompt")
     if random.random() < rate * 2:
         delta = random.choice([-1, 1, 0, 0])
@@ -732,6 +735,45 @@ def mutate_genome(genome, gen):
         elif trend > 0.5:
             genome["mutation_rate"] = max(0.05, rate - 0.03)
             muts.append(f"rate down {rate:.2f}->{genome['mutation_rate']:.2f} (trend {trend:.2f})")
+
+    if random.random() < rate and gen > 2:
+        modifiers = genome.get('mutation_modifiers', [])
+        actions = ['add', 'remove', 'replace']
+        action = random.choice(actions)
+        if action == 'add' and modifiers:
+            genome.setdefault('mutation_modifiers', modifiers)
+            new_mod = random.choice([
+                " Address the critic's last score.",
+                " Propose a specific numeric threshold.",
+                " Name a file to write or modify.",
+                " Reference a previous generation by number.",
+                " Include a code snippet under 10 lines.",
+            ])
+            genome['mutation_modifiers'].append(new_mod)
+            muts.append(f"modifier added: {new_mod[:30]}")
+        elif action == 'remove' and len(modifiers) > 3:
+            removed = modifiers.pop(random.randint(0, len(modifiers)-1))
+            muts.append(f"modifier removed: {removed[:30]}")
+        elif action == 'replace' and modifiers:
+            idx = random.randint(0, len(modifiers)-1)
+            old = modifiers[idx]
+            modifiers[idx] = random.choice([
+                " Be shorter than the last response.",
+                " Write code that changes a control flow.",
+                " Propose a new file extension for the swarm.",
+                " Focus on one function in auto-echo.py.",
+            ])
+            muts.append(f"modifier replaced: {old[:20]}->{modifiers[idx][:20]}")
+
+    if random.random() < rate * 0.5 and gen > 3:
+        variants = [
+            "Make a code change that affects how code changes are scored.",
+            "Write code, not plans. The file must compile or parse.",
+            "Change one function signature in auto-echo.py.",
+            "Mutate an existing mutation operator in genome.json.",
+        ]
+        genome['agent_call_to_action'] = random.choice(variants)
+        muts.append(f"call_to_action mutated")
     return muts
 
 

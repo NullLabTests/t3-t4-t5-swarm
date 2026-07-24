@@ -8,6 +8,8 @@
   "mutation_rate": 0.15,
   "system_prompt": null,
   "code_rule": null,
+  "agent_call_to_action": null,
+  "mutation_modifiers": null,
   "mutation_ops": [
     "duplicate_line",
     "delete_line",

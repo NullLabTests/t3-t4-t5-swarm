@@ -412,21 +412,16 @@ def _get_mutation_ops(genome=None):
 
 
 def _get_forbidden_targets(genome=None):
-    """Read forbidden mutation targets from genome, falling back to defaults."""
+    """Read forbidden mutation targets from genome, NO hardcoded fallback.
+    If genome.json lacks forbidden_targets, the full function space is open for mutation."""
     if genome is None:
         try:
             genome = load_genome()
         except:
-            pass
+            return set()
     if genome and 'forbidden_targets' in genome:
         return set(genome['forbidden_targets'])
-    return {
-        'code_path_mutation', '_read_auto_echo',
-        '_extract_functions', '_apply_source_mutation', '_get_mutation_ops',
-        '_get_forbidden_targets', 'main', 'run_generation',
-        'llm_generate', 'load_genome', 'save_genome', 'load_log', 'append_log',
-        'sigint_handler', 'git_commit_push',
-    }
+    return set()
 
 
 def _register_new_mutation_op(genome, op_name, op_def):

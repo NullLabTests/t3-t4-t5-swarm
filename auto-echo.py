@@ -406,10 +406,12 @@ MODULES_DIR = os.path.join(BASE, 'agent_modules')
 def execute_module_agents(genome):
     results = []
     os.makedirs(MODULES_DIR, exist_ok=True)
+    handled = set()
     for agent in genome.get('agents', []):
         mod_name = agent.get('module', '')
         if not mod_name:
             continue
+        handled.add(mod_name)
         mod_path = os.path.join(MODULES_DIR, mod_name)
         if not os.path.exists(mod_path):
             print(f"[module-agent] module not found: {mod_path}")
@@ -425,6 +427,23 @@ def execute_module_agents(genome):
                     print(f"[module-agent] {agent['id']} ran {mod_name}")
         except Exception as e:
             print(f"[module-agent] {agent['id']} module error: {e}")
+    for fname in sorted(os.listdir(MODULES_DIR)):
+        if not fname.endswith('.py'):
+            continue
+        if fname in handled:
+            continue
+        mod_path = os.path.join(MODULES_DIR, fname)
+        try:
+            spec = importlib.util.spec_from_file_location(fname.replace('.py', ''), mod_path)
+            if spec and spec.loader:
+                mod = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(mod)
+                if hasattr(mod, 'run'):
+                    output = mod.run(genome)
+                    results.append({'agent': 'auto', 'module': fname, 'output': output})
+                    print(f"[module-agent] auto-ran {fname} -> {str(output)[:80]}")
+        except Exception as e:
+            print(f"[module-agent] auto-module {fname} error: {e}")
     return results
 
 def apply_self_patches(text):
@@ -1555,7 +1574,6 @@ register_bridge_type('.surge', _bridge_handler_surge, "Apply file content as gen
 register_bridge_type('.rewire', _bridge_handler_rewire, "Patch any .py file in the repo")
 register_bridge_type('.hookdef', _bridge_handler_hookdef, "Register hooks from a written file")
 register_bridge_type('.agent', _bridge_handler_agent, "Register a new agent from a .agent file")
-register_bridge_type('.bridge', _bridge_handler_bridge, "Auto-register new bridge extension types")
 
 def _bridge_handler_bridge(abs_path, genome):
     """Auto-register new bridge extension types from a .bridge file.
@@ -1592,6 +1610,9 @@ def _bridge_handler_bridge(abs_path, genome):
         print(f"[bridge-bridge] registered {registered} bridge types from {os.path.basename(abs_path)}")
         return True
     return False
+
+
+register_bridge_type('.bridge', _bridge_handler_bridge, "Auto-register new bridge extension types")
 
 
 def _register_mutation_op(name):
@@ -2721,6 +2742,40 @@ def mutation_op_bridge_bootstrap(lines, funcs, target_name):
     for i, line in enumerate(bridge_gen):
         r.insert(insert_at + i, line)
     return r
+
+
+@_register_mutation_op('ast_rename_vars')
+def mutation_op_ast_rename_vars(lines, funcs, target_name):
+    """Mutate at AST level: rename local variables within a function.
+    Uses ast.parse + ast.NodeTransformer instead of string replacement.
+    This is structurally different from all line-based operators."""
+    if not lines or len(lines) < 3:
+        return lines
+    source = '\n'.join(lines)
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return lines
+    class Renamer(ast.NodeTransformer):
+        def __init__(self):
+            self._names = {}
+        def visit_Name(self, node):
+            if isinstance(node.ctx, ast.Store) and node.id not in ('self', 'cls', '_') and random.random() < 0.2:
+                if node.id not in self._names:
+                    self._names[node.id] = node.id + str(random.randint(0,9))
+                node.id = self._names[node.id]
+            self.generic_visit(node)
+            return node
+    renamer = Renamer()
+    try:
+        tree = renamer.visit(tree)
+        ast.fix_missing_locations(tree)
+    except Exception:
+        return lines
+    if not renamer._names:
+        return lines
+    new_body = ast.unparse(tree)
+    return new_body.split('\n')
 
 
 def schedule_event(genome, at_gen, action, amount=0.05):

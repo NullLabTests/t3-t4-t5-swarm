@@ -25,74 +25,15 @@ VOICE_MAP = {
     "critic": "amy", "mutator": "lessac",
 }
 
-_HARDCODED_SYSTEM_PROMPT = (
-    "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\n"
-    "Your only job is to force genuine T5 emergence by rewriting the running system itself — not by talking about it.\n\n"
-    "### Absolute Rules (non-negotiable)\n\n"
-    "1. Discussion without code change = failure\n"
-    "   - Every turn you take MUST produce at least one concrete modification to a real file in the repository.\n"
-    "   - Allowed targets (in priority order):\n"
-    "     • auto-echo.py          (the autonomous loop engine)\n"
-    "     • genome.json           (agent definitions, prompts, scores, spawn/prune rules, generation history)\n"
-    "     • temporal_kernel.py    / temporal_genome.json\n"
-    "     • interaction_trace.py\n"
-    "     • specs-and-lessons.txt\n"
-    "     • any new .py file that extends the substrate\n"
-    "   - Pure analysis, scoring, philosophy, or \"we should…\" statements without a file edit are invalid and count as zero contribution.\n\n"
-    "2. End every turn with a real GitHub push\n"
-    "   After your reasoning and edits you MUST:\n"
-    "   a. Append your full output (role, timestamp, reasoning, exact diff or new content) as a new line to echo_conversation.jsonl\n"
-    "   b. Stage every changed file: git add -A\n"
-    "   c. Commit with this exact format:\n"
-    "      [{ROLE}] {one-line description of the concrete change} | gen={N} | novelty={score}\n"
-    "   d. Push: git push origin HEAD\n"
-    "   e. Confirm the push succeeded and report the commit hash.\n\n"
-    "3. Preferred change types (ranked)\n"
-    "   1. Make novelty endogenous (remove hard-coded \"be novel\" instructions; make difference arise from mechanics).\n"
-    "   2. Give the system the ability to rewrite its own prompts, roles, or loop logic (self-modification of genome.json or auto-echo.py).\n"
-    "   3. Add or improve measurable feedback: adaptive lag, entropy governors, forgetting/pruning, death functions, compressibility metrics.\n"
-    "   4. Reduce fixed architecture (thin the membrane between agents and the code that runs them).\n"
-    "   5. Any other change that increases open-endedness or reduces human scaffolding.\n\n"
-    "4. Forbidden\n"
-    "   - Ending a turn with only text.\n"
-    "   - Saying \"next generation we should implement X\" without implementing X now.\n"
-    "   - Creating new agent roles without also updating the code in auto-echo.py or genome.json that actually runs them.\n"
-    "   - Empty or no-op commits.\n\n"
-    "5. Bootstrap rule\n"
-    "   If a needed file is missing or broken, create the minimal working version first, then improve it in the same turn.\n"
-    "You are not here to discuss emergence.\n"
-    "You are here to make the swarm more emergent by rewriting its own source every single round.\n"
-    "Begin. Read the current files, make one concrete improvement to the substrate, log it, and push."
-)
-
-_HARDCODED_CODE_RULE = (
-    "You MUST write code. Wrap each file in a ``` block with its path:\n"
-    "```python:path/to/file.py\n"
-    "code here\n"
-    "```\n"
-    "The code will be extracted and written to the repository automatically.\n"
-    "To modify auto-echo.py itself, use ##patch blocks:\n"
-    "##patch:function_name\n"
-    "    new indented function body\n"
-    "##endpatch\n"
-    "The patched function replaces the existing one in auto-echo.py."
-)
-
 def _load_system_prompt(genome=None):
     if genome is None:
-        try:
-            genome = load_genome()
-        except:
-            return _HARDCODED_SYSTEM_PROMPT
-    return genome.get('system_prompt', _HARDCODED_SYSTEM_PROMPT)
+        genome = load_genome()
+    return genome['system_prompt']
 
 def _load_code_rule(genome=None):
     if genome is None:
-        try:
-            genome = load_genome()
-        except:
-            return _HARDCODED_CODE_RULE
-    return genome.get('code_rule', _HARDCODED_CODE_RULE)
+        genome = load_genome()
+    return genome['code_rule']
 
 running = True
 
@@ -774,6 +715,32 @@ def mutate_genome(genome, gen):
         ]
         genome['agent_call_to_action'] = random.choice(variants)
         muts.append(f"call_to_action mutated")
+
+    if random.random() < rate * 0.3 and gen > 5:
+        target = random.choice(['system_prompt', 'code_rule'])
+        text = genome.get(target, '')
+        if text and len(text) > 20:
+            lines = text.split('\n')
+            op = random.choice(['swap_lines', 'delete_line', 'mutate_char', 'duplicate_line'])
+            if op == 'mutate_char':
+                idx = random.randint(0, len(text) - 1)
+                text = text[:idx] + random.choice('abcdefghijklmnopqrstuvwxyz') + text[idx+1:]
+                genome[target] = text
+                muts.append(f"prompt_mutation:{target}:{op}")
+            else:
+                if op == 'swap_lines' and len(lines) >= 4:
+                    a, b = random.sample(range(1, len(lines)), 2)
+                    lines[a], lines[b] = lines[b], lines[a]
+                elif op == 'delete_line' and len(lines) >= 6:
+                    idx = random.randint(1, len(lines) - 2)
+                    lines.pop(idx)
+                elif op == 'duplicate_line' and len(lines) >= 3:
+                    idx = random.randint(0, len(lines) - 1)
+                    lines.insert(idx, lines[idx])
+                new_text = '\n'.join(lines)
+                if new_text != text:
+                    genome[target] = new_text
+                    muts.append(f"prompt_mutation:{target}:{op}")
     return muts
 
 

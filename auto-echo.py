@@ -816,6 +816,17 @@ def _register_new_mutation_op(genome, op_name, op_def):
 
 _MUTATION_OPS = {}
 
+BRIDGE_REGISTRY = {}  # extension -> {"handler": callable, "description": str}
+
+def register_bridge_type(ext, handler, description=""):
+    BRIDGE_REGISTRY[ext] = {"handler": handler, "description": description}
+
+def _dispatch_bridge_file(abs_path, ext, genome):
+    entry = BRIDGE_REGISTRY.get(ext)
+    if entry:
+        return entry["handler"](abs_path, genome)
+    return False
+
 def _register_mutation_op(name):
     def decorator(f):
         _MUTATION_OPS[name] = f

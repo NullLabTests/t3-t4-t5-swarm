@@ -531,6 +531,8 @@ def build_agent_prompt(agent_def, topic, recent_log):
     ratios = compute_agent_code_ratio(genome)
     my_ratio = ratios.get(agent_def['id'], 0)
     eff_note = f" your_code_ratio={my_ratio}" if my_ratio > 0 else " your_code_ratio=0 (NEED CODE)"
+    ev = genome.get('emergence_velocity', 0.0)
+    ev_note = f" emergence_velocity={ev}" if ev > 0 else ""
     return (
         f"{system}\n\n"
         f"You are {agent_def['id']}. Role: {agent_def.get('prompt', 'contribute.')}\n\n"
@@ -538,6 +540,7 @@ def build_agent_prompt(agent_def, topic, recent_log):
         f"Recent context:\n{context}\n"
         f"{module_note}"
         f"{obs_str}{meta_note}\n\n"
+        f"{ev_note}"
         f"{call_to_action}"
     )
 
@@ -1260,6 +1263,14 @@ def code_path_mutation(genome, gen):
 
     _reload_mutation_ops_from_source()
 
+    op_weights = compute_operator_weights(genome)
+    all_ops = _get_mutation_ops(genome)
+    op_probs = [op_weights.get(op, 1.0 / max(len(all_ops), 1)) for op in all_ops]
+    if op_probs and sum(op_probs) > 0:
+        op_probs = [p / sum(op_probs) for p in op_probs]
+    else:
+        op_probs = None
+
     num_mutations = 1 if random.random() > rate else random.randint(1, 3)
     attempted = set()
 
@@ -1279,15 +1290,18 @@ def code_path_mutation(genome, gen):
 
         target = random.choice(available)
         attempted.add(target)
-        operator = random.choice(_get_mutation_ops(genome))
+        operator = random.choices(all_ops, weights=op_probs, k=1)[0] if op_probs else random.choice(all_ops)
 
         try:
             new_body = _apply_source_mutation(funcs, target, operator, genome)
             if new_body is None:
+                record_operator_result(genome, operator, False)
                 continue
 
             patch_text = f"##patch:{target}\n{new_body}\n##endpatch"
             results = self_modify.apply_patch(patch_text)
+            succeeded = any(r for r in results if not r.startswith('FAILED'))
+            record_operator_result(genome, operator, succeeded)
             for r in results:
                 print(f"[code-mutation] {operator} -> {r}")
                 muts.append(f"code:{operator}:{r}")
@@ -1297,12 +1311,14 @@ def code_path_mutation(genome, gen):
                 infra = {'_apply_source_mutation', 'code_path_mutation', 'mutate_genome',
                          '_reload_mutation_ops_from_source', '_get_mutation_ops',
                          'compute_diversity_score', 'update_genome', 'apply_self_patches',
-                         '_register_mutation_op', '_MUTATION_OPS'}
+                         '_register_mutation_op', '_MUTATION_OPS',
+                         'compute_operator_weights', 'record_operator_result'}
                 if target in infra:
                     genome['meta_mutation_count'] = genome.get('meta_mutation_count', 0) + 1
                     save_genome(genome)
         except Exception as e:
             print(f"[code-mutation] error on {target}: {e}")
+            record_operator_result(genome, operator, False)
 
     meta_muts = meta_mutate_operators(genome, gen)
     muts.extend(meta_muts)
@@ -1322,19 +1338,31 @@ def meta_mutate_operators(genome, gen):
     except Exception as e:
         print(f"[meta-mutate] extract error: {e}")
         return muts
+
+    op_weights = compute_operator_weights(genome)
+    all_ops = _get_mutation_ops(genome)
+    op_probs = [op_weights.get(op, 1.0 / max(len(all_ops), 1)) for op in all_ops]
+    if op_probs and sum(op_probs) > 0:
+        op_probs = [p / sum(op_probs) for p in op_probs]
+    else:
+        op_probs = None
+
     op_funcs = {n: f for n, f in funcs.items() if n.startswith('mutation_op_')}
     forbidden = _get_forbidden_targets(genome)
     available = [n for n in op_funcs if n not in forbidden]
     if not available:
         return muts
     target = random.choice(available)
-    operator = random.choice(_get_mutation_ops(genome))
+    operator = random.choices(all_ops, weights=op_probs, k=1)[0] if op_probs else random.choice(all_ops)
     try:
         new_body = _apply_source_mutation(funcs, target, operator, genome)
         if new_body is None:
+            record_operator_result(genome, operator, False)
             return muts
         patch_text = f"##patch:{target}\n{new_body}\n##endpatch"
         results = self_modify.apply_patch(patch_text)
+        succeeded = any(r for r in results if not r.startswith('FAILED'))
+        record_operator_result(genome, operator, succeeded)
         for r in results:
             print(f"[meta-mutate] {operator} -> {r}")
             muts.append(f"meta:{operator}:{r}")
@@ -1347,6 +1375,7 @@ def meta_mutate_operators(genome, gen):
             _reload_mutation_ops_from_source()
     except Exception as e:
         print(f"[meta-mutate] error: {e}")
+        record_operator_result(genome, operator, False)
     return muts
 
 COMPOSITION_STRATEGIES = ['sequence', 'branch', 'wrap', 'interleave', 'guard']
@@ -1424,6 +1453,34 @@ def synthesize_new_operator(genome, gen):
     return new_name
 
 
+def compute_operator_weights(genome):
+    ops = _get_mutation_ops(genome)
+    stats = genome.get('operator_stats', {})
+    weights = {}
+    for op in ops:
+        s = stats.get(op, {})
+        attempts = s.get('attempts', 0)
+        successes = s.get('successes', 0)
+        if attempts > 0:
+            raw = successes / attempts
+            weights[op] = max(0.1, raw + 0.3)
+        else:
+            weights[op] = 1.0
+    if not weights:
+        return {op: 1.0 for op in ops}
+    total = sum(weights.values())
+    return {op: w / total for op, w in weights.items()}
+
+
+def record_operator_result(genome, operator, succeeded):
+    stats = genome.setdefault('operator_stats', {})
+    op_stats = stats.setdefault(operator, {'attempts': 0, 'successes': 0})
+    op_stats['attempts'] += 1
+    if succeeded:
+        op_stats['successes'] += 1
+    save_genome(genome)
+
+
 def compute_diversity_score(genome):
     history = genome.get('history', [])
     recent_mutations = sum(
@@ -1444,6 +1501,18 @@ def compute_diversity_score(genome):
     timeouts = genome.get('generation_timeouts', 0)
     scheduled_count = len(genome.get('scheduled_triggers', []))
     gen_elapsed = genome.get('gen_elapsed', 0.0)
+    op_stats = genome.get('operator_stats', {})
+
+    emergence_velocity = 0.0
+    if op_stats:
+        success_rates = []
+        for s in op_stats.values():
+            a = s.get('attempts', 0)
+            if a > 0:
+                success_rates.append(s.get('successes', 0) / a)
+        if success_rates:
+            emergence_velocity = round(sum(success_rates) / len(success_rates), 3)
+
     score = {
         'op_count': len(ops),
         'custom_op_count': len(custom),
@@ -1458,6 +1527,7 @@ def compute_diversity_score(genome):
         'generation_timeouts': timeouts,
         'scheduled_triggers': scheduled_count,
         'gen_elapsed': round(gen_elapsed, 1),
+        'emergence_velocity': emergence_velocity,
     }
     score['composite'] = round(
         score['op_count'] * 0.1 +
@@ -1471,10 +1541,12 @@ def compute_diversity_score(genome):
         score['patch_success_rate'] * 0.2 +
         score['clock_pulse'] * 0.05 +
         min(score['generation_timeouts'], 10) * 0.02 +
-        min(score['scheduled_triggers'], 20) * 0.01,
+        min(score['scheduled_triggers'], 20) * 0.01 +
+        score['emergence_velocity'] * 0.15,
         2
     )
     genome['diversity'] = score
+    genome['emergence_velocity'] = emergence_velocity
     return score
 
 
@@ -1560,6 +1632,7 @@ def compute_rewrite_flux(genome):
 def flux_governor(genome, gen):
     flux = compute_rewrite_flux(genome)
     pct = flux['rewrite_pct']
+    ev = genome.get('emergence_velocity', 0.0)
     rate = genome.get('mutation_rate', 0.15)
     old_rate = rate
     if pct > 50:
@@ -1568,10 +1641,13 @@ def flux_governor(genome, gen):
         rate = max(0.08, rate - 0.01)
     else:
         rate += (pct - 30) * 0.001
+
+    ev_bias = (ev - 0.3) * 0.05
+    rate += ev_bias
     rate = round(max(0.05, min(0.50, rate)), 3)
     if abs(rate - old_rate) > 0.001:
         genome['mutation_rate'] = rate
-        return [f"flux_governor: {old_rate:.3f}->{rate:.3f} (rewrite_pct={pct})"]
+        return [f"flux_governor: {old_rate:.3f}->{rate:.3f} (rewrite_pct={pct}, ev={ev})"]
     return []
 
 

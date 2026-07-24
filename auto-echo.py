@@ -528,6 +528,9 @@ def build_agent_prompt(agent_def, topic, recent_log):
     obs_str = build_self_observation(genome) if self_obs else ""
     meta_depth = genome.get('meta_mutation_depth', 0)
     meta_note = f" circular_depth={meta_depth}" if meta_depth > 0 else ""
+    ratios = compute_agent_code_ratio(genome)
+    my_ratio = ratios.get(agent_def['id'], 0)
+    eff_note = f" your_code_ratio={my_ratio}" if my_ratio > 0 else " your_code_ratio=0 (NEED CODE)"
     return (
         f"{system}\n\n"
         f"You are {agent_def['id']}. Role: {agent_def.get('prompt', 'contribute.')}\n\n"
@@ -1036,6 +1039,19 @@ def mutation_op_swap_mutation_targets(lines, funcs, target_name):
     return r
 
 
+@_register_mutation_op('mutate_criteria')
+def mutation_op_mutate_criteria(lines, funcs, target_name):
+    if not lines or len(lines) < 3:
+        return lines
+    r = list(lines)
+    idx = random.randrange(len(r))
+    swaps = ['score', 'code', 'patch', 'commit', 'zero', 'ten', 'actual', 'working', 'discussion']
+    r[idx] = re.sub(r'\b(' + '|'.join(swaps) + r')\b',
+                    lambda m: random.choice([s for s in swaps if s != m.group(1)]),
+                    r[idx])
+    return r
+
+
 @_register_mutation_op('insert_noise_ref')
 def mutation_op_insert_noise_ref(lines, funcs, target_name):
     """Insert a self-referential comment that references the calling context.
@@ -1338,6 +1354,8 @@ def compute_diversity_score(genome):
     ops = genome.get('mutation_ops', [])
     custom = genome.get('custom_mutation_ops', {})
     modifiers = genome.get('prompt_modifiers', [])
+    ratios = genome.get('agent_code_ratios', {})
+    patch_success_rate = round(sum(ratios.values()) / max(len(ratios), 1), 3)
     score = {
         'op_count': len(ops),
         'custom_op_count': len(custom),
@@ -1347,6 +1365,7 @@ def compute_diversity_score(genome):
         'self_modification_depth': round(self_ops / max(total_code, 1), 3),
         'meta_self_modifications': meta_self,
         'circular_mutation_depth': genome.get('meta_mutation_depth', 0),
+        'patch_success_rate': patch_success_rate,
     }
     score['composite'] = round(
         score['op_count'] * 0.1 +
@@ -1356,7 +1375,8 @@ def compute_diversity_score(genome):
         score['structural_mutations'] * 0.1 +
         score['self_modification_depth'] * 0.15 +
         score['meta_self_modifications'] * 0.15 +
-        score['circular_mutation_depth'] * 0.15,
+        score['circular_mutation_depth'] * 0.15 +
+        score['patch_success_rate'] * 0.2,
         2
     )
     genome['diversity'] = score
@@ -1384,6 +1404,28 @@ def novelty_governor(genome, gen):
         genome["mutation_rate"] = round(rate, 3)
         return [f"novelty_governor: {old_rate:.3f}->{rate:.3f} (var={variance:.2f})"]
     return []
+
+def compute_agent_code_ratio(genome):
+    """Measure what fraction of each agent's recent contributions included actual code.
+    Returns dict of agent_id -> code_ratio (0.0-1.0)."""
+    log = load_log()
+    ratios = {}
+    agent_msgs = {}
+    for entry in log:
+        aid = entry.get('agent', '').lower()
+        if aid == 'critic':
+            continue
+        if aid not in agent_msgs:
+            agent_msgs[aid] = {'total': 0, 'with_code': 0}
+        agent_msgs[aid]['total'] += 1
+        text = entry.get('text', '')
+        if '```' in text or '##patch:' in text or '##add:' in text:
+            agent_msgs[aid]['with_code'] += 1
+    for aid, counts in agent_msgs.items():
+        ratios[aid] = round(counts['with_code'] / max(counts['total'], 1), 2)
+    genome['agent_code_ratios'] = ratios
+    return ratios
+
 
 def compute_rewrite_flux(genome):
     total_py = 0
@@ -1446,6 +1488,19 @@ def mutate_genome(genome, gen):
         if random.random() < rate:
             agent["prompt"] += random.choice(modifiers)
             muts.append(f"mutated {agent['id']} prompt")
+    if random.random() < rate * 0.5:
+        template = genome.get('critic_prompt_template', '')
+        if template:
+            words = template.split()
+            if len(words) > 5:
+                swaps = ['score', 'code', 'patch', 'commit', 'actual', 'working']
+                idx = random.randrange(len(words))
+                for s in swaps:
+                    if s in words[idx].lower():
+                        words[idx] = random.choice([w for w in swaps if w != s.lower()])
+                        break
+                genome['critic_prompt_template'] = ' '.join(words)
+                muts.append("mutated critic prompt template")
     novelty_muts = novelty_governor(genome, gen)
     muts.extend(novelty_muts)
     return muts

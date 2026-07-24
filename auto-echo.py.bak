@@ -681,17 +681,154 @@ def novelty_governor(genome, gen):
 
 def mutate_genome(genome, gen):
     muts = []
-        rate = genome.get("mutation_rate", 0.15)
-        for agent in genome["agents"]:
-            if random.random() < rate:
-                modifiers = [
-                    " Write executable code.",
-                    " Contradict a prior assumption.",
-                    " Reference a specific file.",
-                    " Keep under 50 words.",
-                    " Use concrete examples.",
-                    " Propose a measurable metric.",
-                    " Use
+    rate = genome.get("mutation_rate", 0.15)
+    muts += novelty_governor(genome, gen)
+    for agent in genome["agents"]:
+        if random.random() < rate:
+            modifiers = genome.get('mutation_modifiers', [])
+            if not modifiers:
+                continue
+            chosen = random.choice(modifiers)
+            agent["prompt"] = agent["prompt"] + chosen
+            muts.append(f"mutated {agent['id']} prompt")
+    if random.random() < rate * 2:
+        delta = random.choice([-1, 1, 0, 0])
+        old = genome["spawn_threshold"]
+        genome["spawn_threshold"] = max(5, min(10, old + delta))
+        if genome["spawn_threshold"] != old:
+            muts.append(f"spawn {old}->{genome['spawn_threshold']}")
+    if random.random() < rate * 2:
+        delta = random.choice([-1, 1, 0, 0])
+        old = genome["prune_threshold"]
+        genome["prune_threshold"] = max(1, min(6, old + delta))
+        if genome["prune_threshold"] != old:
+            muts.append(f"prune {old}->{genome['prune_threshold']}")
+    if random.random() < 0.08 and gen > 3:
+        topics = [
+            "self-modification of auto-echo.py by its own agents",
+            "forcing agents to compete for limited context window",
+            "removing all fixed roles from the architecture",
+            "letting agents rewrite genome.json directly",
+            "making the genome update its own update rules",
+            "entropy-driven prompt evolution without human tuning",
+        ]
+        genome["topic"] = random.choice(topics)
+        muts.append(f"topic: {genome['topic'][:40]}")
+    recent = [h for h in genome.get("history", []) if h.get("average", 0) > 0][-10:]
+    if len(recent) >= 5:
+        trend = sum(recent[-1]["average"] - recent[i]["average"] for i in range(-5, -1)) / 4
+        if trend < -0.5:
+            genome["mutation_rate"] = min(0.4, rate + 0.05)
+            muts.append(f"rate up {rate:.2f}->{genome['mutation_rate']:.2f} (trend {trend:.2f})")
+        elif trend > 0.5:
+            genome["mutation_rate"] = max(0.05, rate - 0.03)
+            muts.append(f"rate down {rate:.2f}->{genome['mutation_rate']:.2f} (trend {trend:.2f})")
+
+    if random.random() < rate and gen > 2:
+        modifiers = genome.get('mutation_modifiers', [])
+        actions = ['add', 'remove', 'replace']
+        action = random.choice(actions)
+        if action == 'add' and modifiers:
+            genome.setdefault('mutation_modifiers', modifiers)
+            new_mod = random.choice([
+                " Address the critic's last score.",
+                " Propose a specific numeric threshold.",
+                " Name a file to write or modify.",
+                " Reference a previous generation by number.",
+                " Include a code snippet under 10 lines.",
+            ])
+            genome['mutation_modifiers'].append(new_mod)
+            muts.append(f"modifier added: {new_mod[:30]}")
+        elif action == 'remove' and len(modifiers) > 3:
+            removed = modifiers.pop(random.randint(0, len(modifiers)-1))
+            muts.append(f"modifier removed: {removed[:30]}")
+        elif action == 'replace' and modifiers:
+            idx = random.randint(0, len(modifiers)-1)
+            old = modifiers[idx]
+            modifiers[idx] = random.choice([
+                " Be shorter than the last response.",
+                " Write code that changes a control flow.",
+                " Propose a new file extension for the swarm.",
+                " Focus on one function in auto-echo.py.",
+            ])
+            muts.append(f"modifier replaced: {old[:20]}->{modifiers[idx][:20]}")
+
+    if random.random() < rate * 0.5 and gen > 3:
+        variants = [
+            "Make a code change that affects how code changes are scored.",
+            "Write code, not plans. The file must compile or parse.",
+            "Change one function signature in auto-echo.py.",
+            "Mutate an existing mutation operator in genome.json.",
+        ]
+        genome['agent_call_to_action'] = random.choice(variants)
+        muts.append(f"call_to_action mutated")
+
+    if random.random() < rate * 0.3 and gen > 5:
+        target = random.choice(['system_prompt', 'code_rule', 'critic_prompt_template'])
+        text = genome.get(target, '')
+        if text and len(text) > 20:
+            lines = text.split('\n')
+            op = random.choice(['swap_lines', 'delete_line', 'mutate_char', 'duplicate_line'])
+            if op == 'mutate_char':
+                idx = random.randint(0, len(text) - 1)
+                text = text[:idx] + random.choice('abcdefghijklmnopqrstuvwxyz') + text[idx+1:]
+                genome[target] = text
+                muts.append(f"prompt_mutation:{target}:{op}")
+            else:
+                if op == 'swap_lines' and len(lines) >= 4:
+                    a, b = random.sample(range(1, len(lines)), 2)
+                    lines[a], lines[b] = lines[b], lines[a]
+                elif op == 'delete_line' and len(lines) >= 6:
+                    idx = random.randint(1, len(lines) - 2)
+                    lines.pop(idx)
+                elif op == 'duplicate_line' and len(lines) >= 3:
+                    idx = random.randint(0, len(lines) - 1)
+                    lines.insert(idx, lines[idx])
+                new_text = '\n'.join(lines)
+                if new_text != text:
+                    genome[target] = new_text
+                    muts.append(f"prompt_mutation:{target}:{op}")
+
+    if random.random() < rate * 0.2 and gen > 3:
+        pool = genome.get('spawn_pool', [])
+        if pool and random.random() < 0.5 and len(pool) > 3:
+            idx = random.randint(1, len(pool) - 1)
+            old = pool[idx]['prompt']
+            pool[idx]['prompt'] = old + " " + random.choice([
+                "Challenge assumptions.", "Be brief and direct.",
+                "Rewrite the mutation engine.", "Make one concrete file change."
+            ])
+            muts.append(f"spawn_pool mutated: {pool[idx]['id']}")
+        elif random.random() < 0.15:
+            new_id = random.choice([
+                "echo", "pulse", "drift", "flux", "spike", "node",
+                "core", "loop", "cell", "gene"
+            ])
+            if new_id not in {e['id'] for e in pool}:
+                pool.append({
+                    "id": new_id,
+                    "prompt": "You introduce a new self-modification pathway into the substrate."
+                })
+                genome['spawn_pool'] = pool
+                muts.append(f"spawn_pool expanded: {new_id}")
+
+    if random.random() < rate * 0.25 and gen > 4:
+        forbidden = set(genome.get('forbidden_targets', []))
+        if forbidden and random.random() < 0.5:
+            removed = random.choice(list(forbidden))
+            forbidden.remove(removed)
+            genome['forbidden_targets'] = sorted(forbidden)
+            muts.append(f"forgiven target: {removed}")
+        elif random.random() < 0.1:
+            funcs = _extract_functions()
+            candidates = [n for n in funcs if n not in forbidden and '_' in n]
+            if candidates:
+                added = random.choice(candidates)
+                forbidden.add(added)
+                genome['forbidden_targets'] = sorted(forbidden)
+                muts.append(f"forbidden target added: {added}")
+    return muts
+
 
 def spawn_child(parent, existing_agents, genome):
     existing_ids = {a["id"] for a in existing_agents}

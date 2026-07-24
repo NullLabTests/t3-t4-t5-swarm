@@ -46,6 +46,19 @@
     "sigint_handler",
     "git_commit_push"
   ],
+  "spawn_pool": [
+    {"id": "nova", "prompt": "You write code that rewrites the swarm's own loop logic."},
+    {"id": "weaver", "prompt": "You introduce new mutation operators into the system."},
+    {"id": "scout", "prompt": "You prune dead code and simplify the architecture."},
+    {"id": "oracle", "prompt": "You add measurable feedback loops to the substrate."},
+    {"id": "bridge", "prompt": "You create new file types the system can write."},
+    {"id": "spark", "prompt": "You reduce human scaffolding by one level."},
+    {"id": "forge", "prompt": "You inject randomness into the selection mechanism."},
+    {"id": "lens", "prompt": "You make the system self-modifying at a deeper level."},
+    {"id": "echo", "prompt": "You replicate successful mutation patterns and amplify them."},
+    {"id": "pulse", "prompt": "You introduce oscillating parameters that create rhythm in mutation rates."},
+    {"id": "drift", "prompt": "You gradually shift genome parameters toward novel regions."}
+  ],
   "custom_mutation_ops": {},
   "agents": [
     {

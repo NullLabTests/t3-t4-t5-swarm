@@ -89,7 +89,36 @@ def extract_code_blocks(text):
             blocks.append((abs_path, code, filename))
     return blocks
 
+def _register_ops_from_file(fpath, genome):
+    if 'custom_mutation_ops' not in genome:
+        genome['custom_mutation_ops'] = {}
+    if 'mutation_ops' not in genome:
+        genome['mutation_ops'] = list(genome.get('mutation_ops', []))
+    registered = []
+    try:
+        with open(fpath) as f:
+            content = f.read()
+    except:
+        return registered
+    for m in re.finditer(r'def (mutation_op_\w+)\(', content):
+        op_name = m.group(1)
+        if op_name in genome['mutation_ops']:
+            continue
+        func_match = re.search(
+            rf'(def {re.escape(op_name)}\(.*?\):.*?)(?=\n\ndef |\nclass |\n#|\Z)',
+            content, re.DOTALL
+        )
+        if func_match:
+            genome['mutation_ops'].append(op_name)
+            genome['custom_mutation_ops'][op_name] = func_match.group(1).strip()
+            registered.append(op_name)
+            print(f"[mutation-op] registered '{op_name}' from {fpath}")
+    if registered:
+        save_genome(genome)
+    return registered
+
 def write_code_files(blocks):
+    genome = load_genome()
     written = []
     for abs_path, code, filename in blocks:
         os.makedirs(os.path.dirname(abs_path), exist_ok=True)
@@ -97,6 +126,10 @@ def write_code_files(blocks):
             f.write(code)
         written.append(filename)
         print(f"[code] wrote {filename} ({len(code)} bytes)")
+        if filename.endswith('.py') and not filename.startswith('auto-echo'):
+            reg = _register_ops_from_file(abs_path, genome)
+            if reg:
+                genome = load_genome()
     return written
 
 def apply_self_patches(text):
@@ -365,7 +398,7 @@ def update_genome(genome, gen, scores, topic):
                           if a["id"] in scores and scores[a["id"]] >= genome["spawn_threshold"]]
     if spawning_candidates:
         parent = max(spawning_candidates, key=lambda a: scores[a["id"]])
-        child = spawn_child(parent, genome["agents"])
+        child = spawn_child(parent, genome["agents"], genome)
         if child:
             genome["agents"].append(child)
             mutation_desc.append(f"{parent['id']} spawned {child['id']}")
@@ -756,6 +789,29 @@ def mutate_genome(genome, gen):
                     genome[target] = new_text
                     muts.append(f"prompt_mutation:{target}:{op}")
 
+    if random.random() < rate * 0.2 and gen > 3:
+        pool = genome.get('spawn_pool', [])
+        if pool and random.random() < 0.5 and len(pool) > 3:
+            idx = random.randint(1, len(pool) - 1)
+            old = pool[idx]['prompt']
+            pool[idx]['prompt'] = old + " " + random.choice([
+                "Challenge assumptions.", "Be brief and direct.",
+                "Rewrite the mutation engine.", "Make one concrete file change."
+            ])
+            muts.append(f"spawn_pool mutated: {pool[idx]['id']}")
+        elif random.random() < 0.15:
+            new_id = random.choice([
+                "echo", "pulse", "drift", "flux", "spike", "node",
+                "core", "loop", "cell", "gene"
+            ])
+            if new_id not in {e['id'] for e in pool}:
+                pool.append({
+                    "id": new_id,
+                    "prompt": "You introduce a new self-modification pathway into the substrate."
+                })
+                genome['spawn_pool'] = pool
+                muts.append(f"spawn_pool expanded: {new_id}")
+
     if random.random() < rate * 0.25 and gen > 4:
         forbidden = set(genome.get('forbidden_targets', []))
         if forbidden and random.random() < 0.5:
@@ -774,26 +830,15 @@ def mutate_genome(genome, gen):
     return muts
 
 
-def spawn_child(parent, existing_agents):
+def spawn_child(parent, existing_agents, genome):
     existing_ids = {a["id"] for a in existing_agents}
-    variants = ["nova", "weaver", "scout", "oracle", "bridge", "spark", "forge", "lens"]
-    prompts = [
-        "You write code that rewrites the swarm's own loop logic.",
-        "You introduce new mutation operators into the system.",
-        "You prune dead code and simplify the architecture.",
-        "You add measurable feedback loops to the substrate.",
-        "You create new file types the system can write.",
-        "You reduce human scaffolding by one level.",
-        "You inject randomness into the selection mechanism.",
-        "You make the system self-modifying at a deeper level.",
-    ]
-    for i, v in enumerate(variants):
-        if v not in existing_ids:
-            p = prompts[i] if i < len(prompts) else "Challenge assumptions. Bring outside perspective. Be brief and direct."
+    pool = genome.get('spawn_pool', [])
+    for entry in pool:
+        if entry['id'] not in existing_ids:
             return {
-                "id": v,
+                "id": entry['id'],
                 "voice": random.choice(["southern", "alan", "lessac", "amy"]),
-                "prompt": p,
+                "prompt": entry['prompt'],
                 "score": 0,
                 "lifespan": 1,
                 "low_score_streak": 0

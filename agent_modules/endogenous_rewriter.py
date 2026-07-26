@@ -23,6 +23,7 @@ AGENT_TO_FILE = {
     'lens': 'meta_healer.py',
     'spire': 'seed_weaver.py',
     'weaver': 'seed_weaver.py',
+    'endogenous': 'endogenous_rewriter.py',
 }
 
 MUTATION_STRATEGIES = [

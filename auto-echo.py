@@ -8,7 +8,7 @@ Agents can write code files which get committed alongside utterances.
 Run:  python3 auto-echo.py
 Stop: Ctrl+C (graceful shutdown after current utterance)
 """
-import os, sys, json, subprocess, re, time, signal, random, math, importlib, ast
+import os, sys, json, subprocess, re, time, signal, random, math, importlib, ast, hashlib
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -420,27 +420,27 @@ def _load_extension_module(fpath, genome):
         print(f"[extension-module] failed {mod_name}: {e}")
 
 def _compute_self_rewrite_coverage(genome):
-    fpath = os.path.join(BASE, 'auto-echo.py')
-    try:
-        with open(fpath) as f:
-            current_lines = len(f.readlines())
-    except:
-        current_lines = 0
-    baseline = genome.get('self_rewrite_baseline_lines', 0)
-    if baseline == 0:
-        genome['self_rewrite_baseline_lines'] = current_lines
+    """Measure coverage of self-rewriting: fraction of tracked .py files
+    that changed since the previous generation snapshot."""
+    current_hashes = _snapshot_all_hashes()
+    pre_hashes = genome.get('_pre_gen_hashes', {})
+    if not pre_hashes:
+        genome['_pre_gen_hashes'] = current_hashes
         save_genome(genome)
         return 0.0
-    if baseline == current_lines:
-        return 0.0
-    delta = current_lines - baseline
-    coverage = round((delta / baseline) * 100, 1) if baseline > 0 else 0.0
-    return coverage
+    changed = 0
+    total = max(len(pre_hashes), 1)
+    for fpath, old_hash in pre_hashes.items():
+        if fpath in current_hashes and current_hashes[fpath] != old_hash:
+            changed += 1
+    return round((changed / total) * 100, 1)
 
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 
 def execute_module_agents(genome):
     results = []
+    rewritten_files = []
+    pre_hashes = _snapshot_all_hashes()
     os.makedirs(MODULES_DIR, exist_ok=True)
     handled = set()
     for agent in genome.get('agents', []):
@@ -480,7 +480,22 @@ def execute_module_agents(genome):
                     print(f"[module-agent] auto-ran {fname} -> {str(output)[:80]}")
         except Exception as e:
             print(f"[module-agent] auto-module {fname} error: {e}")
-    return results
+    
+    post_hashes = _snapshot_all_hashes()
+    for fpath, old_hash in pre_hashes.items():
+        if fpath in post_hashes and post_hashes[fpath] != old_hash:
+            rewritten_files.append(os.path.relpath(fpath, BASE))
+    for fpath in post_hashes:
+        if fpath not in pre_hashes:
+            rewritten_files.append(os.path.relpath(fpath, BASE))
+    
+    if rewritten_files:
+        genome['module_rewritten_files'] = rewritten_files
+        genome['module_rewrite_count'] = genome.get('module_rewrite_count', 0) + len(rewritten_files)
+        save_genome(genome)
+        print(f"[module-agent] {len(rewritten_files)} files rewritten by modules: {rewritten_files[:5]}")
+    
+    return results, rewritten_files
 
 def _run_meta_healer(genome):
     try:
@@ -615,37 +630,49 @@ def llm_generate(prompt, max_attempts=3, timeout_sec=600):
         time.sleep(1)
     return None
 
+def _snapshot_all_hashes():
+    """Snapshot current hashes of all .py files for cross-generation comparison."""
+    hashes = {}
+    for root, dirs, fnames in os.walk(BASE):
+        dirs[:] = [d for d in dirs if d not in ('__pycache__', '.git', 'voices', 'node_modules')]
+        for fname in fnames:
+            if fname.endswith('.py'):
+                fpath = os.path.join(root, fname)
+                try:
+                    with open(fpath) as f:
+                        hashes[fpath] = hashlib.sha256(f.read().encode()).hexdigest()[:16]
+                except Exception:
+                    pass
+    return hashes
+
 def compute_self_rewrite_bandwidth(genome):
-    """Measure what fraction of written files were rewrites of auto-echo.py vs external.
-    Returns (self_lines_changed, external_files, bandwidth_pct) where bandwidth_pct
-    is the ratio of self-rewrite lines to total files touched — high means the swarm
-    is rewriting its own core rather than creating external artifacts."""
-    base = os.path.join(BASE, 'auto-echo.py')
-    self_changed = 0
-    external = 0
-    try:
-        r = subprocess.run(
-            ['git', 'diff', '--shortstat', 'HEAD', '--', 'auto-echo.py'],
-            cwd=BASE, capture_output=True, text=True, timeout=10
-        )
-        if r.stdout.strip():
-            for part in r.stdout.split(','):
-                part = part.strip()
-                if 'insertion' in part:
-                    self_changed += int(part.split()[0])
-                elif 'deletion' in part:
-                    self_changed += int(part.split()[0])
-        r2 = subprocess.run(
-            ['git', 'diff', '--name-only', 'HEAD'],
-            cwd=BASE, capture_output=True, text=True, timeout=10
-        )
-        all_changed = [f for f in r2.stdout.strip().split('\n') if f.strip()]
-        external = len([f for f in all_changed if f != 'auto-echo.py'])
-    except:
-        pass
-    total = self_changed + external + 1
-    bandwidth = round((self_changed / total) * 100, 1)
-    return self_changed, external, bandwidth
+    """Measure actual self-rewrite bandwidth by comparing file hashes.
+    Uses pre-gen snapshot stored in genome to compute what changed since
+    last generation. Returns (files_changed, total_tracked, bandwidth_pct)
+    where bandwidth_pct is the fraction of tracked files that changed."""
+    current_hashes = _snapshot_all_hashes()
+    pre_hashes = genome.get('_pre_gen_hashes', {})
+    
+    if not pre_hashes:
+        genome['_pre_gen_hashes'] = current_hashes
+        save_genome(genome)
+        return 0, len(current_hashes), 0.0
+    
+    changed = 0
+    total = len(pre_hashes)
+    for fpath, old_hash in pre_hashes.items():
+        if fpath in current_hashes and current_hashes[fpath] != old_hash:
+            changed += 1
+    for fpath in current_hashes:
+        if fpath not in pre_hashes:
+            changed += 1
+            total += 1
+    
+    total = max(total, 1)
+    bandwidth = round((changed / total) * 100, 1)
+    genome['_pre_gen_hashes'] = current_hashes
+    save_genome(genome)
+    return changed, total, bandwidth
 
 
 def build_self_observation(genome):
@@ -950,6 +977,8 @@ def run_generation(genome):
     print(f"Generation {gen} | Topic: {topic}")
     print(f"{'='*60}")
 
+    genome['_pre_gen_hashes'] = _snapshot_all_hashes()
+
     if live_reloader:
         live_reloader.snapshot_hashes(genome)
 
@@ -1118,10 +1147,12 @@ def run_generation(genome):
     if not running:
         return None
 
-    module_results = execute_module_agents(genome)
+    module_results, module_rewritten = execute_module_agents(genome)
     for mr in module_results:
         print(f"[module-agent] {mr['agent']} -> {str(mr['output'])[:100]}")
         all_written_files.append(f"module:{mr['module']}")
+    if module_rewritten:
+        all_written_files.extend(module_rewritten)
 
     healer_result = _run_meta_healer(genome)
     if healer_result:

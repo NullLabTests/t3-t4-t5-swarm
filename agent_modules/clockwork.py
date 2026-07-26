@@ -456,3 +456,11 @@ def run(genome):
         genome['clock_pulse_log'] = genome['clock_pulse_log'][-50:]
     _save_genome(genome)
     return '[clockwork] ' + '; '.join(actions) if actions else '[clockwork] no_action'
+
+MODULE_INTERFACE = {
+    "module": "clockwork.py",
+    "agent": "clockwork",
+    "provides": ['_load_genome', '_save_genome', '_snapshot_hashes', '_list_all_py', '_file_hash', '_file_line_count', '_validate', '_record_rewrite', '_read_rewrite_log', '_record_manifest', '_git_commit_files', '_get_staleness_map', '_adaptive_cadence', '_should_rewrite', '_pick_strategy', '_apply_strategy', '_schedule_module_rewrites', '_compute_generation_bandwidth', '_fire_scheduled_triggers', '_schedule_future_triggers', '_clock_emergency_rewrite', '_execute_generation_rewrites', 'run'],
+    "version": 794,
+    "last_evolved": 1785105795,
+}

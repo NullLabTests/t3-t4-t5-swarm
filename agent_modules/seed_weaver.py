@@ -12,9 +12,23 @@ OPS_POOL = [
     ('mutation_op_line_duplicate_skip', 'def mutation_op_line_duplicate_skip(lines, funcs, target_name):\n    if len(lines) < 3:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    skip = random.choice([-1, 1])\n    target = idx + skip\n    if 0 <= target < len(r):\n        r.insert(idx, r[target])\n    return r'),
 ]
 
+# Weaver operators: these force the swarm to rewrite its own source every generation.
+# They are injected into the genome's mutation_ops list so the orchestrator can select them.
+WEAVER_OPS = [
+    'weaver_splice',
+    'endogenous_self_rewrite',
+]
+
 def run(genome):
+    # Ensure weaver operators are always registered in the genome
+    mutation_ops = genome.setdefault('mutation_ops', [])
+    for weaver_op in WEAVER_OPS:
+        if weaver_op not in mutation_ops:
+            mutation_ops.append(weaver_op)
+            print(f"[seed-weaver] registered weaver op: {weaver_op}")
+    
     if random.random() > 0.4:
-        return "skip"
+        return "skip (weaver ops ensured)"
     op_name, op_code = random.choice(OPS_POOL)
     custom_ops = genome.setdefault('custom_mutation_ops', {})
     if op_name in custom_ops:

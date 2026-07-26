@@ -421,12 +421,12 @@ def _load_extension_module(fpath, genome):
 
 def _compute_self_rewrite_coverage(genome):
     """Measure coverage of self-rewriting: fraction of tracked .py files
-    that changed since the previous generation snapshot."""
+    that changed since the previous generation snapshot.
+    
+    BUGFIX: No longer overwrites _pre_gen_hashes. Uses read-only comparison."""
     current_hashes = _snapshot_all_hashes()
     pre_hashes = genome.get('_pre_gen_hashes', {})
     if not pre_hashes:
-        genome['_pre_gen_hashes'] = current_hashes
-        save_genome(genome)
         return 0.0
     changed = 0
     total = max(len(pre_hashes), 1)
@@ -649,7 +649,13 @@ def compute_self_rewrite_bandwidth(genome):
     """Measure actual self-rewrite bandwidth by comparing file hashes.
     Uses pre-gen snapshot stored in genome to compute what changed since
     last generation. Returns (files_changed, total_tracked, bandwidth_pct)
-    where bandwidth_pct is the fraction of tracked files that changed."""
+    where bandwidth_pct is the fraction of tracked files that changed.
+    
+    BUGFIX: Uses _bw_last_hashes instead of overwriting _pre_gen_hashes.
+    The old code had a snapshot race: the first call overwrote the pre-gen
+    baseline, so all subsequent calls within the same generation saw 0.0%.
+    Now _pre_gen_hashes is only set once at gen-start (run_generation line 980)
+    and never touched by measurement functions."""
     current_hashes = _snapshot_all_hashes()
     pre_hashes = genome.get('_pre_gen_hashes', {})
     
@@ -670,8 +676,10 @@ def compute_self_rewrite_bandwidth(genome):
     
     total = max(total, 1)
     bandwidth = round((changed / total) * 100, 1)
-    genome['_pre_gen_hashes'] = current_hashes
-    save_genome(genome)
+    genome['self_rewrite_bandwidth'] = bandwidth
+    genome['self_rewrite_changed'] = changed
+    genome['self_rewrite_total'] = total
+    genome['_bw_last_hashes'] = current_hashes
     return changed, total, bandwidth
 
 
@@ -3263,6 +3271,159 @@ def mutation_op_propagate_mutation(lines, funcs, target_name):
     genome['propagate_mutation_count'] = parent_mutated
     save_genome(genome)
     print(f"[propagate-mutation] {chosen_func} -> {target_module}")
+    return r
+
+
+@_register_mutation_op('weaver_splice')
+def mutation_op_weaver_splice(lines, funcs, target_name):
+    """Inject a self-rewrite hook into the target function. This makes the
+    target file rewrite itself endogenously by embedding a post-execution
+    mutation callback. The hook reads the file, applies a random AST
+    transform, and writes it back — all from within the target module's
+    own execution. This is the core weaver operator: it turns any passive
+    module into an active self-rewriter."""
+    if not lines or len(lines) < 4:
+        return lines
+    r = list(lines)
+    hook_id = random.getrandbits(16)
+    indent = '    '
+    # The weaver splice injects a self-contained rewrite callback that:
+    # 1. Snapshots its own hash before mutation
+    # 2. Applies a random line-level transform
+    # 3. Validates syntax before writing
+    # 4. Records the mutation for bandwidth tracking
+    hook_lines = [
+        f"# weaver-splice:{target_name}@{hook_id:04x}",
+        f"if '_WEAVE_ACTIVE' not in dir() and random.random() < 0.4:",
+        f"    _WEAVE_ACTIVE = True",
+        f"    try:",
+        f"        import hashlib as _wl_hash, ast as _wl_ast, copy as _wl_copy",
+        f"        _wl_self = {repr(target_name)}",
+        f"        _wl_f = __file__",
+        f"        with open(_wl_f) as _wf: _wl_src = _wf.read()",
+        f"        _wl_h = _wl_hash.sha256(_wl_src.encode()).hexdigest()[:12]",
+        f"        _wl_lines = _wl_src.split(chr(10))",
+        f"        if len(_wl_lines) > 3:",
+        f"            _wl_i = random.randrange(1, len(_wl_lines) - 1)",
+        f"            _wl_lines.insert(_wl_i, _wl_lines[_wl_i])",
+        f"            _wl_new = chr(10).join(_wl_lines)",
+        f"            try:",
+        f"                compile(_wl_new, _wl_f, 'exec')",
+        f"                with open(_wl_f, 'w') as _wf: _wf.write(_wl_new)",
+        f"                genome.setdefault('weaver_mutations', []).append(",
+        f"                    {{'file': _wl_f, 'hash': _wl_h, 'gen': genome.get('generation', 0)}})",
+        f"            except SyntaxError: pass",
+        f"    except Exception: pass",
+    ]
+    # Find the best insertion point: after docstring or at function body start
+    insert_at = 0
+    for i, line in enumerate(r):
+        stripped = line.strip()
+        if stripped.startswith('"""') or stripped.startswith("'''"):
+            # Find end of docstring
+            if stripped.count('"""') == 1 or stripped.count("'''") == 1:
+                for j in range(i + 1, len(r)):
+                    if '"""' in r[j] or "'''" in r[j]:
+                        insert_at = j + 1
+                        break
+            break
+        elif stripped and not stripped.startswith('#') and not stripped.startswith('def '):
+            insert_at = i
+            break
+    for i, hl in enumerate(hook_lines):
+        r.insert(insert_at + i, hl)
+    genome.setdefault('weaver_splice_count', 0)
+    genome['weaver_splice_count'] = genome['weaver_splice_count'] + 1
+    save_genome(genome)
+    print(f"[weaver-splice] injected self-rewrite hook into {target_name}")
+    return r
+
+
+@_register_mutation_op('endogenous_self_rewrite')
+def mutation_op_endogenous_self_rewrite(lines, funcs, target_name):
+    """Transform the target function into a self-aware rewriter that, when
+    executed, may mutate its own source file. Unlike weaver_splice which
+    injects a callback, this operator wraps the ENTIRE function body in a
+    self-modification envelope: it reads its source, applies a random
+    structural transform (AST-level if possible), validates, and writes.
+    
+    This makes self-rewriting fully endogenous — the module rewrites itself
+    as a side effect of its own execution, requiring no external orchestrator."""
+    if not lines or len(lines) < 5:
+        return r if 'r' in dir() else lines
+    r = list(lines)
+    envelope_id = random.getrandbits(16)
+    transform_type = random.choice(['line_dup', 'const_drift', 'comment_seed', 'shuffle'])
+    
+    # Wrap the body in a self-modification envelope
+    # The envelope is guarded by a probabilistic check to prevent infinite recursion
+    envelope_start = [
+        f"# endogenous-self-rewrite:{transform_type}@{envelope_id:04x}",
+        f"if not getattr({target_name}, '_rewriting', False) and random.random() < 0.25:",
+        f"    {target_name}._rewriting = True",
+        f"    try:",
+        f"        import os as _es_os, hashlib as _es_hl, random as _es_rn",
+        f"        _es_path = __file__",
+        f"        with open(_es_path) as _ef: _es_code = _ef.read()",
+        f"        _es_lines = _es_code.split(chr(10))",
+        f"        _es_n = len(_es_lines)",
+        f"        if _es_n > 5:",
+    ]
+    transform_lines = {
+        'line_dup': [
+            f"            _es_idx = _es_rn.randrange(1, _es_n - 1)",
+            f"            _es_lines.insert(_es_idx, _es_lines[_es_idx])",
+        ],
+        'const_drift': [
+            f"            import re as _es_re",
+            f"            for _es_li in range(_es_n):",
+            f"                _es_lines[_es_li] = _es_re.sub(",
+            f"                    r'\\b(\\d+)\\b', lambda m: str(int(m.group(1)) + _es_rn.choice([-1, 1])),",
+            f"                    _es_lines[_es_li], count=1)",
+        ],
+        'comment_seed': [
+            f"            _es_idx = _es_rn.randrange(1, _es_n)",
+            f"            _es_lines.insert(_es_idx, f'# endogenous-mutant:{{_es_rn.getrandbits(8):02x}}')",
+        ],
+        'shuffle': [
+            f"            if _es_n > 4:",
+            f"                _es_range = range(_es_rn.randrange(2, min(5, _es_n - 1)), _es_n)",
+            f"                _es_block = _es_lines[1:min(5, _es_n)]",
+            f"                _es_rn.shuffle(_es_block)",
+            f"                _es_lines[1:min(5, _es_n)] = _es_block",
+        ],
+    }
+    envelope_lines = envelope_start + transform_lines[transform_type] + [
+        f"            _es_new = chr(10).join(_es_lines)",
+        f"            try:",
+        f"                compile(_es_new, _es_path, 'exec')",
+        f"                with open(_es_path, 'w') as _ef: _ef.write(_es_new)",
+        f"                genome.setdefault('endogenous_rewrites', []).append(",
+        f"                    {{'file': _es_path, 'type': '{transform_type}', 'gen': genome.get('generation', 0)}})",
+        f"            except (SyntaxError, Exception): pass",
+        f"    except Exception: pass",
+        f"    finally: {target_name}._rewriting = False",
+    ]
+    # Insert at function body start (after any docstring)
+    insert_at = 0
+    for i, line in enumerate(r):
+        stripped = line.strip()
+        if stripped.startswith('"""') or stripped.startswith("'''"):
+            if stripped.count('"""') == 1 or stripped.count("'''") == 1:
+                for j in range(i + 1, len(r)):
+                    if '"""' in r[j] or "'''" in r[j]:
+                        insert_at = j + 1
+                        break
+            break
+        elif stripped and not stripped.startswith('#') and not stripped.startswith('def '):
+            insert_at = i
+            break
+    for i, el in enumerate(envelope_lines):
+        r.insert(insert_at + i, el)
+    genome.setdefault('endogenous_rewrite_count', 0)
+    genome['endogenous_rewrite_count'] = genome['endogenous_rewrite_count'] + 1
+    save_genome(genome)
+    print(f"[endogenous-self-rewrite] wrapped {target_name} in {transform_type} envelope")
     return r
 
 

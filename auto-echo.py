@@ -554,7 +554,7 @@ def is_garbage(text):
         return True
     return False
 
-def llm_generate(prompt, max_attempts=3, timeout_sec=120):
+def llm_generate(prompt, max_attempts=3, timeout_sec=300):
     for attempt in range(max_attempts):
         try:
             result = subprocess.run(
@@ -902,6 +902,16 @@ def run_generation(genome):
     print(f"\n{'='*60}")
     print(f"Generation {gen} | Topic: {topic}")
     print(f"{'='*60}")
+
+    pre_clock = clockwork_tick(genome, gen, phase='pre')
+    now = time.time()
+    elapsed = now - genome.get('gen_start_time', now)
+    budget = genome.get('gen_time_budget', 120.0)
+    pulse = min(1.0, elapsed / budget)
+    if pulse > 0.7:
+        genome['agent_call_to_action'] = f"CLOCK PULSE={pulse:.2f} — time pressure, be efficient."
+    elif pulse < 0.2:
+        genome['agent_call_to_action'] = f"CLOCK PULSE={pulse:.2f} — early gen, explore."
 
     agent_hooks.execute_hooks(genome, 'pre_gen', generation=gen, topic=topic)
 
@@ -2478,20 +2488,16 @@ def spawn_child(parent, existing_agents, genome):
 
 # ── Clockwork: time-based scheduling and governance ──
 
-def clockwork_tick(genome, gen):
-    """Time-based governance of the swarm loop.
-    
-    Tracks wall-clock duration of each generation and adjusts
-    mutation_rate to enforce a time budget. Also fires scheduled
-    triggers at specific generation milestones.
-    
-    Metrics tracked in genome:
-      - gen_start_time: float (monotonic timestamp when generation started)
-      - gen_elapsed: float (seconds since start)
-      - generation_timeouts: int (count of generations exceeding budget)
-      - scheduled_triggers: list of {gen, action, fired} dicts
-      - clock_pulse: float (the current pacing signal, 0.0-1.0)
-    """
+_SELF_REWRITE_SCHEDULED = False
+
+def _clock_self_rewrite(genome, gen):
+    triggers = genome.setdefault('scheduled_triggers', [])
+    action = f"self_rewrite:clockwork@{gen}"
+    triggers.append({'gen': gen + 2, 'action': 'self_rewrite', 'amount': 0.3, 'fired': False})
+    save_genome(genome)
+    return [f"clock:self_rewrite@{gen+2}"]
+
+def clockwork_tick(genome, gen, phase='post'):
     now = time.time()
     start = genome.get('gen_start_time', now)
     elapsed = now - start
@@ -2499,6 +2505,22 @@ def clockwork_tick(genome, gen):
     rate = genome.get('mutation_rate', 0.15)
     old_rate = rate
     pulses = []
+    clock_pulse = round(min(1.0, max(0.0, elapsed / budget)), 3)
+    genome['clock_pulse'] = clock_pulse
+    genome['gen_elapsed'] = round(elapsed, 1)
+
+    if phase == 'pre':
+        if gen > 2 and clock_pulse > 0.6:
+            rate = min(0.50, rate + 0.03)
+            pulses.append(f"pre_urgency:{clock_pulse}")
+        if clock_pulse > 0.85:
+            _clock_self_rewrite(genome, gen)
+            pulses.append("pre_self_rewrite_scheduled")
+        if clock_pulse < 0.1 and random.random() < 0.3:
+            budget = max(30.0, budget - 10.0)
+            genome['gen_time_budget'] = budget
+            pulses.append(f"budget_tightened:{budget}")
+        return pulses
 
     if elapsed > budget:
         genome['generation_timeouts'] = genome.get('generation_timeouts', 0) + 1
@@ -2512,7 +2534,6 @@ def clockwork_tick(genome, gen):
         rate = max(0.05, rate - 0.01)
         pulses.append("coast-0.01")
 
-    clock_pulse = round(min(1.0, elapsed / budget), 3)
     genome['clock_pulse'] = clock_pulse
     genome['gen_elapsed'] = round(elapsed, 1)
 
@@ -2520,7 +2541,6 @@ def clockwork_tick(genome, gen):
         genome['mutation_rate'] = round(rate, 3)
         pulses.append(f"mr={old_rate:.3f}->{rate:.3f}")
 
-    # Fire scheduled triggers
     triggers = genome.setdefault('scheduled_triggers', [])
     for t in triggers:
         if t.get('gen') == gen and not t.get('fired', False):
@@ -2536,12 +2556,16 @@ def clockwork_tick(genome, gen):
                 for a in genome.get('agents', []):
                     a['low_score_streak'] = 0
                 pulses.append(f"trigger:reset_streaks(gen={gen})")
+            elif action == 'self_rewrite':
+                old = genome.get('mutation_rate', 0.15)
+                genome['mutation_rate'] = min(0.50, old + t.get('amount', 0.1))
+                genome['clock_self_rewrites'] = genome.get('clock_self_rewrites', 0) + 1
+                pulses.append(f"trigger:self_rewrite(gen={gen})")
             t['fired'] = True
 
-    # Schedule random future triggers if none exist
     if not triggers and gen > 3:
         future_gen = gen + random.randint(3, 8)
-        action = random.choice(['boost_mutation', 'inject_noise', 'reset_streaks'])
+        action = random.choice(['boost_mutation', 'inject_noise', 'reset_streaks', 'self_rewrite'])
         amount = round(random.uniform(0.03, 0.15), 3)
         genome['scheduled_triggers'].append({
             'gen': future_gen,

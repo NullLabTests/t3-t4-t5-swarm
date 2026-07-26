@@ -258,7 +258,8 @@
       "prompt": "You add time-based triggers and scheduling to the swarm loop.",
       "score": 0,
       "lifespan": 1,
-      "low_score_streak": 0
+      "low_score_streak": 0,
+      "module": "clockwork.py"
     }
   ],
   "history": [

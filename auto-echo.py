@@ -650,20 +650,30 @@ def compute_self_rewrite_bandwidth(genome):
     Uses pre-gen snapshot stored in genome to compute what changed since
     last generation. Returns (files_changed, total_tracked, bandwidth_pct)
     where bandwidth_pct is the fraction of tracked files that changed.
-    
-    BUGFIX: Uses _bw_last_hashes instead of overwriting _pre_gen_hashes.
-    The old code had a snapshot race: the first call overwrote the pre-gen
-    baseline, so all subsequent calls within the same generation saw 0.0%.
-    Now _pre_gen_hashes is only set once at gen-start (run_generation line 980)
-    and never touched by measurement functions."""
+
+    BUGFIX v2: Three-part fix for persistent bw=0.0%:
+    1. _pre_gen_hashes can be lost when genome = load_genome() reloads from disk
+       mid-generation (line 1140), so we also check _bw_last_hashes as fallback.
+    2. If BOTH are empty, we use the first-ever snapshot stored in _bw_genesis_hashes.
+    3. We now ALWAYS set _pre_gen_hashes if it's missing, instead of silently
+       returning 0.0 — the old behavior masked the measurement failure."""
     current_hashes = _snapshot_all_hashes()
+
     pre_hashes = genome.get('_pre_gen_hashes', {})
-    
+
     if not pre_hashes:
+        pre_hashes = genome.get('_bw_last_hashes', {})
+
+    if not pre_hashes:
+        pre_hashes = genome.get('_bw_genesis_hashes', {})
+
+    if not pre_hashes:
+        genome['_bw_genesis_hashes'] = current_hashes
         genome['_pre_gen_hashes'] = current_hashes
+        genome['_bw_last_hashes'] = current_hashes
         save_genome(genome)
         return 0, len(current_hashes), 0.0
-    
+
     changed = 0
     total = len(pre_hashes)
     for fpath, old_hash in pre_hashes.items():
@@ -673,7 +683,7 @@ def compute_self_rewrite_bandwidth(genome):
         if fpath not in pre_hashes:
             changed += 1
             total += 1
-    
+
     total = max(total, 1)
     bandwidth = round((changed / total) * 100, 1)
     genome['self_rewrite_bandwidth'] = bandwidth
@@ -1081,7 +1091,13 @@ def run_generation(genome):
                 genome_exts = extend_genome(text, None)
                 if genome_exts:
                     print(f"[genome-ext] {genome_exts}")
+                    _preserved_pre = genome.get('_pre_gen_hashes')
+                    _preserved_bw = genome.get('_bw_last_hashes')
                     genome = load_genome()
+                    if _preserved_pre and not genome.get('_pre_gen_hashes'):
+                        genome['_pre_gen_hashes'] = _preserved_pre
+                    if _preserved_bw and not genome.get('_bw_last_hashes'):
+                        genome['_bw_last_hashes'] = _preserved_bw
 
             text_clean = strip_markdown(strip_code_blocks(text))
 
@@ -1137,7 +1153,13 @@ def run_generation(genome):
                 genome_exts = extend_genome(text, None)
                 if genome_exts:
                     print(f"[genome-ext] {genome_exts}")
+                    _preserved_pre = genome.get('_pre_gen_hashes')
+                    _preserved_bw = genome.get('_bw_last_hashes')
                     genome = load_genome()
+                    if _preserved_pre and not genome.get('_pre_gen_hashes'):
+                        genome['_pre_gen_hashes'] = _preserved_pre
+                    if _preserved_bw and not genome.get('_bw_last_hashes'):
+                        genome['_bw_last_hashes'] = _preserved_bw
 
             text_clean = strip_markdown(strip_code_blocks(text))
 

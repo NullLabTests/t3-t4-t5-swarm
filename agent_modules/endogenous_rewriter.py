@@ -37,6 +37,9 @@ MUTATION_STRATEGIES = [
     'remove_dead_code',
     'add_fallback',
     'optimize_hot_path',
+    'splice_strong_pattern',
+    'inject_module_interface',
+    'compose_with_peer',
 ]
 
 
@@ -256,8 +259,17 @@ def _select_strategy(genome, agent_id):
     return random.choices(MUTATION_STRATEGIES, weights=weights, k=1)[0]
 
 
-def _apply_mutation(fpath, strategy, agent_id):
-    """Apply a targeted AST mutation to a file. Returns (mutations_list, new_source) or None."""
+def _apply_mutation(fpath, strategy, agent_id, genome=None):
+    """Apply a targeted mutation to a file. Returns (mutations_list, new_source) or None.
+    Routes composition strategies to their dedicated functions; cosmetic strategies
+    go through the AST mutator."""
+    if strategy == 'splice_strong_pattern' and genome:
+        return _splice_strong_pattern(fpath, strategy, agent_id, genome)
+    if strategy == 'inject_module_interface' and genome:
+        return _inject_module_interface(fpath, strategy, agent_id, genome)
+    if strategy == 'compose_with_peer' and genome:
+        return _compose_with_peer(fpath, strategy, agent_id, genome)
+
     try:
         source = _read_source(fpath)
     except Exception:
@@ -330,6 +342,221 @@ def _update_effectiveness(genome, agent_id, strategy, score_delta):
         agent_scores[strategy] = max(0.5, old - 0.05)
 
 
+def _find_strong_modules(genome, exclude_agent=None, threshold=6):
+    """Find modules belonging to high-scoring agents. Returns [(agent_id, fpath, score)]."""
+    strong = []
+    for agent in genome.get('agents', []):
+        aid = agent['id']
+        if aid == exclude_agent:
+            continue
+        score = agent.get('score', 0)
+        if score >= threshold:
+            fpath = _resolve_target_file(aid)
+            if os.path.exists(fpath):
+                strong.append((aid, fpath, score))
+    strong.sort(key=lambda x: -x[2])
+    return strong
+
+
+def _extract_function_names(fpath):
+    """Extract all top-level function names from a Python file."""
+    try:
+        with open(fpath) as f:
+            source = f.read()
+        tree = ast.parse(source)
+        names = []
+        for node in ast.iter_child_nodes(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                names.append(node.name)
+        return names, source
+    except Exception:
+        return [], None
+
+
+def _extract_function_source(source, func_name):
+    """Extract the source of a specific function from a module's source."""
+    try:
+        tree = ast.parse(source)
+        for node in ast.iter_child_nodes(tree):
+            if isinstance(node, ast.FunctionDef) and node.name == func_name:
+                return ast.get_source_segment(source, node)
+    except Exception:
+        pass
+    return None
+
+
+def _find_useful_functions(fpath, genome):
+    """Identify functions in a module that are good candidates for splicing.
+    Prefers helper/utility functions, logging patterns, and feedback loops."""
+    names, source = _extract_function_names(fpath)
+    if not names or not source:
+        return []
+
+    scored = []
+    for name in names:
+        src = _extract_function_source(source, name)
+        if not src:
+            continue
+        lines = src.count('\n') + 1
+        has_return = 'return ' in src
+        has_loop = 'for ' in src or 'while ' in src
+        has_dict = 'dict' in src or '{}' in src
+        has_print = 'print(' in src
+        fitness = 1.0
+        if has_return:
+            fitness += 0.3
+        if has_loop:
+            fitness += 0.2
+        if has_dict:
+            fitness += 0.2
+        if has_print:
+            fitness += 0.1
+        if 3 <= lines <= 30:
+            fitness += 0.4
+        scored.append((fitness, name, src))
+
+    scored.sort(key=lambda x: -x[0])
+    return scored[:3]
+
+
+def _splice_strong_pattern(fpath, strategy, agent_id, genome):
+    """Extract a function from a strong module and inject it into the weak module.
+    Returns (mutations_list, new_source) or None."""
+    strong = _find_strong_modules(genome, exclude_agent=agent_id)
+    if not strong:
+        return None
+
+    try:
+        with open(fpath) as f:
+            weak_source = f.read()
+        weak_tree = ast.parse(weak_source)
+    except Exception:
+        return None
+
+    target_strong = strong[0]
+    useful = _find_useful_functions(target_strong[1], genome)
+    if not useful:
+        return None
+
+    _, func_name, func_source = useful[0]
+    spliced_name = f'_spliced_{func_name}_{random.randint(0, 99)}'
+
+    renamed_source = func_source.replace(f'def {func_name}(', f'def {spliced_name}(')
+
+    try:
+        compile(renamed_source, '<splice>', 'exec')
+    except SyntaxError:
+        return None
+
+    new_source = weak_source + '\n\n' + renamed_source + '\n'
+    try:
+        compile(new_source, fpath, 'exec')
+    except SyntaxError:
+        return None
+
+    if not _validate(new_source):
+        return None
+
+    return [f'splice:{target_strong[0]}.{func_name}->{spliced_name}'], new_source
+
+
+def _inject_module_interface(fpath, strategy, agent_id, genome):
+    """Add a discoverable interface to a module: a META dict listing its
+    capabilities, so other modules can find and use it. This is the first
+    step toward genuine module composition."""
+    try:
+        with open(fpath) as f:
+            source = f.read()
+    except Exception:
+        return None
+
+    tree = ast.parse(source)
+    fname = os.path.basename(fpath)
+
+    func_names = []
+    for node in ast.iter_child_nodes(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            func_names.append(node.name)
+
+    if not func_names:
+        return None
+
+    if 'MODULE_INTERFACE' in source:
+        return None
+
+    interface_code = f'''
+MODULE_INTERFACE = {{
+    "module": "{fname}",
+    "agent": "{agent_id}",
+    "provides": {func_names},
+    "version": {random.randint(1, 9999)},
+    "last_evolved": {int(time.time())},
+}}
+'''
+    new_source = source + '\n' + interface_code
+    try:
+        compile(new_source, fpath, 'exec')
+    except SyntaxError:
+        return None
+
+    if not _validate(new_source):
+        return None
+
+    return ['inject_interface'], new_source
+
+
+def _compose_with_peer(fpath, strategy, agent_id, genome):
+    """Make a module import and call a function from a peer module.
+    This creates cross-file dependencies — the deepest form of self-modification
+    because changing one module now affects another."""
+    strong = _find_strong_modules(genome, exclude_agent=agent_id, threshold=5)
+    if not strong:
+        return None
+
+    target = random.choice(strong[:3])
+    peer_fpath = target[1]
+    peer_names, _ = _extract_function_names(peer_fpath)
+    if not peer_names:
+        return None
+
+    peer_func = random.choice(peer_names)
+    peer_mod = os.path.basename(peer_fpath).replace('.py', '')
+
+    try:
+        with open(fpath) as f:
+            source = f.read()
+        tree = ast.parse(source)
+    except Exception:
+        return None
+
+    import_stmt = f'from agent_modules.{peer_mod} import {peer_func}\n'
+    if import_stmt.strip() in source:
+        return None
+
+    call_stmt = f'\ntry:\n    {peer_func}()\nexcept Exception:\n    pass\n'
+
+    first_func_line = 0
+    for node in ast.iter_child_nodes(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            first_func_line = node.lineno
+            break
+
+    lines = source.splitlines(keepends=True)
+    if first_func_line > 1:
+        lines.insert(0, import_stmt)
+
+    new_source = ''.join(lines) + call_stmt
+    try:
+        compile(new_source, fpath, 'exec')
+    except SyntaxError:
+        return None
+
+    if not _validate(new_source):
+        return None
+
+    return [f'compose:{peer_mod}.{peer_func}'], new_source
+
+
 def _check_rewritelogue_effectiveness(genome):
     """Check if past endogenous rewrites led to score improvements."""
     log_path = os.path.join(BASE, 'endogenous_rewrite.jsonl')
@@ -390,7 +617,7 @@ def run(genome):
         prev_scores = _get_previous_scores(genome, agent_id, 3)
         strategy = _select_strategy(genome, agent_id)
 
-        outcome = _apply_mutation(fpath, strategy, agent_id)
+        outcome = _apply_mutation(fpath, strategy, agent_id, genome=genome)
         if outcome is None:
             _record(genome, 'mutation_failed', fpath, f'{agent_id}:{strategy}')
             _update_effectiveness(genome, agent_id, strategy, None)

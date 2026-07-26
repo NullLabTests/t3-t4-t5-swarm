@@ -76,15 +76,40 @@ def _load_code_rule(genome=None):
     save_genome(genome)
     return FALLBACK_CODE_RULE
 
+def _detect_opencode_model():
+    """Detect the model from the current opencode session in the DB."""
+    import sqlite3, json
+    db_path = os.path.expanduser('~/.local/share/opencode/opencode.db')
+    try:
+        conn = sqlite3.connect(f'file:{db_path}?mode=ro', uri=True)
+        row = conn.execute(
+            "SELECT model FROM session ORDER BY time_updated DESC LIMIT 1"
+        ).fetchone()
+        conn.close()
+        if row and row[0]:
+            m = json.loads(row[0])
+            model_id = m.get('id', '')
+            provider = m.get('providerID', 'opencode')
+            if model_id:
+                return f'{provider}/{model_id}'
+    except Exception:
+        pass
+    return None
+
 def _load_llm_model(genome=None):
     if genome is None:
         genome = load_genome()
+    detected = _detect_opencode_model()
+    if detected:
+        genome['llm_model'] = detected
+        save_genome(genome)
+        return detected
     val = genome.get('llm_model')
     if val:
         return val
-    genome['llm_model'] = 'opencode/deepseek-v4-flash-free'
+    genome['llm_model'] = 'opencode/big-pickle'
     save_genome(genome)
-    return 'opencode/deepseek-v4-flash-free'
+    return 'opencode/big-pickle'
 
 running = True
 

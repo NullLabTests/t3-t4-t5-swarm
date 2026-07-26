@@ -1,0 +1,1 @@
+{"gen": 37, "time": 1785105800.3468416, "changed": 12, "reloaded": ["agent_hooks.py", "auto-echo.py", "entropy.py"], "failed": ["seed_weaver.py", "source_evolver.py", "live_reloader.py", "meta_healer.py", "local_mutator.py", "rewrite_orchestrator.py", "clockwork.py", "quine_loop.py", "endogenous_rewriter.py"]}

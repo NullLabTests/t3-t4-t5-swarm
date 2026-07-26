@@ -521,3 +521,5 @@ def run(genome):
 
     print(f"[orchestrator] {summary}")
     return summary
+
+# endogenous:agent=orchestrator:strat=optimize_hot_path:ts=1785105791

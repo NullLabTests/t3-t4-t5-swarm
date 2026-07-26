@@ -12,8 +12,8 @@ import ast, os, random, re, hashlib, json, time, subprocess
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EVOLUTION_LOG = os.path.join(BASE, 'source_evolution.jsonl')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
+MANIFEST_FILE = os.path.join(BASE, 'rewrite_manifest.jsonl')
 
-SKIP_FILES = {'source_evolver.py', 'auto-echo.py'}
 REWRITE_STRATEGIES = [
     'rename_local_vars',
     'insert_guards',
@@ -39,12 +39,17 @@ def _save_genome(g):
         json.dump(g, f, indent=2)
 
 
-def _list_py_files():
+def _list_py_files(genome=None):
+    """List all .py files. Skips are genome-driven, not hardcoded.
+    No file is permanently immune — the swarm decides via genome."""
+    genome_skipped = set()
+    if genome:
+        genome_skipped = set(genome.get('evolver_skip_files', []))
     files = []
     for fname in sorted(os.listdir(BASE)):
         if not fname.endswith('.py'):
             continue
-        if fname in SKIP_FILES:
+        if fname in genome_skipped:
             continue
         fpath = os.path.join(BASE, fname)
         if os.path.isfile(fpath):
@@ -53,6 +58,8 @@ def _list_py_files():
     if os.path.isdir(mod_dir):
         for fname in sorted(os.listdir(mod_dir)):
             if not fname.endswith('.py') or fname.startswith('__'):
+                continue
+            if fname in genome_skipped:
                 continue
             fpath = os.path.join(mod_dir, fname)
             if os.path.isfile(fpath):
@@ -305,7 +312,7 @@ def _git_commit(fpath, mutations, strategy, gen):
 
 def run(genome):
     gen = genome.get('generation', 0)
-    files = _list_py_files()
+    files = _list_py_files(genome)
     if not files:
         return "no_files"
 
@@ -337,5 +344,19 @@ def run(genome):
     _save_genome(genome)
 
     if results:
+        _record_manifest(genome, results)
         return f"evolved {len(results)} files: {'; '.join(results)}"
     return "no_mutations_applied"
+
+
+def _record_manifest(genome, results):
+    """Write what this module rewrote to the shared manifest for cross-module coordination."""
+    gen = genome.get('generation', 0)
+    entry = json.dumps({
+        'gen': gen,
+        'module': 'source_evolver',
+        'results': results,
+        'time': time.time(),
+    })
+    with open(MANIFEST_FILE, 'a') as f:
+        f.write(entry + '\n')

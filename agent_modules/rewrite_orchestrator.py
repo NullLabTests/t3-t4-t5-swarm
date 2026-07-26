@@ -11,6 +11,7 @@ import ast, os, random, time, json, hashlib, subprocess, textwrap
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 META_KEY = 'rewrite_orchestrator_meta'
 REWRITE_LOG = os.path.join(BASE, 'orchestrator_rewrite_log.jsonl')
+MANIFEST_FILE = os.path.join(BASE, 'rewrite_manifest.jsonl')
 
 # Strategies that can be applied to any file
 STRATEGIES = {
@@ -24,19 +25,24 @@ STRATEGIES = {
     'append_evolution_marker': 'Append a generation marker comment',
 }
 
-SKIP_FILES = {'rewrite_orchestrator.py'}
 MAX_REWRITES_PER_GEN = 5
 STALENESS_THRESHOLD = 3  # rewrite a file if it hasn't been rewritten in this many gens
 
 
-def _list_all_py():
+def _list_all_py(genome=None):
+    """List all .py files. Skips are genome-driven, not hardcoded.
+    The genome's forbidden_targets list controls what's immune to rewriting.
+    No file is permanently immune — the swarm decides via genome."""
+    genome_skipped = set()
+    if genome:
+        genome_skipped = set(genome.get('orchestrator_skip_files', []))
     files = []
     for root, dirs, fnames in os.walk(BASE):
         dirs[:] = [d for d in dirs if d not in ('__pycache__', '.git', 'voices', 'node_modules')]
         for fname in fnames:
             if not fname.endswith('.py'):
                 continue
-            if fname in SKIP_FILES:
+            if fname in genome_skipped:
                 continue
             fpath = os.path.join(root, fname)
             files.append(fpath)
@@ -279,7 +285,7 @@ def _git_commit_rewrites(rewritten, gen):
 def run(genome):
     gen = genome.get('generation', 0)
     meta = _ensure_meta(genome)
-    files = _list_all_py()
+    files = _list_all_py(genome)
     if not files:
         return "no_files_found"
 
@@ -345,4 +351,21 @@ def run(genome):
         summary += f" | {detail}"
 
     genome['orchestrator_summary'] = summary
+
+    if rewritten:
+        _record_manifest(genome, rewritten)
+
     return summary
+
+
+def _record_manifest(genome, rewritten):
+    """Write what this module rewrote to the shared manifest for cross-module coordination."""
+    gen = genome.get('generation', 0)
+    entry = json.dumps({
+        'gen': gen,
+        'module': 'rewrite_orchestrator',
+        'files': [{'file': os.path.basename(f), 'mutations': m, 'strategy': s} for f, m, s in rewritten],
+        'time': time.time(),
+    })
+    with open(MANIFEST_FILE, 'a') as f:
+        f.write(entry + '\n')

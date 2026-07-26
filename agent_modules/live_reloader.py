@@ -19,7 +19,7 @@ import os
 import sys
 import time
 
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file())))
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
 RELOAD_LOG = os.path.join(BASE, 'reload_log.jsonl')

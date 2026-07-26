@@ -35,8 +35,9 @@ try:
         live_reloader = importlib.util.module_from_spec(spec_lr)
         sys.modules['live_reloader'] = live_reloader
         spec_lr.loader.exec_module(live_reloader)
-except Exception:
-    pass
+except Exception as e:
+    print(f"[import] live_reloader failed: {e}")
+    live_reloader = None
 
 FALLBACK_VOICE_MAP = {
     "explorer": "southern", "analyzer": "alan", "synthesizer": "lessac",
@@ -664,9 +665,10 @@ def build_self_observation(genome):
     context_files = genome.get('context_sources', [])
     self_changed, external, bw = compute_self_rewrite_bandwidth(genome)
     genome['self_rewrite_bandwidth'] = bw
+    autonomy = genome.get('source_autonomy_index', 0.0)
     obs = (
         f"[self-observation] gen={gen} agents={agent_count} ops={op_count}(+{custom_ops} custom) "
-        f"diversity={diversity} trend={avg_trend} bw={bw}%"
+        f"diversity={diversity} trend={avg_trend} bw={bw}% autonomy={autonomy}"
     )
     if low_scorers:
         obs += f" at-risk={low_scorers}"
@@ -765,6 +767,7 @@ def update_metrics(gen, genome, code_outcomes):
         'syntax_invalid': syntax_bad,
         'files_written': len(code_outcomes),
         'self_rewrite_bandwidth': bw,
+        'source_autonomy_index': genome.get('source_autonomy_index', 0.0),
         'timestamp': datetime.now(timezone.utc).isoformat(),
     }
     records.append(record)
@@ -2315,6 +2318,8 @@ def compute_diversity_score(genome):
     rewrite_files, rewrite_ins, rewrite_del, rewrite_depth = compute_structural_rewrite_depth(genome)
     genome['structural_rewrite_depth'] = rewrite_depth
 
+    autonomy_index = compute_source_autonomy_index(genome)
+
     original_baseline = genome.get('scaffolding_baseline', [])
     current_forbidden = genome.get('forbidden_targets', [])
     removed_count = sum(1 for item in original_baseline if item not in current_forbidden) if original_baseline else 0
@@ -2353,6 +2358,7 @@ def compute_diversity_score(genome):
         'hookdef_count': hookdefs,
         'self_spawn_count': self_spawns,
         'structural_rewrite_depth': rewrite_depth,
+        'source_autonomy_index': autonomy_index,
     }
     genome['scaffolding_removal_ratio'] = scaffolding_removal_ratio
     default_weights = {
@@ -2364,6 +2370,7 @@ def compute_diversity_score(genome):
         'scheduled_triggers': 0.01, 'emergence_velocity': 0.15,
         'scaffolding_removal_ratio': 0.25, 'selection_entropy': 0.2,
         'hookdef_count': 0.05, 'self_spawn_count': 0.08,
+        'source_autonomy_index': 0.2,
     }
     w = genome.setdefault('diversity_weights', default_weights)
     w = {k: w.get(k, default_weights[k]) for k in default_weights}
@@ -2384,7 +2391,8 @@ def compute_diversity_score(genome):
         score['scaffolding_removal_ratio'] * w['scaffolding_removal_ratio'] +
         score['selection_entropy'] * w['selection_entropy'] +
         min(score['hookdef_count'], 20) * w['hookdef_count'] +
-        min(score['self_spawn_count'], 10) * w['self_spawn_count']
+        min(score['self_spawn_count'], 10) * w['self_spawn_count'] +
+        score['source_autonomy_index'] * 10 * w['source_autonomy_index']
     )
     score['composite'] = round(composite, 2)
     genome['diversity'] = score
@@ -2434,6 +2442,73 @@ def compute_agent_code_ratio(genome):
         ratios[aid] = round(counts['with_code'] / max(counts['total'], 1), 2)
     genome['agent_code_ratios'] = ratios
     return ratios
+
+
+def compute_source_autonomy_index(genome):
+    """Measure what fraction of .py files were rewritten by the swarm's own
+    modules (orchestrator, evolver, endogenous, quine_loop) in the current
+    generation, vs only touched by external LLM agents or never touched.
+    
+    High autonomy = the swarm's internal modules are actively rewriting
+    the codebase. Low autonomy = only LLM agent output drives changes.
+    
+    Returns float 0.0-1.0 (fraction of files rewritten by modules)."""
+    gen = genome.get('generation', 0)
+    manifest_path = os.path.join(BASE, 'rewrite_manifest.jsonl')
+    module_files = set()
+    all_py = set()
+    
+    # Count all .py files
+    for root, dirs, fnames in os.walk(BASE):
+        dirs[:] = [d for d in dirs if d not in ('__pycache__', '.git', 'voices', 'node_modules')]
+        for fname in fnames:
+            if fname.endswith('.py'):
+                all_py.add(fname)
+    
+    total = len(all_py)
+    if total == 0:
+        return 0.0
+    
+    # Read manifest for current generation
+    if os.path.exists(manifest_path):
+        try:
+            with open(manifest_path) as f:
+                for line in f:
+                    if not line.strip():
+                        continue
+                    entry = json.loads(line)
+                    if entry.get('gen', 0) != gen:
+                        continue
+                    mod = entry.get('module', '')
+                    # Count files rewritten by swarm modules
+                    if mod in ('rewrite_orchestrator', 'source_evolver', 
+                               'endogenous_rewriter', 'quine_loop',
+                               'local_mutator', 'meta_healer'):
+                        for file_entry in entry.get('files', []):
+                            module_files.add(file_entry.get('file', ''))
+                        for r in entry.get('results', []):
+                            fname = r.split(':')[0] if ':' in r else ''
+                            if fname:
+                                module_files.add(fname)
+        except Exception:
+            pass
+    
+    # Also count files touched by code_path_mutation (runs in auto-echo.py itself)
+    history = genome.get('history', [])
+    recent = [h for h in history if h.get('generation', 0) == gen]
+    if recent:
+        mut_str = recent[0].get('mutation', '')
+        for part in mut_str.split(';'):
+            if 'code:' in part:
+                # code:op_name:OK target_name: extract target
+                pieces = part.split(':')
+                if len(pieces) >= 4:
+                    module_files.add(pieces[3].strip().split()[0] if pieces[3] else '')
+    
+    autonomy = len(module_files) / total if total > 0 else 0.0
+    genome['source_autonomy_index'] = round(autonomy, 3)
+    genome['source_autonomy_files'] = len(module_files)
+    return round(autonomy, 3)
 
 
 def compute_rewrite_flux(genome):

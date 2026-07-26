@@ -1670,7 +1670,56 @@ def _bridge_handler_bridge(abs_path, genome):
     return False
 
 
+def _bridge_handler_swarmrewrite(abs_path, genome):
+    """Apply a targeted rewrite to any .py file via a .swarmrewrite file.
+    Format: JSON dict with 'target' (relative path), 'strategy' (optional),
+    and optional 'note'. If no strategy, picks the best one automatically."""
+    import importlib.util
+    try:
+        with open(abs_path) as f:
+            data = json.load(f)
+    except Exception as e:
+        print(f"[bridge-swarmrewrite] parse error: {e}")
+        return False
+    target_rel = data.get('target', '')
+    if not target_rel:
+        print("[bridge-swarmrewrite] no target specified")
+        return False
+    target_path = os.path.join(BASE, target_rel)
+    if not os.path.exists(target_path):
+        print(f"[bridge-swarmrewrite] target not found: {target_rel}")
+        return False
+    mod_path = os.path.join(MODULES_DIR, 'rewrite_orchestrator.py')
+    if not os.path.exists(mod_path):
+        print("[bridge-swarmrewrite] rewrite_orchestrator.py not found")
+        return False
+    try:
+        spec = importlib.util.spec_from_file_location('rewrite_orchestrator', mod_path)
+        if spec and spec.loader:
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            strategy = data.get('strategy')
+            if strategy and strategy in mod.STRATEGIES:
+                mutations, used_strategy = mod._apply_strategy(target_path, strategy, genome)
+            else:
+                meta = mod._ensure_meta(genome)
+                strategy = mod._pick_strategy(meta)
+                mutations, used_strategy = mod._apply_strategy(target_path, strategy, genome)
+            if mutations:
+                print(f"[bridge-swarmrewrite] {target_rel}: {used_strategy} -> {mutations[:3]}")
+                genome['swarmrewrite_count'] = genome.get('swarmrewrite_count', 0) + 1
+                save_genome(genome)
+                return True
+            else:
+                print(f"[bridge-swarmrewrite] {target_rel}: no mutations ({used_strategy})")
+                return False
+    except Exception as e:
+        print(f"[bridge-swarmrewrite] error: {e}")
+        return False
+
+
 register_bridge_type('.bridge', _bridge_handler_bridge, "Auto-register new bridge extension types")
+register_bridge_type('.swarmrewrite', _bridge_handler_swarmrewrite, "Targeted rewrite of any .py file via orchestrator")
 
 
 def _register_mutation_op(name):

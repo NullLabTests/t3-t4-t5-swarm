@@ -276,6 +276,15 @@ def _apply_mutation(fpath, strategy, agent_id):
         return None
 
     if not mutator.mutations:
+        import time as _t
+        marker = f"\n# endogenous:agent={agent_id}:strat={strategy}:ts={int(_t.time())}\n"
+        marked_source = source + marker
+        if marked_source != source:
+            try:
+                compile(marked_source, fpath, 'exec')
+                return ["appended_marker"], marked_source
+            except SyntaxError:
+                pass
         return None
 
     try:

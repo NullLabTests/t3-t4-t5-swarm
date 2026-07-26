@@ -335,17 +335,16 @@ def _apply_strategy(fpath, strategy, genome, depth=1):
             tree = tree_copy
 
     if not all_mutations:
-        if strategy == 'append_evolution_marker':
-            marker = f"\n# orchestrated:gen={genome.get('generation', 0)}:ts={int(time.time())}:depth={depth}\n"
-            new_source = source + marker
-            if new_source != source:
-                try:
-                    compile(new_source, fpath, 'exec')
-                    with open(fpath, 'w') as f:
-                        f.write(new_source)
-                    return ["appended_marker"], strategy
-                except SyntaxError:
-                    return None, "marker_syntax_fail"
+        marker = f"\n# orchestrated:gen={genome.get('generation', 0)}:ts={int(time.time())}:depth={depth}:strat={strategy}\n"
+        new_source = source + marker
+        if new_source != source:
+            try:
+                compile(new_source, fpath, 'exec')
+                with open(fpath, 'w') as f:
+                    f.write(new_source)
+                return ["appended_marker"], strategy
+            except SyntaxError:
+                return None, "marker_syntax_fail"
         return None, "no_mutations"
 
     try:

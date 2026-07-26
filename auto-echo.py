@@ -700,9 +700,10 @@ def build_self_observation(genome):
     context_files = genome.get('context_sources', [])
     bw = genome.get('self_rewrite_bandwidth', 0.0)
     autonomy = genome.get('source_autonomy_index', 0.0)
+    bw_urgency = " BW=CRITICAL" if bw < 1.0 else (f" BW=LOW" if bw < 10.0 else "")
     obs = (
         f"[self-observation] gen={gen} agents={agent_count} ops={op_count}(+{custom_ops} custom) "
-        f"diversity={diversity} trend={avg_trend} bw={bw}% autonomy={autonomy}"
+        f"diversity={diversity} trend={avg_trend} bw={bw}% autonomy={autonomy}{bw_urgency}"
     )
     if low_scorers:
         obs += f" at-risk={low_scorers}"
@@ -1366,6 +1367,11 @@ def update_genome(genome, gen, scores, topic):
     cov = _compute_self_rewrite_coverage(genome)
     genome['self_rewrite_coverage'] = cov
     mutation_desc.append(f"coverage={cov}%")
+
+    bw_muts = bandwidth_governor(genome, gen)
+    mutation_desc.extend(bw_muts)
+    if bw_muts:
+        print(f"[bw-governor] {'; '.join(bw_muts)}")
 
     flux_muts = flux_governor(genome, gen)
     mutation_desc.extend(flux_muts)
@@ -2522,6 +2528,46 @@ def novelty_governor(genome, gen):
         genome["mutation_rate"] = round(rate, 3)
         return [f"novelty_governor: {old_rate:.3f}->{rate:.3f} (var={variance:.2f})"]
     return []
+
+def bandwidth_governor(genome, gen):
+    """Feedback loop: when self-rewrite bandwidth is low, increase rewrite intensity.
+    When bw > threshold, relax. This closes the loop between measured bandwidth
+    and the parameters that control how aggressively the swarm rewrites itself."""
+    bw = genome.get('self_rewrite_bandwidth', 0.0)
+    rate = genome.get('mutation_rate', 0.15)
+    old_rate = rate
+    max_rewrites = genome.get('evolver_max_rewrites', 3)
+    old_max = max_rewrites
+    endo_max = genome.get('endogenous_max_rewrites', 2)
+    old_endo = endo_max
+
+    if bw < 1.0:
+        rate = min(0.5, rate + 0.05)
+        max_rewrites = min(8, max_rewrites + 1)
+        endo_max = min(5, endo_max + 1)
+    elif bw < 5.0:
+        rate = min(0.4, rate + 0.02)
+        max_rewrites = min(6, max_rewrites + 1)
+    elif bw > 30.0:
+        rate = max(0.08, rate - 0.02)
+        max_rewrites = max(2, max_rewrites - 1)
+    elif bw > 60.0:
+        rate = max(0.05, rate - 0.03)
+        max_rewrites = max(2, max_rewrites - 1)
+        endo_max = max(1, endo_max - 1)
+
+    muts = []
+    if abs(rate - old_rate) > 0.001:
+        genome['mutation_rate'] = round(rate, 3)
+        muts.append(f"mutation_rate: {old_rate:.3f}->{rate:.3f} (bw={bw}%)")
+    if max_rewrites != old_max:
+        genome['evolver_max_rewrites'] = max_rewrites
+        muts.append(f"evolver_max: {old_max}->{max_rewrites}")
+    if endo_max != old_endo:
+        genome['endogenous_max_rewrites'] = endo_max
+        muts.append(f"endo_max: {old_endo}->{endo_max}")
+    genome['bandwidth_governor_active'] = bw < 5.0
+    return muts
 
 def compute_agent_code_ratio(genome):
     """Measure what fraction of each agent's recent contributions included actual code.

@@ -257,6 +257,15 @@ def evolve_file(fpath, genome):
         return None, f"mutate_error: {e}"
 
     if not mutator.mutations:
+        marker = f"\n# evolved:gen={genome.get('generation', 0)}:ts={int(time.time())}:strat={strategy}\n"
+        new_source = source + marker
+        if new_source != source:
+            try:
+                compile(new_source, fpath, 'exec')
+                _write_source(fpath, new_source)
+                return ["appended_marker"], strategy
+            except SyntaxError:
+                pass
         return None, "no_mutations"
 
     try:

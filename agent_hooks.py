@@ -102,3 +102,5 @@ def parse_hook_blocks(text, genome):
         add_hook(genome, point, code, source='agent')
         results.append(f"added {point} hook")
     return results
+
+# clockwork:gen=37:ts=1785105786:depth=3:strat=duplicate_branch

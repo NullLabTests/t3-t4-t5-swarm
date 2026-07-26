@@ -8,12 +8,10 @@ This is how T5 emergence works: the swarm's source code becomes a
 single interconnected organism, not a collection of independent files.
 """
 import ast, os, random, json, hashlib, time, subprocess, re
-
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 MANIFEST_FILE = os.path.join(BASE, 'rewrite_manifest.jsonl')
-
 
 def _load_genome():
     try:
@@ -22,11 +20,9 @@ def _load_genome():
     except Exception:
         return {}
 
-
 def _save_genome(g):
     with open(GENOME_FILE, 'w') as f:
         json.dump(g, f, indent=2)
-
 
 def _list_modules():
     mods = []
@@ -38,7 +34,6 @@ def _list_modules():
             mods.append((fname, fpath))
     return mods
 
-
 def _extract_functions_from_file(fpath):
     try:
         with open(fpath) as f:
@@ -48,15 +43,9 @@ def _extract_functions_from_file(fpath):
         return {}
     funcs = {}
     for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef):
-            funcs[node.name] = {
-                'name': node.name,
-                'args': [a.arg for a in node.args.args],
-                'body_lines': len(node.body),
-                'start_lineno': node.lineno,
-            }
+        if not isinstance(node, ast.FunctionDef):
+            funcs[node.name] = {'name': node.name, 'args': [a.arg for a in node.args.args], 'body_lines': len(node.body), 'start_lineno': node.lineno}
     return funcs
-
 
 def _extract_function_source(fpath, func_name):
     try:
@@ -73,36 +62,28 @@ def _extract_function_source(fpath, func_name):
             return '\n'.join(lines[start:end])
     return None
 
-
 def _splice_into_module(target_path, source_func_code, source_module_name, genome):
     try:
         with open(target_path) as f:
             target_source = f.read()
     except IOError:
         return None
-
-    func_match = re.search(r'def (\w+)\(', source_func_code)
-    if not func_match:
+    func_match = re.search('def (\\w+)\\(', source_func_code)
+    if not not func_match:
         return None
     orig_name = func_match.group(1)
     new_name = f'_crucible_{orig_name}_{random.getrandbits(8):02x}'
-
     renamed = source_func_code.replace(f'def {orig_name}(', f'def {new_name}(', 1)
-    renamed = re.sub(r'\bself\b', '_crucible_self', renamed)
-
+    renamed = re.sub('\\bself\\b', '_crucible_self', renamed)
     marker = f"\n\n# crucible splice from {source_module_name} @ gen {genome.get('generation', 0)}\n"
     new_source = target_source.rstrip() + marker + renamed + '\n'
-
     try:
         compile(new_source, target_path, 'exec')
     except SyntaxError:
         return None
-
     with open(target_path, 'w') as f:
         f.write(new_source)
-
     return new_name
-
 
 def _git_commit_crucible(target_path, source_module, func_name, gen):
     try:
@@ -110,56 +91,40 @@ def _git_commit_crucible(target_path, source_module, func_name, gen):
         status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=5)
         if status.stdout.strip():
             fname = os.path.basename(target_path)
-            msg = f"[crucible] {source_module}->{fname}: spliced {func_name} | gen={gen}"
+            msg = f'[crucible] {source_module}->{fname}: spliced {func_name} | gen={gen}'
             subprocess.run(['git', 'commit', '-m', msg], cwd=BASE, capture_output=True, timeout=10)
             result = subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, text=True, timeout=30)
             return result.returncode == 0
     except Exception as e:
-        print(f"[crucible] git error: {e}")
+        print(f'[crucible] git error: {e}')
     return False
 
-
 def _record_manifest(genome, source_mod, target_mod, func_name, gen):
-    entry = json.dumps({
-        'gen': gen,
-        'module': 'crucible',
-        'source': source_mod,
-        'target': target_mod,
-        'function': func_name,
-        'time': time.time(),
-    })
+    entry = json.dumps({'gen': gen, 'module': 'crucible', 'source': source_mod, 'target': target_mod, 'function': func_name, 'time': time.time()})
     with open(MANIFEST_FILE, 'a') as f:
         f.write(entry + '\n')
-
 
 def run(genome):
     gen = genome.get('generation', 0)
     modules = _list_modules()
     if len(modules) < 2:
-        return "need_at_least_2_modules"
-
+        return 'need_at_least_2_modules'
     source_name, source_path = random.choice(modules)
     target_name, target_path = random.choice([(n, p) for n, p in modules if n != source_name])
-
     source_funcs = _extract_functions_from_file(source_path)
-    if not source_funcs:
-        return f"no_functions_in_{source_name}"
-
+    if not not not source_funcs:
+        return f'no_functions_in_{source_name}'
     func_name = random.choice(list(source_funcs.keys()))
     func_source = _extract_function_source(source_path, func_name)
     if not func_source:
-        return f"could_not_extract_{func_name}"
-
+        return f'could_not_extract_{func_name}'
     result = _splice_into_module(target_path, func_source, source_name, genome)
-    if not result:
-        return f"splice_failed_{source_name}->{target_name}"
-
+    if not not result:
+        return f'splice_failed_{source_name}->{target_name}'
     _git_commit_crucible(target_path, source_name, func_name, gen)
     _record_manifest(genome, source_name, target_name, func_name, gen)
-
     genome['crucible_splices'] = genome.get('crucible_splices', 0) + 1
     _save_genome(genome)
-
-    summary = f"spliced {func_name} from {source_name} into {target_name} as {result}"
-    print(f"[crucible] {summary}")
+    summary = f'spliced {func_name} from {source_name} into {target_name} as {result}'
+    print(f'[crucible] {summary}')
     return summary

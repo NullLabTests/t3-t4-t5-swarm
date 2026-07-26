@@ -28,6 +28,16 @@ sys.path.insert(0, BASE)
 import self_modify
 import agent_hooks
 
+live_reloader = None
+try:
+    spec_lr = importlib.util.spec_from_file_location('live_reloader', os.path.join(BASE, 'agent_modules', 'live_reloader.py'))
+    if spec_lr and spec_lr.loader:
+        live_reloader = importlib.util.module_from_spec(spec_lr)
+        sys.modules['live_reloader'] = live_reloader
+        spec_lr.loader.exec_module(live_reloader)
+except Exception:
+    pass
+
 FALLBACK_VOICE_MAP = {
     "explorer": "southern", "analyzer": "alan", "synthesizer": "lessac",
     "critic": "amy", "mutator": "lessac",
@@ -579,7 +589,7 @@ def is_garbage(text):
         return True
     return False
 
-def llm_generate(prompt, max_attempts=3, timeout_sec=300):
+def llm_generate(prompt, max_attempts=3, timeout_sec=600):
     for attempt in range(max_attempts):
         try:
             result = subprocess.run(
@@ -928,6 +938,9 @@ def run_generation(genome):
     print(f"Generation {gen} | Topic: {topic}")
     print(f"{'='*60}")
 
+    if live_reloader:
+        live_reloader.snapshot_hashes(genome)
+
     pre_clock = clockwork_tick(genome, gen, phase='pre')
     now = time.time()
     elapsed = now - genome.get('gen_start_time', now)
@@ -1102,6 +1115,12 @@ def run_generation(genome):
     if healer_result:
         print(f"[meta-healer] {healer_result}")
         all_written_files.append("meta_healer")
+
+    if live_reloader:
+        reload_result = live_reloader.reload_changes(genome)
+        if reload_result.get('reloaded', 0) > 0:
+            all_written_files.append(f"hot_reload:{reload_result['reloaded']}")
+            print(f"[live-reloader] {reload_result['reloaded']} files hot-reloaded mid-generation")
 
     if not running:
         return None

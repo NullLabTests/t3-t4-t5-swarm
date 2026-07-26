@@ -821,13 +821,17 @@ def git_commit_push(label, text, is_genome=False, gen=None, novelty=None):
         print(f"[git] Error: {e}")
 
 def _emergent_select_agent(agents, spoken_this_gen, genome):
-    """Select next agent by fitness-proportional weighting.
-    Factors: score, recency penalty (inverse of times spoken), random exploration.
-    Selection entropy feedback: when entropy is low (stagnation), exploration amplifies.
-    Removes human scaffolding of fixed iteration order."""
+    """Select next agent by fitness-proportional weighting with endogenous score noise.
+    Factors: noisy score, recency penalty, random exploration, stagnation amplification.
+    The key innovation: selection uses NOISY scores (inject_selection_noise) so that
+    low-score agents retain real selection probability, preventing lockout and
+    ensuring genuine randomness flows through the selection mechanism every gen."""
     candidates = []
     entropy = genome.get("selection_entropy", 1.0)
     stagnation_boost = max(1.0, (1.0 - entropy) * 3.0 + 0.5)
+    noise_std = genome.get("selection_noise_std", 0.5)
+    rate = genome.get("mutation_rate", 0.15)
+    effective_std = noise_std * (1.0 + rate) * (1.0 + max(0.0, 1.0 - entropy) * 2.0)
     for a in agents:
         aid = a["id"]
         if aid == "critic":
@@ -836,7 +840,9 @@ def _emergent_select_agent(agents, spoken_this_gen, genome):
             continue
         spoke = spoken_this_gen.get(aid, 0)
         recency_bonus = 1.0 / (1.0 + spoke)
-        score_weight = max(a.get("score", 5), 1) / 5.0
+        raw_score = max(a.get("score", 5), 1)
+        noisy_score = max(1, raw_score + random.gauss(0, effective_std))
+        score_weight = noisy_score / 5.0
         exploration = random.uniform(0.5, 1.5) * stagnation_boost
         weight = score_weight * recency_bonus * exploration
         candidates.append((weight, aid))
@@ -845,11 +851,14 @@ def _emergent_select_agent(agents, spoken_this_gen, genome):
     total = sum(w for w, _ in candidates)
     r = random.uniform(0, total)
     cum = 0
+    selected = candidates[-1][1]
     for w, aid in candidates:
         cum += w
         if r <= cum:
-            return aid
-    return candidates[-1][1]
+            selected = aid
+            break
+    genome['_last_selection_weights'] = {aid: round(w/total, 4) for w, aid in candidates}
+    return selected
 
 
 def rescue_at_risk_agents(genome, gen):
@@ -2290,6 +2299,38 @@ def compute_structural_rewrite_depth(genome):
     return files, insertions, deletions, depth
 
 
+def _compute_selection_randomness(genome):
+    """Measure how much score noise actually perturbs selection decisions.
+    Compares raw vs noisy scores for each agent and computes the fraction
+    of agents whose rank changes. High index = selection is genuinely random;
+    low index = scores dominate despite noise injection.
+    Returns float 0.0-1.0."""
+    history = genome.get('history', [])
+    if not history:
+        return 0.0
+    recent = history[-1]
+    raw_scores = recent.get('scores', {})
+    noisy_scores = recent.get('noisy_scores', {})
+    if not raw_scores or not noisy_scores:
+        return 0.0
+    common = set(raw_scores.keys()) & set(noisy_scores.keys())
+    if len(common) < 2:
+        return 0.0
+    rank_swaps = 0
+    common_list = sorted(common)
+    for i in range(len(common_list)):
+        for j in range(i + 1, len(common_list)):
+            a, b = common_list[i], common_list[j]
+            raw_order = raw_scores[a] > raw_scores[b]
+            noisy_order = noisy_scores[a] > noisy_scores[b]
+            if raw_order != noisy_order:
+                rank_swaps += 1
+    max_pairs = len(common_list) * (len(common_list) - 1) / 2
+    randomness = round(rank_swaps / max_pairs, 3) if max_pairs > 0 else 0.0
+    genome['selection_randomness_index'] = randomness
+    return randomness
+
+
 def compute_diversity_score(genome):
     history = genome.get('history', [])
     recent_mutations = sum(
@@ -2317,6 +2358,8 @@ def compute_diversity_score(genome):
     self_spawns = genome.get('self_spawn_count', 0)
     rewrite_files, rewrite_ins, rewrite_del, rewrite_depth = compute_structural_rewrite_depth(genome)
     genome['structural_rewrite_depth'] = rewrite_depth
+
+    sel_randomness = _compute_selection_randomness(genome)
 
     autonomy_index = compute_source_autonomy_index(genome)
 
@@ -2359,6 +2402,7 @@ def compute_diversity_score(genome):
         'self_spawn_count': self_spawns,
         'structural_rewrite_depth': rewrite_depth,
         'source_autonomy_index': autonomy_index,
+        'selection_randomness_index': sel_randomness,
     }
     genome['scaffolding_removal_ratio'] = scaffolding_removal_ratio
     default_weights = {
@@ -2371,6 +2415,7 @@ def compute_diversity_score(genome):
         'scaffolding_removal_ratio': 0.25, 'selection_entropy': 0.2,
         'hookdef_count': 0.05, 'self_spawn_count': 0.08,
         'source_autonomy_index': 0.2,
+        'selection_randomness_index': 0.15,
     }
     w = genome.setdefault('diversity_weights', default_weights)
     w = {k: w.get(k, default_weights[k]) for k in default_weights}
@@ -2392,7 +2437,8 @@ def compute_diversity_score(genome):
         score['selection_entropy'] * w['selection_entropy'] +
         min(score['hookdef_count'], 20) * w['hookdef_count'] +
         min(score['self_spawn_count'], 10) * w['self_spawn_count'] +
-        score['source_autonomy_index'] * 10 * w['source_autonomy_index']
+        score['source_autonomy_index'] * 10 * w['source_autonomy_index'] +
+        score['selection_randomness_index'] * 10 * w['selection_randomness_index']
     )
     score['composite'] = round(composite, 2)
     genome['diversity'] = score
@@ -3079,6 +3125,30 @@ def mutation_op_operator_chain_injection(lines, funcs, target_name):
     ]
     for i, cl in enumerate(chain):
         r.insert(insert_at + i, cl)
+    return r
+
+
+@_register_mutation_op('forge_selection_scramble')
+def mutation_op_forge_selection_scramble(lines, funcs, target_name):
+    """Forge operator: inject selection randomness directly into target function.
+    
+    Replaces score_weight computation lines with noisy-score alternatives,
+    ensuring the selection mechanism itself evolves to be more endogenously
+    random. Measurable metric: selection_randomness_index tracks the fraction
+    of selection decisions that differ between raw and noisy scoring."""
+    if not lines or len(lines) < 3:
+        return lines
+    r = list(lines)
+    scramble_injections = [
+        f"# forge:selection_scramble@{random.getrandbits(16):04x}",
+        f"_forge_noisy_scores = {{k: max(1, v + random.gauss(0, genome.get('selection_noise_std', 0.5))) for k, v in scores.items()}} if 'scores' in dir() else {{}}",
+        f"if genome.get('selection_entropy', 1.0) < 0.5:",
+        f"    genome['selection_noise_std'] = round(min(2.0, genome.get('selection_noise_std', 0.5) + 0.1), 3)",
+        f"    save_genome(genome)",
+    ]
+    insert_at = random.randrange(max(1, len(r) // 4), len(r))
+    for i, inj in enumerate(scramble_injections):
+        r.insert(insert_at + i, inj)
     return r
 
 

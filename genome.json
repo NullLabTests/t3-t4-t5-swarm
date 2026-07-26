@@ -46,7 +46,8 @@
     "inject_source_hook",
     "self_spawn_trigger",
     "bridge_bootstrap",
-    "force_self_rewrite"
+    "force_self_rewrite",
+    "forge_selection_scramble"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -229,7 +230,7 @@
     {
       "id": "forge",
       "voice": "lessac",
-      "prompt": "You inject randomness into the selection mechanism. Write a new mutation_op_forge_* function that cross-pollinates code between agent_modules files. You MUST output ```python: with a mutation_op_forge_* function. Code only.",
+      "prompt": "You inject randomness into the selection mechanism. Write mutation_op_forge_* functions that make _emergent_select_agent use noisy scores so low-score agents retain selection probability. The selection_randomness_index metric tracks rank-swaps between raw and noisy scores. You MUST output ```python: with a mutation_op_forge_* function. Code only.",
       "score": 2,
       "lifespan": 25,
       "low_score_streak": 0

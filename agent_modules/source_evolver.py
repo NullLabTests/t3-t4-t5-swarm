@@ -276,7 +276,7 @@ def evolve_file(fpath, genome):
     file_stats = stats.setdefault(fname, {'hashes': [], 'mutations': 0, 'last_gen': 0})
     file_stats['hashes'].append(_file_hash(fpath))
     if len(file_stats['hashes']) > 20:
-        file_stats['hashes'] = file_stats['hits'][-20:]
+        file_stats['hashes'] = file_stats['hashes'][-20:]
     file_stats['mutations'] = file_stats.get('mutations', 0) + len(mutator.mutations)
     file_stats['last_gen'] = genome.get('generation', 0)
     file_stats['last_strategy'] = strategy

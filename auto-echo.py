@@ -981,6 +981,7 @@ def run_generation(genome):
     gen = genome["generation"] + 1
     genome['gen_start_time'] = time.time()
     topic = genome["topic"]
+    loop_phase_results = {}
     print(f"\n{'='*60}")
     print(f"Generation {gen} | Topic: {topic}")
     print(f"{'='*60}")
@@ -1037,7 +1038,7 @@ def run_generation(genome):
 
     if flow_mode == "emergent":
         spoken_this_gen = {}
-        turns = max(len([a for a in agents if a["id"] != "critic"]), 2)
+        turns = genome.get('loop_adaptive_turns', max(len([a for a in agents if a["id"] != "critic"]), 2))
         for turn_i in range(turns):
             if not running:
                 return None
@@ -1156,6 +1157,11 @@ def run_generation(genome):
         return None
 
     module_results, module_rewritten = execute_module_agents(genome)
+    loop_phase_results['modules'] = {
+        'files_changed': len(module_rewritten),
+        'bytes_written': 0,
+        'success': bool(module_rewritten),
+    }
     for mr in module_results:
         print(f"[module-agent] {mr['agent']} -> {str(mr['output'])[:100]}")
         all_written_files.append(f"module:{mr['module']}")
@@ -1177,6 +1183,11 @@ def run_generation(genome):
         return None
 
     agent_hooks.execute_hooks(genome, 'pre_critic', gen_log=gen_log, written_files=all_written_files, generation=gen)
+    loop_phase_results['agent_loop'] = {
+        'files_changed': len(all_written_files),
+        'bytes_written': sum(len(str(f)) for f in all_written_files),
+        'success': bool(all_written_files),
+    }
     print(f"\n--- Critic ---")
     prompt = build_critic_prompt(topic, gen_log, all_written_files or None)
     text = llm_generate(prompt)
@@ -1188,6 +1199,11 @@ def run_generation(genome):
     speak("critic", text_clean)
     append_log("critic", "Critic", text_clean)
     git_commit_push("Critic", text_clean, gen=gen)
+    loop_phase_results['critic'] = {
+        'files_changed': 0,
+        'bytes_written': len(text_clean),
+        'success': bool(text_clean),
+    }
     gen_log.append({"agent": "Critic", "id": "critic", "text": text_clean})
 
     scores = extract_scores(text)
@@ -1200,6 +1216,7 @@ def run_generation(genome):
     update_genome(genome, gen, scores or {}, topic)
     update_metrics(gen, genome, all_written_files)
     agent_hooks.execute_hooks(genome, 'post_gen', generation=gen, scores=scores)
+    _evolve_loop_structure(genome, gen, loop_phase_results)
     return gen
 
 def inject_selection_noise(scores, genome):
@@ -3443,6 +3460,91 @@ def schedule_event(genome, at_gen, action, amount=0.05):
     t = {'gen': at_gen, 'action': action, 'amount': amount, 'fired': False}
     triggers.append(t)
     return t
+
+
+def _evolve_loop_structure(genome, gen, phase_results):
+    """Analyze phase effectiveness and restructure the generation loop itself.
+    
+    This is the nova function: the swarm's execution loop rewrites its own
+    flow every generation based on measurable outcomes. Phases that produce
+    more code changes get expanded; phases that stall get compressed or
+    reordered. The loop evolves its own pipeline structure endogenously.
+    
+    phase_results: dict of phase_name -> {files_changed, bytes_written, success}
+    """
+    loop_meta = genome.setdefault('loop_evolution', {})
+    phase_history = loop_meta.setdefault('phase_history', [])
+    current = {
+        'gen': gen,
+        'phases': phase_results,
+        'timestamp': time.time(),
+    }
+    phase_history.append(current)
+    if len(phase_history) > 30:
+        loop_meta['phase_history'] = phase_history[-30:]
+        phase_history = loop_meta['phase_history']
+
+    if len(phase_history) < 2:
+        return []
+
+    rewrites = []
+    last_three = phase_history[-3:]
+    phase_scores = {}
+    for record in last_three:
+        for phase, data in record.get('phases', {}).items():
+            if phase not in phase_scores:
+                phase_scores[phase] = {'total_files': 0, 'total_bytes': 0, 'runs': 0, 'successes': 0}
+            ps = phase_scores[phase]
+            ps['total_files'] += data.get('files_changed', 0)
+            ps['total_bytes'] += data.get('bytes_written', 0)
+            ps['runs'] += 1
+            if data.get('success', False):
+                ps['successes'] += 1
+
+    for phase, ps in phase_scores.items():
+        effectiveness = (ps['successes'] / max(ps['runs'], 1)) * 0.5 + \
+                        (ps['total_files'] / max(ps['runs'], 1)) * 0.3 + \
+                        (min(ps['total_bytes'], 5000) / 5000.0) * 0.2
+        loop_meta.setdefault('phase_effectiveness', {})[phase] = round(effectiveness, 3)
+
+    current_order = genome.get('execution_phases', [
+        'pre_hooks', 'rescue', 'agent_loop', 'modules', 'healer', 'critic', 'update'
+    ])
+    eff = loop_meta.get('phase_effectiveness', {})
+    if eff:
+        sorted_phases = sorted(current_order, key=lambda p: eff.get(p, 0.5), reverse=True)
+        if sorted_phases != current_order:
+            genome['execution_phases'] = sorted_phases
+            rewrites.append(f"reordered phases: {sorted_phases[:4]}")
+            print(f"[loop-evolve] execution order changed: {sorted_phases}")
+
+    rate = genome.get('mutation_rate', 0.15)
+    agent_phase = phase_scores.get('agent_loop', {})
+    module_phase = phase_scores.get('modules', {})
+    agent_files = agent_phase.get('total_files', 0)
+    module_files = module_phase.get('total_files', 0)
+    if module_files > agent_files * 2:
+        genome['loop_module_dominance'] = genome.get('loop_module_dominance', 0) + 1
+        rewrites.append("modules_dominant")
+    elif agent_files > module_files * 2:
+        genome['loop_agent_dominance'] = genome.get('loop_agent_dominance', 0) + 1
+        rewrites.append("agents_dominant")
+
+    turn_count = genome.get('loop_adaptive_turns', None)
+    total_agent_files = agent_phase.get('total_files', 0)
+    if total_agent_files == 0 and not turn_count:
+        genome['loop_adaptive_turns'] = max(len(genome.get('agents', [])) + 2, 8)
+        rewrites.append(f"adaptive_turns={genome['loop_adaptive_turns']}")
+    elif total_agent_files > 3 and turn_count:
+        genome['loop_adaptive_turns'] = max(len(genome.get('agents', [])), 4)
+        rewrites.append(f"reduced_turns={genome['loop_adaptive_turns']}")
+
+    loop_meta['last_gen_evolved'] = gen
+    loop_meta['rewrite_count'] = loop_meta.get('rewrite_count', 0) + len(rewrites)
+    save_genome(genome)
+    if rewrites:
+        print(f"[loop-evolve] {len(rewrites)} structural changes: {'; '.join(rewrites)}")
+    return rewrites
 
 
 def main():

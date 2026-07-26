@@ -71,6 +71,10 @@
     "_write_target",
     "run_generation"
   ],
+  "endogenous_max_rewrites": 2,
+  "endogenous_strategy_scores": {},
+  "endogenous_rewrites_total": 0,
+  "endogenous_rewrites_gens": 0,
   "type_registry": {
     ".autorun": {
       "handler": "bridge",
@@ -269,6 +273,15 @@
       "lifespan": 1,
       "low_score_streak": 0,
       "module": "rewrite_orchestrator.py"
+    },
+    {
+      "id": "endogenous",
+      "voice": "lessac",
+      "prompt": "You rewrite the weakest agent's source code based on genome feedback scores.",
+      "score": 0,
+      "lifespan": 1,
+      "low_score_streak": 0,
+      "module": "endogenous_rewriter.py"
     }
   ],
   "history": [

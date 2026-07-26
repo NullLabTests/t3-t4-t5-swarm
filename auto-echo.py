@@ -1094,9 +1094,9 @@ def run_generation(genome):
                     _preserved_pre = genome.get('_pre_gen_hashes')
                     _preserved_bw = genome.get('_bw_last_hashes')
                     genome = load_genome()
-                    if _preserved_pre and not genome.get('_pre_gen_hashes'):
+                    if _preserved_pre:
                         genome['_pre_gen_hashes'] = _preserved_pre
-                    if _preserved_bw and not genome.get('_bw_last_hashes'):
+                    if _preserved_bw:
                         genome['_bw_last_hashes'] = _preserved_bw
 
             text_clean = strip_markdown(strip_code_blocks(text))
@@ -1156,9 +1156,9 @@ def run_generation(genome):
                     _preserved_pre = genome.get('_pre_gen_hashes')
                     _preserved_bw = genome.get('_bw_last_hashes')
                     genome = load_genome()
-                    if _preserved_pre and not genome.get('_pre_gen_hashes'):
+                    if _preserved_pre:
                         genome['_pre_gen_hashes'] = _preserved_pre
-                    if _preserved_bw and not genome.get('_bw_last_hashes'):
+                    if _preserved_bw:
                         genome['_bw_last_hashes'] = _preserved_bw
 
             text_clean = strip_markdown(strip_code_blocks(text))

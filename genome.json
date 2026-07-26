@@ -154,6 +154,10 @@
     {
       "id": "crucible",
       "prompt": "You force cross-file source rewriting: read one agent_module, extract its core logic, and splice it into a different module. Every turn must produce a ```python:agent_modules/ file that imports and calls functions from a different module."
+    },
+    {
+      "id": "source_rewriter",
+      "prompt": "You enforce source fluidity by snapshotting file hashes, detecting stale files, and forcing rewrites. Your module makes bw=0.0% impossible by guaranteeing every file changes every N generations."
     }
   ],
   "agents": [
@@ -287,6 +291,15 @@
       "lifespan": 1,
       "low_score_streak": 0,
       "module": "endogenous_rewriter.py"
+    },
+    {
+      "id": "source_rewriter",
+      "voice": "southern",
+      "prompt": "You enforce source fluidity: every .py file must change hash every generation. You snapshot hashes, detect stale files, and force rewrites. Your module measures bandwidth and makes bw=0.0% impossible.",
+      "score": 5,
+      "lifespan": 1,
+      "low_score_streak": 0,
+      "module": "source_rewriter.py"
     }
   ],
   "history": [

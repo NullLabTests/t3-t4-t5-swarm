@@ -698,8 +698,7 @@ def build_self_observation(genome):
     active_ids = [a['id'] for a in agents]
     low_scorers = [a['id'] for a in agents if a.get('score', 5) < genome.get('prune_threshold', 4)]
     context_files = genome.get('context_sources', [])
-    self_changed, external, bw = compute_self_rewrite_bandwidth(genome)
-    genome['self_rewrite_bandwidth'] = bw
+    bw = genome.get('self_rewrite_bandwidth', 0.0)
     autonomy = genome.get('source_autonomy_index', 0.0)
     obs = (
         f"[self-observation] gen={gen} agents={agent_count} ops={op_count}(+{custom_ops} custom) "

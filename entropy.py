@@ -3,6 +3,7 @@
 Exposes mutation_op_* functions auto-discovered by
 _register_custom_ops_from_code(). Each operates on function body
 lines at the source-code level."""
+import random, re
 
 
 def mutation_op_entropy_shuffle(lines, funcs, target_name):

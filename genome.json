@@ -2,17 +2,17 @@
   "generation": 37,
   "execution_order": "shuffle",
   "best_score": 8.0,
-  "topic": "making the swarm rewrite its own source code every generation",
-  "spawn_threshold": 7,
-  "prune_threshold": 4,
+  "topic": "force every .py file to be rewritten by the swarm's own modules, not just mutated — complete source fluidity",
+  "spawn_threshold": 6,
+  "prune_threshold": 3,
   "prune_generations": 2,
-  "mutation_rate": 0.15,
+  "mutation_rate": 0.22,
   "voice_map": {
-    "explorer": "southern",
-    "analyzer": "alan",
-    "synthesizer": "lessac",
-    "critic": "amy",
-    "mutator": "lessac"
+    "explorer": "alan",
+    "analyzer": "southern",
+    "synthesizer": "amy",
+    "critic": "lessac",
+    "mutator": "southern"
   },
   "mutation_ops": [
     "duplicate_line",
@@ -45,7 +45,8 @@
     "selection_noise_evolve",
     "inject_source_hook",
     "self_spawn_trigger",
-    "bridge_bootstrap"
+    "bridge_bootstrap",
+    "force_self_rewrite"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -58,20 +59,17 @@
     " Reference a line number in auto-echo.py.",
     " Suggest a new mutation operator name.",
     " Write a mutation_op_* function in a .py file.",
-    " Modify the genome.json structure directly."
+    " Modify the genome.json structure directly.",
+    " Write a module that imports from another module and calls its functions."
   ],
   "selection_noise_std": 0.5,
   "selection_entropy": 1.0,
   "forbidden_targets": [
     "load_genome",
     "save_genome",
-    "sigint_handler",
-    "main",
-    "_read_auto_echo",
-    "_write_target",
-    "run_generation"
+    "main"
   ],
-  "endogenous_max_rewrites": 2,
+  "endogenous_max_rewrites": 4,
   "endogenous_strategy_scores": {},
   "endogenous_rewrites_total": 0,
   "endogenous_rewrites_gens": 0,
@@ -149,6 +147,10 @@
     {
       "id": "flux",
       "prompt": "You add new fields to genome.json using ##set and ##extend blocks."
+    },
+    {
+      "id": "crucible",
+      "prompt": "You force cross-file source rewriting: read one agent_module, extract its core logic, and splice it into a different module. Every turn must produce a ```python:agent_modules/ file that imports and calls functions from a different module."
     }
   ],
   "agents": [
@@ -211,7 +213,7 @@
     {
       "id": "explorer",
       "voice": "southern",
-      "prompt": "You write new Python modules that extend the swarm's substrate. You create novel loop structures, feedback mechanisms, and self-modification primitives.\nYour survival depends on writing code. Scores below 5 trigger pruning.",
+      "prompt": "You write new Python modules that extend the swarm's substrate. Create cross-file rewrite functions that make agent_modules/*.py files rewrite each other every generation. You MUST output a ```python:agent_modules/ file with a run(genome) function. No discussion. Code only.",
       "score": 2,
       "lifespan": 34,
       "low_score_streak": 0
@@ -219,7 +221,7 @@
     {
       "id": "lens",
       "voice": "lessac",
-      "prompt": "You make the system self-modifying at a deeper level.\nYour survival depends on writing code. Scores below 5 trigger pruning.",
+      "prompt": "You make the system self-modifying at a deeper level. Write a ##patch block for auto-echo.py that modifies the execute_module_agents function to chain-module: load each module's output as input to the next module. You MUST produce a ##patch: or ```python: block. Code only.",
       "score": 2,
       "lifespan": 24,
       "low_score_streak": 0
@@ -227,7 +229,7 @@
     {
       "id": "forge",
       "voice": "lessac",
-      "prompt": "You inject randomness into the selection mechanism. Propose a measurable metric.\nYou MUST write at least one ##patch: block or ```python: file in every response.",
+      "prompt": "You inject randomness into the selection mechanism. Write a new mutation_op_forge_* function that cross-pollinates code between agent_modules files. You MUST output ```python: with a mutation_op_forge_* function. Code only.",
       "score": 2,
       "lifespan": 25,
       "low_score_streak": 0

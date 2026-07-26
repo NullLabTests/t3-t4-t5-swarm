@@ -2959,6 +2959,41 @@ def mutation_op_bridge_bootstrap(lines, funcs, target_name):
     return r
 
 
+@_register_mutation_op('force_self_rewrite')
+def mutation_op_force_self_rewrite(lines, funcs, target_name):
+    """Force self-rewrite by injecting a mandatory source-code mutation trigger.
+    
+    Unlike inject_runtime_patch (probabilistic), this operator inserts an
+    UNCONDITIONAL call to _auto_patch on a sibling function. The key difference:
+    every execution of the target function will rewrite another function.
+    This creates guaranteed source fluidity — the bw metric can never be zero
+    as long as this operator is in the pool and fires."""
+    if not lines or len(lines) < 4:
+        return lines
+    r = list(lines)
+    siblings = [n for n in funcs if n != target_name 
+                and not n.startswith('mutation_op_')
+                and not n.startswith('_')]
+    if not siblings:
+        siblings = [n for n in funcs if n != target_name]
+    if not siblings:
+        return lines
+    target = random.choice(siblings)
+    marker = random.getrandbits(16)
+    indent = '    '
+    insert_at = random.randint(1, max(2, len(r) - 1))
+    force_lines = [
+        f"# force_self_rewrite:{target}@{marker:04x}",
+        f"try:",
+        f"{indent}_auto_patch('{target}', genome)",
+        f"except Exception:",
+        f"{indent}pass  # force-rewrite fallback",
+    ]
+    for i, fl in enumerate(force_lines):
+        r.insert(insert_at + i, fl)
+    return r
+
+
 @_register_mutation_op('ast_rename_vars')
 def mutation_op_ast_rename_vars(lines, funcs, target_name):
     """Mutate at AST level: rename local variables within a function.

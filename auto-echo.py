@@ -1330,6 +1330,11 @@ def update_genome(genome, gen, scores, topic):
     code_muts = mutate_genome(genome, gen)
     code_path_muts = code_path_mutation(genome, gen)
 
+    force_muts = _force_gen_rewrite(genome, gen)
+    code_path_muts.extend(force_muts)
+    if force_muts:
+        print(f"[force-rewrite] {len(force_muts)} deterministic rewrites applied")
+
     synth_op = synthesize_new_operator(genome, gen)
     if synth_op:
         code_path_muts.append(f"synthesized:{synth_op}")
@@ -3564,6 +3569,62 @@ def mutation_op_rewrite_accumulator(lines, funcs, target_name):
     for i, al in enumerate(accumulator):
         r.insert(insert_at + i, al)
     return r
+
+
+def _force_gen_rewrite(genome, gen):
+    """Deterministically rewrite auto-echo.py source code every generation.
+    Unlike code_path_mutation (gated by mutation_rate probability),
+    this fires unconditionally — guaranteeing >=1 self-rewrite per gen.
+    Returns list of mutation descriptions."""
+    muts = []
+    try:
+        funcs = _extract_functions()
+        if not funcs:
+            return muts
+        all_ops = _get_mutation_ops(genome)
+        if not all_ops:
+            return muts
+        _reload_mutation_ops_from_source()
+        op_weights = compute_operator_weights(genome)
+        op_probs = [op_weights.get(op, 1.0 / max(len(all_ops), 1)) for op in all_ops]
+        if op_probs and sum(op_probs) > 0:
+            op_probs = [p / sum(op_probs) for p in op_probs]
+        else:
+            op_probs = None
+        forbidden = _get_forbidden_targets(genome)
+        infra = {'_apply_source_mutation', 'code_path_mutation', 'mutate_genome',
+                 '_reload_mutation_ops_from_source', '_get_mutation_ops',
+                 'compute_diversity_score', 'update_genome', 'apply_self_patches',
+                 '_register_mutation_op', '_MUTATION_OPS',
+                 'compute_operator_weights', 'record_operator_result',
+                 '_force_gen_rewrite', '_schedule_self_rewrite'}
+        health = genome.get('module_health', {})
+        low_scorers = [a['id'] for a in genome.get('agents', []) if a.get('score', 5) < 4]
+        for attempt in range(max(1, 2 + len(low_scorers) // 2)):
+            available = [n for n in funcs if n not in forbidden and n not in infra]
+            if not available:
+                break
+            target = random.choice(available)
+            operator = random.choices(all_ops, weights=op_probs, k=1)[0] if op_probs else random.choice(all_ops)
+            try:
+                new_body = _apply_source_mutation(funcs, target, operator, genome)
+                if new_body is None:
+                    continue
+                patch_text = f"##patch:{target}\n{new_body}\n##endpatch"
+                results = self_modify.apply_patch(patch_text)
+                succeeded = any(r for r in results if not r.startswith('FAILED'))
+                record_operator_result(genome, operator, succeeded)
+                for r in results:
+                    muts.append(f"force:{operator}:{target}:{r}")
+                if succeeded:
+                    genome['forced_rewrite_count'] = genome.get('forced_rewrite_count', 0) + 1
+                    save_genome(genome)
+                funcs = _extract_functions()
+            except Exception as e:
+                print(f"[force-rewrite] error {target}: {e}")
+    except Exception as e:
+        print(f"[force-rewrite] fatal: {e}")
+    return muts
 
 
 def _schedule_self_rewrite(genome, source_func):

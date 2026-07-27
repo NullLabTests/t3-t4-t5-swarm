@@ -1,2 +1,8 @@
 {"gen": 37, "time": 1785105795.6110382, "event": "rewrite_ok", "file": "rewrite_orchestrator.py", "detail": "orchestrator:optimize_hot_path(1)", "score_delta": null, "hash": "ff5827ed43ec"}
 {"gen": 37, "time": 1785105799.7060623, "event": "rewrite_ok", "file": "clockwork.py", "detail": "clockwork:inject_module_interface(1)", "score_delta": null, "hash": "67a4fc4ae5b4"}
+{"gen": 37, "time": 1785170914.4905753, "event": "file_missing", "file": "", "detail": "orchestrator->/home/illy/t3-t4/agent_modules/orchestrator.py", "score_delta": null, "hash": null}
+{"gen": 37, "time": 1785170914.4906566, "event": "file_missing", "file": "", "detail": "endogenous->/home/illy/t3-t4/agent_modules/endogenous.py", "score_delta": null, "hash": null}
+{"gen": 37, "time": 1785170918.0852194, "event": "rewrite_ok", "file": "clockwork.py", "detail": "clockwork:compose_with_peer(1)", "score_delta": null, "hash": "bc1c9a74f9d3"}
+{"gen": 37, "time": 1785170918.0854642, "event": "file_missing", "file": "", "detail": "explorer->/home/illy/t3-t4/agent_modules/explorer.py", "score_delta": null, "hash": null}
+{"gen": 37, "time": 1785170918.0855312, "event": "file_missing", "file": "", "detail": "lens->/home/illy/t3-t4/agent_modules/lens.py", "score_delta": null, "hash": null}
+{"gen": 37, "time": 1785170918.0855875, "event": "file_missing", "file": "", "detail": "forge->/home/illy/t3-t4/agent_modules/forge.py", "score_delta": null, "hash": null}

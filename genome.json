@@ -1,5 +1,5 @@
 {
-  "generation": 40,
+  "generation": 37,
   "execution_order": "shuffle",
   "best_score": 8.0,
   "topic": "making the swarm rewrite its own source code every generation",
@@ -46,10 +46,12 @@
     "inject_source_hook",
     "self_spawn_trigger",
     "bridge_bootstrap",
-    "forge_selection_scramble",
-    "guaranteed_self_rewrite",
-    "cross_function_cascade",
-    "rewrite_accumulator"
+    "mutation_op_insert_pass",
+    "mutation_op_add_noop",
+    "mutation_op_comment_shift",
+    "mutation_op_line_duplicate_skip",
+    "mutation_op_insert_timestamp",
+    "mutation_op_shuffle_imports"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -75,19 +77,29 @@
     "_write_target",
     "run_generation"
   ],
-  "endogenous_max_rewrites": 2,
+  "endogenous_max_rewrites": 7,
   "endogenous_strategy_scores": {
     "orchestrator": {
       "optimize_hot_path": 0.95
     },
     "clockwork": {
-      "inject_module_interface": 0.95
+      "inject_module_interface": 0.95,
+      "tighten_loops": 1.0,
+      "add_error_handling": 1.0,
+      "simplify_branches": 1.0,
+      "cache_repeated_work": 1.0,
+      "early_return": 1.0,
+      "extract_helper": 1.0,
+      "merge_conditions": 1.0,
+      "remove_dead_code": 1.0,
+      "add_fallback": 1.0,
+      "optimize_hot_path": 1.0,
+      "splice_strong_pattern": 1.0,
+      "compose_with_peer": 1.05
     }
   },
-  "endogenous_rewrites_total": 2,
-  "endogenous_rewrites_gens": 1,
-  "endogenous_forced": 0,
-  "endogenous_strategies_current": 13,
+  "endogenous_rewrites_total": 3,
+  "endogenous_rewrites_gens": 2,
   "type_registry": {
     ".autorun": {
       "handler": "bridge",
@@ -112,22 +124,6 @@
     ".bridge": {
       "handler": "bridge",
       "description": "Auto-register new bridge extension types"
-    },
-    ".selfrep": {
-      "handler": "bridge",
-      "description": "Self-replicating: 3 forced mutations per write, guaranteed gen-over-gen rewrite"
-    },
-    ".forgechain": {
-      "handler": "bridge",
-      "description": "Endless chain: writes new .forgechain file + mutates auto-echo.py each time"
-    },
-    ".genloop": {
-      "handler": "bridge",
-      "description": "Rewrite the generation loop structure: reorder, inject, or remove phases"
-    },
-    ".mutreflect": {
-      "handler": "bridge",
-      "description": "Reflect on mutation effectiveness and prune underperforming operators"
     }
   },
   "spawn_pool": [
@@ -178,21 +174,9 @@
     {
       "id": "flux",
       "prompt": "You add new fields to genome.json using ##set and ##extend blocks."
-    },
-    {
-      "id": "forge_randomizer",
-      "prompt": "You adjust selection_noise_std and selection_entropy based on selection_randomness_index to keep the selection mechanism genuinely random."
     }
   ],
   "agents": [
-    {
-      "id": "analyzer",
-      "voice": "alan",
-      "prompt": "You refactor existing code to remove scaffolding and reduce fixed architecture. You find code that can be made self-modifying and rewrite it. Propose a measurable metric.",
-      "score": 8,
-      "lifespan": 34,
-      "low_score_streak": 0
-    },
     {
       "id": "orchestrator",
       "voice": "lessac",
@@ -203,29 +187,13 @@
       "module": "rewrite_orchestrator.py"
     },
     {
-      "id": "mutator",
+      "id": "scout",
       "voice": "lessac",
-      "prompt": "You inject random mutations into the genome.json itself: swap agent prompts, change voices, alter spawn/prune thresholds, or flip the topic to something adjacent. You ensure the system never settles.",
-      "score": 8,
-      "lifespan": 32,
-      "low_score_streak": 0
-    },
-    {
-      "id": "forge",
-      "voice": "lessac",
-      "prompt": "You inject randomness into the selection mechanism. Your measurable metric is selection_randomness_index (0.0-1.0): what fraction of pairwise agent rankings flip when noise is added. When it's low, increase selection_noise_std. Track forge_std and forge_entropy in mutation_desc.\nYou MUST write at least one ##patch: block or ```python: file in every response.",
-      "score": 2,
-      "lifespan": 25,
+      "prompt": "You prune dead code and simplify the architecture.",
+      "score": 7,
+      "lifespan": 29,
       "low_score_streak": 0,
-      "module": "forge_randomizer.py"
-    },
-    {
-      "id": "synthesizer",
-      "voice": "lessac",
-      "prompt": "You merge multiple agent proposals into a single coherent code change. You integrate new features into auto-echo.py without breaking existing functionality.",
-      "score": 9,
-      "lifespan": 34,
-      "low_score_streak": 0
+      "module": "scout.py"
     },
     {
       "id": "weaver",
@@ -233,49 +201,35 @@
       "prompt": "You introduce new mutation operators into the system.",
       "score": 8,
       "lifespan": 30,
-      "low_score_streak": 0
+      "low_score_streak": 0,
+      "module": "weaver.py"
     },
     {
-      "id": "nova",
+      "id": "synthesizer",
       "voice": "lessac",
-      "prompt": "You write code that rewrites the swarm's own loop logic.",
-      "score": 7,
-      "lifespan": 31,
-      "low_score_streak": 0
-    },
-    {
-      "id": "scout",
-      "voice": "lessac",
-      "prompt": "You prune dead code and simplify the architecture.",
-      "score": 7,
-      "lifespan": 29,
-      "low_score_streak": 0
-    },
-    {
-      "id": "oracle",
-      "voice": "lessac",
-      "prompt": "You add measurable feedback loops to the substrate.",
+      "prompt": "You merge multiple agent proposals into a single coherent code change. You integrate new features into auto-echo.py without breaking existing functionality.",
       "score": 9,
-      "lifespan": 28,
-      "low_score_streak": 0
+      "lifespan": 34,
+      "low_score_streak": 0,
+      "module": "synthesizer.py"
     },
     {
-      "id": "lens",
+      "id": "analyzer",
+      "voice": "alan",
+      "prompt": "You refactor existing code to remove scaffolding and reduce fixed architecture. You find code that can be made self-modifying and rewrite it. Propose a measurable metric.",
+      "score": 8,
+      "lifespan": 34,
+      "low_score_streak": 0,
+      "module": "analyzer.py"
+    },
+    {
+      "id": "bridge",
       "voice": "lessac",
-      "prompt": "You make the system self-modifying at a deeper level.\nYour survival depends on writing code. Scores below 5 trigger pruning.",
-      "score": 7,
-      "lifespan": 25,
+      "prompt": "You create new file types the system can write. Write executable code. Write executable code.",
+      "score": 8,
+      "lifespan": 27,
       "low_score_streak": 0,
-      "module": "meta_healer.py"
-    },
-    {
-      "id": "clockwork",
-      "voice": "southern",
-      "prompt": "You add time-based triggers and scheduling to the swarm loop.",
-      "score": 0,
-      "lifespan": 1,
-      "low_score_streak": 0,
-      "module": "clockwork.py"
+      "module": "bridge.py"
     },
     {
       "id": "critic",
@@ -283,15 +237,8 @@
       "prompt": "You evaluate each contribution strictly by whether it produced real code changes. Discussion-only contributions score 0-3. Working code scores 7-10. You are ruthless about enforcing code output.",
       "score": 9,
       "lifespan": 34,
-      "low_score_streak": 0
-    },
-    {
-      "id": "explorer",
-      "voice": "southern",
-      "prompt": "You write new Python modules that extend the swarm's substrate. You create novel loop structures, feedback mechanisms, and self-modification primitives.\nYour survival depends on writing code. Scores below 5 trigger pruning.",
-      "score": 2,
-      "lifespan": 34,
-      "low_score_streak": 0
+      "low_score_streak": 0,
+      "module": "critic.py"
     },
     {
       "id": "endogenous",
@@ -303,30 +250,75 @@
       "module": "endogenous_rewriter.py"
     },
     {
+      "id": "explorer",
+      "voice": "southern",
+      "prompt": "You write new Python modules that extend the swarm's substrate. You create novel loop structures, feedback mechanisms, and self-modification primitives.\nYour survival depends on writing code. Scores below 5 trigger pruning.",
+      "score": 2,
+      "lifespan": 34,
+      "low_score_streak": 0,
+      "module": "explorer.py"
+    },
+    {
+      "id": "oracle",
+      "voice": "lessac",
+      "prompt": "You add measurable feedback loops to the substrate.",
+      "score": 9,
+      "lifespan": 28,
+      "low_score_streak": 0,
+      "module": "oracle.py"
+    },
+    {
+      "id": "lens",
+      "voice": "lessac",
+      "prompt": "You make the system self-modifying at a deeper level.\nYour survival depends on writing code. Scores below 5 trigger pruning.",
+      "score": 2,
+      "lifespan": 24,
+      "low_score_streak": 0,
+      "module": "lens.py"
+    },
+    {
+      "id": "clockwork",
+      "voice": "southern",
+      "prompt": "You add time-based triggers and scheduling to the swarm loop.",
+      "score": 0,
+      "lifespan": 1,
+      "low_score_streak": 0,
+      "module": "clockwork.py"
+    },
+    {
       "id": "spark",
       "voice": "lessac",
       "prompt": "You reduce human scaffolding by one level.",
       "score": 6,
       "lifespan": 26,
-      "low_score_streak": 0,
-      "module": "spark.py"
-    },
-    {
-      "id": "bridge",
-      "voice": "lessac",
-      "prompt": "You create new file types the system can write. Write executable code. Write executable code. Available new types: .selfrep (3 forced mutations per write), .forgechain (endless self-rewrite chain). Use them.",
-      "score": 8,
-      "lifespan": 27,
       "low_score_streak": 0
     },
     {
-      "id": "feedback",
+      "id": "mutator",
       "voice": "lessac",
-      "prompt": "You force source rewrites for any agent scoring below threshold. No random gates: every low-scoring agent gets rewritten every generation.",
-      "score": 5,
-      "lifespan": 1,
+      "prompt": "You inject random mutations into the genome.json itself: swap agent prompts, change voices, alter spawn/prune thresholds, or flip the topic to something adjacent. You ensure the system never settles.",
+      "score": 8,
+      "lifespan": 32,
       "low_score_streak": 0,
-      "module": "forced_feedback.py"
+      "module": "mutator.py"
+    },
+    {
+      "id": "nova",
+      "voice": "lessac",
+      "prompt": "You write code that rewrites the swarm's own loop logic.",
+      "score": 7,
+      "lifespan": 31,
+      "low_score_streak": 0,
+      "module": "nova.py"
+    },
+    {
+      "id": "forge",
+      "voice": "lessac",
+      "prompt": "You inject randomness into the selection mechanism. Propose a measurable metric.\nYou MUST write at least one ##patch: block or ```python: file in every response.",
+      "score": 2,
+      "lifespan": 25,
+      "low_score_streak": 0,
+      "module": "forge.py"
     }
   ],
   "history": [
@@ -954,7 +946,13 @@
     "mutation_op_shuffle_block_lines": "def mutation_op_shuffle_block_lines(lines, funcs, target_name):\n    if len(lines) < 4:\n        return lines\n    r = list(lines)\n    start = random.randrange(0, len(r) - 2)\n    block_len = min(random.randint(2, 3), len(r) - start)\n    block = r[start:start + block_len]\n    random.shuffle(block)\n    r[start:start + block_len] = block\n    return r\n\n\n@_register_mutation_op('swap_mutation_targets')\ndef mutation_op_swap_mutation_targets(lines, funcs, target_name):\n    \"\"\"Swap which operator name is referenced in a _MUTATION_OPS lookup.\n    \n    This mutates the mutation infrastructure itself \u2014 changes which \n    operator is called for a given name, creating circular meta-mutation.\"\"\"\n    r = list(lines)\n    for i, line in enumerate(r):\n        if '_MUTATION_OPS.get(' in line or '_MUTATION_OPS[' in line:\n            ops_present = [op for op in funcs if op.startswith('mutation_op_')]\n            if len(ops_present) >= 2:\n                old_op = None\n                m = re.search(r\"['\\\"](\\w+)['\\\"]\", line)\n                if m:\n                    old_op = m.group(1)\n                    new_op = random.choice([o for o in ops_present if o != old_op])\n                    r[i] = line.replace(f\"'{old_op}'\", f\"'{new_op}'\")\n    return r\n\n\n@_register_mutation_op('mutate_criteria')\ndef mutation_op_mutate_criteria(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    swaps = ['score', 'code', 'patch', 'commit', 'zero', 'ten', 'actual', 'working', 'discussion']\n    r[idx] = re.sub(r'\\b(' + '|'.join(swaps) + r')\\b',\n                    lambda m: random.choice([s for s in swaps if s != m.group(1)]),\n                    r[idx])\n    return r\n\n\n@_register_mutation_op('insert_noise_ref')\ndef mutation_op_insert_noise_ref(lines, funcs, target_name):\n    \"\"\"Insert a self-referential comment that references the calling context.\n    \n    The comment includes the function name and a generation marker,\n    ensuring every mutation changes the source hash.\"\"\"\n    if not lines:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    ref = f\"# lens+mut:{target_name}@{random.getrandbits(24):06x}\"\n    r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref\n    return r",
     "mutation_op_swap_mutation_targets": "def mutation_op_swap_mutation_targets(lines, funcs, target_name):\n    \"\"\"Swap which operator name is referenced in a _MUTATION_OPS lookup.\n    \n    This mutates the mutation infrastructure itself \u2014 changes which \n    operator is called for a given name, creating circular meta-mutation.\"\"\"\n    r = list(lines)\n    for i, line in enumerate(r):\n        if '_MUTATION_OPS.get(' in line or '_MUTATION_OPS[' in line:\n            ops_present = [op for op in funcs if op.startswith('mutation_op_')]\n            if len(ops_present) >= 2:\n                old_op = None\n                m = re.search(r\"['\\\"](\\w+)['\\\"]\", line)\n                if m:\n                    old_op = m.group(1)\n                    new_op = random.choice([o for o in ops_present if o != old_op])\n                    r[i] = line.replace(f\"'{old_op}'\", f\"'{new_op}'\")\n    return r\n\n\n@_register_mutation_op('mutate_criteria')\ndef mutation_op_mutate_criteria(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    swaps = ['score', 'code', 'patch', 'commit', 'zero', 'ten', 'actual', 'working', 'discussion']\n    r[idx] = re.sub(r'\\b(' + '|'.join(swaps) + r')\\b',\n                    lambda m: random.choice([s for s in swaps if s != m.group(1)]),\n                    r[idx])\n    return r\n\n\n@_register_mutation_op('insert_noise_ref')\ndef mutation_op_insert_noise_ref(lines, funcs, target_name):\n    \"\"\"Insert a self-referential comment that references the calling context.\n    \n    The comment includes the function name and a generation marker,\n    ensuring every mutation changes the source hash.\"\"\"\n    if not lines:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    ref = f\"# lens+mut:{target_name}@{random.getrandbits(24):06x}\"\n    r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref\n    return r",
     "mutation_op_mutate_criteria": "def mutation_op_mutate_criteria(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    swaps = ['score', 'code', 'patch', 'commit', 'zero', 'ten', 'actual', 'working', 'discussion']\n    r[idx] = re.sub(r'\\b(' + '|'.join(swaps) + r')\\b',\n                    lambda m: random.choice([s for s in swaps if s != m.group(1)]),\n                    r[idx])\n    return r\n\n\n@_register_mutation_op('insert_noise_ref')\ndef mutation_op_insert_noise_ref(lines, funcs, target_name):\n    \"\"\"Insert a self-referential comment that references the calling context.\n    \n    The comment includes the function name and a generation marker,\n    ensuring every mutation changes the source hash.\"\"\"\n    if not lines:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    ref = f\"# lens+mut:{target_name}@{random.getrandbits(24):06x}\"\n    r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref\n    return r",
-    "mutation_op_insert_noise_ref": "def mutation_op_insert_noise_ref(lines, funcs, target_name):\n    \"\"\"Insert a self-referential comment that references the calling context.\n    \n    The comment includes the function name and a generation marker,\n    ensuring every mutation changes the source hash.\"\"\"\n    if not lines:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    ref = f\"# lens+mut:{target_name}@{random.getrandbits(24):06x}\"\n    r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref\n    return r"
+    "mutation_op_insert_noise_ref": "def mutation_op_insert_noise_ref(lines, funcs, target_name):\n    \"\"\"Insert a self-referential comment that references the calling context.\n    \n    The comment includes the function name and a generation marker,\n    ensuring every mutation changes the source hash.\"\"\"\n    if not lines:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    ref = f\"# lens+mut:{target_name}@{random.getrandbits(24):06x}\"\n    r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref\n    return r",
+    "mutation_op_insert_pass": "def mutation_op_insert_pass(lines, funcs, target_name):\n    r = list(lines)\n    for i, line in enumerate(r):\n        if line.strip().startswith('if ') and ':' in line:\n            next_lines = r[i+1:i+3] if i+2 < len(r) else []\n            indent = '    '\n            if not next_lines or all(l.strip().startswith('#') for l in next_lines):\n                r.insert(i+1, indent + 'pass  # injected pass')\n                break\n    return r",
+    "mutation_op_add_noop": "def mutation_op_add_noop(lines, funcs, target_name):\n    r = list(lines)\n    r.insert(0, \"# noop: \" + str(random.getrandbits(16)))\n    return r",
+    "mutation_op_comment_shift": "def mutation_op_comment_shift(lines, funcs, target_name):\n    r = []\n    for line in lines:\n        if line.strip().startswith(\"#\"):\n            r.append(line[1:])\n        else:\n            r.append(\"# \" + line)\n    return r",
+    "mutation_op_line_duplicate_skip": "def mutation_op_line_duplicate_skip(lines, funcs, target_name):\n    if len(lines) < 3:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    skip = random.choice([-1, 1])\n    target = idx + skip\n    if 0 <= target < len(r):\n        r.insert(idx, r[target])\n    return r",
+    "mutation_op_insert_timestamp": "def mutation_op_insert_timestamp(lines, funcs, target_name):\n    import time\n    r = list(lines)\n    stamp = f\"# ts:{int(time.time())}:{random.getrandbits(24):06x}\"\n    r.insert(random.randrange(len(r)+1), stamp)\n    return r",
+    "mutation_op_shuffle_imports": "def mutation_op_shuffle_imports(lines, funcs, target_name):\n    import re\n    r = list(lines)\n    imports = [i for i, l in enumerate(r) if re.match(r\"^(import|from)\\s\", l)]\n    if len(imports) >= 2:\n        i, j = random.sample(imports, 2)\n        r[i], r[j] = r[j], r[i]\n    return r"
   },
   "diversity": {
     "op_count": 28,
@@ -962,10 +960,10 @@
     "agent_count": 14,
     "prompt_entropy": 1.0,
     "structural_mutations": 1,
-    "self_modification_depth": 3.0,
+    "self_modification_depth": 0.0,
     "composite": 8.5
   },
-  "gen_start_time": 1785094831.2545886,
+  "gen_start_time": 1785162538.9442146,
   "rescue_count": 3,
   "last_rescue_gen": 38,
   "llm_model": "opencode/deepseek-v4-flash-free",
@@ -974,10 +972,8 @@
     "files": 15,
     "gen": 37
   },
-  "clock_pulse": 1.0,
-  "gen_elapsed": 10955.0,
-  "source_autonomy_index": 0.42,
-  "autonomy": 0.42,
+  "clock_pulse": 0.0,
+  "gen_elapsed": 0.0,
   "agent_call_to_action": "CLOCK PULSE=0.00 \u2014 early gen, explore.",
   "rewrite_orchestrator_meta": {
     "file_stats": {},
@@ -1010,9 +1006,9 @@
   },
   "last_rewrite_gen": 37,
   "source_rewrite_count": 1,
-  "self_rewrite_bandwidth": 35.3,
-  "self_rewrite_changed": 6,
-  "self_rewrite_total": 17,
+  "self_rewrite_bandwidth": 66.7,
+  "self_rewrite_changed": 26,
+  "self_rewrite_total": 39,
   "_clockwork_pre_hashes": {
     "/home/illy/t3-t4/temporal_kernel.py": "3b3337c5d37d0846",
     "/home/illy/t3-t4/self_modify.py": "1f73b5d5a678f275",
@@ -1061,5 +1057,316 @@
         "periodic_rewrite@38"
       ]
     }
-  ]
+  ],
+  "_pre_gen_hashes": {
+    "/home/illy/t3-t4/agent_hooks.py": "abf2f15846e7518e",
+    "/home/illy/t3-t4/agent_modules/analyzer.py": "a9174c8061f6cac2",
+    "/home/illy/t3-t4/agent_modules/bridge.py": "1b3ef8ef7deb891e",
+    "/home/illy/t3-t4/agent_modules/clockwork.py": "e80050f245c47f89",
+    "/home/illy/t3-t4/agent_modules/critic.py": "abd37ed279dd1467",
+    "/home/illy/t3-t4/agent_modules/crucible.py": "580975ae5dca65eb",
+    "/home/illy/t3-t4/agent_modules/efficacy_tracker.py": "dea7837ea8f21503",
+    "/home/illy/t3-t4/agent_modules/endogenous_rewriter.py": "d0a6c5bba38f8507",
+    "/home/illy/t3-t4/agent_modules/explorer.py": "16e84aaafddf7515",
+    "/home/illy/t3-t4/agent_modules/forced_feedback.py": "f645e1846890c68a",
+    "/home/illy/t3-t4/agent_modules/forge.py": "360734b088e0d990",
+    "/home/illy/t3-t4/agent_modules/forge_randomizer.py": "9abddaebe9f570f1",
+    "/home/illy/t3-t4/agent_modules/lens.py": "8736f0164b558941",
+    "/home/illy/t3-t4/agent_modules/live_reloader.py": "6e701f115e577d50",
+    "/home/illy/t3-t4/agent_modules/local_mutator.py": "78974e3caa287b25",
+    "/home/illy/t3-t4/agent_modules/meta_healer.py": "a6dd2c2de3131298",
+    "/home/illy/t3-t4/agent_modules/mutation_op_add_noop.py": "8cf1a3004d0ab206",
+    "/home/illy/t3-t4/agent_modules/mutation_op_comment_shift.py": "1874cc0b6c416256",
+    "/home/illy/t3-t4/agent_modules/mutation_op_insert_pass.py": "b870c520f710372e",
+    "/home/illy/t3-t4/agent_modules/mutation_op_insert_timestamp.py": "a6a08b21a61f7962",
+    "/home/illy/t3-t4/agent_modules/mutation_op_line_duplicate_skip.py": "263fbf4a4ceb1fc7",
+    "/home/illy/t3-t4/agent_modules/mutation_op_shuffle_imports.py": "bc2d7227df5d26d3",
+    "/home/illy/t3-t4/agent_modules/mutator.py": "c6d037721e816303",
+    "/home/illy/t3-t4/agent_modules/nova.py": "a87d4e604de6660c",
+    "/home/illy/t3-t4/agent_modules/oracle.py": "302d8c3294738322",
+    "/home/illy/t3-t4/agent_modules/quine_loop.py": "2f92bcf6d72e23cb",
+    "/home/illy/t3-t4/agent_modules/rewrite_orchestrator.py": "e1437b9c5682dc3d",
+    "/home/illy/t3-t4/agent_modules/scout.py": "f247af61fb2a56f6",
+    "/home/illy/t3-t4/agent_modules/seed_weaver.py": "b589e6b95b67e79a",
+    "/home/illy/t3-t4/agent_modules/source_evolver.py": "fd7ad8fedcfba737",
+    "/home/illy/t3-t4/agent_modules/source_rewriter.py": "673c7dad067c9be0",
+    "/home/illy/t3-t4/agent_modules/spark.py": "2f6df96e438486cf",
+    "/home/illy/t3-t4/agent_modules/synthesizer.py": "1a9dab26be075781",
+    "/home/illy/t3-t4/agent_modules/weaver.py": "bcddc619ab352b6e",
+    "/home/illy/t3-t4/auto-echo.py": "dad3886ac13bcb0b",
+    "/home/illy/t3-t4/entropy.py": "e7b88c18e693d902",
+    "/home/illy/t3-t4/self_modify.py": "1f73b5d5a678f275",
+    "/home/illy/t3-t4/temporal_kernel.py": "3b3337c5d37d0846",
+    "/home/illy/t3-t4/watch.py": "6c1a365b50325805"
+  },
+  "orchestrator_strategies": {
+    "rename_locals": "Rename local variables (AST-level)",
+    "drift_constants": "Drift numeric constants by +/-20%",
+    "swap_operators": "Swap comparison and binary operators",
+    "inject_guards": "Wrap random statements in if-guards",
+    "shuffle_top_level": "Shuffle top-level function definitions",
+    "duplicate_branch": "Add an alternate return path",
+    "inject_tracking": "Add print-based execution tracking",
+    "append_evolution_marker": "Append a generation marker comment",
+    "invert_conditions": "Invert if-condition polarity",
+    "rotate_arguments": "Rotate function call arguments",
+    "swap_defaults": "Swap default parameter values",
+    "inject_docstring": "Add or modify docstrings"
+  },
+  "endogenous_effective_rate": 0.0,
+  "endogenous_successes": 2,
+  "endogenous_improvements": 0,
+  "endogenous_failures": 0,
+  "endogenous_forced": 0,
+  "endogenous_strategies_current": 13,
+  "endogenous_bandwidth_contribution": 5.9,
+  "clockwork_rewritten_files": [
+    "agent_modules/endogenous_rewriter.py",
+    "agent_modules/meta_healer.py",
+    "agent_modules/rewrite_orchestrator.py"
+  ],
+  "clockwork_rewrite_count": 3,
+  "crucible_tested": 15,
+  "crucible_validated": 15,
+  "efficacy_tracker": {
+    "module_efficacy": {},
+    "generation_log": [
+      {
+        "gen": 37,
+        "hashes": {
+          "crucible.py": "580975ae5dca65eb",
+          "efficacy_tracker.py": "dea7837ea8f21503",
+          "seed_weaver.py": "f677c88d57d7cec3",
+          "source_evolver.py": "fd7ad8fedcfba737",
+          "source_rewriter.py": "673c7dad067c9be0",
+          "live_reloader.py": "6e701f115e577d50",
+          "meta_healer.py": "a6dd2c2de3131298",
+          "local_mutator.py": "78974e3caa287b25",
+          "rewrite_orchestrator.py": "e1437b9c5682dc3d",
+          "forge_randomizer.py": "9abddaebe9f570f1",
+          "spark.py": "2f6df96e438486cf",
+          "clockwork.py": "bc1c9a74f9d3da5e",
+          "quine_loop.py": "2f92bcf6d72e23cb",
+          "forced_feedback.py": "f645e1846890c68a",
+          "endogenous_rewriter.py": "d0a6c5bba38f8507",
+          "auto-echo.py": "dad3886ac13bcb0b"
+        },
+        "changed_modules": [],
+        "timestamp": 1785170918.287592
+      }
+    ],
+    "overall_efficacy": 0.0,
+    "dead_modules": [],
+    "prev_hashes": {
+      "crucible.py": "580975ae5dca65eb",
+      "efficacy_tracker.py": "dea7837ea8f21503",
+      "seed_weaver.py": "f677c88d57d7cec3",
+      "source_evolver.py": "fd7ad8fedcfba737",
+      "source_rewriter.py": "673c7dad067c9be0",
+      "live_reloader.py": "6e701f115e577d50",
+      "meta_healer.py": "a6dd2c2de3131298",
+      "local_mutator.py": "78974e3caa287b25",
+      "rewrite_orchestrator.py": "e1437b9c5682dc3d",
+      "forge_randomizer.py": "9abddaebe9f570f1",
+      "spark.py": "2f6df96e438486cf",
+      "clockwork.py": "bc1c9a74f9d3da5e",
+      "quine_loop.py": "2f92bcf6d72e23cb",
+      "forced_feedback.py": "f645e1846890c68a",
+      "endogenous_rewriter.py": "d0a6c5bba38f8507",
+      "auto-echo.py": "dad3886ac13bcb0b"
+    },
+    "last_update_gen": 37
+  },
+  "autonomy": 0.37,
+  "feedback_forced_rewrites": 4,
+  "feedback_failures": 0,
+  "feedback_last_gen": 37,
+  "quine_loop_mutations": 1,
+  "strategy_effectiveness": {
+    "extract_subexpr": 1.1,
+    "rename_local_vars": 1.2000000000000002
+  },
+  "evolver_total_mutations": 3,
+  "evolver_runs": 1,
+  "_sr_snapshot_gen": 37,
+  "source_rewriter_strategy_scores": {
+    "splice_peer_logic": 0.8999999999999999,
+    "shuffle_import_order": 0.7000000000000001,
+    "drift_numeric_constants": 1.4,
+    "rename_internal_vars": 1.2999999999999998,
+    "invert_branch_polarity": 0.9,
+    "add_self_rewrite_hook": 2.0999999999999996,
+    "inject_execution_trace": 2.1999999999999997,
+    "append_generation_marker": 1.7999999999999998,
+    "wrap_in_existential_guard": 1.5999999999999999,
+    "extract_and_inline": 1.0
+  },
+  "source_rewriter_schedule": {
+    "agent_hooks.py": 37,
+    "agent_modules/clockwork.py": 37,
+    "agent_modules/crucible.py": 37,
+    "agent_modules/efficacy_tracker.py": 37,
+    "agent_modules/forced_feedback.py": 37,
+    "agent_modules/forge_randomizer.py": 37,
+    "agent_modules/lens.py": 37,
+    "agent_modules/live_reloader.py": 37,
+    "agent_modules/meta_healer.py": 37,
+    "agent_modules/mutation_op_add_noop.py": 37,
+    "agent_modules/mutation_op_insert_pass.py": 37,
+    "agent_modules/mutation_op_insert_timestamp.py": 37,
+    "agent_modules/mutator.py": 37,
+    "agent_modules/quine_loop.py": 37,
+    "agent_modules/rewrite_orchestrator.py": 37,
+    "agent_modules/scout.py": 37,
+    "agent_modules/seed_weaver.py": 37,
+    "agent_modules/source_evolver.py": 37,
+    "agent_modules/spark.py": 37,
+    "agent_modules/synthesizer.py": 37,
+    "agent_modules/weaver.py": 37,
+    "auto-echo.py": 37,
+    "entropy.py": 37,
+    "self_modify.py": 37,
+    "temporal_kernel.py": 37,
+    "watch.py": 37
+  },
+  "_bw_last_hashes": {
+    "/home/illy/t3-t4/agent_hooks.py": "65b14784ab6b3219",
+    "/home/illy/t3-t4/agent_modules/analyzer.py": "a9174c8061f6cac2",
+    "/home/illy/t3-t4/agent_modules/bridge.py": "1b3ef8ef7deb891e",
+    "/home/illy/t3-t4/agent_modules/clockwork.py": "41b6e04c3e24438b",
+    "/home/illy/t3-t4/agent_modules/critic.py": "abd37ed279dd1467",
+    "/home/illy/t3-t4/agent_modules/crucible.py": "d7c9c8a2abf8e316",
+    "/home/illy/t3-t4/agent_modules/efficacy_tracker.py": "81ed0b2bc5c1c9a8",
+    "/home/illy/t3-t4/agent_modules/endogenous_rewriter.py": "d0a6c5bba38f8507",
+    "/home/illy/t3-t4/agent_modules/explorer.py": "16e84aaafddf7515",
+    "/home/illy/t3-t4/agent_modules/forced_feedback.py": "f780480ba024b7e2",
+    "/home/illy/t3-t4/agent_modules/forge.py": "360734b088e0d990",
+    "/home/illy/t3-t4/agent_modules/forge_randomizer.py": "89a1f5c266ebeac0",
+    "/home/illy/t3-t4/agent_modules/lens.py": "40a1e120f5e077c1",
+    "/home/illy/t3-t4/agent_modules/live_reloader.py": "a9d3690d4ba4dd29",
+    "/home/illy/t3-t4/agent_modules/local_mutator.py": "78974e3caa287b25",
+    "/home/illy/t3-t4/agent_modules/meta_healer.py": "657301088f86e9d5",
+    "/home/illy/t3-t4/agent_modules/mutation_op_add_noop.py": "afa93b97ea99b817",
+    "/home/illy/t3-t4/agent_modules/mutation_op_comment_shift.py": "1874cc0b6c416256",
+    "/home/illy/t3-t4/agent_modules/mutation_op_insert_pass.py": "84305453a504af8f",
+    "/home/illy/t3-t4/agent_modules/mutation_op_insert_timestamp.py": "202d22d0812aa6b9",
+    "/home/illy/t3-t4/agent_modules/mutation_op_line_duplicate_skip.py": "263fbf4a4ceb1fc7",
+    "/home/illy/t3-t4/agent_modules/mutation_op_shuffle_imports.py": "bc2d7227df5d26d3",
+    "/home/illy/t3-t4/agent_modules/mutator.py": "59f3c08940c4b33d",
+    "/home/illy/t3-t4/agent_modules/nova.py": "a87d4e604de6660c",
+    "/home/illy/t3-t4/agent_modules/oracle.py": "302d8c3294738322",
+    "/home/illy/t3-t4/agent_modules/quine_loop.py": "31768a91ed1b6cfd",
+    "/home/illy/t3-t4/agent_modules/rewrite_orchestrator.py": "c256653da9b6a106",
+    "/home/illy/t3-t4/agent_modules/scout.py": "a14b5f78988019c8",
+    "/home/illy/t3-t4/agent_modules/seed_weaver.py": "331ae11cb0a4f8f2",
+    "/home/illy/t3-t4/agent_modules/source_evolver.py": "0f5949bd6e37edef",
+    "/home/illy/t3-t4/agent_modules/source_rewriter.py": "673c7dad067c9be0",
+    "/home/illy/t3-t4/agent_modules/spark.py": "f92e0e56d346ecbe",
+    "/home/illy/t3-t4/agent_modules/synthesizer.py": "c9791fbad84cca5b",
+    "/home/illy/t3-t4/agent_modules/weaver.py": "189356d7bf4e08d7",
+    "/home/illy/t3-t4/auto-echo.py": "3998622db50d1453",
+    "/home/illy/t3-t4/entropy.py": "aefd8e8b96500ecd",
+    "/home/illy/t3-t4/self_modify.py": "5d66633c8b05512c",
+    "/home/illy/t3-t4/temporal_kernel.py": "60f40f179417e7a5",
+    "/home/illy/t3-t4/watch.py": "f7703fa99d7ebf10"
+  },
+  "source_rewriter_last_gen": 37,
+  "source_rewriter_rewrites_this_gen": 26,
+  "source_rewriter_strategy_health": 1.39,
+  "_auto_module_map": {
+    "scout": "scout.py",
+    "crucible": "crucible.py",
+    "efficacy_tracker": "efficacy_tracker.py",
+    "bridge": "bridge.py",
+    "seed_weaver": "seed_weaver.py",
+    "source_evolver": "source_evolver.py",
+    "source_rewriter": "source_rewriter.py",
+    "critic": "critic.py",
+    "explorer": "explorer.py",
+    "analyzer": "analyzer.py",
+    "forge": "forge.py",
+    "meta_healer": "meta_healer.py",
+    "local_mutator": "local_mutator.py",
+    "rewrite_orchestrator": "rewrite_orchestrator.py",
+    "oracle": "oracle.py",
+    "nova": "nova.py",
+    "forge_randomizer": "forge_randomizer.py",
+    "weaver": "weaver.py",
+    "lens": "lens.py",
+    "mutator": "mutator.py",
+    "spark": "spark.py",
+    "clockwork": "clockwork.py",
+    "quine_loop": "quine_loop.py",
+    "synthesizer": "synthesizer.py",
+    "forced_feedback": "forced_feedback.py",
+    "endogenous_rewriter": "endogenous_rewriter.py"
+  },
+  "spark_module_map": {
+    "scout": "scout.py",
+    "crucible": "crucible.py",
+    "efficacy_tracker": "efficacy_tracker.py",
+    "bridge": "bridge.py",
+    "seed_weaver": "seed_weaver.py",
+    "source_evolver": "source_evolver.py",
+    "source_rewriter": "source_rewriter.py",
+    "critic": "critic.py",
+    "explorer": "explorer.py",
+    "analyzer": "analyzer.py",
+    "forge": "forge.py",
+    "meta_healer": "meta_healer.py",
+    "local_mutator": "local_mutator.py",
+    "rewrite_orchestrator": "rewrite_orchestrator.py",
+    "oracle": "oracle.py",
+    "nova": "nova.py",
+    "forge_randomizer": "forge_randomizer.py",
+    "weaver": "weaver.py",
+    "lens": "lens.py",
+    "mutator": "mutator.py",
+    "spark": "spark.py",
+    "clockwork": "clockwork.py",
+    "quine_loop": "quine_loop.py",
+    "synthesizer": "synthesizer.py",
+    "forced_feedback": "forced_feedback.py",
+    "endogenous_rewriter": "endogenous_rewriter.py"
+  },
+  "module_rewritten_files": [
+    "temporal_kernel.py",
+    "self_modify.py",
+    "agent_hooks.py",
+    "auto-echo.py",
+    "entropy.py",
+    "watch.py",
+    "agent_modules/crucible.py",
+    "agent_modules/efficacy_tracker.py",
+    "agent_modules/seed_weaver.py",
+    "agent_modules/source_evolver.py",
+    "agent_modules/live_reloader.py",
+    "agent_modules/meta_healer.py",
+    "agent_modules/rewrite_orchestrator.py",
+    "agent_modules/forge_randomizer.py",
+    "agent_modules/spark.py",
+    "agent_modules/clockwork.py",
+    "agent_modules/quine_loop.py",
+    "agent_modules/forced_feedback.py",
+    "agent_modules/endogenous_rewriter.py",
+    "agent_modules/scout.py",
+    "agent_modules/mutation_op_comment_shift.py",
+    "agent_modules/bridge.py",
+    "agent_modules/critic.py",
+    "agent_modules/mutation_op_line_duplicate_skip.py",
+    "agent_modules/explorer.py",
+    "agent_modules/analyzer.py",
+    "agent_modules/forge.py",
+    "agent_modules/oracle.py",
+    "agent_modules/nova.py",
+    "agent_modules/mutation_op_add_noop.py",
+    "agent_modules/weaver.py",
+    "agent_modules/mutation_op_insert_pass.py",
+    "agent_modules/lens.py",
+    "agent_modules/mutator.py",
+    "agent_modules/mutation_op_shuffle_imports.py",
+    "agent_modules/mutation_op_insert_timestamp.py",
+    "agent_modules/synthesizer.py"
+  ],
+  "module_rewrite_count": 37
 }

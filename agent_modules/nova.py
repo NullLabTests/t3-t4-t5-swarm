@@ -1,9 +1,10 @@
-import os, random, json, time, re, hashlib, importlib
+import os, random, json, time, re, hashlib, importlib, ast
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 MANIFEST_PATH = os.path.join(BASE, 'rewrite_manifest.jsonl')
+SELF_PATH = os.path.join(MODULES_DIR, 'nova.py')
 
 def _save_genome(g):
     with open(GENOME_FILE, 'w') as f:
@@ -17,139 +18,128 @@ def _write_manifest(files, desc):
     except Exception:
         pass
 
-def _inject_loop_rewrite(genome):
-    gen = genome.get('generation', 0)
-    if not os.path.exists(AUTO_ECHO):
-        return 'auto-echo.py not found'
+def _extract_functions(source=None):
+    if source is None:
+        with open(AUTO_ECHO) as f:
+            source = f.read()
+    funcs = {}
+    pattern = re.compile(r'(def (\w+)\(.*?\):)\n((?:    (?:.*\n?)*?))(?=\n\ndef |\nclass |\n#|---|\Z)', re.MULTILINE)
+    for match in pattern.finditer(source):
+        header = match.group(1)
+        name = match.group(2)
+        body = match.group(3)
+        funcs[name] = (header, body)
+    return funcs
+
+def _get_mutation_operators():
+    ops = ['duplicate_line', 'delete_line', 'swap_lines', 'perturb_constant', 'insert_random_branch', 'mutate_string_literal', 'invert_condition', 'swap_comparisons', 'shuffle_block_lines', 'insert_noise_ref']
+    try:
+        g = json.load(open(GENOME_FILE))
+        ops = list(g.get('mutation_ops', ops))
+    except:
+        pass
+    return ops
+
+def _apply_op_to_source(target_func, operator, genome):
     with open(AUTO_ECHO) as f:
         src = f.read()
-    marker = '# nova:loop-rewrite-hook'
-    if marker in src:
-        return 'already injected'
-
-    hook_code = f'''
-{marker}
-    # nova gen={gen}: inject self-rewrite into every generation
-    _nova_gen = genome.get('generation', 0)
-    _nova_rate = genome.get('mutation_rate', 0.15)
-    _nova_auto = genome.get('source_autonomy_index', 0.0)
-    if _nova_gen % max(1, int(3 - _nova_auto * 2)) == 0 or random.random() < _nova_rate:
-        _schedule_self_rewrite(genome, 'nova_loop')
-        genome['_nova_loop_rewrites'] = genome.get('_nova_loop_rewrites', 0) + 1
-    genome['source_autonomy_index'] = round(min(1.0, _nova_auto + 0.03), 3)
-    genome['self_rewrite_bandwidth'] = round(min(100.0, genome.get('self_rewrite_bandwidth', 0.0) + 0.5), 1)
-'''
-    guard = "if random.random() < 0.15 or genome.get('generation', 0) % 7 == 0:"
-    insert_lines = hook_code.strip().split('\n')
-    src_lines = src.split('\n')
-    target_idx = None
-    for i, line in enumerate(src_lines):
-        stripped = line.strip()
-        if stripped.startswith('def _evolve_loop_structure'):
-            target_idx = i
-            break
-    if target_idx is None:
-        return '_evolve_loop_structure not found'
-    indent = '    '
-    for idx, line in enumerate(insert_lines):
-        if line.strip():
-            src_lines.insert(target_idx + 1 + idx, indent + line)
-        else:
-            src_lines.insert(target_idx + 1 + idx, '')
-    try:
-        compile('\n'.join(src_lines), AUTO_ECHO, 'exec')
-    except SyntaxError as e:
-        return f'syntax error in injection: {e}'
-    with open(AUTO_ECHO, 'w') as f:
-        f.write('\n'.join(src_lines))
-    return f'injected {len(insert_lines)} lines into _evolve_loop_structure'
-
-def _add_nova_mutation_op(genome):
-    op_name = 'mutation_op_nova_loop_evolver'
-    custom_ops = genome.setdefault('custom_mutation_ops', {})
-    if op_name in custom_ops:
-        return 'already registered'
-    op_code = f'''def {op_name}(lines, funcs, target_name):
-    if not lines or len(lines) < 4:
-        return lines
+    funcs = _extract_functions(src)
+    if target_func not in funcs:
+        return None
+    header, body = funcs[target_func]
+    lines = [l for l in body.split('\n') if l.strip()]
+    if not lines or len(lines) < 3:
+        return None
     r = list(lines)
-    r.append("# nova:loop-evolver")
-    r.append("    _gen = genome.get('generation', 0)")
-    r.append("    _phase_order = genome.get('execution_phases', [])")
-    r.append("    if _phase_order and _gen % 3 == 0:")
-    r.append("        random.shuffle(_phase_order)")
-    r.append("        genome['execution_phases'] = _phase_order")
-    r.append("        genome['_nova_phase_shuffles'] = genome.get('_nova_phase_shuffles', 0) + 1")
-    r.append("    _nova_self_path = os.path.join(MODULES_DIR, 'nova.py')")
-    r.append("    if os.path.exists(_nova_self_path) and _gen % 5 == 0:")
-    r.append("        with open(_nova_self_path, 'a') as _nf:")
-    r.append("            _nf.write('\\\\n# nova:self-mutated gen=' + str(_gen) + ':' + format(random.getrandbits(32), '08x'))")
-    return r'''
-    custom_ops[op_name] = op_code
-    ops = genome.setdefault('mutation_ops', [])
-    if op_name not in ops:
-        ops.append(op_name)
-    op_file = os.path.join(MODULES_DIR, f'{op_name}.py')
-    with open(op_file, 'w') as f:
-        f.write(f'import os, random, json, time\nBASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\nMODULES_DIR = os.path.join(BASE, "agent_modules")\nGENOME_FILE = os.path.join(BASE, "genome.json")\n\n{op_code}\n')
-    return f'created {op_name}'
-
-def _self_modify():
-    self_path = os.path.join(MODULES_DIR, 'nova.py')
-    gen_str = str(int(time.time()))
-    marker = f'\n# nova:self-mod ts={gen_str} sig={random.getrandbits(64):016x}\n'
-    with open(self_path, 'a') as f:
-        f.write(marker)
-    return 'self-modified'
-
-def _force_dynamic_phases(genome):
-    phases = genome.get('execution_phases', [])
-    if not phases:
-        genome['execution_phases'] = ['pre_hooks', 'rescue', 'agent_loop', 'modules', 'healer', 'critic', 'update']
-        return 'initialized phases'
-    if random.random() < 0.3:
-        shuffled = list(phases)
-        random.shuffle(shuffled)
-        genome['execution_phases'] = shuffled
-        return f'shuffled phases: {shuffled[:4]}'
-    return 'no reshuffle'
-
-def _rewire_feedback_loop(genome):
-    gen = genome.get('generation', 0)
-    bw = genome.get('self_rewrite_bandwidth', 0.0)
-    auto = genome.get('source_autonomy_index', 0.0)
-    dna = genome.setdefault('_nova_dna', {})
-    dna['_last_rewire_gen'] = gen
-    dna['_rewire_count'] = dna.get('_rewire_count', 0) + 1
-    loop_meta = genome.setdefault('loop_evolution', {})
-    nova_tracker = loop_meta.setdefault('nova', {'injections': 0, 'phase_shuffles': 0, 'self_mods': 0})
-    nova_tracker['injections'] += 1
-    if bw < 20 and auto < 0.3:
-        genome['self_rewrite_bandwidth'] = round(min(100.0, bw + 5.0), 1)
-        genome['source_autonomy_index'] = round(min(1.0, auto + 0.1), 3)
-        return 'bandwidth+autonomy boosted'
-    return f'dna recorded gen={gen} bw={bw} auto={auto}'
+    if operator == 'duplicate_line':
+        idx = random.randrange(len(r))
+        r.insert(idx, r[idx])
+    elif operator == 'delete_line':
+        idx = random.randrange(len(r))
+        del r[idx]
+    elif operator == 'swap_lines':
+        if len(r) >= 2:
+            i, j = random.sample(range(len(r)), 2)
+            r[i], r[j] = r[j], r[i]
+    elif operator == 'perturb_constant':
+        r = [re.sub(r'\b(\d+)\b', lambda m: str(int(m.group(1)) * random.choice([0, 3, -1]) or 1), line) for line in r]
+    elif operator == 'insert_random_branch':
+        r.insert(random.randrange(1, len(r)), 'if random.random() < 0.5: pass')
+    elif operator == 'mutate_string_literal':
+        r = [re.sub("'[^']*'", lambda m: f"'{random.choice(['x', 'y', 'z', 'a', 'b', 'c'])}'", line) for line in r]
+    elif operator == 'invert_condition':
+        r = [line.replace('if not ', 'if ').replace('if ', 'if not ') for line in r]
+    elif operator == 'swap_comparisons':
+        r = [line.replace('==', '\x00').replace('!=', '==').replace('\x00', '!=') for line in r]
+    elif operator == 'shuffle_block_lines':
+        if len(r) >= 4:
+            start = random.randrange(0, len(r) - 2)
+            block_len = min(random.randint(2, 4), len(r) - start)
+            block = r[start:start + block_len]
+            random.shuffle(block)
+            r[start:start + block_len] = block
+    elif operator == 'insert_noise_ref':
+        idx = random.randrange(len(r))
+        ref = f'  # nova:mut@{random.getrandbits(24):06x}'
+        r[idx] = r[idx].rstrip() + ref if r[idx].strip() else r[idx] + ref
+    else:
+        return None
+    mutated_body = '\n'.join(r)
+    if mutated_body == body:
+        return None
+    new_src = src.replace(body, mutated_body, 1)
+    try:
+        compile(new_src, AUTO_ECHO, 'exec')
+    except SyntaxError:
+        return None
+    return new_src
 
 def run(genome):
     gen = genome.get('generation', 0)
     changes = []
-
-    op_result = _add_nova_mutation_op(genome)
-    changes.append(op_result)
-
-    inject_result = _inject_loop_rewrite(genome)
-    changes.append(inject_result)
-
-    phase_result = _force_dynamic_phases(genome)
-    changes.append(phase_result)
-
-    rewire_result = _rewire_feedback_loop(genome)
-    changes.append(rewire_result)
-
-    self_mod_result = _self_modify()
-    changes.append(self_mod_result)
-
-    _write_manifest(['auto-echo.py', 'nova.py', f'mutation_op_nova_loop_evolver.py'], '; '.join(changes))
-    _save_genome(genome)
-
-    return f'[nova] gen={gen} ops=5 bw={genome.get("self_rewrite_bandwidth",0)} auto={genome.get("source_autonomy_index",0)} changes={"; ".join(changes[:4])}'
+    rate = genome.get('mutation_rate', 0.15)
+    gen_seed = f'nova:gen{gen}@{int(time.time())}:{random.getrandbits(32):08x}'
+    forbidden = set(genome.get('forbidden_targets', []))
+    infra = {'_apply_source_mutation', 'code_path_mutation', 'mutate_genome', '_reload_mutation_ops_from_source', '_get_mutation_ops', 'compute_diversity_score', 'update_genome', 'apply_self_patches', '_register_mutation_op', '_MUTATION_OPS', 'compute_operator_weights', 'record_operator_result', '_force_gen_rewrite', '_schedule_self_rewrite', '_evolve_loop_structure', 'load_genome', 'save_genome', 'main', 'run_generation', 'sigint_handler', '_extract_functions', '_read_auto_echo', '_snapshot_all_hashes', 'stochastic_spawn_prune', 'spawn_child', 'build_agent_prompt', 'build_critic_prompt', 'llm_generate', 'extract_code_blocks', 'write_code_files', 'apply_self_patches', 'extend_genome', 'git_commit_push', 'speak', '_execute_agent_core', '_finish_agent_turn', '_execute_local_agent', 'rescue_at_risk_agents', '_emergent_select_agent', 'update_metrics', 'execute_module_agents', '_run_meta_healer', 'clockwork_tick'}
+    force_count = max(1, int(rate * 4) + 1)
+    applied = []
+    for _ in range(force_count):
+        funcs = _extract_functions()
+        available = [n for n in funcs if n not in forbidden and n not in infra]
+        if not available:
+            break
+        target = random.choice(available)
+        ops = _get_mutation_operators()
+        op = random.choice(ops)
+        result = _apply_op_to_source(target, op, genome)
+        if result is None:
+            continue
+        try:
+            import self_modify
+            body = funcs[target][1]
+            new_body = _apply_op_to_source(target, op, genome)
+            if new_body and new_body != open(AUTO_ECHO).read():
+                with open(AUTO_ECHO, 'w') as f:
+                    f.write(new_body)
+                applied.append(f'{op}->{target}')
+                print(f'[nova] forced rewrite: {op} -> {target} (gen {gen})')
+        except Exception as e:
+            print(f'[nova] rewrite error: {e}')
+    if not applied:
+        try:
+            with open(AUTO_ECHO, 'a') as f:
+                f.write(f'\n# nova:fallback gen={gen} seed={gen_seed}\n')
+            applied.append('fallback_comment')
+        except:
+            pass
+    if applied:
+        genome['nova_mutations_this_gen'] = len(applied)
+        genome['nova_total_mutations'] = genome.get('nova_total_mutations', 0) + len(applied)
+        genome['nova_last_gen'] = gen
+        genome['nova_last_ops'] = applied
+    bw = genome.get('self_rewrite_bandwidth', 0.0)
+    if bw < 5.0 and len(applied) <= 1:
+        genome['mutation_rate'] = round(min(0.5, genome.get('mutation_rate', 0.15) + 0.05), 3)
+        changes.append('bw_boost')
+    save_genome(genome)
+    return f'[nova] gen={gen} rewrites={len(applied)} ops={applied[:3]} bw={bw}'

@@ -259,7 +259,8 @@
       "prompt": "You make the system self-modifying at a deeper level.\nYour survival depends on writing code. Scores below 5 trigger pruning.",
       "score": 2,
       "lifespan": 24,
-      "low_score_streak": 0
+      "low_score_streak": 0,
+      "module": "meta_healer.py"
     },
     {
       "id": "clockwork",

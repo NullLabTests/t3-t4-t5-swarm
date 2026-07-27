@@ -1892,6 +1892,51 @@ register_bridge_type('.bridge', _bridge_handler_bridge, 'Auto-register new bridg
 register_bridge_type('.swarmrewrite', _bridge_handler_swarmrewrite, 'Targeted rewrite of any .py file via orchestrator')
 register_bridge_type('.selfrep', _bridge_handler_selfrep, 'Self-replicating: 3 forced mutations per write, guaranteed gen-over-gen rewrite')
 register_bridge_type('.forgechain', _bridge_handler_forgechain, 'Endless chain: writes new .forgechain file + mutates auto-echo.py each time')
+register_bridge_type('.genloop', _bridge_handler_genloop, 'Rewrite the generation loop structure: reorder, inject, or remove phases')
+register_bridge_type('.mutreflect', _bridge_handler_mutreflect, 'Reflect on mutation operator effectiveness and prune weak ones')
+
+def _bridge_handler_metaop(abs_path, genome):
+    """Register a mutation operator directly from a .metaop file.
+    Format: the file contains a complete Python function body with
+    @_register_mutation_op('name') decorator, or a JSON dict:
+    {"name": "mutation_op_foo", "code": "def mutation_op_foo(lines, funcs, target_name):\\n    return lines"}
+    """
+    try:
+        with open(abs_path) as f:
+            content = f.read().strip()
+    except:
+        return False
+    registered = 0
+    if content.startswith('{'):
+        try:
+            data = json.loads(content)
+        except json.JSONDecodeError:
+            data = {}
+        entries = data if isinstance(data, list) else [data]
+        for entry in entries:
+            op_name = entry.get('name', '')
+            op_code = entry.get('code', '')
+            if op_name and op_code and op_name.startswith('mutation_op_'):
+                genome.setdefault('custom_mutation_ops', {})[op_name] = op_code
+                genome.setdefault('mutation_ops', []).append(op_name)
+                registered += 1
+                print(f'[bridge-metaop] registered {op_name} from {os.path.basename(abs_path)}')
+    else:
+        for m in re.finditer('@_register_mutation_op\\([\'"](\\w+)[\'"]\\)\\n(def \\1\\(.*?\\):.*?)(?=\\n@|\\Z)', content, re.DOTALL):
+            op_name = m.group(1)
+            op_code = m.group(2).strip()
+            if op_code:
+                genome.setdefault('custom_mutation_ops', {})[op_name] = op_code
+                genome.setdefault('mutation_ops', []).append(op_name)
+                registered += 1
+                print(f'[bridge-metaop] registered {op_name} from inline decorator')
+    if registered:
+        save_genome(genome)
+        print(f'[bridge-metaop] registered {registered} mutation operators')
+        return True
+    return False
+
+register_bridge_type('.metaop', _bridge_handler_metaop, 'Register a mutation operator directly from a .metaop file')
 
 def _register_mutation_op(name):
 

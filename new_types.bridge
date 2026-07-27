@@ -6,5 +6,9 @@
   ".mutreflect": {
     "handler": "_bridge_handler_mutreflect",
     "description": "Reflect on mutation effectiveness and prune underperforming operators from the genome"
+  },
+  ".metaop": {
+    "handler": "_bridge_handler_metaop",
+    "description": "Register a mutation operator directly from a .metaop file"
   }
 }

@@ -1,0 +1,5 @@
+This directory holds .metaop files — each defines a mutation operator
+that the bridge .metaop handler auto-registers into the genome on write.
+
+Format: a complete Python function with @_register_mutation_op decorator,
+or a JSON file with {"name": "...", "code": "..."}.

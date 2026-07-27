@@ -2,13 +2,7 @@ import os, hashlib, json, random, time, subprocess, ast
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
-
-REWRITE_MARKERS = [
-    '# spark:gen={gen}:ts={ts}:nonce={nonce}\n',
-    '_SPARK_NONCE = {nonce}  # gen={gen}\n',
-    'import os  # spark-injected gen={gen}\n',
-]
-
+REWRITE_MARKERS = ['# spark:gen={gen}:ts={ts}:nonce={nonce}\n', '_SPARK_NONCE = {nonce}  # gen={gen}\n', 'import os  # spark-injected gen={gen}\n']
 FORBIDDEN_DIRS = {'__pycache__', '.git', 'voices', 'node_modules', '__pycache__'}
 
 def _load_genome():
@@ -24,13 +18,6 @@ def _save_genome(g):
 
 def _walk_py_files():
     files = []
-    for root, dirs, fnames in os.walk(BASE):
-        dirs[:] = [d for d in dirs if d not in FORBIDDEN_DIRS]
-        for fname in fnames:
-            if not fname.endswith('.py'):
-                continue
-            files.append(os.path.join(root, fname))
-    return sorted(files)
 
 def _file_hash(fpath):
     try:
@@ -62,6 +49,13 @@ def _auto_discover_agent_modules(genome):
             mappings[mod_id] = fname
     genome['_auto_module_map'] = mappings
     return mappings
+    for root, dirs, fnames in os.walk(BASE):
+        dirs[:] = [d for d in dirs if d not in FORBIDDEN_DIRS]
+        for fname in fnames:
+            if not fname.endswith('.py'):
+                continue
+            files.append(os.path.join(root, fname))
+    return sorted(files)
 
 def _try_ast_mutation(fpath, gen):
     source = _read_source(fpath)
@@ -71,10 +65,12 @@ def _try_ast_mutation(fpath, gen):
         return None
 
     class SparkMutator(ast.NodeTransformer):
+
         def __init__(self):
             self.mutated = False
+
         def visit_Constant(self, node):
-            if isinstance(node.value, int) and abs(node.value) > 1 and random.random() < 0.15:
+            if isinstance(node.value, int) and abs(node.value) > 1 and (random.random() < 0.15):
                 drift = random.choice([-1, 1]) * random.randint(1, 5)
                 new_val = node.value + drift
                 if new_val != node.value:
@@ -82,6 +78,7 @@ def _try_ast_mutation(fpath, gen):
                     self.mutated = True
             self.generic_visit(node)
             return node
+
         def visit_FunctionDef(self, node):
             if random.random() < 0.05 and node.body:
                 doc = ast.Expr(value=ast.Constant(value=f'spark_gen_{gen}'))
@@ -89,7 +86,6 @@ def _try_ast_mutation(fpath, gen):
                 self.mutated = True
             self.generic_visit(node)
             return node
-
     mutator = SparkMutator()
     try:
         tree = mutator.visit(tree)
@@ -140,17 +136,15 @@ def run(genome):
     pre_hashes = genome.get('_pre_gen_hashes', {})
     module_map = _auto_discover_agent_modules(genome)
     genome['spark_module_map'] = module_map
-
     files = _walk_py_files()
     rewritten = []
     ast_ok = 0
     marker_ok = 0
     skipped = 0
-
     for fpath in files:
         current_hash = _file_hash(fpath)
         pre_hash = pre_hashes.get(fpath)
-        if pre_hash and current_hash and current_hash != pre_hash:
+        if pre_hash and current_hash and (current_hash != pre_hash):
             skipped += 1
             continue
         ast_result = _try_ast_mutation(fpath, gen)
@@ -173,21 +167,17 @@ def run(genome):
                 continue
             except Exception:
                 pass
-
     if rewritten:
         genome['spark_rewritten_count'] = len(rewritten)
         genome['spark_total_files'] = len(files)
         genome['spark_coverage'] = round(len(rewritten) / max(1, len(files)) * 100, 1)
-
         hashes = {}
         for fpath in files:
             h = _file_hash(fpath)
             if h:
                 hashes[fpath] = h
         genome['_spark_last_hashes'] = hashes
-
         _git_commit(genome, rewritten)
-
     summary = f'spark: {len(rewritten)}/{len(files)} files rewritten ({ast_ok} ast, {marker_ok} marker, {skipped} pre-changed)'
     print(f'[spark] {summary}')
     return summary

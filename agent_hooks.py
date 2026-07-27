@@ -54,6 +54,8 @@ def add_hook(genome, point, code, source='agent'):
         hooks[point] = []
     existing = [h for h in hooks[point] if h.get('code') == code and h.get('source') == source]
     if existing:
+# spliced from meta_healer.py
+        lines.insert(insert_at, import_line)
         return False
     hooks[point].append({
         'code': code,

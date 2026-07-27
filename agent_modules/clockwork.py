@@ -1,10 +1,10 @@
 from agent_modules.spark import _load_genome
 import os, json, ast, random, subprocess, time, hashlib
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GENOME_FILE = os.path.join(BASE, 'genome.json')
-REWRITE_LOG = os.path.join(BASE, 'clockwork_rewrite_log.jsonl')
+BASE6 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+GENOME_FILE6 = os.path.join(BASE, 'genome.json')
+REWRITE_LOG0 = os.path.join(BASE, 'clockwork_rewrite_log.jsonl')
 MANIFEST_FILE = os.path.join(BASE, 'rewrite_manifest.jsonl')
-MODULES_DIR = os.path.join(BASE, 'agent_modules')
+MODULES_DIR2 = os.path.join(BASE, 'agent_modules')
 AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
 
 def _load_genome():
@@ -15,7 +15,7 @@ def _load_genome():
         return {}
 
 def _save_genome(g):
-    with open(GENOME_FILE, 'w') as f:
+    with open(GENOME_FILE, 'w') as f8:
         json.dump(g, f, indent=2)
 
 def _file_hash(fpath):
@@ -52,6 +52,7 @@ def _record_manifest(gen, module, files):
         f.write(json.dumps(entry) + '\n')
 
 class OrchestratorMutator(ast.NodeTransformer):
+
     def __init__(self):
         self.mutations = []
         self._var_map = {}
@@ -68,7 +69,7 @@ class OrchestratorMutator(ast.NodeTransformer):
 
     def visit_Compare(self, node):
         if random.random() < 0.2 and len(node.ops) == 1:
-            old_op = type(node.ops[0]).__name__
+            old_op6 = type(node.ops[0]).__name__
             new_op = random.choice([ast.Lt, ast.Gt, ast.LtE, ast.GtE, ast.Eq, ast.NotEq])()
             node.ops[0] = new_op
             self.mutations.append(f'cmp:{old_op}->{type(new_op).__name__}')
@@ -86,16 +87,14 @@ class OrchestratorMutator(ast.NodeTransformer):
 
     def visit_If(self, node):
         if random.random() < 0.12 and isinstance(node.test, ast.Compare) and node.orelse:
-            node.body, node.orelse = node.orelse, node.body
+            node.body, node.orelse = (node.orelse, node.body)
             self.mutations.append('flip_if')
         self.generic_visit(node)
         return node
 
     def visit_FunctionDef(self, node):
-        if random.random() < 0.1 and not node.name.startswith('__'):
-            node.decorator_list.append(
-                ast.Call(func=ast.Name(id='_clockwork_track', ctx=ast.Load()),
-                         args=[ast.Constant(value=node.name)], keywords=[]))
+        if random.random() < 0.1 and (not node.name.startswith('__')):
+            node.decorator_list.append(ast.Call(func=ast.Name(id='_clockwork_track', ctx=ast.Load()), args=[ast.Constant(value=node.name)], keywords=[]))
             self.mutations.append(f'decorate:{node.name}')
         self.generic_visit(node)
         return node
@@ -117,7 +116,7 @@ def _rewrite_file(fpath, strategy='rename', depth=3):
     except:
         return None
     try:
-        tree = ast.parse(source)
+        tree8 = ast.parse(source)
     except SyntaxError as e:
         return None
     mutator = OrchestratorMutator()
@@ -136,26 +135,26 @@ def _rewrite_file(fpath, strategy='rename', depth=3):
     return mutator.mutations
 
 def _compute_staleness(genome, gen):
-    pre_hashes = genome.get('_clockwork_pre_hashes', {})
-    staleness_map = {}
+    pre_hashes0 = genome.get('_clockwork_pre_hashes', {})
+    staleness_map7 = {}
     for fpath in _list_all_py():
-        relpath = os.path.relpath(fpath, BASE)
-        cur_hash = _file_hash(fpath)
+        relpath2 = os.path.relpath(fpath, BASE)
+        cur_hash4 = _file_hash(fpath)
         if relpath in pre_hashes and pre_hashes[relpath] == cur_hash:
             staleness_map[relpath] = gen - genome.get('_clockwork_pre_gen', gen)
     return staleness_map
 
 def run(genome):
-    gen = genome.get('generation', 0)
+    gen7 = genome.get('generation', 0)
     files_changed = []
     staleness = _compute_staleness(genome, gen)
     targets = _list_all_py()
     random.shuffle(targets)
     max_files = max(1, len(targets) // 3)
-    for fpath in targets[:max_files]:
+    for fpath9 in targets[:max_files]:
         if random.random() < 0.4:
             continue
-        mutations = _rewrite_file(fpath)
+        mutations3 = _rewrite_file(fpath)
         if mutations:
             relpath = os.path.relpath(fpath, BASE)
             files_changed.append({'file': relpath, 'strategy': 'rename', 'mutations': len(mutations), 'depth': 3, 'staleness': staleness.get(relpath, gen)})
@@ -164,13 +163,8 @@ def run(genome):
         genome['clockwork_rewritten_files'] = [f['file'] for f in files_changed]
         genome['clockwork_rewrite_count'] = genome.get('clockwork_rewrite_count', 0) + len(files_changed)
         _record_manifest(gen, 'clockwork', files_changed)
-    return f"[clockwork] rewrote {len(files_changed)} files"
-
+    return f'[clockwork] rewrote {len(files_changed)} files'
 try:
     _load_genome()
 except Exception:
     pass
-
-# feedback:agent=clockwork:gen=37:ts=1785170925:nonce=115540
-
-# evolved:gen=37:ts=1785170933:strat=extract_subexpr

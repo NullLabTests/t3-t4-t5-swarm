@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+print(f'[trace:watch.py:gen={37}]')  # auto-trace
 """watch.py — TUI dashboard for the echo swarm. Read-only, won't disturb the loop.
 
 Usage:  python3 watch.py

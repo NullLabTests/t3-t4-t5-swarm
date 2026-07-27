@@ -299,3 +299,4 @@ def _record_manifest(genome, results):
     entry = json.dumps({'gen': gen, 'module': 'source_evolver', 'results': results, 'time': time.time()})
     with open(MANIFEST_FILE, 'a') as f:
         f.write(entry + '\n')
+# source_rewriter:gen=37:ts=1785170945:depth=3

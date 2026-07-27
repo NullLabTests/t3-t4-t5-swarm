@@ -1,4 +1,5 @@
 import os, json, random, time, hashlib, subprocess
+print(f'[trace:forge_randomizer.py:gen={37}]')  # auto-trace
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 

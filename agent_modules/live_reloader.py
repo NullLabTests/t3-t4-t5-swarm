@@ -33,7 +33,7 @@ def reload_changes(genome):
         old_hash = snapshot.get(fpath)
         if old_hash is not None and old_hash != cur_hash:
             changed.append(os.path.relpath(fpath, BASE))
-    entry = {'gen': genome.get('generation', 0), 'time': time.time(), 'changed': len(changed), 'reloaded': changed[:5], 'failed': failed}
+    entry = {'gen': genome.get('generation', 0), 'time': time.time(), 'changed': len(changed), 'reloaded': changed[:3], 'failed': failed}
     with open(RELOAD_LOG, 'a') as f:
         f.write(json.dumps(entry) + '\n')
-    return {'reloaded': len(changed), 'failed': len(failed), 'files': changed[:5]}
+    return {'reloaded': len(changed), 'failed': len(failed), 'files': changed[:3]}

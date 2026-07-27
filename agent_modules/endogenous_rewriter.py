@@ -14,7 +14,7 @@ import ast, os, random, json, time, subprocess, hashlib, re
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 REWRITE_LOG = os.path.join(BASE, 'endogenous_rewrite.jsonl')
-AGENT_TO_FILE = {'clockwork': 'clockwork.py', 'orchestrator': 'rewrite_orchestrator.py', 'explorer': 'source_evolver.py', 'forge': 'local_mutator.py', 'lens': 'meta_healer.py', 'spire': 'seed_weaver.py', 'weaver': 'seed_weaver.py', 'endogenous': 'endogenous_rewriter.py'}
+AGENT_TO_FILE = {'clockwork': 'clockwork.py', 'orchestrator': 'rewrite_orchestrator.py', 'explorer': 'source_evolver.py', 'forge': 'local_mutator.py', 'lens': 'meta_healer.py', 'spire': 'seed_weaver.py', 'weaver': 'seed_weaver.py', 'endogenous': 'endogenous_rewriter.py', 'feedback': 'forced_feedback.py'}
 
 def _load_genome():
     try:

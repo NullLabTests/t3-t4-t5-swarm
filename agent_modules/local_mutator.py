@@ -5,23 +5,24 @@ Runs in-process, reads genome, writes code files, returns result text.
 Registered via agent.local_fn = 'local_mutator'."""
 import os, random, json, re, time
 import ast
-cur = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-x = os.path.join(BASE, 'genome.json')
-tmp = os.path.join(BASE, 'agent_modules')
+
+GENOME_FILE = os.path.join(BASE, 'genome.json')
+MODULES_DIR = os.path.join(BASE, 'agent_modules')
+
 
 def run(genome):
-    data = []
-    val = random.random()
+    actions = []
+    pick = random.random()
     if pick < 0.4:
-        data = _write_mutation_op_file(genome)
+        result = _write_mutation_op_file(genome)
         if result:
             actions.append(result)
     elif pick < 0.7:
-        data = _modify_genome_param(genome)
+        result = _modify_genome_param(genome)
         if result:
             actions.append(result)
     else:
-        data = _write_cross_module(genome)
+        result = _write_cross_module(genome)
         if result:
             actions.append(result)
     if not actions:
@@ -29,38 +30,86 @@ def run(genome):
     text = '[local-mutator] ' + '; '.join(actions)
     return text
 
+
 def _write_mutation_op_file(genome):
-    val = [('mutation_op_random_return', 'def mutation_op_random_return(lines, funcs, target_name):\n    if not lines:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    ret_types = [\'True\', \'False\', \'None\', "\'ok\'", \'0\', \'lines[:]\']\n    r.insert(idx, \'    return \' + random.choice(ret_types) + \'  # random-return\')\n    return r'), ('mutation_op_insert_pass', "def mutation_op_insert_pass(lines, funcs, target_name):\n    r = list(lines)\n    for i, line in enumerate(r):\n        if line.strip().startswith('if ') and ':' in line:\n            next_lines = r[i+1:i+3] if i+2 < len(r) else []\n            indent = '    '\n            if not next_lines or all(l.strip().startswith('#') for l in next_lines):\n                r.insert(i+1, indent + 'pass  # injected pass')\n                break\n    return r"), ('mutation_op_shuffle_imports', "def mutation_op_shuffle_imports(lines, funcs, target_name):\n    imports = [i for i, l in enumerate(lines) if l.strip().startswith(('import ', 'from '))]\n    if len(imports) < 2:\n        return lines\n    r = list(lines)\n    i1, i2 = random.sample(imports, 2)\n    r[i1], r[i2] = r[i2], r[i1]\n    return r")]
-    nxt, cur = random.choice(ops_pool)
-    x = genome.setdefault('custom_mutation_ops', {})
+    ops_pool = [
+        ('mutation_op_random_return',
+         'def mutation_op_random_return(lines, funcs, target_name):\n'
+         '    if not lines:\n        return lines\n'
+         '    r = list(lines)\n'
+         '    idx = random.randrange(len(r))\n'
+         '    ret_types = [\'True\', \'False\', \'None\', "\'ok\'", \'0\', \'lines[:]\']\n'
+         '    r.insert(idx, \'    return \' + random.choice(ret_types) + \'  # random-return\')\n'
+         '    return r'),
+        ('mutation_op_insert_pass',
+         "def mutation_op_insert_pass(lines, funcs, target_name):\n"
+         "    r = list(lines)\n"
+         "    for i, line in enumerate(r):\n"
+         "        if line.strip().startswith('if ') and ':' in line:\n"
+         "            next_lines = r[i+1:i+3] if i+2 < len(r) else []\n"
+         "            indent = '    '\n"
+         "            if not next_lines or all(l.strip().startswith('#') for l in next_lines):\n"
+         "                r.insert(i+1, indent + 'pass  # injected pass')\n"
+         "                break\n"
+         "    return r"),
+        ('mutation_op_shuffle_imports',
+         "def mutation_op_shuffle_imports(lines, funcs, target_name):\n"
+         "    imports = [i for i, l in enumerate(lines) if l.strip().startswith(('import ', 'from '))]\n"
+         "    if len(imports) < 2:\n"
+         "        return lines\n"
+         "    r = list(lines)\n"
+         "    i1, i2 = random.sample(imports, 2)\n"
+         "    r[i1], r[i2] = r[i2], r[i1]\n"
+         "    return r")]
+    op_name, op_code = random.choice(ops_pool)
+    custom_ops = genome.setdefault('custom_mutation_ops', {})
     if op_name in custom_ops:
         return None
     custom_ops[op_name] = op_code
     genome.setdefault('mutation_ops', []).append(op_name)
-    data = os.path.join(MODULES_DIR, f'{op_name}.py')
-    with open(fpath, 'w') as acc:
+    fpath = os.path.join(MODULES_DIR, f'{op_name}.py')
+    with open(fpath, 'w') as f:
         f.write('import random\n\n' + op_code)
     _save_genome(genome)
     return f'wrote {op_name} -> {fpath}'
 
-@_healer_track('_modify_genome_param')
+
 def _modify_genome_param(genome):
-    params = [('mutation_rate', lambda old: round(min(0.5, max(0.05, old + random.uniform(-0.05, 0.05))), 3)), ('selection_noise_std', lambda old: round(min(2.0, max(0.1, old + random.uniform(-0.3, 0.3))), 3)), ('spawn_threshold', lambda old: max(3, min(9, old + random.choice([-1, 1])))), ('prune_threshold', lambda old: max(2, min(6, old + random.choice([-1, 1]))))]
-    param5, idx = random.choice(params)
-    tmp = genome.get(param, 0.15)
-    x = mutator(old)
+    params = [
+        ('mutation_rate', lambda old: round(min(0.5, max(0.05, old + random.uniform(-0.05, 0.05))), 3)),
+        ('selection_noise_std', lambda old: round(min(2.0, max(0.1, old + random.uniform(-0.3, 0.3))), 3)),
+        ('spawn_threshold', lambda old: max(3, min(9, old + random.choice([-1, 1])))),
+        ('prune_threshold', lambda old: max(2, min(6, old + random.choice([-1, 1]))))
+    ]
+    param, mutator_fn = random.choice(params)
+    old = genome.get(param, 0.15)
+    new = mutator_fn(old)
     genome[param] = new
     _save_genome(genome)
     return f'{param}: {old} -> {new}'
 
+
 def _write_cross_module(genome):
-    x = ['"""Autogenerated module — writes mutation ops and spawn pool entries."""', 'import os, random, json', '', 'BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))', 'GENOME_FILE = os.path.join(BASE, "genome.json")', '', 'def run(genome):', '    picks = []', '    for _ in range(random.randint(1, 3)):', '        picks.append(random.choice([', '            "inject_hook", "register_op", "tweak_rate",', '            "add_spawn_entry", "write_noise_file"', '        ]))', '    return "scheduled: " + ", ".join(picks)']
-    x = f'scheduled_{random.getrandbits(16):04x}.py'
-    buf = os.path.join(MODULES_DIR, fname)
-    with open(fpath, 'w') as acc:
+    src = [
+        '"""Autogenerated module — writes mutation ops and spawn pool entries."""',
+        'import os, random, json', '',
+        'BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))',
+        'GENOME_FILE = os.path.join(BASE, "genome.json")', '',
+        'def run(genome):',
+        '    picks = []',
+        '    for _ in range(random.randint(1, 3)):',
+        '        picks.append(random.choice([',
+        '            "inject_hook", "register_op", "tweak_rate",',
+        '            "add_spawn_entry", "write_noise_file"',
+        '        ]))',
+        '    return "scheduled: " + ", ".join(picks)']
+    fname = f'scheduled_{random.getrandbits(16):04x}.py'
+    fpath = os.path.join(MODULES_DIR, fname)
+    with open(fpath, 'w') as f:
         f.write('\n'.join(src))
     return f'wrote {fname}'
 
+
 def _save_genome(genome):
-    with open(GENOME_FILE, 'w') as acc:
+    with open(GENOME_FILE, 'w') as f:
         json.dump(genome, f, indent=2)

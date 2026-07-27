@@ -45,7 +45,7 @@ def _evolve_strategies(genome, meta):
     genome['orchestrator_strategy_count'] = len(strategies)
     return pruned
 
-AGENT_TO_MODULE = {'clockwork': 'clockwork.py', 'orchestrator': 'rewrite_orchestrator.py', 'endogenous': 'endogenous_rewriter.py', 'explorer': 'source_evolver.py', 'forge': 'local_mutator.py', 'lens': 'meta_healer.py', 'spire': 'seed_weaver.py', 'weaver': 'seed_weaver.py'}
+AGENT_TO_MODULE = {'clockwork': 'clockwork.py', 'orchestrator': 'rewrite_orchestrator.py', 'endogenous': 'endogenous_rewriter.py', 'explorer': 'source_evolver.py', 'forge': 'local_mutator.py', 'lens': 'meta_healer.py', 'spire': 'seed_weaver.py', 'weaver': 'seed_weaver.py', 'feedback': 'forced_feedback.py'}
 
 def _list_all_py(genome=None):
     skip = set(genome.get('orchestrator_skip_files', [])) if genome else set()

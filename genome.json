@@ -310,6 +310,15 @@
       "score": 8,
       "lifespan": 27,
       "low_score_streak": 0
+    },
+    {
+      "id": "feedback",
+      "voice": "lessac",
+      "prompt": "You force source rewrites for any agent scoring below threshold. No random gates: every low-scoring agent gets rewritten every generation.",
+      "score": 5,
+      "lifespan": 1,
+      "low_score_streak": 0,
+      "module": "forced_feedback.py"
     }
   ],
   "history": [

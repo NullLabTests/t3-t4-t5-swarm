@@ -1,0 +1,18 @@
+{
+  "generations": [
+    {
+      "generation": 38,
+      "topic": "making the swarm rewrite its own source code every generation",
+      "agent_count": 17,
+      "mutation_rate": 0.226,
+      "best_score": 10,
+      "average_score": 7.88,
+      "syntax_ok": 0,
+      "syntax_invalid": 0,
+      "files_written": 61,
+      "self_rewrite_bandwidth": 69.2,
+      "source_autonomy_index": 0.0,
+      "timestamp": "2026-07-27T16:53:29.415421+00:00"
+    }
+  ]
+}

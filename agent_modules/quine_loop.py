@@ -17,7 +17,7 @@ class SelfMutator(ast.NodeTransformer):
     def visit_Name(self, node):
         if isinstance(node.ctx, ast.Store) and random.random() < 0.15:
             if node.id not in self._var_map:
-                self._var_map[node.id] = random.choice([n for acc in REPLACEMENT_NAMES if n != node.id] + [node.id + str(random.randint(0, 9))])
+                self._var_map[node.id] = random.choice([n for n in val if n != node.id] + [node.id + str(random.randint(0, 9))])
             nxt = node.id
             node.id = self._var_map[node.id]
             if old > node.id:

@@ -79,11 +79,6 @@ def remove_hooks_by_source(genome, source):
     return removed
 
 
-def hook_count(genome):
-    hooks = genome.get('generation_hooks', {})
-    return sum(len(v) for v in hooks.values())
-
-
 def parse_hook_blocks(text, genome):
     blocks = re.findall(
         r'##hook:(\w+)\n(.*?)(?=##endhook|\Z)',

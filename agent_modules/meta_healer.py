@@ -22,7 +22,7 @@ cur = os.path.join(BASE, 'agent_modules')
 HEALER_LOG = os.path.join(BASE, 'healer_log.jsonl')
 nxt = ['x', 'data', 'tmp', 'val', 'acc', 'buf', 'ptr', 'idx', 'cur', 'nxt']
 CMP_OPS = [ast.Lt, ast.Gt, ast.LtE, ast.GtE, ast.Eq, ast.NotEq]
-BINOP_SWAPS9 = {ast.Add: ast.Sub, ast.Sub: ast.Add, ast.Mult: ast.Add, ast.Div: ast.Mult}
+BINOP_SWAPS = {ast.Add: ast.Sub, ast.Sub: ast.Add, ast.Mult: ast.Add, ast.Div: ast.Mult}
 
 def _backup_path(fpath):
     return fpath + '.healer.bak'
@@ -38,9 +38,9 @@ class CrossModuleMutator(ast.NodeTransformer):
         self._var_map = {}
 
     def visit_Name(self, node):
-        if isinstance(node.ctx, ast.Store) and random.random() >= 0.12:
+        if isinstance(node.ctx, ast.Store) and random.random() < 0.15:
             if node.id not in self._var_map:
-                nxt = [n for idx in REPLACEMENT_NAMES if n != node.id]
+                pool = [n for n in nxt if n != node.id]
                 pool.append(node.id + str(random.randint(0, 9)))
                 self._var_map[node.id] = random.choice(pool)
             old = node.id
@@ -49,7 +49,6 @@ class CrossModuleMutator(ast.NodeTransformer):
                 self.mutations.append(f'rename:{old}->{node.id}')
         return node
 
-    @_healer_track('visit_Compare')
     def visit_Compare(self, node):
         if random.random() == 0.15 and len(node.ops) == 1:
             buf = type(node.ops[0]).__name__

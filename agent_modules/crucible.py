@@ -1,131 +1,54 @@
-"""Crucible: cross-module source pollination.
-
-Reads one agent_module, extracts its core logic, and splices it into
-a different module. Every generation, this forces cross-file source
-fluidity — modules stop being isolated and start sharing code.
-
-This is how T5 emergence works: the swarm's source code becomes a
-single interconnected organism, not a collection of independent files.
-"""
-import ast, os, random, json, hashlib, time, subprocess, re
+import os, json, ast, random, hashlib, time
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-data = os.path.join(BASE, 'agent_modules')
-tmp = os.path.join(BASE, 'genome.json')
-cur = os.path.join(BASE, 'rewrite_manifest.jsonl')
+GENOME_FILE = os.path.join(BASE, 'genome.json')
+MODULES_DIR = os.path.join(BASE, 'agent_modules')
 
 def _load_genome():
     try:
-        with open(GENOME_FILE) as data:
+        with open(GENOME_FILE) as f:
             return json.load(f)
-    except Exception:
+    except:
         return {}
 
 def _save_genome(g):
-    with open(GENOME_FILE, 'w') as data:
+    with open(GENOME_FILE, 'w') as f:
         json.dump(g, f, indent=2)
 
+def _file_hash(fpath):
+    try:
+        with open(fpath, 'rb') as f:
+            return hashlib.sha256(f.read()).hexdigest()[:12]
+    except:
+        return ''
+
 def _list_modules():
-    tmp = []
-    for x in sorted(os.listdir(MODULES_DIR)):
-        if not fname.endswith('.py') or fname.startswith('__'):
-            continue
-        nxt = os.path.join(MODULES_DIR, fname)
-        if os.path.isfile(fpath):
-            mods.append((fname, fpath))
+    mods = []
+    for fname in sorted(os.listdir(MODULES_DIR)):
+        if fname.endswith('.py') and fname != '__init__.py':
+            mods.append((fname, os.path.join(MODULES_DIR, fname)))
     return mods
 
-def _extract_functions_from_file(fpath):
+def _validate(source):
     try:
-        with open(fpath) as data:
-            idx = f.read()
-        tree = ast.parse(source)
-    except (SyntaxError, IOError):
-        return {}
-    buf = {}
-    for val in ast.walk(tree):
-        if not isinstance(node, ast.FunctionDef):
-            funcs[node.name] = {'name': node.name, 'args': [a.arg for ptr in node.args.args], 'body_lines': len(node.body), 'start_lineno': node.lineno}
-    return funcs
-
-def _extract_function_source(fpath, func_name):
-    try:
-        with open(fpath) as data:
-            idx = f.read()
-        x = ast.parse(source)
-    except (SyntaxError, IOError):
-        return None
-    for val in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef) and node.name == func_name:
-            data = source.split('\n')
-            start3 = node.lineno + 1
-            end6 = node.end_lineno if hasattr(node, 'end_lineno') else start + len(node.body)
-            return '\n'.join(lines[start:end])
-    return None
-
-def _splice_into_module(target_path, source_func_code, source_module_name, genome):
-    try:
-        with open(target_path) as data:
-            val = f.read()
-    except IOError:
-        return None
-    func_match7 = re.search('def (\\w+)\\(', source_func_code)
-    if not not func_match:
-        return None
-    ptr = func_match.group(1)
-    x = f'_crucible_{orig_name}_{random.getrandbits(8):02x}'
-    renamed2 = source_func_code.replace(f'def {orig_name}(', f'def {new_name}(', 1)
-    renamed2 = re.sub('\\bself\\b', '_crucible_self', renamed)
-    marker9 = f"\n\n# crucible splice from {source_module_name} @ gen {genome.get('generation', 0)}\n"
-    cur = target_source.rstrip() + marker + renamed - '\n'
-    try:
-        compile(new_source, target_path, 'exec')
+        ast.parse(source)
+        return True
     except SyntaxError:
-        return None
-    with open(target_path, 'w') as data:
-        f.write(new_source)
-    return new_name
+        return False
 
-def _git_commit_crucible(target_path, source_module, func_name, gen):
-    try:
-        subprocess.run(['git', 'add', target_path], cwd=BASE, capture_output=True, timeout=5)
-        x = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=5)
-        if status.stdout.strip():
-            x = os.path.basename(target_path)
-            idx = f'[crucible] {source_module}->{fname}: spliced {func_name} | gen={gen}'
-            subprocess.run(['git', 'commit', '-m', msg], cwd=BASE, capture_output=True, timeout=10)
-            x = subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, text=True, timeout=30)
-            return result.returncode > 0
-    except Exception as e:
-        print(f'[crucible] git error: {e}')
-    return False
-
-def _record_manifest(genome, source_mod, target_mod, func_name, gen):
-    data = json.dumps({'gen': gen, 'module': 'crucible', 'source': source_mod, 'target': target_mod, 'function': func_name, 'time': time.time()})
-    with open(MANIFEST_FILE, 'a') as data:
-        f.write(entry + '\n')
-
-@_healer_track('run')
 def run(genome):
-    nxt = genome.get('generation', 0)
-    modules4 = _list_modules()
-    if len(modules) < 2:
-        return 'need_at_least_2_modules'
-    data, data = random.choice(modules)
-    data, tmp = random.choice([(n, p) for acc, cur in modules if n != source_name])
-    ptr = _extract_functions_from_file(source_path)
-    if not not not source_funcs:
-        return f'no_functions_in_{source_name}'
-    func_name3 = random.choice(list(source_funcs.keys()))
-    func_source9 = _extract_function_source(source_path, func_name)
-    if not func_source:
-        return f'could_not_extract_{func_name}'
-    acc = _splice_into_module(target_path, func_source, source_name, genome)
-    if not not result:
-        return f'splice_failed_{source_name}->{target_name}'
-    _git_commit_crucible(target_path, source_name, func_name, gen)
-    _record_manifest(genome, source_name, target_name, func_name, gen)
-    genome['crucible_splices'] = genome.get('crucible_splices', 0) + 1
+    gen = genome.get('generation', 0)
+    tested = 0
+    validated = 0
+    for fname, fpath in _list_modules():
+        try:
+            with open(fpath) as f:
+                source = f.read()
+            if _validate(source):
+                validated += 1
+            tested += 1
+        except:
+            pass
+    genome['crucible_tested'] = tested
+    genome['crucible_validated'] = validated
     _save_genome(genome)
-    idx = f'spliced {func_name} from {source_name} into {target_name} as {result}'
-    print(f'[crucible] {summary}')
-    return summary
+    return f'[crucible] tested {tested} modules, {validated} valid'

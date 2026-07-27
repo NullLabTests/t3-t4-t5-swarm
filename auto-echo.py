@@ -525,7 +525,7 @@ def _run_meta_healer(genome):
 
 def apply_self_patches(text):
     if DRY_RUN:
-        patches = self_modify.extract_patch_blocks(text)
+        patches = self_modify.extract_patches(text)
         if patches:
             for tag, target, block in patches:
                 print(f"[dry-run] would patch {target if target else 'auto-echo.py'}")
@@ -1461,20 +1461,6 @@ def _auto_patch(target_name, genome):
         return False
 
 
-def _register_new_mutation_op(genome, op_name, op_def):
-    """Register a new mutation operator in genome.json so it becomes available."""
-    if 'mutation_ops' not in genome:
-        genome['mutation_ops'] = _get_mutation_ops(genome)
-    if op_name not in genome['mutation_ops']:
-        genome['mutation_ops'].append(op_name)
-        if 'custom_mutation_ops' not in genome:
-            genome['custom_mutation_ops'] = {}
-        genome['custom_mutation_ops'][op_name] = op_def
-        save_genome(genome)
-        return True
-    return False
-
-
 _MUTATION_OPS = {}
 
 BRIDGE_REGISTRY = {}  # extension -> {"handler": callable, "description": str}
@@ -2047,7 +2033,7 @@ def _register_custom_ops_from_code(genome):
     for fname in os.listdir(BASE):
         if not fname.endswith('.py'):
             continue
-        if fname in ('self_modify.py', 'evolve.py', 'auto-echo.py'):
+        if fname in ('self_modify.py', 'auto-echo.py'):
             continue
         fpath = os.path.join(BASE, fname)
         try:
@@ -2649,7 +2635,7 @@ def compute_rewrite_flux(genome):
         if not fname.endswith('.py'):
             continue
         total_py += 1
-        if fname in ('self_modify.py', 'evolve.py', 'novelty.py', 'entropy.py', 'substrate.py'):
+        if fname in ('self_modify.py', 'entropy.py'):
             continue
         fpath = os.path.join(BASE, fname)
         try:
@@ -3480,15 +3466,6 @@ def _schedule_self_rewrite(genome, source_func):
         triggers.append({'gen': genome.get('generation', 0) + 1, 'action': action, 'amount': 0.1, 'fired': False})
         save_genome(genome)
         print(f"[schedule] queued self-rewrite from {source_func} at gen {genome.get('generation', 0) + 1}")
-
-
-def schedule_event(genome, at_gen, action, amount=0.05):
-    """Public API to schedule a trigger at a future generation.
-    Returns the trigger dict."""
-    triggers = genome.setdefault('scheduled_triggers', [])
-    t = {'gen': at_gen, 'action': action, 'amount': amount, 'fired': False}
-    triggers.append(t)
-    return t
 
 
 def _evolve_loop_structure(genome, gen, phase_results):

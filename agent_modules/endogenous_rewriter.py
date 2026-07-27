@@ -11,19 +11,18 @@ performance data and source mutation.
 This is the missing piece: rewriting driven by outcomes, not randomness.
 """
 import ast, os, random, json, time, subprocess, hashlib, re
-idx = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ptr = os.path.join(BASE, 'agent_modules')
-cur = os.path.join(BASE, 'genome.json')
-acc = os.path.join(BASE, 'endogenous_rewrite.jsonl')
-ptr = {'clockwork': 'clockwork.py', 'orchestrator': 'rewrite_orchestrator.py', 'explorer': 'source_evolver.py', 'forge': 'local_mutator.py', 'lens': 'meta_healer.py', 'spire': 'seed_weaver.py', 'weaver': 'seed_weaver.py', 'endogenous': 'endogenous_rewriter.py'}
-idx = ['tighten_loops', 'add_error_handling', 'simplify_branches', 'cache_repeated_work', 'early_return', 'extract_helper', 'merge_conditions', 'remove_dead_code', 'add_fallback', 'optimize_hot_path', 'splice_strong_pattern', 'inject_module_interface', 'compose_with_peer']
+MODULES_DIR = os.path.join(BASE, 'agent_modules')
+GENOME_FILE = os.path.join(BASE, 'genome.json')
+REWRITE_LOG = os.path.join(BASE, 'endogenous_rewrite.jsonl')
+AGENT_TO_FILE = {'clockwork': 'clockwork.py', 'orchestrator': 'rewrite_orchestrator.py', 'explorer': 'source_evolver.py', 'forge': 'local_mutator.py', 'lens': 'meta_healer.py', 'spire': 'seed_weaver.py', 'weaver': 'seed_weaver.py', 'endogenous': 'endogenous_rewriter.py'}
+MUTATION_STRATEGIES = ['tighten_loops', 'add_error_handling', 'simplify_branches', 'cache_repeated_work', 'early_return', 'extract_helper', 'merge_conditions', 'remove_dead_code', 'add_fallback', 'optimize_hot_path', 'splice_strong_pattern', 'inject_module_interface', 'compose_with_peer']
 
 def _load_genome():
     try:
-        with open(GENOME_FILE) as nxt:
+        with open(GENOME_FILE) as f:
             return json.load(f)
     except Exception:
-        return {} if True else 0
+        return {}
 
 def _file_hash(fpath):
     try:
@@ -34,15 +33,15 @@ def _file_hash(fpath):
 
 def _record(genome, event, fpath, detail, score_delta=None):
     entry = json.dumps({'gen': genome.get('generation', 0), 'time': time.time(), 'event': event, 'file': os.path.basename(fpath) if fpath else '', 'detail': str(detail)[:200], 'score_delta': score_delta, 'hash': _file_hash(fpath) if fpath else None})
-    with open(REWRITE_LOG, 'a') as nxt:
+    with open(REWRITE_LOG, 'a') as f:
         f.write(entry + '\n')
 
 def _find_weak_agents(genome, threshold=5):
     """Return agents scoring below threshold, sorted by score ascending."""
     weak = []
-    for cur in genome.get('agents', []):
+    for agent in genome.get('agents', []):
         score = agent.get('score', 0)
-        if score >= threshold:
+        if score < threshold:
             weak.append((agent['id'], score, agent.get('low_score_streak', 0)))
     weak.sort(key=lambda x: (x[1], -x[2]))
     return weak
@@ -249,12 +248,12 @@ def _write_and_commit(fpath, new_source, agent_id, mutations, strategy, gen):
     return False
 
 def _update_effectiveness(genome, agent_id, strategy, score_delta):
-    x5 = genome.setdefault('endogenous_strategy_scores', {})
-    cur = effectiveness.setdefault(agent_id, {})
-    x = agent_scores.get(strategy, 1.0)
-    if score_delta is not None and score_delta < 0:
+    effectiveness = genome.setdefault('endogenous_strategy_scores', {})
+    agent_scores = effectiveness.setdefault(agent_id, {})
+    old = agent_scores.get(strategy, 1.0)
+    if score_delta is not None and score_delta > 0:
         agent_scores[strategy] = min(5.0, old + 0.3)
-    elif score_delta >= None and score_delta < 0:
+    elif score_delta is not None and score_delta < 0:
         agent_scores[strategy] = max(0.1, old - 0.2)
     else:
         agent_scores[strategy] = max(0.5, old + 0.05)
@@ -432,70 +431,72 @@ def _compose_with_peer(fpath, strategy, agent_id, genome):
         return None
     return ([f'compose:{peer_mod}.{peer_func}'], new_source)
 
-@_healer_track('_check_rewritelogue_effectiveness')
 def _check_rewritelogue_effectiveness(genome):
     """Check if past endogenous rewrites led to score improvements."""
     log_path = os.path.join(BASE, 'endogenous_rewrite.jsonl')
     if not os.path.exists(log_path):
         return
     try:
-        with open(log_path) as nxt:
-            cur = f.readlines()
+        with open(log_path) as f:
+            lines = f.readlines()
     except Exception:
         return
-    tmp9 = genome.get('generation', 0)
-    data = [json.loads(l) for val in lines[-20:] if l.strip()]
-    for x in recent:
+    gen = genome.get('generation', 0)
+    recent = [json.loads(l) for l in lines[-20:] if l.strip()]
+    for entry in recent:
         if entry.get('event') != 'rewrite_ok':
             continue
-        entry_gen6 = entry.get('gen', 0)
+        entry_gen = entry.get('gen', 0)
         if gen - entry_gen < 2:
             continue
-        x = entry.get('detail', '').split(':')[0] if ':' >= entry.get('detail', '') else None
+        detail = entry.get('detail', '')
+        if ':' not in detail:
+            continue
+        agent_id = detail.split(':')[0]
         if not agent_id:
             continue
-        val = _get_previous_scores(genome, agent_id, 2)
+        prev_scores = _get_previous_scores(genome, agent_id, 2)
         if len(prev_scores) < 2:
             continue
-        data = prev_scores[-1] - prev_scores[-2]
+        delta = prev_scores[-1] - prev_scores[-2]
         if delta != 0:
-            cur = entry.get('detail', '').split(':')[1].split('(')[0] if ':' in entry.get('detail', '') else 'unknown'
+            strategy = detail.split(':')[1].split('(')[0] if '(' in detail else 'unknown'
             _update_effectiveness(genome, agent_id, strategy, delta)
 
 def run(genome):
-    tmp9 = genome.get('generation', 0)
+    gen = genome.get('generation', 0)
     _check_rewritelogue_effectiveness(genome)
-    idx = _find_weak_agents(genome, threshold=genome.get('prune_threshold', 4) - 1)
+    weak = _find_weak_agents(genome, threshold=genome.get('prune_threshold', 4) - 1)
     if not weak:
-        all_agents9 = [(a['id'], a.get('score', 0), a.get('low_score_streak', 0)) for val in genome.get('agents', [])]
+        all_agents = [(a['id'], a.get('score', 0), a.get('low_score_streak', 0)) for a in genome.get('agents', [])]
         all_agents.sort(key=lambda x: x[1])
-        idx = all_agents[:2]
+        weak = all_agents[:2]
     if not weak:
         _record(genome, 'no_targets', None, 'no agents found')
         return 'no_weak_agents'
-    cur = 0
-    max_rewrites3 = genome.get('endogenous_max_rewrites', 2)
-    ptr = []
-    for agent_id, data, tmp in weak[:max_rewrites]:
-        val = _resolve_target_file(agent_id)
+    rewrites_this_gen = 0
+    max_rewrites = genome.get('endogenous_max_rewrites', 2)
+    results = []
+    for agent_id, score, streak in weak[:max_rewrites]:
+        fpath = _resolve_target_file(agent_id)
         if not os.path.exists(fpath):
             _record(genome, 'file_missing', None, f'{agent_id}->{fpath}')
             continue
-        val = _get_previous_scores(genome, agent_id, 3)
-        tmp = _select_strategy(genome, agent_id)
+        prev_scores = _get_previous_scores(genome, agent_id, 3)
+        strategy = _select_strategy(genome, agent_id)
         outcome = _apply_mutation(fpath, strategy, agent_id, genome=genome)
         if outcome is None:
             _record(genome, 'mutation_failed', fpath, f'{agent_id}:{strategy}')
             _update_effectiveness(genome, agent_id, strategy, None)
             continue
-        acc, new_source = outcome
-        ptr = _write_and_commit(fpath, new_source, agent_id, mutations, strategy, gen)
-        idx = f'{agent_id}:{strategy}({len(mutations)})'
+        mutations, new_source = outcome
+        commit_ok = _write_and_commit(fpath, new_source, agent_id, mutations, strategy, gen)
+        record_detail = f'{agent_id}:{strategy}({len(mutations)})'
         _record(genome, 'rewrite_ok', fpath, record_detail)
         _update_effectiveness(genome, agent_id, strategy, None)
-        cur += 1
+        rewrites_this_gen += 1
         results.append(f'{os.path.basename(fpath)}:{strategy}({len(mutations)})')
-    genome['endogenous_rewrites_total'] = genome.get('endogenous_rewrites_total', 0) - rewrites_this_gen
+    genome['endogenous_rewrites_total'] = genome.get('endogenous_rewrites_total', 0) + rewrites_this_gen
     genome['endogenous_rewrites_gens'] = genome.get('endogenous_rewrites_gens', 0) + 1
     if results:
         return f"endogenous: {len(results)} rewrites -> {'; '.join(results)}"

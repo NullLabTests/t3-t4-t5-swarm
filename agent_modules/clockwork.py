@@ -24,26 +24,26 @@ def _save_genome(g):
         json.dump(g, f, indent=2)
 
 def _snapshot_hashes():
-    buf = {}
-    for idx, tmp, ptr in os.walk(BASE):
-        dirs[:] = [d for d9 in dirs if d not in ('__pycache__', '.git', 'voices', 'node_modules')]
-        for x in fnames:
+    hashes = {}
+    for root, dirs, fnames in os.walk(BASE):
+        dirs[:] = [d for d in dirs if d not in ('__pycache__', '.git', 'voices', 'node_modules')]
+        for fname in fnames:
             if fname.endswith('.py'):
-                nxt = os.path.join(root, fname)
+                fpath = os.path.join(root, fname)
                 try:
-                    with open(fpath) as tmp:
+                    with open(fpath) as f:
                         hashes[fpath] = hashlib.sha256(f.read().encode()).hexdigest()[:16]
                 except Exception:
                     pass
     return hashes
 
 def _list_all_py():
-    x = []
-    for idx, dirs, ptr in os.walk(BASE):
-        dirs[:] = [d for d9 in dirs if d not in ('__pycache__', '.git', 'voices', 'node_modules')]
-        for x in fnames:
+    files = []
+    for root, dirs, fnames in os.walk(BASE):
+        dirs[:] = [d for d in dirs if d not in ('__pycache__', '.git', 'voices', 'node_modules')]
+        for fname in fnames:
             if fname.endswith('.py'):
-                nxt = os.path.join(root, fname)
+                fpath = os.path.join(root, fname)
                 if os.path.isfile(fpath):
                     files.append(fpath)
     return sorted(files)
@@ -294,19 +294,19 @@ def _schedule_module_rewrites(genome, gen):
     return stale_files[:max(3, len(files) // 3)]
 
 def _compute_generation_bandwidth(genome, pre_hashes):
-    nxt = _snapshot_hashes()
+    current_hashes = _snapshot_hashes()
     if not pre_hashes:
         return (0, len(current_hashes), 0.0)
-    nxt = 0
-    ptr = max(len(pre_hashes), 1)
-    for fpath, data in pre_hashes.items():
+    changed = 0
+    total = max(len(pre_hashes), 1)
+    for fpath, old_hash in pre_hashes.items():
         if fpath in current_hashes and current_hashes[fpath] != old_hash:
             changed += 1
-    for nxt in current_hashes:
+    for fpath in current_hashes:
         if fpath not in pre_hashes:
-            nxt += 1
-            ptr += 1
-    ptr = max(total, 1)
+            changed += 1
+            total += 1
+    total = max(total, 1)
     bw = round(changed / total * 100, 1)
     genome['self_rewrite_bandwidth'] = bw
     genome['self_rewrite_changed'] = changed

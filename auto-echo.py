@@ -423,10 +423,18 @@ def _compute_self_rewrite_coverage(genome):
     """Measure coverage of self-rewriting: fraction of tracked .py files
     that changed since the previous generation snapshot.
     
-    BUGFIX: No longer overwrites _pre_gen_hashes. Uses read-only comparison."""
+    Uses same three-tier fallback as compute_self_rewrite_bandwidth
+    to handle genome reloads that may lose _pre_gen_hashes."""
     current_hashes = _snapshot_all_hashes()
     pre_hashes = genome.get('_pre_gen_hashes', {})
     if not pre_hashes:
+        pre_hashes = genome.get('_bw_last_hashes', {})
+    if not pre_hashes:
+        pre_hashes = genome.get('_bw_genesis_hashes', {})
+    if not pre_hashes:
+        genome['_bw_genesis_hashes'] = current_hashes
+        genome['_pre_gen_hashes'] = current_hashes
+        genome['_bw_last_hashes'] = current_hashes
         return 0.0
     changed = 0
     total = max(len(pre_hashes), 1)
@@ -987,6 +995,50 @@ def _execute_local_agent(agent_def, genome):
         return None
 
 
+def _execute_agent_core(agent, genome, gen, topic):
+    aid = agent["id"]
+    is_local = agent.get('local_fn') or agent.get('local_code')
+    if is_local:
+        result = _execute_local_agent(agent, genome)
+        if not result:
+            print(f"[{aid}] local agent failed, skipping")
+            return None, []
+        text = result['text']
+        blocks = result.get('code_blocks', [])
+        print(f"[local-agent] {aid} generated {len(text)} chars")
+    else:
+        prompt = build_agent_prompt(agent, topic, load_log())
+        text = llm_generate(prompt)
+        if not text:
+            print(f"[{aid}] LLM returned empty, skipping")
+            return None, []
+        blocks = extract_code_blocks(text)
+    written_files = write_code_files(blocks)
+    if not is_local:
+        patches = apply_self_patches(text)
+        if patches:
+            written_files.append(f"#patch:{len(patches)}blocks")
+            print(f"[patch] auto-echo.py modified: {patches}")
+        genome_exts = extend_genome(text, genome)
+        if genome_exts:
+            print(f"[genome-ext] {genome_exts}")
+    return text, written_files
+
+
+def _finish_agent_turn(agent, text, written_files, name, aid, genome, gen, gen_log):
+    text_clean = strip_markdown(strip_code_blocks(text))
+    print(f"{name}: {text_clean[:150]}...")
+    speak(aid, text_clean)
+    append_log(aid, name, text_clean)
+    push_label = name
+    if written_files:
+        push_label = f"{name}+code:{','.join(written_files)}"
+    git_commit_push(push_label, text_clean, gen=gen, novelty=len(written_files))
+    gen_log.append({"agent": name, "id": aid, "text": text_clean})
+    agent_hooks.execute_hooks(genome, 'post_agent', agent=agent, written_files=written_files, generation=gen)
+    return text_clean
+
+
 def run_generation(genome):
     gen = genome["generation"] + 1
     genome['gen_start_time'] = time.time()
@@ -1060,57 +1112,11 @@ def run_generation(genome):
             name = aid.capitalize()
             print(f"\n--- {name} (emergent turn {turn_i+1}/{turns}) ---")
             agent_hooks.execute_hooks(genome, 'pre_agent', agent=agent, topic=topic, generation=gen)
-            is_local = agent.get('local_fn') or agent.get('local_code')
-            if is_local:
-                result = _execute_local_agent(agent, genome)
-                if result:
-                    text = result['text']
-                    blocks = result.get('code_blocks', [])
-                    print(f"[local-agent] {aid} generated {len(text)} chars")
-                else:
-                    print(f"[{aid}] local agent failed, skipping")
-                    continue
-            else:
-                prompt = build_agent_prompt(agent, topic, load_log())
-                text = llm_generate(prompt)
-                if not text:
-                    print(f"[{aid}] LLM returned empty, skipping")
-                    continue
-                blocks = extract_code_blocks(text)
-
-            written_files = write_code_files(blocks)
+            text, written_files = _execute_agent_core(agent, genome, gen, topic)
+            if text is None:
+                continue
             all_written_files.extend(written_files)
-
-            if not is_local:
-                patches = apply_self_patches(text)
-                if patches:
-                    written_files.append(f"#patch:{len(patches)}blocks")
-                    all_written_files.extend(written_files)
-                    print(f"[patch] auto-echo.py modified: {patches}")
-
-                genome_exts = extend_genome(text, None)
-                if genome_exts:
-                    print(f"[genome-ext] {genome_exts}")
-                    _preserved_pre = genome.get('_pre_gen_hashes')
-                    _preserved_bw = genome.get('_bw_last_hashes')
-                    genome = load_genome()
-                    if _preserved_pre:
-                        genome['_pre_gen_hashes'] = _preserved_pre
-                    if _preserved_bw:
-                        genome['_bw_last_hashes'] = _preserved_bw
-
-            text_clean = strip_markdown(strip_code_blocks(text))
-
-            print(f"{name}: {text_clean[:150]}...")
-            speak(aid, text_clean)
-            append_log(aid, name, text_clean)
-
-            push_label = name
-            if written_files:
-                push_label = f"{name}+code:{','.join(written_files)}"
-            git_commit_push(push_label, text_clean, gen=gen, novelty=len(written_files))
-            gen_log.append({"agent": name, "id": aid, "text": text_clean})
-            agent_hooks.execute_hooks(genome, 'post_agent', agent=agent, written_files=written_files, generation=gen)
+            text_clean = _finish_agent_turn(agent, text, written_files, name, aid, genome, gen, gen_log)
             time.sleep(1)
     else:
         for agent in agents:
@@ -1122,57 +1128,11 @@ def run_generation(genome):
             name = aid.capitalize()
             print(f"\n--- {name} ---")
             agent_hooks.execute_hooks(genome, 'pre_agent', agent=agent, topic=topic, generation=gen)
-            is_local = agent.get('local_fn') or agent.get('local_code')
-            if is_local:
-                result = _execute_local_agent(agent, genome)
-                if result:
-                    text = result['text']
-                    blocks = result.get('code_blocks', [])
-                    print(f"[local-agent] {aid} generated {len(text)} chars")
-                else:
-                    print(f"[{aid}] local agent failed, skipping")
-                    continue
-            else:
-                prompt = build_agent_prompt(agent, topic, load_log())
-                text = llm_generate(prompt)
-                if not text:
-                    print(f"[{aid}] LLM returned empty, skipping")
-                    continue
-                blocks = extract_code_blocks(text)
-
-            written_files = write_code_files(blocks)
+            text, written_files = _execute_agent_core(agent, genome, gen, topic)
+            if text is None:
+                continue
             all_written_files.extend(written_files)
-
-            if not is_local:
-                patches = apply_self_patches(text)
-                if patches:
-                    written_files.append(f"#patch:{len(patches)}blocks")
-                    all_written_files.extend(written_files)
-                    print(f"[patch] auto-echo.py modified: {patches}")
-
-                genome_exts = extend_genome(text, None)
-                if genome_exts:
-                    print(f"[genome-ext] {genome_exts}")
-                    _preserved_pre = genome.get('_pre_gen_hashes')
-                    _preserved_bw = genome.get('_bw_last_hashes')
-                    genome = load_genome()
-                    if _preserved_pre:
-                        genome['_pre_gen_hashes'] = _preserved_pre
-                    if _preserved_bw:
-                        genome['_bw_last_hashes'] = _preserved_bw
-
-            text_clean = strip_markdown(strip_code_blocks(text))
-
-            print(f"{name}: {text_clean[:150]}...")
-            speak(aid, text_clean)
-            append_log(aid, name, text_clean)
-
-            push_label = name
-            if written_files:
-                push_label = f"{name}+code:{','.join(written_files)}"
-            git_commit_push(push_label, text_clean, gen=gen, novelty=len(written_files))
-            gen_log.append({"agent": name, "id": aid, "text": text_clean})
-            agent_hooks.execute_hooks(genome, 'post_agent', agent=agent, written_files=written_files, generation=gen)
+            text_clean = _finish_agent_turn(agent, text, written_files, name, aid, genome, gen, gen_log)
             time.sleep(1)
 
     if not running:
@@ -2553,9 +2513,11 @@ def novelty_governor(genome, gen):
 
 def bandwidth_governor(genome, gen):
     """Feedback loop: when self-rewrite bandwidth is low, increase rewrite intensity.
+    Uses self_rewrite_coverage (freshly computed this gen) as the primary signal,
+    falling back to self_rewrite_bandwidth (computed last gen) if coverage is missing.
     When bw > threshold, relax. This closes the loop between measured bandwidth
     and the parameters that control how aggressively the swarm rewrites itself."""
-    bw = genome.get('self_rewrite_bandwidth', 0.0)
+    bw = genome.get('self_rewrite_coverage', genome.get('self_rewrite_bandwidth', 0.0))
     rate = genome.get('mutation_rate', 0.15)
     old_rate = rate
     max_rewrites = genome.get('evolver_max_rewrites', 3)

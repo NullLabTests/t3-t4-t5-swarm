@@ -1310,6 +1310,58 @@ def _prune_by_efficacy(genome):
     return pruned
 
 
+def _force_per_gen_rewrite(genome, gen):
+    """Guaranteed generation-level self-rewrite: if no .py file changed this gen,
+    force one. This closes the last gap in the self-rewrite pipeline — the
+    probabilistic operators can fail (low mutation_rate), but this never does.
+    Returns list of mutation descriptions or empty list."""
+    pre_hashes = genome.get('_pre_gen_hashes', {})
+    current_hashes = _snapshot_all_hashes()
+    changed = 0
+    for fpath, old_hash in pre_hashes.items():
+        if fpath in current_hashes and current_hashes[fpath] != old_hash:
+            changed += 1
+    if changed > 0:
+        return []
+    if not genome.get('force_gen_rewrite_enabled', True):
+        return []
+    _reload_mutation_ops_from_source()
+    try:
+        funcs = _extract_functions()
+    except Exception:
+        return []
+    all_ops = _get_mutation_ops(genome)
+    if not all_ops or not funcs:
+        return []
+    forbidden = _get_forbidden_targets(genome)
+    infra = {'_force_per_gen_rewrite', 'update_genome', '_apply_source_mutation',
+             'code_path_mutation', 'mutate_genome', '_reload_mutation_ops_from_source',
+             '_get_mutation_ops', 'compute_diversity_score', 'apply_self_patches',
+             '_register_mutation_op', '_MUTATION_OPS', '_snapshot_all_hashes',
+             'compute_operator_weights', 'record_operator_result', 'load_genome',
+             'save_genome', 'sigint_handler', 'main', '_read_auto_echo', '_write_target',
+             'run_generation', '_load_genome_threshold', '_detect_opencode_model',
+             '_load_llm_model'}
+    available = [n for n in funcs if n not in forbidden and n not in infra]
+    if not available:
+        return []
+    target = random.choice(available)
+    operator = random.choice(all_ops)
+    new_body = _apply_source_mutation(funcs, target, operator, genome)
+    if new_body is None:
+        return []
+    patch_text = f"##patch:{target}\n{new_body}\n##endpatch"
+    results = self_modify.apply_patch(patch_text)
+    succeeded = any(r for r in results if not r.startswith('FAILED'))
+    record_operator_result(genome, operator, succeeded)
+    if succeeded:
+        genome['forced_gen_rewrites'] = genome.get('forced_gen_rewrites', 0) + 1
+        genome['last_forced_gen'] = gen
+        print(f"[force-per-gen] {operator} -> {target} (generation had 0 rewrites)")
+        return [f"forced_gen_rewrite:{operator}:{target}"]
+    return []
+
+
 def update_genome(genome, gen, scores, topic):
     genome["generation"] = gen
     avg = sum(scores.values()) / len(scores) if scores else 0
@@ -1366,6 +1418,9 @@ def update_genome(genome, gen, scores, topic):
     if force_muts:
         print(f"[force-rewrite] {len(force_muts)} deterministic rewrites applied")
 
+    force_per_gen = _force_per_gen_rewrite(genome, gen)
+    code_path_muts.extend(force_per_gen)
+    
     if genome.get('source_autonomy_index', 0) == 0 and not force_muts:
         _ensure_autonomy_stub(genome, gen)
         code_path_muts.append('autonomy_stub_forced')

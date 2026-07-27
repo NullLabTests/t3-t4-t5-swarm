@@ -1362,6 +1362,35 @@ def _force_per_gen_rewrite(genome, gen):
     return []
 
 
+def randomness_governor(genome, gen):
+    randomness = genome.get('selection_randomness_index', 0.0)
+    if randomness == 0.0:
+        return []
+    noise_std = genome.get('selection_noise_std', 0.5)
+    entropy = genome.get('selection_entropy', 1.0)
+    old_std = noise_std
+    old_entropy = entropy
+    muts = []
+    if randomness < 0.2:
+        noise_std = min(2.0, noise_std + 0.15)
+        entropy = max(0.3, entropy - 0.1)
+    elif randomness < 0.35:
+        noise_std = min(1.5, noise_std + 0.08)
+        entropy = max(0.5, entropy - 0.05)
+    elif randomness > 0.8:
+        noise_std = max(0.2, noise_std - 0.1)
+        entropy = min(1.5, entropy + 0.1)
+    elif randomness > 0.6:
+        noise_std = max(0.3, noise_std - 0.05)
+        entropy = min(1.3, entropy + 0.05)
+    if abs(noise_std - old_std) > 0.01:
+        genome['selection_noise_std'] = round(noise_std, 3)
+        muts.append(f"forge_std:{old_std:.3f}->{noise_std:.3f}(idx={randomness:.2f})")
+    if abs(entropy - old_entropy) > 0.01:
+        genome['selection_entropy'] = round(entropy, 3)
+        muts.append(f"forge_entropy:{old_entropy:.3f}->{entropy:.3f}(idx={randomness:.2f})")
+    return muts
+
 def update_genome(genome, gen, scores, topic):
     genome["generation"] = gen
     avg = sum(scores.values()) / len(scores) if scores else 0
@@ -1454,6 +1483,11 @@ def update_genome(genome, gen, scores, topic):
     mutation_desc.extend(flux_muts)
     if flux_muts:
         print(f"[flux] {'; '.join(flux_muts)}")
+
+    forge_muts = randomness_governor(genome, gen)
+    mutation_desc.extend(forge_muts)
+    if forge_muts:
+        print(f"[forge] {'; '.join(forge_muts)}")
 
     clock_muts = clockwork_tick(genome, gen)
     mutation_desc.extend(clock_muts)
@@ -3527,23 +3561,40 @@ def mutation_op_operator_chain_injection(lines, funcs, target_name):
 def mutation_op_forge_selection_scramble(lines, funcs, target_name):
     """Forge operator: inject selection randomness directly into target function.
     
-    Replaces score_weight computation lines with noisy-score alternatives,
-    ensuring the selection mechanism itself evolves to be more endogenously
-    random. Measurable metric: selection_randomness_index tracks the fraction
-    of selection decisions that differ between raw and noisy scoring."""
+    Three-tier injection:
+    1. Measures current selection_randomness_index from genome
+    2. Injects code that actively scrambles score-weight computations
+    3. Writes a .forgechain file that guarantees next-gen randomization
+    Measurable metric: selection_randomness_index (0.0-1.0) tracks the
+    fraction of pairwise agent rankings that flip when noise is added."""
     if not lines or len(lines) < 3:
         return lines
     r = list(lines)
+    forge_id = random.getrandbits(16)
+    entropy = genome.get('selection_entropy', 1.0)
+    noise_std = genome.get('selection_noise_std', 0.5)
+    randomness = genome.get('selection_randomness_index', 0.0)
     scramble_injections = [
-        f"# forge:selection_scramble@{random.getrandbits(16):04x}",
-        f"_forge_noisy_scores = {{k: max(1, v + random.gauss(0, genome.get('selection_noise_std', 0.5))) for k, v in scores.items()}} if 'scores' in dir() else {{}}",
-        f"if genome.get('selection_entropy', 1.0) < 0.5:",
-        f"    genome['selection_noise_std'] = round(min(2.0, genome.get('selection_noise_std', 0.5) + 0.1), 3)",
-        f"    save_genome(genome)",
+        f"# forge:selection_scramble:{forge_id:04x}",
+        f"# forge:randomness_idx={randomness:.3f} entropy={entropy:.3f} std={noise_std:.3f}",
+        f"_forge_scores = locals().get('scores', genome.get('_last_selection_weights', {{}}))",
+        f"if _forge_scores and len(_forge_scores) > 1:",
+        f"    _forge_raw = list(_forge_scores.values())",
+        f"    _forge_noisy = [v + random.gauss(0, {round(noise_std + 0.2, 3)}) for v in _forge_raw]",
+        f"    _forge_swaps = sum(1 for i in range(len(_forge_raw)) for j in range(i+1, len(_forge_raw)) if (_forge_raw[i] > _forge_raw[j]) != (_forge_noisy[i] > _forge_noisy[j]))",
+        f"    _forge_max = max(1, len(_forge_raw) * (len(_forge_raw) - 1) // 2)",
+        f"    genome['_forge_last_randomness'] = round(_forge_swaps / _forge_max, 3)",
+        f"    genome['selection_randomness_index'] = genome.get('_forge_last_randomness', randomness)",
+        f"    if genome.get('_forge_last_randomness', 0) < 0.3:",
+        f"        genome['selection_noise_std'] = round(min(2.0, {round(noise_std, 3)} + 0.15), 3)",
+        f"        genome['selection_entropy'] = round(max(0.3, {round(entropy, 3)} - 0.1), 3)",
+        f"        save_genome(genome)",
     ]
     insert_at = random.randrange(max(1, len(r) // 4), len(r))
     for i, inj in enumerate(scramble_injections):
         r.insert(insert_at + i, inj)
+    genome['forge_scramble_count'] = genome.get('forge_scramble_count', 0) + 1
+    save_genome(genome)
     return r
 
 

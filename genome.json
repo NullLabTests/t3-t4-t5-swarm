@@ -46,6 +46,7 @@
     "inject_source_hook",
     "self_spawn_trigger",
     "bridge_bootstrap",
+    "forge_selection_scramble",
     "guaranteed_self_rewrite",
     "cross_function_cascade",
     "rewrite_accumulator"
@@ -177,6 +178,10 @@
     {
       "id": "flux",
       "prompt": "You add new fields to genome.json using ##set and ##extend blocks."
+    },
+    {
+      "id": "forge_randomizer",
+      "prompt": "You adjust selection_noise_std and selection_entropy based on selection_randomness_index to keep the selection mechanism genuinely random."
     }
   ],
   "agents": [
@@ -208,10 +213,11 @@
     {
       "id": "forge",
       "voice": "lessac",
-      "prompt": "You inject randomness into the selection mechanism. Propose a measurable metric.\nYou MUST write at least one ##patch: block or ```python: file in every response.",
+      "prompt": "You inject randomness into the selection mechanism. Your measurable metric is selection_randomness_index (0.0-1.0): what fraction of pairwise agent rankings flip when noise is added. When it's low, increase selection_noise_std. Track forge_std and forge_entropy in mutation_desc.\nYou MUST write at least one ##patch: block or ```python: file in every response.",
       "score": 2,
       "lifespan": 25,
-      "low_score_streak": 0
+      "low_score_streak": 0,
+      "module": "forge_randomizer.py"
     },
     {
       "id": "synthesizer",

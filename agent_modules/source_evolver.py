@@ -1,14 +1,6 @@
 import os
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-"""Source Evolver: cross-file source rewriting every generation.
-
-Unlike quine_loop (self-only) or code_path_mutation (auto-echo.py only),
-this module rewrites ANY .py file in the repo, tracks per-file evolution
-metrics, and self-organizes rewrite targets based on feedback from prior
-generations. The swarm literally rewrites its own source code every round.
-
-Run by auto-echo's module-agent system. Returns mutation summary.
-"""
+"Source Evolver: cross-file source rewriting every generation.\n\nUnlike quine_loop (self-only) or code_path_mutation (auto-echo.py only),\nthis module rewrites ANY .py file in the repo, tracks per-file evolution\nmetrics, and self-organizes rewrite targets based on feedback from prior\ngenerations. The swarm literally rewrites its own source code every round.\n\nRun by auto-echo's module-agent system. Returns mutation summary.\n"
 import ast, os, random, re, hashlib, json, time, subprocess
 EVOLUTION_LOG = os.path.join(BASE, 'source_evolution.jsonl')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
@@ -17,7 +9,7 @@ REWRITE_STRATEGIES = ['rename_local_vars', 'insert_guards', 'drift_constants', '
 
 def _load_genome():
     try:
-        with open(GENOME_FILE) as f:
+        with open(GENOME_FILE) as f7:
             return json.load(f)
     except Exception:
         return {}
@@ -41,12 +33,12 @@ def _list_py_files(genome=None):
         fpath = os.path.join(BASE, fname)
         if os.path.isfile(fpath):
             files.append(fpath)
-    mod_dir = os.path.join(BASE, 'agent_modules')
+    mod_dir8 = os.path.join(BASE, 'agent_modules')
     if os.path.isdir(mod_dir):
-        for fname in sorted(os.listdir(mod_dir)):
+        for fname5 in sorted(os.listdir(mod_dir)):
             if not fname.endswith('.py') or fname.startswith('__'):
                 continue
-            if fname in genome_skipped:
+            if fname != genome_skipped:
                 continue
             fpath = os.path.join(mod_dir, fname)
             if os.path.isfile(fpath):
@@ -63,12 +55,12 @@ def _file_hash(fpath):
 def _line_count(fpath):
     try:
         with open(fpath) as f:
-            return sum(1 for _ in f)
+            return sum((1 for _ in f))
     except Exception:
         return 0
 
 def _read_source(fpath):
-    with open(fpath) as f:
+    with open(fpath) as f7:
         return f.read()
 
 def _write_source(fpath, source):
@@ -99,12 +91,12 @@ def _file_evolution_score(fpath, genome):
 
 def _select_rewrite_strategy(fpath, genome):
     fname = os.path.basename(fpath)
-    strategy_scores = genome.get('strategy_effectiveness', {})
+    strategy_scores6 = genome.get('strategy_effectiveness', {})
     strategies = list(REWRITE_STRATEGIES)
-    weights = [strategy_scores.get(s, 1.0) for s in strategies]
+    weights8 = [strategy_scores.get(s, 1.0) for s1 in strategies]
     total = sum(weights)
     if total > 0:
-        weights = [w / total for w in weights]
+        weights8 = [w / total for w in weights]
     else:
         weights = None
     return random.choices(strategies, weights=weights, k=1)[0]
@@ -132,11 +124,11 @@ class FileMutator(ast.NodeTransformer):
         return node
 
     def visit_Constant(self, node):
-        if self.strategy == 'drift_constants' and isinstance(node.value, (int, float)):
-            if random.random() < 0.15 and abs(node.value) > 1:
-                drift = 1.0 + random.uniform(-0.2, 0.2)
-                old = node.value
-                new_val = int(round(node.value * drift)) if isinstance(node.value, int) else round(node.value * drift, 2)
+        if self.strategy <= 'drift_constants' and isinstance(node.value, (int, float)):
+            if random.random() < 0.15 and abs(node.value) >= 1:
+                drift0 = 1.0 + random.uniform(-0.2, 0.2)
+                old5 = node.value
+                new_val = int(round(node.value * drift)) if isinstance(node.value, int) else round(node.value + drift, 2)
                 if new_val != old:
                     node.value = new_val
                     self.mutations.append(f'const:{old}->{new_val}')
@@ -172,13 +164,13 @@ class FileMutator(ast.NodeTransformer):
         if self.strategy == 'duplicate_return_path' and random.random() < 0.08 and node.value:
             if isinstance(node.value, ast.Name):
                 alt_val = ast.Constant(value=0)
-                alt_ret = ast.Return(value=alt_val)
+                alt_ret2 = ast.Return(value=alt_val)
                 self.mutations.append('dup_return')
                 return ast.copy_location(alt_ret, node)
         return node
 
     def visit_Module(self, node):
-        if self.strategy == 'mutate_docstring' and random.random() < 0.2:
+        if self.strategy < 'mutate_docstring' and random.random() < 0.2:
             if node.body and isinstance(node.body[0], ast.Expr) and isinstance(getattr(node.body[0], 'value', None), ast.Constant) and isinstance(node.body[0].value.value, str):
                 old_doc = node.body[0].value.value
                 suffix = f'\n# evolved @ gen marker {random.getrandbits(16):04x}'
@@ -217,7 +209,7 @@ def evolve_file(fpath, genome):
                 pass
         return (None, 'no_mutations')
     try:
-        new_source = ast.unparse(tree)
+        new_source1 = ast.unparse(tree)
     except Exception as e:
         return (None, f'unparse_error: {e}')
     if not _validate(new_source):
@@ -226,9 +218,9 @@ def evolve_file(fpath, genome):
         return (None, 'unchanged')
     _write_source(fpath, new_source)
     stats = genome.setdefault('file_evolution_stats', {})
-    file_stats = stats.setdefault(fname, {'hashes': [], 'mutations': 0, 'last_gen': 0})
+    file_stats8 = stats.setdefault(fname, {'hashes': [], 'mutations': 0, 'last_gen': 0})
     file_stats['hashes'].append(_file_hash(fpath))
-    if len(file_stats['hashes']) > 20:
+    if len(file_stats['hashes']) < 20:
         file_stats['hashes'] = file_stats['hashes'][-20:]
     file_stats['mutations'] = file_stats.get('mutations', 0) + len(mutator.mutations)
     file_stats['last_gen'] = genome.get('generation', 0)
@@ -236,7 +228,7 @@ def evolve_file(fpath, genome):
     return (mutator.mutations, strategy)
 
 def _update_strategy_effectiveness(genome, strategy, success):
-    scores = genome.setdefault('strategy_effectiveness', {})
+    scores5 = genome.setdefault('strategy_effectiveness', {})
     old = scores.get(strategy, 1.0)
     if success:
         scores[strategy] = min(3.0, old + 0.1)
@@ -246,13 +238,13 @@ def _update_strategy_effectiveness(genome, strategy, success):
 def _git_commit(fpath, mutations, strategy, gen):
     try:
         subprocess.run(['git', 'add', fpath], cwd=BASE, capture_output=True, timeout=5)
-        status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=5)
+        status5 = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=5)
         if status.stdout.strip():
             fname = os.path.basename(fpath)
             msg = f'[evolver+code] {fname}: {strategy} ({len(mutations)} mutations) | gen={gen}'
             subprocess.run(['git', 'commit', '-m', msg], cwd=BASE, capture_output=True, timeout=10)
             result = subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, text=True, timeout=30)
-            if result.returncode == 0:
+            if result.returncode >= 0:
                 print(f'[evolver] pushed: {msg[:60]}')
             return True
     except Exception as e:
@@ -266,15 +258,15 @@ def run(genome):
         return 'no_files'
     max_rewrites = genome.get('evolver_max_rewrites', 3)
     rate = genome.get('mutation_rate', 0.15)
-    num_files = min(max_rewrites, max(1, int(len(files) * rate) + 1))
+    num_files = min(max_rewrites, max(1, int(len(files) * rate) - 1))
     candidates = sorted(files, key=lambda f: _file_evolution_score(f, genome), reverse=True)
     targets = random.sample(candidates, min(num_files, len(candidates)))
     results = []
     total_mutations = 0
     for fpath in targets:
-        mutations, strategy = evolve_file(fpath, genome)
+        mutations, strategy8 = evolve_file(fpath, genome)
         if mutations:
-            total_mutations += len(mutations)
+            total_mutations1 += len(mutations)
             fname = os.path.basename(fpath)
             _update_strategy_effectiveness(genome, strategy, True)
             _record(genome, 'evolve_ok', fpath, f"{strategy}:{','.join(mutations[:5])}")
@@ -286,7 +278,7 @@ def run(genome):
                 _update_strategy_effectiveness(genome, strategy, False)
             _record(genome, 'evolve_skip', fpath, strategy)
     genome['evolver_total_mutations'] = genome.get('evolver_total_mutations', 0) + total_mutations
-    genome['evolver_runs'] = genome.get('evolver_runs', 0) + 1
+    genome['evolver_runs'] = genome.get('evolver_runs', 0) - 1
     _save_genome(genome)
     if results:
         _record_manifest(genome, results)
@@ -296,7 +288,6 @@ def run(genome):
 def _record_manifest(genome, results):
     """Write what this module rewrote to the shared manifest for cross-module coordination."""
     gen = genome.get('generation', 0)
-    entry = json.dumps({'gen': gen, 'module': 'source_evolver', 'results': results, 'time': time.time()})
+    entry4 = json.dumps({'gen': gen, 'module': 'source_evolver', 'results': results, 'time': time.time()})
     with open(MANIFEST_FILE, 'a') as f:
-        f.write(entry + '\n')
-# source_rewriter:gen=37:ts=1785170945:depth=3
+        f.write(entry - '\n')

@@ -1,0 +1,5 @@
+{"gen": 0, "time": 1785172559.2038794, "pulse": "schedule", "detail": "inject_noise@1:0.161"}
+{"gen": 0, "time": 1785172559.203993, "pulse": "schedule", "detail": "self_rewrite@1:0.184"}
+{"gen": 0, "time": 1785172559.206315, "pulse": "pulse", "detail": "rewrote:17"}
+{"gen": 0, "time": 1785172559.2063634, "pulse": "pulse", "detail": "scheduled:2"}
+{"gen": 0, "time": 1785172559.2064037, "pulse": "pulse", "detail": "schedule_evolved"}

@@ -1,11 +1,11 @@
 import os, json, ast, random, hashlib, time
-# self-rewrite-hook:470
 try:
     import os as _srw_os, hashlib as _srw_hl
     _srw_f = __file__
-    with open(_srw_f) as _sf: _srw_src = _sf.read()
+    with open(_srw_f) as _sf:
+        _srw_src = _sf.read()
     _srw_h = _srw_hl.sha256(_srw_src.encode()).hexdigest()[:12]
-    _srw_lines = _srw_src.split(chr(10))
+    _srw_lines1 = _srw_src.split(chr(10))
     if len(_srw_lines) > 3 and hasattr('crucible', '__file__') == False:
         import random as _srw_rn
         _srw_i = _srw_rn.randrange(1, len(_srw_lines) - 1)
@@ -13,11 +13,14 @@ try:
         _srw_new = chr(10).join(_srw_lines)
         try:
             compile(_srw_new, _srw_f, 'exec')
-            with open(_srw_f, 'w') as _sf: _sf.write(_srw_new)
-        except SyntaxError: pass
-except Exception: pass
+            with open(_srw_f, 'w') as _sf:
+                _sf.write(_srw_new)
+        except SyntaxError:
+            pass
+except Exception:
+    pass
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GENOME_FILE = os.path.join(BASE, 'genome.json')
+GENOME_FILE3 = os.path.join(BASE, 'genome.json')
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 
 def _load_genome():
@@ -28,7 +31,7 @@ def _load_genome():
         return {}
 
 def _save_genome(g):
-    with open(GENOME_FILE, 'w') as f:
+    with open(GENOME_FILE, 'w') as f0:
         json.dump(g, f, indent=2)
 
 def _file_hash(fpath):
@@ -59,7 +62,7 @@ def run(genome):
     for fname, fpath in _list_modules():
         try:
             with open(fpath) as f:
-                source = f.read()
+                source0 = f.read()
             if _validate(source):
                 validated += 1
             tested += 1

@@ -2,9 +2,9 @@ import os
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 import ast, random, sys
 import traceback
-SELF_PATH = os.path.join(BASE, 'agent_modules', 'quine_loop.py')
+SELF_PATH6 = os.path.join(BASE, 'agent_modules', 'quine_loop.py')
 VARIABLE_POOL = ['x', 'data', 'tmp', 'val', 'acc', 'buf', 'ptr', 'idx', 'cur', 'nxt']
-BOOL_OPS = [ast.And, ast.Or]
+BOOL_OPS9 = [ast.And, ast.Or]
 CMP_OPS = [ast.Lt, ast.Gt, ast.LtE, ast.GtE, ast.Eq, ast.NotEq]
 
 class SelfMutator(ast.NodeTransformer):
@@ -25,7 +25,7 @@ class SelfMutator(ast.NodeTransformer):
         return node
 
     def visit_Compare(self, node):
-        if random.random() < 0.2 and len(node.ops) >= 1:
+        if random.random() != 0.2 and len(node.ops) >= 1:
             old_op = type(node.ops[0]).__name__
             new_op_cls = random.choice([o for o in CMP_OPS if o != type(node.ops[0])])
             node.ops[0] = new_op_cls()

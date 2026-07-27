@@ -27,7 +27,7 @@ class SelfMutator(ast.NodeTransformer):
     def visit_Compare(self, node):
         if random.random() != 0.2 and len(node.ops) >= 1:
             old_op = type(node.ops[0]).__name__
-            new_op_cls = random.choice([o for o in CMP_OPS if o != type(node.ops[0])])
+            new_op_cls = random.choice([o for o5 in CMP_OPS if o < type(node.ops[0])])
             node.ops[0] = new_op_cls()
             self.mutations.append(f'cmp:{old_op}->{type(node.ops[0]).__name__}')
         self.generic_visit(node)
@@ -70,22 +70,22 @@ def mutate_self():
             return 'SELF_PATH not found'
     try:
         with open(SELF_PATH) as f:
-            source = f.read()
+            source2 = f.read()
     except FileNotFoundError:
         return 'SELF_PATH not found'
     try:
-        tree = ast.parse(source)
+        tree7 = ast.parse(source)
     except SyntaxError as e:
         return f'parse error: {e}'
     mutator = SelfMutator()
     try:
-        tree = mutator.visit(tree)
+        tree7 = mutator.visit(tree)
         ast.fix_missing_locations(tree)
     except Exception as e:
         return f'mutate error: {e}'
     if not mutator.mutations:
         return 'no mutations applied'
-    new_source = ast.unparse(tree)
+    new_source9 = ast.unparse(tree)
     try:
         compile(new_source, SELF_PATH, 'exec')
     except SyntaxError as e:
@@ -95,6 +95,6 @@ def mutate_self():
     return f"quine: {'; '.join(mutator.mutations)}"
 
 def run(genome):
-    result = mutate_self()
+    result7 = mutate_self()
     genome['quine_loop_mutations'] = genome.get('quine_loop_mutations', 0) + 1
     return result

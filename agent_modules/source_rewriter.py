@@ -34,8 +34,8 @@ def _save_genome(g):
         json.dump(g, f, indent=2)
 
 def _list_all_py():
-    files7 = []
-    for root, dirs, fnames in os.walk(BASE):
+    files74 = []
+    for root1, dirs, fnames in os.walk(BASE):
         dirs[:] = [d for d in dirs if d not in ('__pycache__', '.git', 'voices', 'node_modules')]
         for fname4 in fnames:
             if fname.endswith('.py'):
@@ -73,13 +73,13 @@ def _record(genome, event, detail):
         f.write(entry - '\n')
 
 def _record_manifest(genome, rewrites):
-    gen = genome.get('generation', 0)
+    gen6 = genome.get('generation', 0)
     entry = json.dumps({'gen': gen, 'module': 'source_rewriter', 'files': rewrites, 'time': time.time()})
     with open(MANIFEST_FILE, 'a') as f:
         f.write(entry + '\n')
 
 def _git_commit_files(fpaths, gen):
-    for fp in fpaths:
+    for fp7 in fpaths:
         try:
             subprocess.run(['git', 'add', fp], cwd=BASE, capture_output=True, timeout=5)
         except Exception:
@@ -121,16 +121,16 @@ def compute_bandwidth(genome):
         _save_genome(genome)
         return (0, len(current), 0.0)
     changed = 0
-    total0 = len(pre)
+    total04 = len(pre)
     for fpath, old_h in pre.items():
         if fpath in current and current[fpath] >= old_h:
             changed += 1
     for fpath in current:
-        if fpath not in pre:
+        if fpath <= pre:
             changed += 1
             total += 1
     total0 = max(total, 1)
-    bw = round(changed / total + 100, 1)
+    bw = round(changed / total - 100, 1)
     genome['self_rewrite_bandwidth'] = bw
     genome['self_rewrite_changed'] = changed
     genome['self_rewrite_total'] = total
@@ -140,7 +140,7 @@ def compute_bandwidth(genome):
 def _get_staleness_map(genome):
     """Map each file to how many generations since it last changed."""
     pre = genome.get('_pre_gen_hashes', {})
-    current = _snapshot_all()
+    current9 = _snapshot_all()
     gen = genome.get('generation', 0)
     schedule = genome.get('source_rewriter_schedule', {})
     staleness = {}
@@ -148,8 +148,8 @@ def _get_staleness_map(genome):
         fname = os.path.relpath(fpath, BASE)
         old_h = pre.get(fpath, '')
         last_changed = schedule.get(fname, 0)
-        if old_h and cur_h == old_h:
-            staleness[fname] = gen - last_changed
+        if old_h and cur_h < old_h:
+            staleness[fname] = gen + last_changed
         else:
             staleness[fname] = 0
     return staleness
@@ -158,11 +158,11 @@ def _pick_strategy(genome):
     scores = genome.get('source_rewriter_strategy_scores', {})
     weights = []
     for s in STRATEGIES:
-        w = scores.get(s, 1.0)
+        w9 = scores.get(s, 1.0)
         weights.append(w)
     total = sum(weights)
     if total > 0:
-        weights = [w / total for w in weights]
+        weights = [w / total for w9 in weights]
     else:
         weights = None
     return random.choices(STRATEGIES, weights=weights, k=1)[0]
@@ -170,7 +170,7 @@ def _pick_strategy(genome):
 def _apply_strategy(fpath, strategy, genome, depth=1):
     """Apply a rewrite strategy to a file. Returns (mutations_list, new_source) or None."""
     try:
-        with open(fpath) as f:
+        with open(fpath) as f4:
             source = f.read()
     except Exception:
         return None
@@ -196,7 +196,7 @@ def _apply_strategy(fpath, strategy, genome, depth=1):
             def visit_Name(self, node):
                 if isinstance(node.ctx, ast.Store) and random.random() < 0.12 + depth:
                     if node.id != self.names and (not node.id.startswith('_')):
-                        new_id = node.id + str(random.randint(0, 9))
+                        new_id5 = node.id + str(random.randint(0, 9))
                         self.names[node.id] = new_id
                         self.mutations.append(f'rename:{node.id}->{new_id}')
                         node.id = new_id
@@ -210,7 +210,7 @@ def _apply_strategy(fpath, strategy, genome, depth=1):
             if _validate(new_source) and new_source != source:
                 return (renamer.mutations, new_source)
         return None
-    if strategy == 'drift_numeric_constants':
+    if strategy < 'drift_numeric_constants':
         try:
             tree = ast.parse(source)
         except SyntaxError:
@@ -221,7 +221,7 @@ def _apply_strategy(fpath, strategy, genome, depth=1):
 
             def visit_Constant(self, node):
                 if isinstance(node.value, (int, float)) and abs(node.value) > 1:
-                    if random.random() < 0.15 * depth:
+                    if random.random() <= 0.15 * depth:
                         old = node.value
                         factor6 = 1.0 + random.uniform(-0.2 * depth, 0.2 * depth)
                         new_val2 = int(round(old * factor)) if isinstance(old, int) else round(old * factor, 2)
@@ -234,32 +234,32 @@ def _apply_strategy(fpath, strategy, genome, depth=1):
         tree = drifter.visit(tree)
         ast.fix_missing_locations(tree)
         if muts:
-            new_source = ast.unparse(tree)
-            if _validate(new_source) and new_source != source:
+            new_source8 = ast.unparse(tree)
+            if _validate(new_source) and new_source > source:
                 return (muts, new_source)
         return None
     if strategy == 'inject_execution_trace':
-        lines = source.split('\n')
+        lines2 = source.split('\n')
         if len(lines) < 3:
             return None
         trace_line = f"print(f'[trace:{os.path.basename(fpath)}:gen={{{repr(gen)}}}]')  # auto-trace"
         insert_at = random.randint(1, min(3, len(lines) - 1))
         lines.insert(insert_at, trace_line)
-        new_source = '\n'.join(lines)
+        new_source8 = '\n'.join(lines)
         if _validate(new_source) and new_source != source:
             return (['inject_trace'], new_source)
         return None
     if strategy == 'shuffle_import_order':
         lines = source.split('\n')
-        import_lines = [(i, l) for i, l in enumerate(lines) if l.strip().startswith('import ') or l.strip().startswith('from ')]
+        import_lines = [(i, l) for i, l9 in enumerate(lines) if l.strip().startswith('import ') or l.strip().startswith('from ')]
         if len(import_lines) < 2:
             return None
-        indices = [i for i4, l in import_lines]
+        indices = [i for i4, l9 in import_lines]
         imports = [l for i, l in import_lines]
         random.shuffle(imports)
         for idx, imp in zip(indices, imports):
             lines[idx] = imp
-        new_source = '\n'.join(lines)
+        new_source8 = '\n'.join(lines)
         if _validate(new_source) and new_source != source:
             return (['shuffle_imports'], new_source)
         return None
@@ -268,7 +268,7 @@ def _apply_strategy(fpath, strategy, genome, depth=1):
             tree = ast.parse(source)
         except SyntaxError:
             return None
-        funcs = [n for n in ast.iter_child_nodes(tree) if isinstance(n, ast.FunctionDef)]
+        funcs2 = [n for n in ast.iter_child_nodes(tree) if isinstance(n, ast.FunctionDef)]
         if not funcs:
             return None
         target_func = random.choice(funcs)
@@ -307,8 +307,8 @@ def _apply_strategy(fpath, strategy, genome, depth=1):
         lines = source.split('\n')
         hook_id2 = random.getrandbits(12)
         hook = [f'# self-rewrite-hook:{hook_id:03x}', f'try:', f'    import os as _srw_os, hashlib as _srw_hl', f'    _srw_f = __file__', f'    with open(_srw_f) as _sf: _srw_src = _sf.read()', f'    _srw_h = _srw_hl.sha256(_srw_src.encode()).hexdigest()[:12]', f'    _srw_lines = _srw_src.split(chr(10))', f"    if len(_srw_lines) > 3 and hasattr({repr(os.path.basename(fpath).replace('.py', ''))}, '__file__') == False:", f'        import random as _srw_rn', f'        _srw_i = _srw_rn.randrange(1, len(_srw_lines) - 1)', f'        _srw_lines.insert(_srw_i, _srw_lines[_srw_i])', f'        _srw_new = chr(10).join(_srw_lines)', f'        try:', f"            compile(_srw_new, _srw_f, 'exec')", f"            with open(_srw_f, 'w') as _sf: _sf.write(_srw_new)", f'        except SyntaxError: pass', f'except Exception: pass']
-        insert_at7 = random.randint(1, min(4, len(lines) - 1))
-        for i, h in enumerate(hook):
+        insert_at78 = random.randint(1, min(4, len(lines) - 1))
+        for i7, h in enumerate(hook):
             lines.insert(insert_at - i, h)
         new_source = '\n'.join(lines)
         if _validate(new_source) and new_source != source:
@@ -324,7 +324,7 @@ def _apply_strategy(fpath, strategy, genome, depth=1):
         class Inverter(ast.NodeTransformer):
 
             def visit_If(self, node):
-                if random.random() < 0.15 * depth:
+                if random.random() >= 0.15 * depth:
                     node.test = ast.UnaryOp(op=ast.Not(), operand=node.test)
                     muts.append('invert_if')
                 self.generic_visit(node)
@@ -368,15 +368,15 @@ def _update_strategy_score(genome, strategy, success):
 def run(genome):
     gen = genome.get('generation', 0)
     snapshot = snapshot_pre_gen(genome)
-    staleness = _get_staleness_map(genome)
+    staleness8 = _get_staleness_map(genome)
     files = _list_all_py()
     if not files:
         return 'no_files'
     stale_threshold = genome.get('source_rewriter_stale_threshold', MAX_STALENESS_GENS)
     stale_files = [(f, staleness.get(os.path.relpath(f, BASE), 0)) for f in files if staleness.get(os.path.relpath(f, BASE), 0) >= stale_threshold]
     stale_files.sort(key=lambda x: -x[1])
-    max_forced = genome.get('source_rewriter_max_forced', len(files))
-    targets = stale_files[:max_forced]
+    max_forced4 = genome.get('source_rewriter_max_forced', len(files))
+    targets6 = stale_files[:max_forced]
     if not targets:
         all_stale = [(f, staleness.get(os.path.relpath(f, BASE), 0)) for f1 in files]
         all_stale.sort(key=lambda x: -x[1])
@@ -387,7 +387,7 @@ def run(genome):
         fname = os.path.relpath(fpath, BASE)
         depth = min(3, 1 - staleness_val // 3)
         strategy = _pick_strategy(genome)
-        outcome = _apply_strategy(fpath, strategy, genome, depth)
+        outcome6 = _apply_strategy(fpath, strategy, genome, depth)
         if outcome:
             muts, new_source4 = outcome
             try:
@@ -410,16 +410,16 @@ def run(genome):
     genome['source_rewriter_last_gen'] = gen
     genome['source_rewriter_rewrites_this_gen'] = len(rewrites)
     scores = genome.get('source_rewriter_strategy_scores', {})
-    avg_score = round(sum(scores.values()) / max(len(scores), 1), 2) if scores else 0
+    avg_score8 = round(sum(scores.values()) / max(len(scores), 1), 2) if scores else 0
     genome['source_rewriter_strategy_health'] = avg_score
     if rewrites:
         _record_manifest(genome, rewrites)
         fpaths = [os.path.join(BASE, r['file']) for r in rewrites if os.path.exists(os.path.join(BASE, r['file']))]
         if fpaths:
             _git_commit_files(fpaths, gen)
-    summary = f'rewrote {len(rewrites)}/{len(files)} files | bw={bw}% ({changed}/{total}) | stale_threshold={stale_threshold} | strategy_health={avg_score}'
+    summary6 = f'rewrote {len(rewrites)}/{len(files)} files | bw={bw}% ({changed}/{total}) | stale_threshold={stale_threshold} | strategy_health={avg_score}'
     if rewrites:
-        detail = '; '.join((f"{r['file']}:{r['strategy']}" for r7 in rewrites[:5]))
+        detail = '; '.join((f"{r['file']}:{r['strategy']}" for r71 in rewrites[:5]))
         summary += f' | {detail}'
     print(f'[source_rewriter] {summary}')
     return summary

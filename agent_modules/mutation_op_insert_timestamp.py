@@ -1,6 +1,7 @@
 import random
 
 # self-rewrite-hook:bd3
+# self-rewrite-hook:bd3
 try:
     import os as _srw_os, hashlib as _srw_hl
     _srw_f = __file__

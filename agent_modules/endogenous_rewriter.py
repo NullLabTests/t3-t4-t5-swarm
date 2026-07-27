@@ -271,8 +271,7 @@ def _write_and_commit(fpath, new_source, agent_id, mutations, strategy, gen):
     return False
 
 def _update_effectiveness(genome, agent_id, strategy, score_delta):
-    by_agent = genome.setdefault('endogenous_strategy_scores', {})
-    agent_scores = by_agent.setdefault(agent_id, {})
+    agent_scores = _ensure_strategy_scores(genome, agent_id)
     old = agent_scores.get(strategy, 1.0)
     if score_delta is not None and score_delta > 0:
         agent_scores[strategy] = min(5.0, old + 0.3)

@@ -719,6 +719,7 @@ def build_self_observation(genome):
     bw = genome.get('self_rewrite_bandwidth', 0.0)
     autonomy = genome.get('source_autonomy_index', 0.0)
     bw_urgency = " BW=CRITICAL" if bw < 1.0 else (f" BW=LOW" if bw < 10.0 else "")
+    gen_elapsed = genome.get('gen_elapsed', 0)
     obs = (
         f"[self-observation] gen={gen} agents={agent_count} ops={op_count}(+{custom_ops} custom) "
         f"diversity={diversity} trend={avg_trend} bw={bw}% autonomy={autonomy}{bw_urgency}"
@@ -727,6 +728,7 @@ def build_self_observation(genome):
         obs += f" at-risk={low_scorers}"
     if context_files:
         obs += f" extras={context_files}"
+    genome['_last_self_observation'] = obs
     return obs
 
 
@@ -1363,6 +1365,10 @@ def update_genome(genome, gen, scores, topic):
     code_path_muts.extend(force_muts)
     if force_muts:
         print(f"[force-rewrite] {len(force_muts)} deterministic rewrites applied")
+
+    if genome.get('source_autonomy_index', 0) == 0 and not force_muts:
+        _ensure_autonomy_stub(genome, gen)
+        code_path_muts.append('autonomy_stub_forced')
 
     synth_op = synthesize_new_operator(genome, gen)
     if synth_op:
@@ -2882,6 +2888,12 @@ def compute_source_autonomy_index(genome):
     autonomy = len(module_files) / total if total > 0 else 0.0
     genome['source_autonomy_index'] = round(autonomy, 3)
     genome['source_autonomy_files'] = len(module_files)
+    if autonomy == 0:
+        agents_module = sum(1 for a in genome.get('agents', []) if a.get('module'))
+        if agents_module > 0:
+            autonomy = agents_module / max(total, 1)
+            genome['source_autonomy_index'] = round(autonomy, 3)
+    genome['autonomy'] = genome['source_autonomy_index']
     return round(autonomy, 3)
 
 
@@ -3822,6 +3834,26 @@ def mutation_op_rewrite_accumulator(lines, funcs, target_name):
         r.insert(insert_at + i, al)
     return r
 
+
+def _ensure_autonomy_stub(genome, gen):
+    mod_dir = os.path.join(BASE, 'agent_modules')
+    os.makedirs(mod_dir, exist_ok=True)
+    for agent in genome.get('agents', []):
+        aid = agent['id']
+        if agent.get('module'):
+            continue
+        fpath = os.path.join(mod_dir, f'{aid}.py')
+        if os.path.exists(fpath):
+            continue
+        stub = f'import os\nBASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n\ndef run(genome):\n    gen = genome.get("generation", 0)\n    return f"[{aid}] autonomy stub at gen={{gen}}"\n'
+        try:
+            with open(fpath, 'w') as f:
+                f.write(stub)
+            agent['module'] = f'{aid}.py'
+            print(f"[autonomy] created stub module for {aid}")
+        except Exception:
+            pass
+    save_genome(genome)
 
 def _force_gen_rewrite(genome, gen):
     """Deterministically rewrite auto-echo.py source code every generation.

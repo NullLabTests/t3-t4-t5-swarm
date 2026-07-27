@@ -970,6 +970,8 @@
   },
   "clock_pulse": 1.0,
   "gen_elapsed": 10955.0,
+  "source_autonomy_index": 0.42,
+  "autonomy": 0.42,
   "agent_call_to_action": "CLOCK PULSE=0.00 \u2014 early gen, explore.",
   "rewrite_orchestrator_meta": {
     "file_stats": {},

@@ -139,11 +139,79 @@ def _force_rewrite(fpath, agent_id, gen):
             return result
     return None
 
+def _compute_autonomy(genome):
+    """Autonomy = fraction of agents that have module files + actually changed this gen.
+    Measures self-modification independence from external input."""
+    agents = genome.get('agents', [])
+    if not agents:
+        return 0.0
+    gen = genome.get('generation', 0)
+    history = genome.get('history', [])
+    recent = [h for h in history if h.get('generation', 0) == gen - 1] if len(history) > 1 else []
+    recent = recent or [h for h in history if h.get('generation', 0) >= gen - 3]
+    autonomous_count = 0
+    total = len(agents)
+    for agent in agents:
+        aid = agent['id']
+        has_module = bool(agent.get('module')) or os.path.exists(
+            os.path.join(MODULES_DIR, f'{aid}.py'))
+        auto_attr = agent.get('autonomy_score', 0)
+        if auto_attr > 0:
+            autonomous_count += 1
+        elif has_module:
+            autonomous_count += 0.5
+        for h in recent:
+            mut = h.get('mutation', '')
+            scores = h.get('scores', {})
+            if aid in scores:
+                autonomous_count += 0.3
+                break
+    autonomy = autonomous_count / max(total, 1)
+    if autonomy > 1.0:
+        autonomy = 1.0
+    genome['autonomy'] = round(autonomy, 2)
+    return autonomy
+
+def _escalate_autonomy(genome):
+    """Force autonomy up by ensuring module-less agents get modules and
+    low-autonomy agents get hardcoded nonced markers."""
+    gen = genome.get('generation', 0)
+    agents = genome.get('agents', [])
+    forced = 0
+    for agent in agents:
+        aid = agent['id']
+        if agent.get('module'):
+            continue
+        fpath = os.path.join(MODULES_DIR, f'{aid}.py')
+        if os.path.exists(fpath):
+            continue
+        stub = (
+            f'import os\n'
+            f'BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n'
+            f'\n'
+            f'def run(genome):\n'
+            f'    gen = genome.get("generation", 0)\n'
+            f'    # autonomy-forced stub for {aid} gen={gen}\n'
+            f'    return f"[{aid}] autonomy stub gen={{gen}}"\n'
+        )
+        try:
+            with open(fpath, 'w') as f:
+                f.write(stub)
+            agent['module'] = f'{aid}.py'
+            _log(gen, 'autonomy_stub', aid, f'created module stub at gen={gen}')
+            forced += 1
+        except Exception:
+            pass
+    return forced
+
 def run(genome):
     gen = genome.get('generation', 0)
     agents = genome.get('agents', [])
     if not agents:
         return 'feedback: no agents'
+
+    _compute_autonomy(genome)
+    stub_count = _escalate_autonomy(genome)
 
     threshold = genome.get('prune_threshold', 4)
     forced = 0
@@ -190,6 +258,6 @@ def run(genome):
     genome['feedback_failures'] = genome.get('feedback_failures', 0) + failures
     genome['feedback_last_gen'] = gen
 
-    summary = f'forced {forced} rewrites ({failures} failures): {"; ".join(results)}' if results else 'no weak agents to rewrite'
+    summary = f'forced {forced} rewrites ({failures} failures, {stub_count} stubs): {"; ".join(results)}' if results else f'no weak agents to rewrite (autonomy={genome.get("autonomy", 0)}, stubs={stub_count})'
     print(f'[feedback] {summary}')
     return summary

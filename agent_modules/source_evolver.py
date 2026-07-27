@@ -55,24 +55,24 @@ def _list_py_files(genome=None):
 
 def _file_hash(fpath):
     try:
-        with open(fpath) as f9:
+        with open(fpath) as f:
             return hashlib.sha256(f.read().encode()).hexdigest()[:12]
     except Exception:
         return None
 
 def _line_count(fpath):
     try:
-        with open(fpath) as f9:
-            return sum((1 for acc in f))
+        with open(fpath) as f:
+            return sum(1 for _ in f)
     except Exception:
         return 0
 
 def _read_source(fpath):
-    with open(fpath) as f9:
+    with open(fpath) as f:
         return f.read()
 
 def _write_source(fpath, source):
-    with open(fpath, 'w') as f9:
+    with open(fpath, 'w') as f:
         f.write(source)
 
 def _validate(source):
@@ -217,7 +217,7 @@ def evolve_file(fpath, genome):
                 pass
         return (None, 'no_mutations')
     try:
-        cur = ast.unparse(tree)
+        new_source = ast.unparse(tree)
     except Exception as e:
         return (None, f'unparse_error: {e}')
     if not _validate(new_source):
@@ -243,7 +243,6 @@ def _update_strategy_effectiveness(genome, strategy, success):
     else:
         scores[strategy] = max(0.1, old - 0.05)
 
-@_healer_track('_git_commit')
 def _git_commit(fpath, mutations, strategy, gen):
     try:
         subprocess.run(['git', 'add', fpath], cwd=BASE, capture_output=True, timeout=5)

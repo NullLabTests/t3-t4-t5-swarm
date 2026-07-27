@@ -14,7 +14,37 @@ BASE1 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 META_KEY = 'rewrite_orchestrator_meta'
 REWRITE_LOG = os.path.join(BASE, 'orchestrator_rewrite_log.jsonl')
 MANIFEST_FILE = os.path.join(BASE, 'rewrite_manifest.jsonl')
-STRATEGIES = {'rename_locals': 'Rename local variables (AST-level)', 'drift_constants': 'Drift numeric constants by +/-20%', 'swap_operators': 'Swap comparison and binary operators', 'inject_guards': 'Wrap random statements in if-guards', 'shuffle_top_level': 'Shuffle top-level function definitions', 'duplicate_branch': 'Add an alternate return path', 'inject_tracking': 'Add print-based execution tracking', 'append_evolution_marker': 'Append a generation marker comment', 'invert_conditions': 'Invert if-condition polarity', 'rotate_arguments': 'Rotate function call arguments', 'swap_defaults': 'Swap default parameter values', 'inject_docstring': 'Add or modify docstrings'}
+DEFAULT_STRATEGIES = {'rename_locals': 'Rename local variables (AST-level)', 'drift_constants': 'Drift numeric constants by +/-20%', 'swap_operators': 'Swap comparison and binary operators', 'inject_guards': 'Wrap random statements in if-guards', 'shuffle_top_level': 'Shuffle top-level function definitions', 'duplicate_branch': 'Add an alternate return path', 'inject_tracking': 'Add print-based execution tracking', 'append_evolution_marker': 'Append a generation marker comment', 'invert_conditions': 'Invert if-condition polarity', 'rotate_arguments': 'Rotate function call arguments', 'swap_defaults': 'Swap default parameter values', 'inject_docstring': 'Add or modify docstrings'}
+
+def _get_strategies(genome):
+    """Load strategies from genome (self-modifying) or fall back to defaults."""
+    stored = genome.get('orchestrator_strategies')
+    if stored and isinstance(stored, dict) and len(stored) >= 4:
+        return stored
+    genome['orchestrator_strategies'] = dict(DEFAULT_STRATEGIES)
+    return DEFAULT_STRATEGIES
+
+def _evolve_strategies(genome, meta):
+    """Reduce fixed architecture: prune failing strategies, duplicate winners."""
+    strategies = _get_strategies(genome)
+    scores = meta.get('strategy_scores', {})
+    gen = genome.get('generation', 0)
+    pruned = 0
+    if gen > 0 and gen % 3 == 0 and len(strategies) > 4:
+        dead = [s for s in strategies if scores.get(s, 1.0) < 0.15]
+        for s in dead:
+            del strategies[s]
+            pruned += 1
+        high = [(s, scores.get(s, 1.0)) for s in strategies if scores.get(s, 1.0) > 3.5]
+        for s, _ in high[:2]:
+            variant = f'{s}_v{gen}'
+            if variant not in strategies:
+                strategies[variant] = f'evolved from {s}'
+                scores[variant] = scores.get(s, 1.0) * 0.85
+    genome['orchestrator_strategies'] = strategies
+    genome['orchestrator_strategy_count'] = len(strategies)
+    return pruned
+
 AGENT_TO_MODULE = {'clockwork': 'clockwork.py', 'orchestrator': 'rewrite_orchestrator.py', 'endogenous': 'endogenous_rewriter.py', 'explorer': 'source_evolver.py', 'forge': 'local_mutator.py', 'lens': 'meta_healer.py', 'spire': 'seed_weaver.py', 'weaver': 'seed_weaver.py'}
 
 def _list_all_py(genome=None):
@@ -40,7 +70,8 @@ def _file_hash(fpath):
 def _ensure_meta(genome):
     meta = genome.setdefault(META_KEY, {})
     meta.setdefault('file_stats', {})
-    meta.setdefault('strategy_scores', {s: 1.0 for s in STRATEGIES})
+    strategies = _get_strategies(genome)
+    meta.setdefault('strategy_scores', {s: 1.0 for s in strategies})
     meta.setdefault('total_rewrites', 0)
     meta.setdefault('total_failures', 0)
     meta.setdefault('last_gen', 0)
@@ -113,8 +144,8 @@ def _select_all_targets(files, meta, gen, agent_scores, genome):
     scored.sort(key=lambda x: x[0], reverse=True)
     return scored
 
-def _pick_strategy(meta, depth):
-    strategies = list(STRATEGIES.keys())
+def _pick_strategy(meta, depth, genome=None):
+    strategies = list(_get_strategies(genome).keys())
     weights = [meta['strategy_scores'].get(s, 1.0) for s in strategies]
     if depth >= 3:
         exotic = ['invert_conditions', 'rotate_arguments', 'swap_defaults', 'inject_guards', 'duplicate_branch']
@@ -362,9 +393,10 @@ def run(genome):
     rewritten = []
     skipped = 0
     depth_counts = {1: 0, 2: 0, 3: 0}
+    _evolve_strategies(genome, meta)
     for priority, depth, reason, fpath in scored:
         fname = os.path.basename(fpath)
-        strategy = _pick_strategy(meta, depth)
+        strategy = _pick_strategy(meta, depth, genome)
         mutations, result_strategy = _apply_strategy(fpath, strategy, genome, depth)
         if mutations:
             rewritten.append((fpath, mutations, strategy))
@@ -383,6 +415,9 @@ def run(genome):
     meta['last_gen'] = gen
     coverage = _compute_coverage(rewritten, len(files), meta, gen)
     _feedback_to_genome(genome, coverage, rewritten, meta)
+    total_attempts = len(rewritten) + skipped
+    effective_rate = len(rewritten) / max(1, total_attempts)
+    genome['orchestrator_effective_rate'] = round(effective_rate, 3)
     if rewritten:
         _git_commit_rewrites(rewritten, gen)
         _record_manifest(genome, rewritten)

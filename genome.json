@@ -1,5 +1,5 @@
 {
-  "generation": 38,
+  "generation": 39,
   "execution_order": "shuffle",
   "best_score": 8.0,
   "topic": "making the swarm rewrite its own source code every generation",
@@ -85,6 +85,8 @@
   },
   "endogenous_rewrites_total": 2,
   "endogenous_rewrites_gens": 1,
+  "endogenous_forced": 0,
+  "endogenous_strategies_current": 13,
   "type_registry": {
     ".autorun": {
       "handler": "bridge",

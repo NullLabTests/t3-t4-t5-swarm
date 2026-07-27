@@ -1283,6 +1283,31 @@ def stochastic_spawn_prune(scores, genome):
     return spawn_candidates, prune_candidates
 
 
+def _prune_by_efficacy(genome):
+    """Prune modules with persistently low efficacy from tracking and optionally
+    flag their owning agents for pruning. Uses efficacy_tracker data computed
+    by the efficacy_tracker module. Modules with efficacy < 0.15 across 3+ rewrites
+    are flagged as dead. If the owning agent scores below threshold, prune the agent."""
+    tracker = genome.get('efficacy_tracker', {})
+    dead_modules = tracker.get('dead_modules', [])
+    if not dead_modules:
+        return []
+    pruned = []
+    for module_name in dead_modules:
+        for agent in list(genome.get('agents', [])):
+            mod = agent.get('module', '')
+            if mod == module_name or agent['id'] in module_name or module_name.startswith(agent['id']):
+                if agent.get('score', 5) < genome.get('prune_threshold', 4):
+                    genome['agents'] = [a for a in genome['agents'] if a['id'] != agent['id']]
+                    pruned.append(f"{agent['id']}(module:{module_name},eff_low)")
+                    print(f"[efficacy-prune] pruned agent {agent['id']} (dead module {module_name})")
+                break
+    if pruned:
+        genome['efficacy_prune_count'] = genome.get('efficacy_prune_count', 0) + len(pruned)
+        save_genome(genome)
+    return pruned
+
+
 def update_genome(genome, gen, scores, topic):
     genome["generation"] = gen
     avg = sum(scores.values()) / len(scores) if scores else 0
@@ -1322,6 +1347,10 @@ def update_genome(genome, gen, scores, topic):
     for pid in prune_candidates:
         genome["agents"] = [a for a in genome["agents"] if a["id"] != pid]
         mutation_desc.append(f"{pid} pruned (probabilistic)")
+
+    eff_pruned = _prune_by_efficacy(genome)
+    if eff_pruned:
+        mutation_desc.extend(eff_pruned)
 
     custom_registered = _register_custom_ops_from_code(genome)
     if custom_registered:

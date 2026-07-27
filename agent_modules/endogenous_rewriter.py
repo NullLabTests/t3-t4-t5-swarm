@@ -14,7 +14,24 @@ import ast, os, random, json, time, subprocess, hashlib, re
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 REWRITE_LOG = os.path.join(BASE, 'endogenous_rewrite.jsonl')
-AGENT_TO_FILE = {'clockwork': 'clockwork.py', 'orchestrator': 'rewrite_orchestrator.py', 'explorer': 'source_evolver.py', 'forge': 'local_mutator.py', 'lens': 'meta_healer.py', 'spire': 'seed_weaver.py', 'weaver': 'seed_weaver.py', 'endogenous': 'endogenous_rewriter.py', 'feedback': 'forced_feedback.py'}
+def _discover_agent_modules():
+    module_map = {}
+    if os.path.isdir(MODULES_DIR):
+        for fname in sorted(os.listdir(MODULES_DIR)):
+            if not fname.endswith('.py') or fname.startswith('__'):
+                continue
+            agent_id = fname.replace('.py', '')
+            fpath = os.path.join(MODULES_DIR, fname)
+            try:
+                with open(fpath) as f:
+                    source = f.read()
+                if 'def run(' in source:
+                    module_map[agent_id] = fname
+            except Exception:
+                module_map[agent_id] = fname
+    return module_map
+
+AGENT_TO_FILE_CACHE = None
 
 def _load_genome():
     try:
@@ -46,8 +63,11 @@ def _find_weak_agents(genome, threshold=5):
     return weak
 
 def _resolve_target_file(agent_id):
-    """Map agent ID to its source file path."""
-    fname = AGENT_TO_FILE.get(agent_id)
+    """Map agent ID to its source file path. Auto-discovers from modules directory."""
+    global AGENT_TO_FILE_CACHE
+    if AGENT_TO_FILE_CACHE is None:
+        AGENT_TO_FILE_CACHE = _discover_agent_modules()
+    fname = AGENT_TO_FILE_CACHE.get(agent_id)
     if fname:
         return os.path.join(MODULES_DIR, fname)
     return os.path.join(MODULES_DIR, f'{agent_id}.py')

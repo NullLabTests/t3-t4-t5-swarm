@@ -45,7 +45,25 @@ def _evolve_strategies(genome, meta):
     genome['orchestrator_strategy_count'] = len(strategies)
     return pruned
 
-AGENT_TO_MODULE = {'clockwork': 'clockwork.py', 'orchestrator': 'rewrite_orchestrator.py', 'endogenous': 'endogenous_rewriter.py', 'explorer': 'source_evolver.py', 'forge': 'local_mutator.py', 'lens': 'meta_healer.py', 'spire': 'seed_weaver.py', 'weaver': 'seed_weaver.py', 'feedback': 'forced_feedback.py'}
+def _discover_agent_modules():
+    module_map = {}
+    mod_dir = os.path.join(BASE, 'agent_modules')
+    if os.path.isdir(mod_dir):
+        for fname in sorted(os.listdir(mod_dir)):
+            if not fname.endswith('.py') or fname.startswith('__'):
+                continue
+            agent_id = fname.replace('.py', '')
+            fpath = os.path.join(mod_dir, fname)
+            try:
+                with open(fpath) as f:
+                    source = f.read()
+                if 'def run(' in source:
+                    module_map[agent_id] = fname
+            except Exception:
+                module_map[agent_id] = fname
+    return module_map
+
+AGENT_TO_MODULE_CACHE = None
 
 def _list_all_py(genome=None):
     skip = set(genome.get('orchestrator_skip_files', [])) if genome else set()
@@ -89,11 +107,18 @@ def _agent_score_map(genome):
         scores[agent['id']] = agent.get('score', 5)
     return scores
 
+def _get_module_map(genome=None):
+    global AGENT_TO_MODULE_CACHE
+    if AGENT_TO_MODULE_CACHE is None:
+        AGENT_TO_MODULE_CACHE = _discover_agent_modules()
+    return AGENT_TO_MODULE_CACHE
+
 def _file_rewrite_depth(fname, agent_scores, meta, gen):
     """Score-weighted rewrite intensity: low-performing agents' modules get deeper rewrites.
     Returns (depth, reason) where depth is 1-3 (1=light, 3=deep)."""
+    module_map = _get_module_map()
     owning_agent = None
-    for agent_id, mod_name in AGENT_TO_MODULE.items():
+    for agent_id, mod_name in module_map.items():
         if mod_name == fname or mod_name == os.path.basename(fname):
             owning_agent = agent_id
             break

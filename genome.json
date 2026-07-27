@@ -1,5 +1,5 @@
 {
-  "generation": 39,
+  "generation": 40,
   "execution_order": "shuffle",
   "best_score": 8.0,
   "topic": "making the swarm rewrite its own source code every generation",
@@ -257,8 +257,8 @@
       "id": "lens",
       "voice": "lessac",
       "prompt": "You make the system self-modifying at a deeper level.\nYour survival depends on writing code. Scores below 5 trigger pruning.",
-      "score": 2,
-      "lifespan": 24,
+      "score": 7,
+      "lifespan": 25,
       "low_score_streak": 0,
       "module": "meta_healer.py"
     },
@@ -302,7 +302,8 @@
       "prompt": "You reduce human scaffolding by one level.",
       "score": 6,
       "lifespan": 26,
-      "low_score_streak": 0
+      "low_score_streak": 0,
+      "module": "spark.py"
     },
     {
       "id": "bridge",
@@ -955,7 +956,7 @@
     "agent_count": 14,
     "prompt_entropy": 1.0,
     "structural_mutations": 1,
-    "self_modification_depth": 0.0,
+    "self_modification_depth": 3.0,
     "composite": 8.5
   },
   "gen_start_time": 1785094831.2545886,

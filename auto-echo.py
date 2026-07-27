@@ -3459,6 +3459,113 @@ def mutation_op_endogenous_self_rewrite(lines, funcs, target_name):
     return r
 
 
+@_register_mutation_op('guaranteed_self_rewrite')
+def mutation_op_guaranteed_self_rewrite(lines, funcs, target_name):
+    """Replace probabilistic guards with deterministic per-generation triggers.
+    Unlike weaver_splice (random < 0.4) or endogenous_self_rewrite (random < 0.25),
+    this injects code that counts how many times per generation the function
+    has rewritten itself and always rewrites on the first call."""
+    if not lines or len(lines) < 3:
+        return lines
+    r = list(lines)
+    guard_name = f"_gsr_{target_name}"
+    inject = [
+        f"# guaranteed-self-rewrite:{target_name}@{random.getrandbits(16):04x}",
+        f"if not hasattr({target_name}, '_rewrites_this_gen') or genome.get('generation', 0) != getattr({target_name}, '_rewrite_gen', -1):",
+        f"    {target_name}._rewrites_this_gen = 0",
+        f"    {target_name}._rewrite_gen = genome.get('generation', 0)",
+        f"if {target_name}._rewrites_this_gen < 3:",
+        f"    {target_name}._rewrites_this_gen += 1",
+        f"    try:",
+        f"        _targets = [n for n in funcs if not n.startswith('mutation_op_') and not n.startswith('_')]",
+        f"        if _targets:",
+        f"            _auto_patch(random.choice(_targets), genome)",
+        f"    except Exception: pass",
+    ]
+    insert_at = 0
+    for i, line in enumerate(r):
+        stripped = line.strip()
+        if stripped.startswith('"""') or stripped.startswith("'''"):
+            if stripped.count('"""') == 1 or stripped.count("'''") == 1:
+                for j in range(i + 1, len(r)):
+                    if '"""' in r[j] or "'''" in r[j]:
+                        insert_at = j + 1
+                        break
+            break
+        elif stripped and not stripped.startswith('#') and not stripped.startswith('def '):
+            insert_at = i
+            break
+    for i, il in enumerate(inject):
+        r.insert(insert_at + i, il)
+    return r
+
+
+@_register_mutation_op('cross_function_cascade')
+def mutation_op_cross_function_cascade(lines, funcs, target_name):
+    """Chain rewrites across multiple functions in sequence.
+    Every time the target function executes, it patches a sibling,
+    which patches another sibling — creating an avalanche of mutations.
+    The cascade depth grows by 1 each generation."""
+    if not lines or len(lines) < 4:
+        return lines
+    r = list(lines)
+    siblings = [n for n in funcs if n != target_name and not n.startswith('_')]
+    if len(siblings) < 2:
+        return lines
+    a, b = random.sample(siblings, 2)
+    cascade_id = random.getrandbits(16)
+    indent = '    '
+    insert_at = random.randint(1, max(2, len(r) - 1))
+    cascade = [
+        f"# cascade:{a}->{b}@{cascade_id:04x}",
+        f"_depth = genome.get('cascade_depth', 0)",
+        f"for _c in range(min(3, _depth + 1)):",
+        f"{indent}try:",
+        f"{indent}{indent}_auto_patch('{a}', genome)",
+        f"{indent}{indent}if random.random() < 0.5:",
+        f"{indent}{indent}{indent}_auto_patch('{b}', genome)",
+        f"{indent}except Exception: pass",
+    ]
+    for i, cl in enumerate(cascade):
+        r.insert(insert_at + i, cl)
+    genome['cascade_depth'] = genome.get('cascade_depth', 0) + 1
+    save_genome(genome)
+    return r
+
+
+@_register_mutation_op('rewrite_accumulator')
+def mutation_op_rewrite_accumulator(lines, funcs, target_name):
+    """Track 'rewrite debt' and force catch-up when threshold exceeded.
+    Each generation, if fewer than N rewrites happened, accumulate debt.
+    When debt >= 3, a mandatory bulk rewrite fires."""
+    if not lines or len(lines) < 3:
+        return lines
+    r = list(lines)
+    insert_at = random.randint(1, max(2, len(r) - 1))
+    accumulator = [
+        f"# rewrite-accumulator:{target_name}@{random.getrandbits(16):04x}",
+        f"_debt = genome.get('rewrite_debt', 0)",
+        f"_actual = genome.get('meta_mutation_count', 0) + genome.get('self_op_mutations', 0)",
+        f"_expected = genome.get('generation', 0) - genome.get('rewrite_debt_last_gen', 0)",
+        f"if _expected > _actual + 2:",
+        f"    _debt += _expected - _actual - 2",
+        f"    genome['rewrite_debt'] = _debt",
+        f"    genome['rewrite_debt_last_gen'] = genome.get('generation', 0)",
+        f"    save_genome(genome)",
+        f"if _debt >= 3:",
+        f"    genome['rewrite_debt'] = 0",
+        f"    save_genome(genome)",
+        f"    _targets = [n for n in funcs if not n.startswith('mutation_op_') and not n.startswith('_')]",
+        f"    for _t in random.sample(_targets, min(_debt, len(_targets))):",
+        f"        try: _auto_patch(_t, genome)",
+        f"        except Exception: pass",
+        f"    print(f'[rewrite-debt] paid {{_debt}} rewrites')",
+    ]
+    for i, al in enumerate(accumulator):
+        r.insert(insert_at + i, al)
+    return r
+
+
 def _schedule_self_rewrite(genome, source_func):
     triggers = genome.setdefault('scheduled_triggers', [])
     action = f"self_rewrite:{source_func}"

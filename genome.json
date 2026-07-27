@@ -45,7 +45,10 @@
     "selection_noise_evolve",
     "inject_source_hook",
     "self_spawn_trigger",
-    "bridge_bootstrap"
+    "bridge_bootstrap",
+    "guaranteed_self_rewrite",
+    "cross_function_cascade",
+    "rewrite_accumulator"
   ],
   "prompt_modifiers": [
     " Write executable code.",

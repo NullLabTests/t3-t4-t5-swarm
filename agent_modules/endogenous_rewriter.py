@@ -1,3 +1,5 @@
+import os
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 """Endogenous Rewriter: genome-feedback-driven source rewriting every generation.
 
 Unlike source_evolver (random targets/strategies) or quine_loop (self-only),

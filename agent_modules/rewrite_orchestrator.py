@@ -1,3 +1,5 @@
+import os
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 """Rewrite Orchestrator: forces every source file to be rewritten every generation.
 
 Unlike source_evolver (random), clockwork (auto-echo.py only), or quine_loop

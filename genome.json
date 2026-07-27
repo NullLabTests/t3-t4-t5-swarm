@@ -930,7 +930,7 @@
   "gen_start_time": 1785094831.2545886,
   "rescue_count": 3,
   "last_rescue_gen": 38,
-  "llm_model": "opencode/big-pickle",
+  "llm_model": "opencode/deepseek-v4-flash-free",
   "_reload_snapshot": {
     "time": 1785094831.2686555,
     "files": 15,

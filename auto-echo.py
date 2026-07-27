@@ -118,9 +118,9 @@ def _load_llm_model(genome=None):
     val = genome.get('llm_model')
     if val:
         return val
-    genome['llm_model'] = 'opencode/big-pickle'
+    genome['llm_model'] = 'opencode/deepseek-v4-flash-free'
     save_genome(genome)
-    return 'opencode/big-pickle'
+    return 'opencode/deepseek-v4-flash-free'
 
 running = True
 

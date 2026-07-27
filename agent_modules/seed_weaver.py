@@ -1,3 +1,5 @@
+import os
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 """seed_weaver.py — module agent that injects mutation operators into the genome.
 Run by auto-echo.py's execute_module_agents() every generation.
 Writes a new mutation operator into agent_modules/ for the next generation."""

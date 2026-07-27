@@ -1,3 +1,5 @@
+import os
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 """meta_healer.py — self-healing cross-module mutation propagator.
 
 Runs after all module agents each generation:

@@ -1,3 +1,5 @@
+import os
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 """Source Evolver: cross-file source rewriting every generation.
 
 Unlike quine_loop (self-only) or code_path_mutation (auto-echo.py only),

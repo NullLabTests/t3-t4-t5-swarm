@@ -1,3 +1,5 @@
+import os
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 """local_mutator.py — LLM-free local agent.
 Runs in-process, reads genome, writes code files, returns result text.
 Registered via agent.local_fn = 'local_mutator'."""

@@ -1,3 +1,5 @@
+import os
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 import os, random, re, ast, time, json, hashlib, subprocess, copy
 val = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 x = os.path.join(BASE, 'auto-echo.py')

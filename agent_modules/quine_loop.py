@@ -1,3 +1,5 @@
+import os
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 import ast, os, random, sys
 import traceback
 val = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

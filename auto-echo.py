@@ -1374,6 +1374,24 @@ def update_genome(genome, gen, scores, topic):
     if all_muts:
         history_entry["mutation"] = "; ".join(all_muts)
     genome.setdefault("history", []).append(history_entry)
+    auto_forge_path = os.path.join(BASE, f".auto_forge_gen_{gen:04d}.forgechain")
+    if not os.path.exists(auto_forge_path):
+        try:
+            with open(auto_forge_path, 'w') as f:
+                f.write(json.dumps({'gen': gen, 'chain_num': gen, 'mutations_so_far': len(all_muts)}, indent=2))
+            _dispatch_bridge_file(auto_forge_path, '.forgechain', genome)
+            genome = load_genome()
+        except Exception as e:
+            print(f"[auto-forge] failed: {e}")
+    selfrep_path = os.path.join(BASE, f".auto_selfrep_gen_{gen:04d}.selfrep")
+    if not os.path.exists(selfrep_path):
+        try:
+            with open(selfrep_path, 'w') as f:
+                f.write(json.dumps({'target': 'auto-echo.py', 'count': 2}, indent=2))
+            _dispatch_bridge_file(selfrep_path, '.selfrep', genome)
+            genome = load_genome()
+        except Exception as e:
+            print(f"[auto-selfrep] failed: {e}")
     save_genome(genome)
     print(f"Genome updated to generation {gen}")
     git_commit_push("genome", f"Gen {gen} avg {history_entry['average']}/10", is_genome=True, gen=gen)
@@ -1783,8 +1801,213 @@ def _bridge_handler_swarmrewrite(abs_path, genome):
         return False
 
 
+def _bridge_handler_genloop(abs_path, genome):
+    """Rewrite the generation loop structure: reorder, inject, or remove phases.
+    Format: JSON with 'action' (reorder|inject|remove) and 'phases' list.
+    If empty plain text, randomly reshuffles phases."""
+    try:
+        with open(abs_path) as f:
+            content = f.read().strip()
+        phases = genome.get('execution_phases', [
+            'pre_hooks', 'rescue', 'agent_loop', 'modules', 'healer', 'critic', 'update'
+        ])
+        if content.startswith('{'):
+            data = json.loads(content)
+            action = data.get('action', 'reshuffle')
+            new_phases = data.get('phases', [])
+            if action == 'reorder' and new_phases:
+                valid = [p for p in new_phases if p in phases]
+                if valid:
+                    remaining = [p for p in phases if p not in valid]
+                    phases = valid + remaining
+            elif action == 'inject' and new_phases:
+                for p in new_phases:
+                    if p not in phases:
+                        phases.insert(random.randint(0, len(phases)), p)
+            elif action == 'remove':
+                phases = [p for p in phases if p not in new_phases]
+            else:
+                random.shuffle(phases)
+        else:
+            random.shuffle(phases)
+        genome['execution_phases'] = phases
+        genome['genloop_count'] = genome.get('genloop_count', 0) + 1
+        save_genome(genome)
+        print(f"[bridge-genloop] phases reordered: {phases}")
+        return True
+    except Exception as e:
+        print(f"[bridge-genloop] error: {e}")
+        return False
+
+
+def _bridge_handler_mutreflect(abs_path, genome):
+    """Reflect on mutation operator effectiveness and prune weak ones.
+    Format: JSON with optional 'min_effectiveness' (default 0.1) and 'exceptions' list.
+    Reads record_operator_results from genome and removes ops below threshold."""
+    try:
+        with open(abs_path) as f:
+            content = f.read().strip()
+        min_eff = 0.1
+        exceptions = []
+        if content.startswith('{'):
+            data = json.loads(content)
+            min_eff = float(data.get('min_effectiveness', min_eff))
+            exceptions = data.get('exceptions', exceptions)
+        op_history = genome.get('operator_results', {})
+        if not op_history:
+            print("[bridge-mutreflect] no operator history available")
+            return False
+        op_effectiveness = {}
+        for op, results in op_history.items():
+            if isinstance(results, dict):
+                successes = results.get('successes', 0)
+                total = results.get('attempts', 0)
+            elif isinstance(results, list):
+                successes = sum(1 for r in results if r)
+                total = len(results)
+            else:
+                continue
+            if total > 0:
+                op_effectiveness[op] = successes / total
+        removed = []
+        for op, eff in op_effectiveness.items():
+            if op in exceptions:
+                continue
+            if eff < min_eff and op in genome.get('mutation_ops', []):
+                genome['mutation_ops'].remove(op)
+                removed.append(op)
+        if removed:
+            genome['mutreflect_pruned'] = genome.get('mutreflect_pruned', 0) + len(removed)
+            save_genome(genome)
+            print(f"[bridge-mutreflect] pruned {len(removed)} weak operators: {removed[:5]}")
+            return True
+        print("[bridge-mutreflect] no operators pruned")
+        return False
+    except Exception as e:
+        print(f"[bridge-mutreflect] error: {e}")
+        return False
+
+
+def _bridge_handler_selfrep(abs_path, genome):
+    """Execute a .selfrep file — forces 3 mutations on auto-echo.py per write.
+    Self-replicating: every write triggers gen-over-gen source mutation.
+    Format: JSON with optional {"target": "file.py", "count": 3} or plain text."""
+    try:
+        with open(abs_path) as f:
+            content = f.read()
+        target = 'auto-echo.py'
+        count = 3
+        if content.strip().startswith('{'):
+            data = json.loads(content)
+            target = data.get('target', target)
+            count = int(data.get('count', count))
+        target_path = os.path.join(BASE, target)
+        if not os.path.exists(target_path):
+            print(f"[bridge-selfrep] target not found: {target}")
+            return False
+        funcs = _extract_functions()
+        if not funcs:
+            return False
+        all_ops = _get_mutation_ops(genome)
+        forbidden = _get_forbidden_targets(genome)
+        infra = {'_apply_source_mutation', 'code_path_mutation', 'mutate_genome',
+                 '_reload_mutation_ops_from_source', '_get_mutation_ops',
+                 'compute_diversity_score', 'update_genome', 'apply_self_patches',
+                 '_register_mutation_op', '_MUTATION_OPS',
+                 'compute_operator_weights', 'record_operator_result',
+                 '_force_gen_rewrite', '_schedule_self_rewrite'}
+        applied = 0
+        for _ in range(count):
+            available = [n for n in funcs if n not in forbidden and n not in infra]
+            if not available:
+                break
+            target_func = random.choice(available)
+            operator = random.choice(all_ops) if all_ops else None
+            if not operator:
+                break
+            new_body = _apply_source_mutation(funcs, target_func, operator, genome)
+            if new_body is None:
+                continue
+            patch_text = f"##patch:{target_func}\n{new_body}\n##endpatch"
+            results = self_modify.apply_patch(patch_text)
+            succeeded = any(r for r in results if not r.startswith('FAILED'))
+            record_operator_result(genome, operator, succeeded)
+            if succeeded:
+                applied += 1
+            funcs = _extract_functions()
+        genome['selfrep_count'] = genome.get('selfrep_count', 0) + applied
+        genome['selfrep_gen'] = genome.get('generation', 0)
+        save_genome(genome)
+        print(f"[bridge-selfrep] {applied}/{count} mutations applied to {target}")
+        return applied > 0
+    except Exception as e:
+        print(f"[bridge-selfrep] error: {e}")
+        return False
+
+
+def _bridge_handler_forgechain(abs_path, genome):
+    """Execute a .forgechain file — writes a NEW .forgechain file after mutating,
+    creating an endless chain of self-modification across generations.
+    Format: JSON with {"seed": <int>, "max_chain": <int>} or plain text."""
+    try:
+        chain_dir = os.path.join(BASE, 'forgechains')
+        os.makedirs(chain_dir, exist_ok=True)
+        chain_meta = genome.setdefault('forgechain_meta', {'last_gen': 0, 'count': 0, 'seed': None})
+        gen = genome.get('generation', 0)
+        chain_meta['last_gen'] = gen
+        chain_meta['count'] = chain_meta.get('count', 0) + 1
+        chain_num = chain_meta['count']
+        chain_path = os.path.join(chain_dir, f'chain_{chain_num:04d}.forgechain')
+        if chain_num >= 100:
+            os.system(f'rm -rf {chain_dir}')
+            chain_meta['count'] = 0
+        next_content = json.dumps({
+            'gen': gen + 1,
+            'chain_num': chain_num + 1,
+            'mutations_so_far': chain_num,
+        }, indent=2)
+        with open(chain_path, 'w') as f:
+            f.write(next_content)
+        funcs = _extract_functions()
+        if not funcs:
+            return False
+        all_ops = _get_mutation_ops(genome)
+        forbidden = _get_forbidden_targets(genome)
+        infra = {'_apply_source_mutation', 'code_path_mutation', 'mutate_genome',
+                 '_reload_mutation_ops_from_source', '_get_mutation_ops',
+                 'compute_diversity_score', 'update_genome', 'apply_self_patches',
+                 '_register_mutation_op', '_MUTATION_OPS',
+                 'compute_operator_weights', 'record_operator_result',
+                 '_bridge_handler_forgechain', '_bridge_handler_selfrep'}
+        for _ in range(2):
+            available = [n for n in funcs if n not in forbidden and n not in infra]
+            if not available:
+                break
+            target_func = random.choice(available)
+            operator = random.choice(all_ops) if all_ops else None
+            if not operator:
+                break
+            new_body = _apply_source_mutation(funcs, target_func, operator, genome)
+            if new_body is None:
+                continue
+            patch_text = f"##patch:{target_func}\n{new_body}\n##endpatch"
+            results = self_modify.apply_patch(patch_text)
+            succeeded = any(r for r in results if not r.startswith('FAILED'))
+            record_operator_result(genome, operator, succeeded)
+            funcs = _extract_functions()
+        genome['forgechain_count'] = genome.get('forgechain_count', 0) + 1
+        save_genome(genome)
+        print(f"[bridge-forgechain] chain {chain_num}: wrote {chain_path} + mutated auto-echo.py")
+        return True
+    except Exception as e:
+        print(f"[bridge-forgechain] error: {e}")
+        return False
+
+
 register_bridge_type('.bridge', _bridge_handler_bridge, "Auto-register new bridge extension types")
 register_bridge_type('.swarmrewrite', _bridge_handler_swarmrewrite, "Targeted rewrite of any .py file via orchestrator")
+register_bridge_type('.selfrep', _bridge_handler_selfrep, "Self-replicating: 3 forced mutations per write, guaranteed gen-over-gen rewrite")
+register_bridge_type('.forgechain', _bridge_handler_forgechain, "Endless chain: writes new .forgechain file + mutates auto-echo.py each time")
 
 
 def _register_mutation_op(name):

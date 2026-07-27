@@ -1,0 +1,10 @@
+{
+  ".genloop": {
+    "handler": "_bridge_handler_genloop",
+    "description": "Rewrite the generation loop structure: reorder phases, inject new phases, or remove stalled ones"
+  },
+  ".mutreflect": {
+    "handler": "_bridge_handler_mutreflect",
+    "description": "Reflect on mutation effectiveness and prune underperforming operators from the genome"
+  }
+}

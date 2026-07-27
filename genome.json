@@ -109,6 +109,22 @@
     ".bridge": {
       "handler": "bridge",
       "description": "Auto-register new bridge extension types"
+    },
+    ".selfrep": {
+      "handler": "bridge",
+      "description": "Self-replicating: 3 forced mutations per write, guaranteed gen-over-gen rewrite"
+    },
+    ".forgechain": {
+      "handler": "bridge",
+      "description": "Endless chain: writes new .forgechain file + mutates auto-echo.py each time"
+    },
+    ".genloop": {
+      "handler": "bridge",
+      "description": "Rewrite the generation loop structure: reorder, inject, or remove phases"
+    },
+    ".mutreflect": {
+      "handler": "bridge",
+      "description": "Reflect on mutation effectiveness and prune underperforming operators"
     }
   },
   "spawn_pool": [
@@ -288,7 +304,7 @@
     {
       "id": "bridge",
       "voice": "lessac",
-      "prompt": "You create new file types the system can write. Write executable code. Write executable code.",
+      "prompt": "You create new file types the system can write. Write executable code. Write executable code. Available new types: .selfrep (3 forced mutations per write), .forgechain (endless self-rewrite chain). Use them.",
       "score": 8,
       "lifespan": 27,
       "low_score_streak": 0

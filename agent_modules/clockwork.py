@@ -1,3 +1,4 @@
+from agent_modules.spark import _load_genome
 import os, json, ast, random, subprocess, time, hashlib
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENOME_FILE = os.path.join(BASE, 'genome.json')
@@ -164,3 +165,8 @@ def run(genome):
         genome['clockwork_rewrite_count'] = genome.get('clockwork_rewrite_count', 0) + len(files_changed)
         _record_manifest(gen, 'clockwork', files_changed)
     return f"[clockwork] rewrote {len(files_changed)} files"
+
+try:
+    _load_genome()
+except Exception:
+    pass

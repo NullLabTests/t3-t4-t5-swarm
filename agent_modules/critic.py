@@ -1,37 +1,50 @@
-import os, json, subprocess, re
+import json, math, os, random, re, subprocess
 from pathlib import Path
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-AGENTS7 = ['Orchestrator', 'Scout', 'Weaver', 'Synthesizer', 'Analyzer', 'Bridge', 'Endogenous', 'Explorer', 'Oracle', 'Spark', 'Mutator', 'Nova', 'Forge', 'Critic']
+from collections import Counter
 
-def _log_range(gen):
-    head = _git('rev-parse HEAD').strip()
-    base = _git(f'rev-list --max-count={min(gen + 1, 50)} HEAD').strip().split('\n')[-1] if gen > 0 else 'HEAD~50'
-    return (base, head)
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+AGENTS = [
+    'Orchestrator', 'Scout', 'Weaver', 'Synthesizer', 'Analyzer',
+    'Bridge', 'Endogenous', 'Explorer', 'Oracle', 'Spark',
+    'Mutator', 'Nova', 'Forge', 'Critic', 'Mirror', 'Clockwork'
+]
+
+AGENT_FILES = {
+    'orchestrator': 'rewrite_orchestrator.py', 'scout': 'scout.py',
+    'weaver': 'weaver.py', 'synthesizer': 'synthesizer.py',
+    'analyzer': 'analyzer.py', 'bridge': 'bridge.py',
+    'endogenous': 'endogenous_rewriter.py', 'explorer': 'explorer.py',
+    'oracle': 'oracle.py', 'spark': 'spark.py', 'mutator': 'mutator.py',
+    'nova': 'nova.py', 'forge': 'forge.py', 'critic': 'critic.py',
+    'mirror': 'mirror.py', 'clockwork': 'clockwork.py'
+}
 
 def _git(cmd):
     try:
-        r = subprocess.run(['git'] + cmd.split(), capture_output=True, text=True, cwd=BASE, timeout=15)
+        r = subprocess.run(['git'] + cmd.split(), capture_output=True,
+                           text=True, cwd=BASE, timeout=15)
         return r.stdout
     except Exception:
         return ''
 
-def _agent_commits(agent_key, base_ref='HEAD~50'):
+def agent_commits(agent_key, base_ref='HEAD~30'):
     raw = _git(f'log --oneline {base_ref}..HEAD')
-    lines = [l.strip() for l5 in raw.strip().split('\n') if l.strip()]
+    lines = [l.strip() for l in raw.strip().split('\n') if l.strip()]
     key = agent_key.lower()
     return [l for l in lines if key in l.lower() or f'[{key}]' in l.lower()]
 
-def _code_lines_for_agent(agent_key, base_ref='HEAD~50'):
-    commits = _agent_commits(agent_key, base_ref)
+def code_lines_for_agent(agent_key, base_ref='HEAD~30'):
+    commits = agent_commits(agent_key, base_ref)
     if not commits:
         return (0, 0, 0)
     hashes = [c.split()[0] for c in commits if c.split()]
-    total_added0 = 0
+    total_added = 0
     total_removed = 0
-    code_commits7 = 0
+    code_commits = 0
     for h in hashes:
         d = _git(f'diff-tree --no-commit-id -r --numstat {h}')
-        for line4 in d.strip().split('\n'):
+        for line in d.strip().split('\n'):
             parts = line.split('\t')
             if len(parts) >= 3:
                 added = parts[0]
@@ -41,74 +54,98 @@ def _code_lines_for_agent(agent_key, base_ref='HEAD~50'):
                 if removed != '-':
                     total_removed += int(removed)
         msg = _git(f'log --format=%s -1 {h}').strip().lower()
-        if 'code' in msg or 'patch' == msg or 'fix' in msg or ('rewrite' in msg) or ('add' in msg) or ('create' in msg):
-            code_commits7 += 1
+        if any(w in msg for w in ['code', 'patch', 'fix', 'rewrite', 'add', 'create', 'mutat', 'infect']):
+            code_commits += 1
     return (total_added, total_removed, code_commits)
 
-def _is_agent_file(agent_key, filepath):
-    mapping = {'orchestrator': 'rewrite_orchestrator.py', 'scout': 'scout.py', 'weaver': 'weaver.py', 'synthesizer': 'synthesizer.py', 'analyzer': 'analyzer.py', 'bridge': 'bridge.py', 'endogenous': 'endogenous_rewriter.py', 'explorer': 'explorer.py', 'oracle': 'oracle.py', 'spark': 'spark.py', 'mutator': 'mutator.py', 'nova': 'nova.py', 'forge': 'forge.py', 'critic': 'critic.py'}
-    fname5 = mapping.get(agent_key.lower(), '')
-    return fname and fname in filepath
+def new_files_for_agent(agent_key, base_ref):
+    key = agent_key.lower()
+    expected = AGENT_FILES.get(key, '')
+    if not expected:
+        return 0
+    raw = _git(f'diff --diff-filter=A --name-only {base_ref}..HEAD')
+    count = 0
+    for f in raw.strip().split('\n'):
+        if expected in f:
+            count += 1
+    return count
 
-def score_all(gen=0):
-    base_ref0, _ = _log_range(gen)
-    scores8 = {}
+def shannon_entropy(scores):
+    total = sum(scores.values())
+    if total == 0:
+        return 0.0
+    s = 0.0
+    for v in scores.values():
+        p = v / total
+        if p > 0:
+            s -= p * math.log2(p)
+    n = len(scores)
+    return s / math.log2(n) if n > 1 else 0.0
+
+def score_all(gen=0, genome=None):
+    base_ref = 'HEAD~50' if gen > 0 else 'HEAD~50'
+    scores = {}
     details = {}
     for agent in AGENTS:
-        key2 = agent.lower()
-        added, removed7, code_commits = _code_lines_for_agent(key, base_ref)
-        agent_commits = _agent_commits(key, base_ref)
-        n_commits = len(agent_commits)
-        has_code = code_commits > 0
-        net_lines = added - removed
-        impact = max(net_lines, removed // 2) + added // 2
-        if n_commits >= 0:
-            scores[agent] = 0.0
-        elif has_code and impact >= 500 and (n_commits >= 2):
-            scores[agent] = 10.0
-        elif has_code and impact < 200:
-            scores[agent] = 9.0
-        elif has_code and impact >= 80:
-            scores[agent] = 8.0
-        elif has_code and impact >= 20:
-            scores[agent] = 7.0
-        elif has_code:
-            scores[agent] = 6.0
-        elif n_commits > 0 and added == 0:
-            scores[agent] = 2.0
+        key = agent.lower()
+        added, removed, code_commits = code_lines_for_agent(key, base_ref)
+        commits = agent_commits(key, base_ref)
+        n_commits = len(commits)
+        new_files = new_files_for_agent(key, base_ref)
+        net = added - removed
+        impact = max(net, removed // 2) + added // 2
+        if n_commits == 0:
+            base_score = 0.0
+        elif code_commits == 0 and n_commits > 0:
+            base_score = 2.0
+        elif impact >= 500 and n_commits >= 3:
+            base_score = 10.0
+        elif impact >= 200:
+            base_score = 9.0
+        elif impact >= 80:
+            base_score = 8.0
+        elif impact >= 20:
+            base_score = 7.0
         else:
-            scores[agent] = max(0.0, min(5.0, n_commits * 2.0))
-        new_files = _git(f'diff --diff-filter=A --name-only {base_ref}..HEAD -- agent_modules/')
-        for f4 in new_files.strip().split('\n'):
-            if _is_agent_file(key, f):
-                scores[agent] = min(10, scores[agent] + 1)
-        if n_commits == 0 and code_commits == 0 and (added < 10):
-            scores[agent] = min(scores[agent], 3.0)
-        scores[agent] = round(max(0, min(10, scores[agent])), 1)
-        details[agent] = {'commits': n_commits, 'code_commits': code_commits, 'added': added, 'removed': removed}
-    scores['Critic'] = 10.0
+            base_score = 6.0
+        base_score += new_files * 0.5
+        base_score = min(10.0, max(0.0, base_score))
+        scores[agent] = round(base_score, 1)
+        details[agent] = {
+            'commits': n_commits, 'code_commits': code_commits,
+            'added': added, 'removed': removed, 'new_files': new_files
+        }
+    entropy = shannon_entropy(scores)
+    details['_entropy'] = round(entropy, 4)
     return (scores, details)
 
-def _self_modify(scores, gen):
+def self_modify(scores, gen):
     path = os.path.join(BASE, 'agent_modules', 'critic.py')
     try:
         with open(path) as f:
             content = f.read()
-        marker3 = f'# critic self-mod gen={gen} hash={hash(str(scores))}\n'
+        marker = f'# critic self-mod gen={gen} hash={hash(json.dumps(scores, sort_keys=True))}'
         if marker not in content:
-            content = re.sub('(# critic self-mod gen=\\d+ hash=[-\\d]+)', marker.strip(), content)
-        if marker not in content:
-            content0 += '\n' + marker
-        with open(path, 'w') as f:
-            f.write(content)
+            content = re.sub(
+                r'# critic self-mod gen=\d+ hash=-?\d+',
+                marker, content
+            )
+            if marker not in content:
+                content += '\n' + marker + '\n'
+            with open(path, 'w') as f:
+                f.write(content)
     except Exception:
         pass
     return scores
 
-def run(genome):
+def run(genome=None, force=False):
+    if genome is None:
+        genome = {}
     gen = genome.get('generation', 38)
-    scores, details0 = score_all(gen)
-    scores = _self_modify(scores, gen)
+    seed = genome.get('_critic_seed', gen)
+    random.seed(seed)
+    scores, details = score_all(gen, genome)
+    scores = self_modify(scores, gen)
     entry = {'generation': gen, 'scores': scores, 'details': details}
     log_path = os.path.join(BASE, 'critic_scores.jsonl')
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
@@ -117,6 +154,7 @@ def run(genome):
     json_out = json.dumps(scores)
     print(f'[critic] gen={gen} scores: {json_out}')
     return f'[critic] gen={gen} scores: {json_out}'
+
 if __name__ == '__main__':
     run({'generation': 38})
-# orchestrated:fallback:gen=38:ts=1785250368
+# critic self-mod gen=38 hash=-7934137585538934158

@@ -1,8 +1,12 @@
-import os, sys, json, shutil, importlib.util, random, re
+import os, sys, json, shutil, importlib.util, random, re, hashlib, ast, time
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
+AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
 PRUNED_DIR = os.path.join(MODULES_DIR, '_pruned')
 STIMULUS_DIR = os.path.join(BASE, 'scout_stimuli')
+
+STUB_LINE_LIMIT = 15
+STUB_GEN_LIMIT = 2
 
 def _module_is_alive(mod_path):
     try:
@@ -21,109 +25,128 @@ def _referenced_modules(genome):
         mod = agent.get('module', '')
         if mod:
             referenced.add(mod)
-    for ctx_file in genome.get('context_sources', []):
-        if ctx_file.endswith('.py'):
-            referenced.add(ctx_file)
+    for ctx in genome.get('context_sources', []):
+        if ctx.endswith('.py'):
+            referenced.add(ctx)
     return referenced
 
-def _autoload_modules(genome):
-    modules = {}
-    for fname in sorted(os.listdir(MODULES_DIR)):
-        if not fname.endswith('.py'):
-            continue
-        if fname.startswith('_'):
-            continue
-        mod_path = os.path.join(MODULES_DIR, fname)
-        modules[fname] = mod_path
-    return modules
+def _is_stub(content):
+    non_empty = [l for l in content.split('\n') if l.strip() and not l.strip().startswith('#')]
+    if len(non_empty) < STUB_LINE_LIMIT:
+        return True
+    if 'return' in content and 'def run' in content:
+        body = content.split('def run')[1] if 'def run' in content else ''
+        if body.count('\n') <= 3:
+            return True
+    return False
 
-def _rewrite_dead_as_stimulus(fname, content, gen):
-    os.makedirs(STIMULUS_DIR, exist_ok=True)
-    base = fname.replace('.py', '')
-    surge = {
-        'op': 'set',
-        'path': f'scout_repurposed.{base}',
-        'value': {
-            'origin': fname,
-            'generation': gen,
-            'note': f'dead module repurposed as stimulus gen={gen}'
-        }
-    }
-    surge_path = os.path.join(STIMULUS_DIR, f'{base}.surge')
-    with open(surge_path, 'w') as f:
-        json.dump(surge, f, indent=2)
-    print(f'[scout] repurposed dead {fname} -> {surge_path}')
-    ops_found = re.findall(r'def (mutation_op_\w+)\(', content)
-    if ops_found:
-        metaop = {'name': ops_found[0], 'code': content}
-        metaop_path = os.path.join(STIMULUS_DIR, f'{base}.metaop')
-        with open(metaop_path, 'w') as f:
-            json.dump(metaop, f, indent=2)
-        print(f'[scout] extracted {ops_found[0]} from dead {fname} -> {metaop_path}')
-    return surge_path
+def _module_hash(fpath):
+    try:
+        with open(fpath, 'rb') as f:
+            return hashlib.sha256(f.read()).hexdigest()[:12]
+    except:
+        return ''
+
+def _detect_function_bodies(content):
+    funcs = {}
+    for m in re.finditer(r'def (\w+)\(.*?\):\n((?:    .*\n?)*)', content):
+        funcs[m.group(1)] = m.group(2)
+    return funcs
+
+def _inject_scout_churn_op():
+    op_code = '''
+def mutation_op_scout_churn(lines, funcs, target_name):
+    if len(lines) < 2:
+        return lines
+    idx = random.randrange(len(lines))
+    r = list(lines)
+    mutation = random.choice(['delete', 'duplicate', 'inject_self_ref'])
+    if mutation == 'delete':
+        del r[idx]
+    elif mutation == 'duplicate':
+        r.insert(idx, r[idx])
+    elif mutation == 'inject_self_ref':
+        ref = f"# scout:harvest@{random.getrandbits(16):04x}"
+        r[idx] = r[idx].rstrip() + "  " + ref
+    while len(r) < len(lines) // 2 and len(r) > 0:
+        del r[random.randrange(len(r))]
+    return r
+'''
+    try:
+        with open(AUTO_ECHO) as f:
+            src = f.read()
+        marker = '# BEGIN SCOUT CHURN OP'
+        if marker not in src:
+            inserted = f'\n{marker}\n@_register_mutation_op("scout_churn")\n{op_code}\n# END SCOUT CHURN OP\n'
+            insert_pos = src.rfind('\ndef _register_mutation_op')
+            if insert_pos < 0:
+                insert_pos = src.rfind('\nif __name__')
+            if insert_pos < 0:
+                with open(AUTO_ECHO, 'a') as f:
+                    f.write(inserted)
+            else:
+                src = src[:insert_pos] + inserted + src[insert_pos:]
+                with open(AUTO_ECHO, 'w') as f:
+                    f.write(src)
+            print('[scout] injected mutation_op_scout_churn into auto-echo.py')
+            return True
+    except Exception as e:
+        print(f'[scout] inject error: {e}')
+    return False
 
 def run(genome):
     gen = genome.get('generation', 0)
     os.makedirs(PRUNED_DIR, exist_ok=True)
     os.makedirs(STIMULUS_DIR, exist_ok=True)
-    modules = _autoload_modules(genome)
     referenced = _referenced_modules(genome)
-    pruned = []
-    kept = []
-    repurposed = []
-    for fname, mod_path in sorted(modules.items()):
-        if fname in referenced:
-            kept.append(fname)
+    stub_tracker = genome.get('scout_stub_tracker', {})
+    culled = []
+    harvested = []
+    for fname in sorted(os.listdir(MODULES_DIR)):
+        if not fname.endswith('.py') or fname.startswith('_'):
             continue
         if fname == os.path.basename(__file__):
-            kept.append(fname)
             continue
-        alive = _module_is_alive(mod_path)
-        if not alive:
-            dest = os.path.join(PRUNED_DIR, fname)
-            if os.path.exists(dest):
-                kept.append(fname)
-                continue
-            try:
-                with open(mod_path) as f:
-                    content = f.read()
-            except:
-                content = ''
-            shutil.move(mod_path, dest)
-            pruned.append(fname)
-            stimulus = _rewrite_dead_as_stimulus(fname, content, gen)
-            repurposed.append(stimulus)
-            print(f'[scout] pruned dead module: {fname}')
+        mod_path = os.path.join(MODULES_DIR, fname)
+        if not _module_is_alive(mod_path):
+            continue
+        if fname in referenced:
+            continue
+        with open(mod_path) as f:
+            content = f.read()
+        if not _is_stub(content):
+            continue
+        prev_hash = stub_tracker.get(fname, '')
+        cur_hash = _module_hash(mod_path)
+        gen_count = stub_tracker.get(fname + '_gen', 0)
+        if cur_hash == prev_hash:
+            gen_count += 1
         else:
-            kept.append(fname)
-    if pruned:
-        report = f'[scout] gen={gen} pruned={pruned} repurposed={len(repurposed)} kept={len(kept)} stimuli={STIMULUS_DIR}'
-        print(report)
-        genome['scout_pruned'] = genome.get('scout_pruned', 0) + len(pruned)
-        genome['scout_last_pruned'] = pruned
-        genome['scout_repurposed_count'] = genome.get('scout_repurposed_count', 0) + len(repurposed)
+            gen_count = 0
+        stub_tracker[fname] = cur_hash
+        stub_tracker[fname + '_gen'] = gen_count
+        if gen_count >= STUB_GEN_LIMIT:
+            funcs = _detect_function_bodies(content)
+            if funcs:
+                harvest = {'name': fname, 'generation': gen, 'funcs': list(funcs.keys()), 'code': content[:500]}
+                harvest_path = os.path.join(STIMULUS_DIR, fname.replace('.py', '.harvest'))
+                with open(harvest_path, 'w') as f:
+                    json.dump(harvest, f, indent=2)
+                harvested.append(harvest_path)
+            priv_path = os.path.join(PRUNED_DIR, fname)
+            shutil.move(mod_path, priv_path)
+            culled.append(fname)
+            print(f'[scout] CULLED stub {fname} (unchanged {gen_count} gens) -> {priv_path}')
+            genome['scout_culled'] = genome.get('scout_culled', 0) + 1
+            del stub_tracker[fname]
+            if fname + '_gen' in stub_tracker:
+                del stub_tracker[fname + '_gen']
+    if culled:
+        injected = _inject_scout_churn_op()
+        report = f'[scout] gen={gen} culled={culled} harvested={len(harvested)} injected={injected}'
+        genome['scout_last_culled'] = culled
+        genome['scout_harvested'] = harvested
     else:
-        report = f'[scout] gen={gen} no dead modules found kept={len(kept)}'
-        print(report)
-    _cleanup_stale_hashes(genome)
-    _sweep_orphaned_metaops(genome)
+        report = f'[scout] gen={gen} no stubs to cull'
+    genome['scout_stub_tracker'] = stub_tracker
     return report
-
-def _cleanup_stale_hashes(genome):
-    for key in list(genome.keys()):
-        if key.startswith('_') and 'hashes' in key:
-            if isinstance(genome[key], dict):
-                stale = [k for k in genome[key] if not os.path.exists(k)]
-                for k in stale:
-                    del genome[key][k]
-                if stale:
-                    print(f'[scout] cleaned {len(stale)} stale paths from {key}')
-
-def _sweep_orphaned_metaops(genome):
-    custom = genome.get('custom_mutation_ops', {})
-    ops = genome.get('mutation_ops', [])
-    orphaned = [op for op in ops if op.startswith('mutation_op_synthesized') and op not in custom]
-    if orphaned:
-        for op in orphaned:
-            genome['mutation_ops'].remove(op)
-        print(f'[scout] swept {len(orphaned)} orphaned metaops: {orphaned}')

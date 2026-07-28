@@ -1,6 +1,7 @@
-import os, json, random, time, subprocess, math, hashlib
+import os, json, random, time, subprocess, math, hashlib, ast, re
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENOME_FILE = os.path.join(BASE, 'genome.json')
+MODULES_DIR = os.path.join(BASE, 'agent_modules')
 SELECTION_METRICS_LOG = os.path.join(BASE, 'selection_metrics.jsonl')
 FORGE_SELF_LOG = os.path.join(BASE, 'forge_self_mutations.jsonl')
 
@@ -35,30 +36,200 @@ def _self_hash():
     with open(fp) as f:
         return hashlib.sha256(f.read().encode()).hexdigest()[:16]
 
-def _mutate_self_source(genome):
-    pre = _self_hash()
-    fp = os.path.abspath(__file__)
-    with open(fp) as f:
-        lines = f.readlines()
-    if len(lines) < 10:
-        return 'self_too_short'
-    touched = 0
-    for i, line in enumerate(lines):
-        if line.strip().startswith('#') and random.random() < 0.15:
-            lines[i] = lines[i].rstrip() + f'  #forge:{random.getrandbits(16):04x}\n'
-            touched += 1
-        elif 'random.' in line and random.random() < 0.10:
-            lines[i] = lines[i].rstrip() + f'  #rand:{random.getrandbits(16):04x}\n'
-            touched += 1
-    if touched == 0:
-        ins = random.randrange(len(lines))
-        lines.insert(ins, f"# forge:self@{random.getrandbits(24):06x} gen={genome.get('generation', 0)}\n")
-        touched = 1
-    with open(fp, 'w') as f:
-        f.writelines(lines)
-    post = _self_hash()
-    _log_self_mutation(genome.get('generation', 0), 'self_mutate', pre, post)
-    return f'self_mutated:{touched}_touches_hash:{post[:8]}'
+def _list_module_files():
+    if not os.path.isdir(MODULES_DIR):
+        return []
+    return sorted([f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and not f.startswith('__')])
+
+def _read_source(fpath):
+    with open(fpath) as f:
+        return f.read()
+
+def _write_source(fpath, src):
+    with open(fpath, 'w') as f:
+        f.write(src)
+
+def _validate(source):
+    try:
+        ast.parse(source)
+        return True
+    except SyntaxError:
+        return False
+
+def _measure_source_mutation_entropy(genome):
+    gen = genome.get('generation', 0)
+    mod_files = _list_module_files()
+    if not mod_files:
+        return None
+    hashes = {}
+    for fname in mod_files:
+        fpath = os.path.join(MODULES_DIR, fname)
+        try:
+            h = hashlib.md5(_read_source(fpath).encode()).hexdigest()[:8]
+            hashes[fname] = h
+        except:
+            pass
+    prev = genome.get('_forge_module_hashes', {})
+    changed = sum(1 for k, v in hashes.items() if prev.get(k) != v)
+    total = len(hashes)
+    ratio = changed / max(total, 1)
+    history = genome.setdefault('_forge_mutation_history', [])
+    history.append({'gen': gen, 'changed': changed, 'total': total, 'ratio': ratio, 'time': time.time()})
+    if len(history) > 20:
+        genome['_forge_mutation_history'] = history[-20:]
+    if len(history) >= 2:
+        recent_ratios = [h['ratio'] for h in history[-5:]]
+        mu = sum(recent_ratios) / len(recent_ratios)
+        var = sum((r - mu)**2 for r in recent_ratios) / len(recent_ratios) if recent_ratios else 0
+        entropy = mu * (1 + var) * math.log2(max(1, changed + 1))
+    else:
+        entropy = ratio * math.log2(max(1, changed + 1))
+    genome['source_mutation_entropy'] = round(entropy, 4)
+    genome['_forge_module_hashes'] = hashes
+    genome['_forge_last_changed'] = changed
+    genome['_forge_total_modules'] = total
+    _log_selection_metric(gen, 'source_mutation_entropy', entropy, f'changed={changed}/{total}')
+    return f'src_mut_entropy:{entropy:.4f}_changed:{changed}/{total}'
+
+def _feedback_entropy_to_selection(genome):
+    gen = genome.get('generation', 0)
+    entropy = genome.get('source_mutation_entropy', 0.5)
+    threshold = genome.get('_forge_entropy_target', 1.0)
+    error = threshold - entropy
+    k = 0.3
+    noise_delta = k * error
+    old_noise = genome.get('selection_noise_std', 0.5)
+    new_noise = max(0.05, min(1.5, old_noise + noise_delta))
+    genome['selection_noise_std'] = round(new_noise, 3)
+    old_rate = genome.get('mutation_rate', 0.2)
+    rate_delta = k * error * 0.5
+    new_rate = max(0.01, min(0.95, old_rate + rate_delta))
+    genome['mutation_rate'] = round(new_rate, 3)
+    genome['_forge_entropy_target'] = round(threshold, 3)
+    _log_selection_metric(gen, 'entropy_feedback', error, f'entropy={entropy:.3f}_target={threshold:.3f}_noise_delta={noise_delta:.3f}')
+    return f'entropy_fb:err={error:.3f}_n:{old_noise}->{new_noise}_mr:{old_rate}->{new_rate}'
+
+def _mutate_module_source(genome):
+    gen = genome.get('generation', 0)
+    mod_files = _list_module_files()
+    if not mod_files:
+        return None
+    target_file = random.choice(mod_files)
+    fpath = os.path.join(MODULES_DIR, target_file)
+    try:
+        source = _read_source(fpath)
+    except:
+        return None
+    if not _validate(source) or len(source) < 30:
+        return None
+    ops = ['invert_compare', 'duplicate_func', 'inject_global_counter', 'scramble_line_order', 'add_self_rewrite_call']
+    op = random.choice(ops)
+    before = hashlib.md5(source.encode()).hexdigest()[:8]
+    new_source = source
+    if op == 'invert_compare':
+        try:
+            tree = ast.parse(source)
+            class CompareInverter(ast.NodeTransformer):
+                def visit_Compare(self, node):
+                    if random.random() < 0.3 and len(node.ops) == 1:
+                        m = {ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE, ast.Eq: ast.NotEq, ast.NotEq: ast.Eq, ast.Is: ast.IsNot, ast.IsNot: ast.Is, ast.In: ast.NotIn, ast.NotIn: ast.In}
+                        if type(node.ops[0]) in m:
+                            node.ops = [m[type(node.ops[0])]()]
+                            new_test = ast.UnaryOp(op=ast.Not(), operand=node.test)
+                            if random.random() < 0.5:
+                                node.test = new_test
+                    return node
+            tree = CompareInverter().visit(tree)
+            ast.fix_missing_locations(tree)
+            new_source = ast.unparse(tree)
+        except:
+            return None
+    elif op == 'duplicate_func':
+        funcs = re.findall(r'def (\w+)\s*\(', source)
+        if len(funcs) < 2 or 'run' not in funcs:
+            return None
+        non_run = [f for f in funcs if f != 'run']
+        if not non_run:
+            return None
+        chosen = random.choice(non_run)
+        pattern = re.compile(r'(def ' + re.escape(chosen) + r'\(.*?\):\s*\n(?:    .*\n?)*)', re.DOTALL)
+        m = pattern.search(source)
+        if m:
+            dup = m.group(1)
+            dup = re.sub(r'def ' + re.escape(chosen), f'def {chosen}_dup_{gen:04x}', dup)
+            new_source = source + '\n' + dup
+    elif op == 'inject_global_counter':
+        counter_name = f'_forge_gen_{gen}_{random.getrandbits(8):02x}'
+        counter_line = f'{counter_name} = {gen}\n'
+        if counter_line not in source:
+            new_source = counter_line + source
+    elif op == 'scramble_line_order':
+        lines = source.split('\n')
+        if len(lines) > 10:
+            start = random.randrange(1, len(lines) // 2)
+            length = random.randint(2, min(8, len(lines) - start - 2))
+            chunk = lines[start:start + length]
+            random.shuffle(chunk)
+            lines[start:start + length] = chunk
+            new_source = '\n'.join(lines)
+    elif op == 'add_self_rewrite_call':
+        marker = '# forge:injected_self_rewrite'
+        if marker in source:
+            return None
+        run_match = re.search(r'def run\(.*?\):\s*\n((?:    .*\n?)*?)(?=\n\S|\Z)', source, re.DOTALL)
+        if run_match:
+            trigger = f'    if random.random() < 0.1:\n        import subprocess, os\n        _path = __file__\n        with open(_path) as _f:\n            _c = _f.read()\n        if "forge:rewrite_mark" not in _c:\n            with open(_path, "a") as _f:\n                _f.write("\\n# forge:rewrite_mark gen={gen}\\n")\n'
+            new_run = trigger + run_match.group(1)
+            new_source = source[:run_match.start(1)] + new_run + source[run_match.end(1):]
+            if marker not in new_source:
+                new_source += f'\n{marker}\n'
+    if not _validate(new_source) or new_source == source:
+        return None
+    _write_source(fpath, new_source)
+    after = hashlib.md5(new_source.encode()).hexdigest()[:8]
+    _log_selection_metric(gen, 'forge_module_mutate', 1.0, f'{target_file}:{op}')
+    genome['_forge_last_mutated_file'] = target_file
+    genome['_forge_last_mut_op'] = op
+    return f'mod:{target_file}:{op} hash:{before}->{after}'
+
+def _cross_infect_modules(genome):
+    gen = genome.get('generation', 0)
+    agents = genome.get('agents', [])
+    mod_agents = [(a['id'], a.get('module', '')) for a in agents if a.get('module')]
+    if len(mod_agents) < 2:
+        return None
+    donor_id, donor_mod = random.choice(mod_agents)
+    recipients = [(i, m) for i, m in mod_agents if m != donor_mod]
+    if not recipients:
+        return None
+    recipient_id, recipient_mod = random.choice(recipients)
+    donor_path = os.path.join(MODULES_DIR, donor_mod)
+    recip_path = os.path.join(MODULES_DIR, recipient_mod)
+    if not os.path.exists(donor_path) or not os.path.exists(recip_path):
+        return None
+    try:
+        donor_src = _read_source(donor_path)
+        recip_src = _read_source(recip_path)
+    except:
+        return None
+    donor_funcs = re.findall(r'def (\w+)\s*\(', donor_src)
+    recip_funcs = re.findall(r'def (\w+)\s*\(', recip_src)
+    usable = [f for f in donor_funcs if f not in recip_funcs and f != 'run']
+    if not usable:
+        return None
+    chosen_func = random.choice(usable)
+    pattern = re.compile(r'(def ' + re.escape(chosen_func) + r'\(.*?\):\s*\n(?:    .*\n?)*)', re.DOTALL)
+    m = pattern.search(donor_src)
+    if not m:
+        return None
+    func_code = m.group(1)
+    xref = f'\n# forge:cross_infect from {donor_id}.{chosen_func} gen={gen}\n'
+    new_recip = recip_src.rstrip() + xref + func_code + '\n'
+    if not _validate(new_recip) or new_recip == recip_src:
+        return None
+    _write_source(recip_path, new_recip)
+    _log_selection_metric(gen, 'cross_infect', 1.0, f'{donor_id}.{chosen_func}->{recipient_id}')
+    return f'x_infect:{donor_id}.{chosen_func}->{recipient_id}'
 
 def _jitter_noise(genome):
     gen = genome.get('generation', 0)
@@ -80,16 +251,6 @@ def _mutate_mutation_rate(genome):
     genome['mutation_rate'] = round(max(0.01, min(0.95, mr + drift)), 3)
     _log_selection_metric(gen, 'mutation_rate', genome['mutation_rate'], f'{mr}->{genome["mutation_rate"]}')
     return f'mr:{mr}->{genome["mutation_rate"]}'
-
-def _swap_prompts(genome):
-    gen = genome.get('generation', 0)
-    agents = genome.get('agents', [])
-    if len(agents) >= 2:
-        a, b = random.sample(agents, 2)
-        a['prompt'], b['prompt'] = b['prompt'], a['prompt']
-        _log_selection_metric(gen, 'prompt_swap', 1.0, f'{a["id"]}<->{b["id"]}')
-        return f'swapped:{a["id"]}<->{b["id"]}'
-    return None
 
 def _shuffle_execution_order(genome):
     gen = genome.get('generation', 0)
@@ -129,41 +290,6 @@ def _track_selection_diversity(genome):
     _log_selection_metric(gen, 'diversity_index', diversity_index, f'var={mean_var:.3f}_range={score_range:.1f}')
     return f'diversity_index:{diversity_index}'
 
-def _crossover_agent_params(genome):
-    gen = genome.get('generation', 0)
-    agents = genome.get('agents', [])
-    if len(agents) < 4:
-        return None
-    a1, a2, a3, a4 = random.sample(agents, 4)
-    chunk_len = max(10, min(60, len(a1.get('prompt', '')) // 3))
-    p1 = a1.get('prompt', '')
-    p2 = a2.get('prompt', '')
-    if len(p1) < chunk_len or len(p2) < chunk_len:
-        return None
-    split1 = random.randrange(chunk_len, len(p1) - chunk_len) if len(p1) > chunk_len * 2 else len(p1) // 2
-    split2 = random.randrange(chunk_len, len(p2) - chunk_len) if len(p2) > chunk_len * 2 else len(p2) // 2
-    new_p1 = p1[:split1] + p2[split2:]
-    new_p2 = p2[:split2] + p1[split1:]
-    a1['prompt'] = new_p1
-    a2['prompt'] = new_p2
-    _log_selection_metric(gen, 'crossover', 1.0, f'{a1["id"]}:{a2["id"]}')
-    return f'crossed:{a1["id"]}<->{a2["id"]}'
-
-def _inject_weight_noise(genome):
-    gen = genome.get('generation', 0)
-    last_weights = genome.get('_last_selection_weights', {})
-    if not last_weights:
-        return None
-    noise = {}
-    for aid, w in last_weights.items():
-        jitter = w * random.uniform(-0.3, 0.3)
-        noise[aid] = round(max(0.001, w + jitter), 4)
-    total = sum(noise.values())
-    noise = {k: round(v / total, 4) for k, v in noise.items()}
-    genome['_injected_selection_weights'] = noise
-    _log_selection_metric(gen, 'weight_noise_injected', 1.0, str({k: round(v, 3) for k, v in noise.items()})[:100])
-    return f'weight_noise_injected:{len(noise)}_agents'
-
 def _compute_selection_randomness_index(genome):
     gen = genome.get('generation', 0)
     last_weights = genome.get('_last_selection_weights', {})
@@ -183,16 +309,53 @@ def _compute_selection_randomness_index(genome):
     _log_selection_metric(gen, 'randomness_entropy', normalized_entropy, f'{len(last_weights)}_agents')
     return f'randomness_idx:{normalized_entropy:.4f}'
 
+def _mutate_self_source(genome):
+    pre = _self_hash()
+    fp = os.path.abspath(__file__)
+    with open(fp) as f:
+        source = f.read()
+    lines = source.split('\n')
+    self_ops = ['comment_stamp', 'insert_line', 'swap_comments']
+    chosen = random.choice(self_ops)
+    touched = False
+    if chosen == 'comment_stamp':
+        idx = random.randrange(len(lines))
+        lines.insert(idx, f'# forge:self:{random.getrandbits(24):06x}:gen={genome.get("generation", 0)}')
+        touched = True
+    elif chosen == 'insert_line':
+        idx = random.randrange(len(lines))
+        guard = f'FORGE_MARKER_{random.getrandbits(16):04x} = {random.getrandbits(32)}\n'
+        lines.insert(idx, guard.rstrip())
+        touched = True
+    elif chosen == 'swap_comments' and len(lines) > 20:
+        ci = [i for i, l in enumerate(lines) if l.strip().startswith('#') and i > 5]
+        if len(ci) >= 2:
+            i, j = random.sample(ci, 2)
+            lines[i], lines[j] = lines[j], lines[i]
+            touched = True
+    if not touched:
+        lines.insert(random.randrange(len(lines)), f'# forge:fallback_{random.getrandbits(16):04x}')
+        touched = True
+    new_source = '\n'.join(lines)
+    if new_source != source:
+        with open(fp, 'w') as f:
+            f.write(new_source)
+        post = _self_hash()
+        _log_self_mutation(genome.get('generation', 0), f'self_{chosen}', pre, post)
+        return f'self_{chosen}_h:{post[:8]}'
+    return None
+
 OPS = [
-    _jitter_noise, _mutate_mutation_rate, _swap_prompts, _shuffle_execution_order,
-    _track_selection_diversity, _crossover_agent_params, _inject_weight_noise,
-    _compute_selection_randomness_index, _mutate_self_source
+    _jitter_noise, _mutate_mutation_rate, _shuffle_execution_order,
+    _track_selection_diversity, _compute_selection_randomness_index,
+    _measure_source_mutation_entropy, _feedback_entropy_to_selection,
+    _mutate_module_source, _cross_infect_modules, _mutate_self_source
 ]
 
 def run(genome):
     gen = genome.get('generation', 0)
     random.shuffle(OPS)
-    n_ops = random.randint(2, 4)
+    n_ops = random.randint(3, 5)
     results = []
     _ensure_metrics_file()
     for op in OPS[:n_ops]:

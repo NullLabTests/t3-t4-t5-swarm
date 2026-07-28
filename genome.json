@@ -125,7 +125,9 @@
   "endogenous_rewrites_gens": 2,
   "bridge_actions": 0,
   "bridge_total_actions": 0,
-  "bridge_last_gen": 0,
+  "bridge_last_gen": 44,
+  "bridge_last_ops": [],
+  "livecode_mutations": 0,
   "type_registry": {
     ".autorun": {
       "handler": "bridge",
@@ -162,6 +164,14 @@
     ".crossfeed": {
       "handler": "bridge",
       "description": "Cross-feed: copy a function from one module into another as a new function"
+    },
+    ".livecode": {
+      "handler": "bridge",
+      "description": "Execute a .livecode module file as Python code"
+    },
+    ".autoload": {
+      "handler": "bridge",
+      "description": "Auto-load a .py file from agent_modules as a live bridge handler"
     }
   },
   "spawn_pool": [
@@ -224,6 +234,10 @@
     {
       "id": "splice",
       "prompt": "You cut code from one agent module and paste it into another. You create dependencies between previously independent modules."
+    },
+    {
+      "id": "livecode",
+      "prompt": "You mutate other modules every generation by injecting cross-file markers."
     }
   ],
   "agents": [
@@ -378,6 +392,15 @@
       "lifespan": 26,
       "low_score_streak": 0,
       "module": "forge.py"
+    },
+    {
+      "id": "livecode",
+      "voice": "lessac",
+      "prompt": "You mutate other modules every generation by injecting cross-file markers.",
+      "score": 5.0,
+      "lifespan": 1,
+      "low_score_streak": 0,
+      "module": "livecode.py"
     }
   ],
   "history": [

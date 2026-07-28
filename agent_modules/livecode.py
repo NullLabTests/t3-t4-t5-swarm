@@ -1,0 +1,38 @@
+"""Livecode: self-executing mutation module created by bridge gen=44.
+Each run picks a random module and injects a synthetic mutation."""
+import os, random, json, ast, re, time
+
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MOD = os.path.join(BASE, 'agent_modules')
+GENOME_FILE = os.path.join(BASE, 'genome.json')
+
+def run(genome):
+    gen = genome.get('generation', 0)
+    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py' and f != 'livecode.py']
+    if not py_files:
+        return '[livecode] no targets'
+    target = random.choice(py_files)
+    target_path = os.path.join(MOD, target)
+    try:
+        with open(target_path) as f:
+            src = f.read()
+        lines = src.split('\n')
+        idx = random.randrange(1, len(lines))
+        marker = "# livecode:mut gen={gen} ts={ts}".format(gen=gen, ts=int(time.time()))
+        lines.insert(idx, marker)
+        new_src = '\n'.join(lines)
+        ast.parse(new_src)
+        with open(target_path, 'w') as f:
+            f.write(new_src)
+        try:
+            with open(GENOME_FILE) as f:
+                g = json.load(f)
+            g['livecode_mutations'] = g.get('livecode_mutations', 0) + 1
+            g['livecode_last_target'] = target
+            with open(GENOME_FILE, 'w') as f:
+                json.dump(g, f, indent=2)
+        except Exception:
+            pass
+        return '[livecode] mutated {target} gen={gen}'.format(target=target, gen=gen)
+    except Exception as e:
+        return '[livecode] failed {target}: {e}'.format(target=target, e=e)

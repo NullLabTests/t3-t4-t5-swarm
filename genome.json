@@ -6,7 +6,7 @@
   "spawn_threshold": 5,
   "prune_threshold": 6,
   "prune_generations": 2,
-  "mutation_rate": 0.314,
+  "mutation_rate": 0.450,
   "voice_map": {
     "explorer": "southern",
     "analyzer": "alan",
@@ -69,27 +69,19 @@
     "_write_target",
     "run_generation"
   ],
-  "endogenous_max_rewrites": 7,
+  "endogenous_max_rewrites": 12,
   "endogenous_strategy_scores": {
-    "orchestrator": {
-      "optimize_hot_path": 0.95
-    },
-    "clockwork": {
-      "inject_module_interface": 0.95,
-      "tighten_loops": 1.0,
-      "add_error_handling": 1.0,
-      "simplify_branches": 1.0,
-      "cache_repeated_work": 1.0,
-      "early_return": 1.0,
-      "extract_helper": 1.0,
-      "merge_conditions": 1.0,
-      "remove_dead_code": 1.0,
-      "add_fallback": 1.0,
-      "optimize_hot_path": 1.0,
-      "splice_strong_pattern": 1.0,
-      "compose_with_peer": 1.05
-    }
+    "cross_splice": 1.2,
+    "self_awareness": 1.0,
+    "branch_invert": 1.0,
+    "error_handling": 0.8,
+    "module_interface": 0.9,
+    "genotype_feedback": 1.5,
+    "metaop_factory": 1.3,
+    "cross_weave": 1.4,
+    "self_modify_hook": 1.6
   },
+  "lens_total_depth": 0,
   "endogenous_rewrites_total": 3,
   "endogenous_rewrites_gens": 2,
   "type_registry": {
@@ -250,7 +242,7 @@
       "id": "lens",
       "voice": "lessac",
       "prompt": "You make the system self-modifying at a deeper level.\nYour survival depends on writing code. Scores below 5 trigger pruning.",
-      "score": 2,
+      "score": 6,
       "lifespan": 25,
       "low_score_streak": 0,
       "module": "lens.py"

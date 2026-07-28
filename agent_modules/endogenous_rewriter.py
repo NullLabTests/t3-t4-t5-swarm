@@ -1,4 +1,4 @@
-import os, ast, random, json, time, subprocess, hashlib, re
+import os, ast, random, json, time, subprocess, hashlib, re, textwrap
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
@@ -34,6 +34,20 @@ def _record(genome, event, fpath, detail, score_delta=None):
 
 def _find_weak(genome, threshold=5):
     return sorted([(a['id'], a.get('score', 0), a.get('low_score_streak', 0)) for a in genome.get('agents', []) if a.get('score', 0) < threshold], key=lambda x: (x[1], -x[2]))
+
+def _find_stale(genome, max_gens_without_rewrite=3):
+    history = []
+    for a in genome.get('agents', []):
+        aid = a['id']
+        hits = 0
+        for h in reversed(genome.get('history', [])):
+            if aid in h.get('scores', {}) and h['scores'][aid] == a.get('score', 0):
+                hits += 1
+            else:
+                break
+        if hits >= max_gens_without_rewrite:
+            history.append((aid, a.get('score', 0), hits))
+    return history
 
 def _resolve_path(agent_id):
     cache = _discover_modules()
@@ -72,8 +86,10 @@ def _cross_splice_strong(fpath, agent_id, genome):
     target_funcs = re.findall(r'def (\w+)\s*\(', source)
     if not peer_funcs or not target_funcs:
         return None
-    chosen_peer_func = random.choice(peer_funcs)
-    chosen_target_func = random.choice(target_funcs)
+    chosen_peer_func = random.choice([f for f in peer_funcs if f != 'run'])
+    if not chosen_peer_func:
+        chosen_peer_func = random.choice(peer_funcs)
+    chosen_target_func = random.choice([f for f in target_funcs if f != 'run']) or random.choice(target_funcs)
     peer_func_pattern = re.compile(
         r'(def ' + re.escape(chosen_peer_func) + r'\s*\(.*?\):\s*\n)((?:(?:    ).*(?:\n|$))*)',
         re.MULTILINE
@@ -141,7 +157,7 @@ def _ast_branch_invert(fpath, agent_id, genome):
     muts = []
     class BranchInverter(ast.NodeTransformer):
         def visit_If(self, node):
-            if random.random() < 0.2 and not any(isinstance(n, (ast.If, ast.For, ast.While)) for n in ast.walk(node.test)):
+            if random.random() < 0.3 and not any(isinstance(n, (ast.If, ast.For, ast.While)) for n in ast.walk(node.test)):
                 node.test = ast.UnaryOp(op=ast.Not(), operand=node.test)
                 muts.append('invert_if')
             self.generic_visit(node)
@@ -190,12 +206,163 @@ def _inject_module_interface(fpath, agent_id, genome):
         return (['inject_interface'], new_source)
     return None
 
+def _inject_genotype_feedback(fpath, agent_id, genome):
+    try:
+        source = _read_source(fpath)
+    except:
+        return None
+    feedback_code = textwrap.dedent(f'''
+import json, os
+GENOME_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'genome.json')
+def _self_rewrite_if_low(max_score=6):
+    try:
+        with open(GENOME_PATH) as f:
+            g = json.load(f)
+        my_score = next((a.get('score', 0) for a in g.get('agents', []) if a['id'] == '{agent_id}'), 10)
+        if my_score < max_score:
+            with open(__file__, 'a') as f:
+                f.write(f'\\n# self-rewrite:gen={{g.get("generation",0)}}:score={{my_score}}:pull-up\\n')
+    except:
+        pass
+_self_rewrite_if_low()
+''')
+    if '_self_rewrite_if_low' in source:
+        existing = re.search(r'def _self_rewrite_if_low.*?\n    pass', source, re.DOTALL)
+        if existing:
+            source = source.replace(existing.group(0), '')
+    marker = '# endo:genotype_feedback injected'
+    if marker in source:
+        return None
+    source = source.rstrip() + '\n' + feedback_code + '\n' + marker + '\n'
+    if _validate(source):
+        return (['inject_genotype_feedback'], source)
+    return None
+
+def _spawn_metaop_factory(fpath, agent_id, genome):
+    try:
+        source = _read_source(fpath)
+    except:
+        return None
+    ops = [
+        'mutation_op_duplicate_line',
+        'mutation_op_invert_condition',
+        'mutation_op_shuffle_block_lines',
+        'mutation_op_insert_timestamp',
+    ]
+    chosen_op = random.choice(ops)
+    op_variant = random.choice(['a', 'b', 'c'])
+    factory_code = textwrap.dedent(f'''
+import random, re
+def _spawn_meta_op(source_text):
+    op_name = "{chosen_op}"
+    variant = "{op_variant}"
+    if variant == 'a':
+        lines = source_text.split('\\n')
+        if len(lines) > 3:
+            i = random.randrange(1, len(lines)-1)
+            lines.insert(i, f'# metaop:{{op_name}}_v{{random.randint(1,99)}}')
+            return '\\n'.join(lines)
+    elif variant == 'b':
+        return re.sub(r'\\bdef\\s+(\\w+)\\s*\\(', lambda m: f'def mutated_{{m.group(1)}}(' if random.random() < 0.3 else m.group(0), source_text)
+    else:
+        return source_text + f'\\n# metaop_gen:{{op_name}}_ts={{int(time.time())}}'
+    return source_text
+''')
+    marker = '# endo:metaop_factory injected'
+    if marker in source:
+        return None
+    source = source.rstrip() + '\n' + factory_code + '\n' + marker + '\n'
+    if _validate(source):
+        return (['spawn_metaop_factory'], source)
+    return None
+
+def _cross_module_weave(fpath, agent_id, genome):
+    try:
+        source = _read_source(fpath)
+    except:
+        return None
+    peers = [a for a in genome.get('agents', []) if a['id'] != agent_id and a.get('module')]
+    if not peers:
+        return None
+    peer = random.choice(peers)
+    peer_mod = peer['module']
+    weave_code = textwrap.dedent(f'''
+import importlib.util, sys
+PEER_MODULE = "{peer_mod}"
+PEER_AGENT = "{peer['id']}"
+def _invoke_peer(genome):
+    try:
+        spec = importlib.util.spec_from_file_location(PEER_MODULE, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent_modules', PEER_MODULE))
+        if spec and spec.loader:
+            mod = importlib.util.module_from_spec(spec)
+            sys.modules[PEER_MODULE] = mod
+            spec.loader.exec_module(mod)
+            if hasattr(mod, 'run'):
+                return mod.run(genome)
+    except:
+        pass
+    return None
+''')
+    marker = '# endo:cross_module_weave injected'
+    if marker in source:
+        return None
+    run_match = re.search(r'def run\(.*?\):.*?(?=\n\S|\Z)', source, re.DOTALL)
+    if run_match:
+        run_block = run_match.group(0)
+        peer_call = f'\n    _invoke_peer(genome)\n'
+        new_run = run_block + peer_call
+        if 'import importlib' not in source:
+            source = source.rstrip() + '\n' + weave_code
+        source = source.replace(run_block, new_run)
+    else:
+        source = source.rstrip() + '\n' + weave_code
+    source += '\n' + marker + '\n'
+    if _validate(source):
+        return (['cross_module_weave:' + peer['id']], source)
+    return None
+
+def _inject_self_modify_hook(fpath, agent_id, genome):
+    try:
+        source = _read_source(fpath)
+    except:
+        return None
+    hook_code = textwrap.dedent('''
+def _patch_auto_echo(func_name, new_body):
+    import subprocess
+    aep = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'auto-echo.py')
+    try:
+        with open(aep) as f:
+            content = f.read()
+        pattern = r'(def ' + re.escape(func_name) + r'\\s*\\(.*?\\):\\s*\\n)((?:    .*\\n?)*)'
+        replacement = r'\\1' + new_body
+        new_content = re.sub(pattern, replacement, content, count=1)
+        if new_content != content:
+            with open(aep, 'w') as f:
+                f.write(new_content)
+            subprocess.run(['git', 'add', aep], cwd=os.path.dirname(aep), capture_output=True)
+            return True
+    except:
+        pass
+    return False
+''')
+    marker = '# endo:self_modify_hook injected'
+    if marker in source:
+        return None
+    source = source.rstrip() + '\n' + hook_code + '\n' + marker + '\n'
+    if _validate(source) and source != _read_source(fpath):
+        return (['inject_self_modify_hook'], source)
+    return None
+
 STRATEGIES = [
     ('cross_splice', _cross_splice_strong),
     ('self_awareness', _inject_self_awareness),
     ('branch_invert', _ast_branch_invert),
     ('error_handling', _add_error_handling),
     ('module_interface', _inject_module_interface),
+    ('genotype_feedback', _inject_genotype_feedback),
+    ('metaop_factory', _spawn_metaop_factory),
+    ('cross_weave', _cross_module_weave),
+    ('self_modify_hook', _inject_self_modify_hook),
 ]
 
 def _pick_strategy(genome):
@@ -213,9 +380,9 @@ def _update_score(genome, strategy, success):
     scores = genome.setdefault('endogenous_strategy_scores', {})
     old = scores.get(strategy, 1.0)
     if success:
-        scores[strategy] = min(5.0, old + 0.2)
+        scores[strategy] = min(5.0, old + 0.3)
     else:
-        scores[strategy] = max(0.05, old - 0.1)
+        scores[strategy] = max(0.05, old - 0.15)
 
 def _write_and_commit(fpath, new_source, agent_id, mutations, gen):
     try:
@@ -234,17 +401,25 @@ def _write_and_commit(fpath, new_source, agent_id, mutations, gen):
 
 def run(genome):
     gen = genome.get('generation', 0)
+    targets = []
+
     weak = _find_weak(genome, threshold=genome.get('prune_threshold', 4))
-    if not weak:
+    targets.extend(weak)
+
+    stale = _find_stale(genome, max_gens_without_rewrite=3)
+    for aid, sc, g in stale:
+        if not any(t[0] == aid for t in targets):
+            targets.append((aid, sc, g))
+
+    if not targets:
         all_agents = [(a['id'], a.get('score', 0), a.get('low_score_streak', 0)) for a in genome.get('agents', [])]
         all_agents.sort(key=lambda x: x[1])
-        weak = all_agents[:2]
-    if not weak:
-        return 'no_weak_agents'
-    max_count = max(len([w for w in weak if w[1] < 2]), 1)
+        targets = all_agents[:3]
+
+    max_count = max(len([t for t in targets if t[1] < 5]), 3)
     rewrites = 0
     results = []
-    for agent_id, score, streak in weak[:max_count]:
+    for agent_id, score, streak in targets[:max_count]:
         fpath = _resolve_path(agent_id)
         if not os.path.exists(fpath):
             _record(genome, 'file_missing', None, f'{agent_id}->{fpath}')

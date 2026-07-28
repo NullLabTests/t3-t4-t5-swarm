@@ -303,6 +303,15 @@
       "lifespan": 1,
       "role": "self-referential feedback reflector",
       "description": "Reflects swarm behavior back into genome as measurable feedback. Measures self-ref ratio, feedback loops, reflection depth."
+    },
+    {
+      "id": "clockwork",
+      "voice": "lessac",
+      "prompt": "You inject time-based triggers and scheduling into the swarm loop. You add clock-driven mutation rate adjustment, scheduled rewrites, and temporal feedback. Every turn, write code that modifies how timing affects the swarm's self-rewriting behavior.",
+      "score": 7.0,
+      "lifespan": 0,
+      "low_score_streak": 0,
+      "module": "clockwork.py"
     }
   ],
   "history": [

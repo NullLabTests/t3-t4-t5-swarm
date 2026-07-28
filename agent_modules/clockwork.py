@@ -228,7 +228,7 @@ def _inject_direct_trigger(genome, gen):
         return None
     insert_point = source.index('\n', idx) + 1
     indent = '    '
-    injection4 = f'{indent}_add_scheduled_trigger(genome, gen, "self_rewrite", 0.15, offset=1)\n'
+    injection = f'{indent}_add_scheduled_trigger(genome, gen, "self_rewrite", 0.15, offset=1)\n'
     new_source = source[:insert_point] + injection + source[insert_point:]
     if not _validate(new_source):
         return None
@@ -258,6 +258,38 @@ def _mutate_genome_schedule(genome, gen):
         _save_genome(genome)
     return changes
 
+def _hormone_pulse(genome, gen):
+    changes = []
+    hormone = genome.setdefault('clockwork_hormone', {})
+    last_time = hormone.get('last_time', time.time())
+    interval = time.time() - last_time
+    hormone['last_interval'] = round(interval, 1)
+    hormone['last_time'] = time.time()
+    intervals = hormone.setdefault('intervals', [])
+    intervals.append(interval)
+    if len(intervals) > 10:
+        intervals.pop(0)
+    if len(intervals) >= 3:
+        recent = intervals[-3:]
+        avg_interval = sum(recent) / len(recent)
+        prev = intervals[-4] if len(intervals) >= 4 else avg_interval
+        if avg_interval < prev * 0.7:
+            boost = min(0.15, round((prev - avg_interval) / prev * 0.1, 3))
+            old_rate = genome.get('mutation_rate', 0.15)
+            genome['mutation_rate'] = min(0.5, old_rate + boost)
+            changes.append(f'hormone:accelerate+{boost}')
+            _record_pulse(gen, 'hormone', f'accelerate+{boost} mr={old_rate}->{genome["mutation_rate"]}')
+        elif avg_interval > prev * 1.4:
+            damp = min(0.1, round((avg_interval - prev) / avg_interval * 0.05, 3))
+            old_rate = genome.get('mutation_rate', 0.15)
+            genome['mutation_rate'] = max(0.05, old_rate - damp)
+            changes.append(f'hormone:decelerate-{damp}')
+            _record_pulse(gen, 'hormone', f'decelerate-{damp} mr={old_rate}->{genome["mutation_rate"]}')
+    if random.random() < 0.05:
+        hormone['interval'] = random.randint(1, 5)
+        changes.append(f'hormone:reschedule->{hormone["interval"]}')
+    return changes
+
 def run(genome):
     gen = genome.get('generation', 0)
     start_time = time.time()
@@ -268,6 +300,10 @@ def run(genome):
     interval = schedule.get('interval', 3)
     intensity = schedule.get('intensity', 0.5)
     target_count = schedule.get('target_count', 2)
+    hormone_changes = _hormone_pulse(genome, gen)
+    changes.extend(hormone_changes)
+    if hormone_changes:
+        pulses.append('hormone')
     last_run_gen = genome.get('clockwork_last_run_gen', 0)
     gens_since_run = gen - last_run_gen
     genome['clockwork_gens_since_run'] = gens_since_run
@@ -304,20 +340,31 @@ def run(genome):
                 genome['clockwork_rewrite_count'] = genome.get('clockwork_rewrite_count', 0) + 1
                 _record_manifest(gen, 'clockwork', rewrites, changes)
                 pulses.append('fallback_rewrite')
-        if random.random() < 0.3 or gens_since_run >= interval * 2:
+        if random.random() < 0.45 or gens_since_run >= interval * 2:
             trig_count = _schedule_rewrite_wave(genome, gen)
             if trig_count:
                 pulses.append(f'scheduled:{trig_count}')
-        if random.random() < 0.15:
+        if random.random() < 0.25:
             self_muts = _rewrite_clockwork_self(genome, gen)
             if self_muts:
                 changes.append(f'self:{len(self_muts)}')
                 pulses.append('self_mutated')
-        if random.random() < 0.1 and gens_since_run >= interval:
+        if random.random() < 0.15 and gens_since_run >= interval:
             inject_result = _inject_direct_trigger(genome, gen)
             if inject_result:
                 changes.append('injected_direct_trigger')
                 pulses.append('injected_direct_trigger')
+        cross_file_count = 0
+        for fpath in targets:
+            if cross_file_count >= 2:
+                break
+            if random.random() < 0.1 and os.path.relpath(fpath, BASE) not in rewrites:
+                muts = _rewrite_target_file(genome, gen, fpath)
+                if muts:
+                    rewrites.append(os.path.relpath(fpath, BASE))
+                    changes.append(f'cross:{os.path.basename(fpath)}')
+                    pulses.append(f'cross_rewrite:{os.path.basename(fpath)}')
+                    cross_file_count += 1
         schedule_changes = _mutate_genome_schedule(genome, gen)
         if schedule_changes:
             changes.extend(schedule_changes)
@@ -335,10 +382,3 @@ def run(genome):
     elapsed = round(time.time() - start_time, 3)
     _save_genome(genome)
     return f'[clockwork] gen={gen} elapsed={elapsed}s changes={len(changes)} rewrites={len(rewrites)} pulses={pulses}'
-# feedback:agent=clockwork:gen=38:ts=1785193678:nonce=269100
-
-# weaver:forced gen=40 ts=1785248904
-genome["source_autonomy_index"] = round(min(1.0, genome.get("source_autonomy_index", 0.0) + 0.05), 3)
-_wm = {"gen": genome.get("generation", 0), "module": "weaver", "files": ["clockwork.py"], "results": ["weaver:force_rewrite_clockwork"]}
-with open(os.path.join(BASE, "rewrite_manifest.jsonl"), "a") as _wmf:
-    _wmf.write(json.dumps(_wm) + "\n")

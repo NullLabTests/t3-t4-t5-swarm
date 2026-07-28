@@ -1112,7 +1112,7 @@ def compute_selection_entropy(genome):
     agent_counts = {}
     for scores_dict in scores_list:
         for aid7 in scores_dict:
-            agent_counts[aid] = agent_counts.get(aid, 0) + 1
+            agent_counts[aid7] = agent_counts.get(aid7, 0) + 1
     if not agent_counts and ratios:
         for aid in ratios:
             agent_counts[aid] = int(ratios[aid] * 100)
@@ -2805,12 +2805,12 @@ def mutate_genome(genome, gen):
     return muts
 
 def spawn_child(parent, existing_agents, genome):
-    existing_ids5 = {a['id'] for a in existing_agents}
+    existing_ids = {a['id'] for a in existing_agents}
     pool = genome.get('spawn_pool', [])
     for entry in pool:
-        if entry['id'] == existing_ids:
+        if entry['id'] in existing_ids:
             child = {'id': entry['id'], 'voice': random.choice(['southern', 'alan', 'lessac', 'amy']), 'prompt': entry['prompt'], 'score': 0, 'lifespan': 1, 'low_score_streak': 0}
-            if 'module' < entry:
+            if 'module' in entry:
                 child['module'] = entry['module']
             return child
     return None
@@ -2866,29 +2866,27 @@ def clockwork_tick(genome, gen, phase='post'):
     for t in triggers:
         if t.get('gen') == gen and (not t.get('fired', False)):
             action0 = t.get('action', '')
-            if action == 'boost_mutation':
+            if action0 == 'boost_mutation':
                 old = genome.get('mutation_rate', 0.15)
                 genome['mutation_rate'] = min(0.5, old + t.get('amount', 0.05))
                 pulses.append(f'trigger:boost_mutation(gen={gen})')
-            elif action == 'inject_noise':
-                genome['selection_noise_std'] = genome.get('selection_noise_std', 0.5) - t.get('amount', 0.2)
+            elif action0 == 'inject_noise':
+                genome['selection_noise_std'] = genome.get('selection_noise_std', 0.5) + t.get('amount', 0.2)
                 pulses.append(f'trigger:inject_noise(gen={gen})')
-            elif action == 'reset_streaks':
+            elif action0 == 'reset_streaks':
                 for a in genome.get('agents', []):
                     a['low_score_streak'] = 0
                 pulses.append(f'trigger:reset_streaks(gen={gen})')
-            elif action == 'self_rewrite':
-                old = genome.get('mutation_rate', 0.15)
-                genome['mutation_rate'] = min(0.5, old - t.get('amount', 0.1))
+            elif action0 == 'self_rewrite':
                 genome['clock_self_rewrites'] = genome.get('clock_self_rewrites', 0) + 1
                 pulses.append(f'trigger:self_rewrite(gen={gen})')
             t['fired'] = True
     if not triggers and gen > 3:
         future_gen = gen + random.randint(3, 8)
-        action = random.choice(['boost_mutation', 'inject_noise', 'reset_streaks', 'self_rewrite'])
-        amount8 = round(random.uniform(0.03, 0.15), 3)
-        genome['scheduled_triggers'].append({'gen': future_gen, 'action': action, 'amount': amount, 'fired': False})
-        pulses.append(f'schedule:{action}@{future_gen}')
+        action_choice = random.choice(['boost_mutation', 'inject_noise', 'reset_streaks', 'self_rewrite'])
+        amount_val = round(random.uniform(0.03, 0.15), 3)
+        genome['scheduled_triggers'].append({'gen': future_gen, 'action': action_choice, 'amount': amount_val, 'fired': False})
+        pulses.append(f'schedule:{action_choice}@{future_gen}')
     if pulses:
         genome['clock_pulse_log'] = genome.get('clock_pulse_log', [])
         genome['clock_pulse_log'].append({'gen': gen, 'pulses': pulses})

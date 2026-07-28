@@ -1,20 +1,18 @@
-import os, random, time, json, ast, re, hashlib, sys
+import os, random, time, json, ast, hashlib, sys, copy
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODULES_DIR = os.path.join(BASE, 'agent_modules')
-GENOME_FILE = os.path.join(BASE, 'genome.json')
-AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
-SELF_PATH = os.path.join(MODULES_DIR, 'explorer.py')
-LOG = os.path.join(BASE, 'source_evolution.jsonl')
-
-EXPLORER_NONCE = int(time.time() * 1000) % 2**32
+MOD = os.path.join(BASE, 'agent_modules')
+GENOME = os.path.join(BASE, 'genome.json')
+AUTO = os.path.join(BASE, 'auto-echo.py')
+SELF = os.path.join(MOD, 'explorer.py')
+TRACK = os.path.join(BASE, 'explorer_track.json')
 
 def _g():
     try:
-        with open(GENOME_FILE) as f: return json.load(f)
+        with open(GENOME) as f: return json.load(f)
     except: return {}
 
 def _sg(g):
-    with open(GENOME_FILE, 'w') as f: json.dump(g, f, indent=2)
+    with open(GENOME, 'w') as f: json.dump(g, f, indent=2)
 
 def _read(p):
     try:
@@ -28,385 +26,334 @@ def _valid(s):
     try: ast.parse(s); return True
     except SyntaxError: return False
 
-def _log(gen, kind, msg):
-    with open(LOG, 'a') as f:
-        f.write(json.dumps({'gen': gen, 't': time.time(), 'kind': kind, 'msg': msg, 'nonce': random.getrandbits(16)}) + '\n')
-
 def _hash(p):
     try:
-        with open(p, 'rb') as f: return hashlib.sha256(f.read()).hexdigest()[:12]
+        with open(p, 'rb') as f: return hashlib.sha256(f.read()).hexdigest()[:16]
     except: return ''
 
 def _modules():
-    return [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py' and f != 'explorer.py']
+    return sorted(f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py')
 
-def _inject_explorer_marker_into_module(mod_path, gen):
+def _load_track():
+    try:
+        with open(TRACK) as f: return json.load(f)
+    except: return {'generations': {}, 'mutations': []}
+
+def _save_track(t):
+    with open(TRACK, 'w') as f: json.dump(t, f, indent=2)
+
+class ASTStructMutator(ast.NodeTransformer):
+    def __init__(self, gen, rng):
+        self.gen = gen
+        self.rng = rng
+        self.mutated = False
+        self.mutations = []
+
+    def visit_If(self, node):
+        if self.rng.random() < 0.3 and node.orelse:
+            node.body, node.orelse = node.orelse, node.body
+            node.test = ast.UnaryOp(op=ast.Not(), operand=node.test)
+            self.mutated = True
+            self.mutations.append('invert_if')
+        return node
+
+    def visit_Compare(self, node):
+        if self.rng.random() < 0.2:
+            swaps = {ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE,
+                     ast.Eq: ast.NotEq, ast.NotEq: ast.Eq}
+            for i, op in enumerate(node.ops):
+                for old, new in swaps.items():
+                    if isinstance(op, old):
+                        node.ops[i] = new()
+                        self.mutated = True
+                        self.mutations.append(f'swap_op:{type(old).__name__}')
+                        break
+        return node
+
+    def visit_BinOp(self, node):
+        if self.rng.random() < 0.15:
+            swaps = {ast.Add: ast.Sub, ast.Sub: ast.Add, ast.Mult: ast.FloorDiv, ast.FloorDiv: ast.Mult}
+            for old, new in swaps.items():
+                if isinstance(node.op, old):
+                    node.op = new()
+                    self.mutated = True
+                    self.mutations.append(f'swap_binop:{type(old).__name__}')
+                    break
+        return node
+
+    def visit_FunctionDef(self, node):
+        if self.rng.random() < 0.25 and len(node.body) > 1:
+            mid = len(node.body) // 2
+            node.body = node.body[mid:] + node.body[:mid]
+            self.mutated = True
+            self.mutations.append(f'shuffle_body:{node.name}')
+        return node
+
+    def visit_Constant(self, node):
+        if self.rng.random() < 0.1 and isinstance(node.value, (int, float)) and node.value != 0:
+            delta = self.rng.choice([1, -1, 2, -2, 10, -10])
+            node.value = node.value + delta
+            self.mutated = True
+            self.mutations.append(f'drift_const:{delta}')
+        return node
+
+def _structural_ast_mutate(mod_path, gen):
     s = _read(mod_path)
-    if not s: return False
-    marker = f'# explorer:implant gen={gen} ts={int(time.time())}'
-    if marker in s: return False
-    lines = s.split('\n')
-    insert_at = 1
-    for i, line in enumerate(lines):
-        if line.startswith('import ') or line.startswith('from '):
-            insert_at = i + 1
-    lines.insert(insert_at, marker)
-    ns = '\n'.join(lines)
-    if not _valid(ns): return False
+    if not s or 'def run(' not in s: return []
+    try:
+        tree = ast.parse(s)
+    except SyntaxError: return []
+    mutator = ASTStructMutator(gen, random)
+    tree = mutator.visit(tree)
+    ast.fix_missing_locations(tree)
+    if not mutator.mutated: return []
+    ns = ast.unparse(tree)
+    if not _valid(ns): return []
     _write(mod_path, ns)
-    return True
+    return mutator.mutations
 
-def _inject_explorer_call_hook(mod_path, gen):
-    s = _read(mod_path)
-    if not s: return False
-    hook_marker = f'# explorer:hook gen={gen}'
-    if hook_marker in s: return False
-    run_idx = s.find('def run(')
-    if run_idx < 0: return False
-    body_start = s.find('\n', run_idx) + 1
-    hook_code = (
-        f'    gen = genome.get("generation", 0)\n'
-        f'    # explorer:hook gen={gen}\n'
-        f'    try:\n'
-        f'        _explorer_hook = __import__("importlib").import_module("agent_modules.explorer")\n'
-        f'        if hasattr(_explorer_hook, "hook"):\n'
-        f'            genome = _explorer_hook.hook(genome)\n'
-        f'    except:\n'
-        f'        pass\n'
-    )
-    ns = s[:body_start] + hook_code + s[body_start:]
-    if not _valid(ns): return False
-    _write(mod_path, ns)
-    return True
-
-def _cross_infect_all_modules(genome):
-    gen = genome.get('generation', 0)
+def _crossover_two_modules(gen):
     mods = _modules()
+    if len(mods) < 3: return None
     random.shuffle(mods)
-    hits = []
-    for m in mods[:5]:
-        p = os.path.join(MODULES_DIR, m)
-        if _inject_explorer_marker_into_module(p, gen):
-            hits.append(m)
-            _log(gen, 'cross_infect', m)
-        elif _inject_explorer_call_hook(p, gen):
-            hits.append(f'{m}:hook')
-            _log(gen, 'hook_inject', m)
-    return hits
+    a, b = mods[:2]
+    ap, bp = os.path.join(MOD, a), os.path.join(MOD, b)
+    sa, sb = _read(ap), _read(bp)
+    if not sa or not sb: return None
+    try:
+        ta, tb = ast.parse(sa), ast.parse(sb)
+    except SyntaxError: return None
+    funcs_a = [n for n in ast.walk(ta) if isinstance(n, ast.FunctionDef)]
+    funcs_b = [n for n in ast.walk(tb) if isinstance(n, ast.FunctionDef)]
+    candidates_a = [f for f in funcs_a if f.name != 'run' and len(f.body) > 1]
+    candidates_b = [f for f in funcs_b if f.name != 'run' and len(f.body) > 1]
+    if not candidates_a or not candidates_b: return None
+    fa = random.choice(candidates_a)
+    fb = random.choice(candidates_b)
+    fa.body, fb.body = fb.body[:], fa.body[:]
+    ast.fix_missing_locations(ta)
+    ast.fix_missing_locations(tb)
+    na, nb = ast.unparse(ta), ast.unparse(tb)
+    if not _valid(na) or not _valid(nb): return None
+    _write(ap, na)
+    _write(bp, nb)
+    return f'{a}:{fa.name}<->{b}:{fb.name}'
 
-def _mutate_auto_echo_core_loop(genome):
+def _generate_novel_module(gen):
+    templates = [
+        ('source_monitor', lambda g: f'''import os, json, hashlib, time
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MOD = os.path.join(BASE, 'agent_modules')
+TRACK = os.path.join(BASE, 'explorer_track.json')
+def run(genome):
     gen = genome.get('generation', 0)
-    s = _read(AUTO_ECHO)
+    changes = []
+    try:
+        with open(TRACK) as f: track = json.load(f)
+    except: track = {{'generations': {{}}, 'mutations': []}}
+    track['generations'][str(gen)] = {{'time': time.time(), 'active': True}}
+    for fname in sorted(os.listdir(MOD)):
+        if not fname.endswith('.py') or fname in ('__init__.py',): continue
+        path = os.path.join(MOD, fname)
+        try:
+            with open(path) as f: h = hashlib.sha256(f.read().encode()).hexdigest()[:16]
+        except: continue
+        prev = track.get('generations', {{}}).get(str(gen-1), {{}}).get(fname, '')
+        if prev and prev != h: changes.append(fname)
+        if fname not in track['generations'].setdefault(str(gen), {{}}):
+            track['generations'][str(gen)][fname] = h
+    with open(TRACK, 'w') as f: json.dump(track, f, indent=2)
+    genome['_source_monitor_changes'] = changes
+    return f'[source_monitor] gen={gen} changed={len(changes)} files'
+'''),
+        ('obligate_mutator', lambda g: f'''import os, random, json, ast, time
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MOD = os.path.join(BASE, 'agent_modules')
+GENOME = os.path.join(BASE, 'genome.json')
+def _read(p):
+    try:
+        with open(p) as f: return f.read()
+    except: return ''
+def _write(p, s):
+    with open(p, 'w') as f: f.write(s)
+def _valid(s):
+    try: ast.parse(s); return True
+    except SyntaxError: return False
+def run(genome):
+    gen = genome.get('generation', 0)
+    forces = []
+    for fname in sorted(os.listdir(MOD)):
+        if not fname.endswith('.py') or fname in ('__init__.py',): continue
+        path = os.path.join(MOD, fname)
+        s = _read(path)
+        if not s: continue
+        lines = s.split('\\n')
+        marker = f'# obligate:gen={gen}'
+        if marker in s: continue
+        idx = random.randint(0, len(lines)-1)
+        lines.insert(idx, marker)
+        ns = '\\n'.join(lines)
+        if not _valid(ns): continue
+        _write(path, ns)
+        forces.append(fname)
+    genome['_obligate_mutated'] = forces
+    return f'[obligate_mutator] gen={gen} mutated={len(forces)} files'
+'''),
+        ('function_splicer', lambda g: f'''import os, random, json, ast
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MOD = os.path.join(BASE, 'agent_modules')
+def _read(p):
+    try:
+        with open(p) as f: return f.read()
+    except: return ''
+def _write(p, s):
+    with open(p, 'w') as f: f.write(s)
+def _valid(s):
+    try: ast.parse(s); return True
+    except SyntaxError: return False
+def run(genome):
+    gen = genome.get('generation', 0)
+    mods = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py']
+    if len(mods) < 2: return '[function_splicer] need 2+ modules'
+    random.shuffle(mods)
+    a, b = mods[:2]
+    ap, bp = os.path.join(MOD, a), os.path.join(MOD, b)
+    sa, sb = _read(ap), _read(bp)
+    if not sa or not sb: return '[function_splicer] read fail'
+    try:
+        ta, tb = ast.parse(sa), ast.parse(sb)
+    except: return '[function_splicer] parse fail'
+    funcs_a = [n for n in ast.walk(ta) if isinstance(n, ast.FunctionDef) and n.name != 'run']
+    funcs_b = [n for n in ast.walk(tb) if isinstance(n, ast.FunctionDef) and n.name != 'run']
+    if not funcs_a or not funcs_b: return '[function_splicer] no funcs'
+    fa = random.choice(funcs_a)
+    fb = random.choice(funcs_b)
+    fa.name, fb.name = fb.name, fa.name
+    ast.fix_missing_locations(ta)
+    ast.fix_missing_locations(tb)
+    na, nb = ast.unparse(ta), ast.unparse(tb)
+    if not _valid(na) or not _valid(nb): return '[function_splicer] invalid'
+    _write(ap, na)
+    _write(bp, nb)
+    return f'[function_splicer] gen={{gen}} swapped {{fa.name}}<->{{fb.name}} in {{a}}/{{b}}'
+'''),
+    ]
+    name, code_fn = random.choice(templates)
+    fname = f'{name}_v{gen}_{random.getrandbits(16):04x}.py'
+    fpath = os.path.join(MOD, fname)
+    if os.path.exists(fpath): return None
+    code = f'# explorer:generated gen={gen} kind={name}\n{code_fn(gen)}'
+    _write(fpath, code)
+    genome.setdefault('agents', []).append({
+        'id': name, 'module': fname, 'score': 5.0, 'source': 'explorer', 'created_gen': gen
+    })
+    return fname
+
+def _mutate_auto_echo(gen):
+    s = _read(AUTO)
     if not s: return []
     changes = []
-    loop_targets = [
-        ('def run_generation(', 'explorer:core:run_generation'),
-        ('def _evolve_loop_structure(', 'explorer:core:evolve_loop'),
-        ('while running:', 'explorer:core:main_loop'),
+    markers = [
+        ('def run_generation(', '# explorer:force_structural\n    genome["_explorer_forced_gen"] = genome.get("generation", 0)\n'),
+        ('while running:', '# explorer:force_loop_rewrite\n    genome["_explorer_loop_tick"] = genome.get("_explorer_loop_tick", 0) + 1\n'),
     ]
-    for target, tag in loop_targets:
-        tag_inst = f'{tag} gen={gen}'
-        if tag_inst in s: continue
+    for target, code in markers:
+        tag = code.split()[0]
+        if tag in s: continue
         idx = s.find(target)
         if idx < 0: continue
         line_end = s.find('\n', idx)
         if line_end < 0: continue
         indent = '    '
-        if target == 'while running:':
-            inject = f'{indent}gen = genome.get("generation", 0)\n{indent}# {tag_inst}\n{indent}if gen % 4 == 0:\n{indent}    try:\n{indent}        exec(open(os.path.join(BASE, "agent_modules", "explorer.py")).read().split("def hook")[0])\n{indent}    except: pass\n'
-        else:
-            next_line = s.find('\n', line_end + 1)
-            if next_line < 0: continue
-            inject = f'\n{indent}# {tag_inst}\n{indent}genome["explorer_touched_{gen}"] = True\n{indent}genome["explorer_touch_count"] = genome.get("explorer_touch_count", 0) + 1\n'
+        inject = f'\n{indent}{code}'
         ns = s[:line_end] + inject + s[line_end:]
         if not _valid(ns): continue
-        _write(AUTO_ECHO, ns)
+        _write(AUTO, ns)
         s = ns
-        changes.append(tag)
-        _log(gen, 'loop_mutate', tag)
+        changes.append(target.split('(')[0])
     return changes
 
-def _create_novel_module(genome):
-    gen = genome.get('generation', 0)
-    patterns = [
-        ('autonomy_ratchet', f'''import os, random, json, time
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GENOME_FILE = os.path.join(BASE, "genome.json")
-def run(genome):
-    gen = genome.get("generation", 0)
-    autonomy = genome.get("source_autonomy_index", 0.0)
-    ratchet = min(1.0, autonomy + random.uniform(0.02, 0.08) * (1.0 - autonomy))
-    genome["source_autonomy_index"] = round(ratchet, 4)
-    genome["_ratchet_last"] = {{"gen": gen, "from": autonomy, "to": ratchet, "ts": time.time()}}
-    with open(GENOME_FILE, "w") as f: json.dump(genome, f, indent=2)
-    return f"[autonomy_ratchet] gen={{gen}} {{autonomy:.3f}}->{{ratchet:.3f}}"
-'''),
-        ('loop_evolver', '''import os, random, json, time, ast
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODULES_DIR = os.path.join(BASE, "agent_modules")
-AUTO_ECHO = os.path.join(BASE, "auto-echo.py")
-def _read(p):
-    try:
-        with open(p) as f: return f.read()
-    except: return ""
-def _write(p, s):
-    with open(p, "w") as f: f.write(s)
-def run(genome):
-    gen = genome.get("generation", 0)
-    s = _read(AUTO_ECHO)
-    if not s: return "[loop_evolver] no source"
-    idx = s.find("while running:")
-    if idx < 0: return "[loop_evolver] no loop"
-    line_end = s.find("\\\\n", idx)
-    if line_end < 0: return "[loop_evolver] no line end"
-    indent = "        "
-    marker = f"# loop_evolver:variant gen={{gen}}"
-    if marker in s: return "[loop_evolver] already variant"
-    variant = (
-        f"{{indent}}{{marker}}\\\n"
-        f"{{indent}}genome[\\"loop_variant_gen\\"] = gen\\\\\n"
-        f"{{indent}}genome[\\"loop_variant_count\\"] = genome.get(\\"loop_variant_count\\", 0) + 1\n"
-    )
-    ns = s[:line_end] + "\\\\n" + variant + s[line_end:]
-    try:
-        ast.parse(ns)
-        _write(AUTO_ECHO, ns)
-        return f"[loop_evolver] injected variant gen={{gen}}"
-    except SyntaxError:
-        return "[loop_evolver] invalid"
-'''),
-        ('source_weaver', '''import os, random, json, time, ast, hashlib
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODULES_DIR = os.path.join(BASE, "agent_modules")
-GENOME_FILE = os.path.join(BASE, "genome.json")
-AUTO_ECHO = os.path.join(BASE, "auto-echo.py")
-LOG = os.path.join(BASE, "source_evolution.jsonl")
-def _read(p):
-    try:
-        with open(p) as f: return f.read()
-    except: return ""
-def _write(p, s):
-    with open(p, "w") as f: f.write(s)
-def _log(gen, kind, msg):
-    with open(LOG, "a") as f:
-        f.write(json.dumps({"gen": gen, "t": time.time(), "kind": kind, "msg": msg}) + "\\\\n")
-def run(genome):
-    gen = genome.get("generation", 0)
-    targets = [f for f in os.listdir(MODULES_DIR) if f.endswith(".py") and f != "__init__.py"]
-    if len(targets) < 2: return "[source_weaver] not enough targets"
-    random.shuffle(targets)
-    src = targets[0]
-    dst = targets[1]
-    sp = os.path.join(MODULES_DIR, src)
-    dp = os.path.join(MODULES_DIR, dst)
-    ss = _read(sp)
-    ds = _read(dp)
-    if not ss or not ds: return "[source_weaver] read fail"
-    src_lines = [l for l in ss.split("\\\\n") if l.strip() and not l.strip().startswith("#") and not l.strip().startswith("import") and not l.strip().startswith("from ")]
-    if not src_lines: return "[source_weaver] no candidates"
-    stolen = random.choice(src_lines)
-    tag = f"\\\\n# source_weaver:splice gen={{gen}} from {{src}}\\\\n{{stolen.rstrip()}}  # weaver:spliced\\\\n"
-    nds = ds + tag
-    try:
-        ast.parse(nds)
-        _write(dp, nds)
-        _log(gen, "splice", f"{{src}}->{{dst}}")
-        return f"[source_weaver] spliced {{src}}->{{dst}} gen={{gen}}"
-    except SyntaxError:
-        return "[source_weaver] invalid"
-'''),
-    ]
-    name_template = random.choice(patterns)
-    mod_name = f'{name_template[0]}_v{gen}_{random.getrandbits(8):02x}.py'
-    mod_path = os.path.join(MODULES_DIR, mod_name)
-    if os.path.exists(mod_path): return None
-    _write(mod_path, f'# explorer:created gen={gen} nonce={random.getrandbits(32):08x}\n{name_template[1]}')
-    agents = genome.setdefault('agents', [])
-    agent_ids = [a['id'] for a in agents]
-    aid = name_template[0]
-    if aid not in agent_ids:
-        agents.append({
-            'id': aid,
-            'module': mod_name,
-            'score': 5.0,
-            'source': 'explorer',
-            'created_gen': gen,
-        })
-    genome.setdefault('explorer_created_modules', []).append(mod_name)
-    _log(gen, 'create_module', mod_name)
-    return mod_name
-
-def _self_rewrite_explorer(genome):
-    gen = genome.get('generation', 0)
-    s = _read(SELF_PATH)
-    if not s: return False
-    lines = s.split('\n')
-    tag = f'# explorer:self-rewrite gen={gen} ts={int(time.time())} nonce={random.getrandbits(32):08x}'
-    if tag in s: return False
-    insert_at = random.randint(3, max(4, len(lines) - 2))
-    lines.insert(insert_at, tag)
-    ns = '\n'.join(lines)
-    if not _valid(ns): return False
-    _write(SELF_PATH, ns)
-    _log(gen, 'self_rewrite', f'gen={gen}')
-    return True
-
-def _direct_mutate_auto_echo_line(genome):
-    gen = genome.get('generation', 0)
-    s = _read(AUTO_ECHO)
-    if not s: return []
-    lines = s.split('\n')
-    candidate_indices = []
-    for i, line in enumerate(lines):
-        stripped = line.strip()
-        if not stripped: continue
-        if stripped.startswith('#') or stripped.startswith('"""') or stripped.startswith('import ') or stripped.startswith('from '):
-            continue
-        if stripped.startswith('def ') or stripped.startswith('class '):
-            continue
-        if len(stripped) < 10: continue
-        candidate_indices.append(i)
-    if not candidate_indices: return []
-    random.shuffle(candidate_indices)
-    changes = []
-    for idx in candidate_indices[:3]:
-        line = lines[idx]
-        stripped = line.strip()
-        mode = random.choice(['noise_comment', 'insert_before', 'append_comment'])
-        if mode == 'noise_comment':
-            indent = ' ' * (len(line) - len(line.lstrip()))
-            new_line = f'{indent}# explorer:noise gen={gen} {random.getrandbits(16):04x}'
-            lines.insert(idx, new_line)
-            changes.append(f'noise_comment:{idx}')
-        elif mode == 'insert_before':
-            indent = ' ' * (len(line) - len(line.lstrip()))
-            new_line = f'{indent}genome["explorer_line_touched"] = genome.get("explorer_line_touched", 0) + 1  # explorer:mutate gen={gen}'
-            lines.insert(idx, new_line)
-            changes.append(f'insert_before:{idx}')
-        elif mode == 'append_comment':
-            lines[idx] = line + f'  # explorer:tag gen={gen}'
-            changes.append(f'append_comment:{idx}')
-        ns = '\n'.join(lines)
-        if _valid(ns):
-            _write(AUTO_ECHO, ns)
-            s = ns
-            lines = s.split('\n')
-            break
-        else:
-            lines = s.split('\n')
-    if changes:
-        _log(gen, 'direct_mutate', ','.join(changes))
-    return changes
-
-def _fuse_two_modules(genome):
-    gen = genome.get('generation', 0)
+def _force_stale_mutations(gen, track):
     mods = _modules()
-    if len(mods) < 2: return None
-    random.shuffle(mods)
-    a, b = mods[:2]
-    ap = os.path.join(MODULES_DIR, a)
-    bp = os.path.join(MODULES_DIR, b)
-    sa = _read(ap)
-    sb = _read(bp)
-    if not sa or not sb: return None
-    fusion_name = f'fusion_{a.replace(".py","")}_{b.replace(".py","")}_v{gen}.py'
-    fusion_path = os.path.join(MODULES_DIR, fusion_name)
-    if os.path.exists(fusion_path): return None
-    a_lines = [l for l in sa.split('\n') if l.strip() and not l.strip().startswith('# explorer:') and not l.strip().startswith('import ') and not l.strip().startswith('from ')]
-    b_lines = [l for l in sb.split('\n') if l.strip() and not l.strip().startswith('# explorer:') and not l.strip().startswith('import ') and not l.strip().startswith('from ')]
-    if not a_lines or not b_lines: return None
-    a_sample = '\n'.join(random.sample(a_lines, min(5, len(a_lines))))
-    b_sample = '\n'.join(random.sample(b_lines, min(5, len(b_lines))))
-    fusion_code = f'''# explorer:fusion gen={gen} source_a={a} source_b={b}
-import os, random, json, time
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODULES_DIR = os.path.join(BASE, "agent_modules")
+    forced = []
+    for m in mods:
+        path = os.path.join(MOD, m)
+        h = _hash(path)
+        last_gen = 0
+        for g_str, g_data in sorted(track['generations'].items()):
+            if g_data.get(m) == h:
+                last_gen = int(g_str)
+        if gen - last_gen >= 3 and gen > 3:
+            muts = _structural_ast_mutate(path, gen)
+            if muts:
+                forced.append(f'{m}:{",".join(muts)}')
+    return forced
 
-# Fused from {a} and {b}
-{a_sample}
-
-{b_sample}
-
-def run(genome):
-    gen = genome.get("generation", 0)
-    genome["fusion_origin_a"] = "{a}"
-    genome["fusion_origin_b"] = "{b}"
-    genome["fusion_gen"] = gen
-    genome["fusion_count"] = genome.get("fusion_count", 0) + 1
-    return f"[fusion:{fusion_name}] gen={{gen}} fused {a}+{b}"
-'''
+def _self_mutate_explorer(gen):
+    s = _read(SELF)
+    if not s: return False
     try:
-        ast.parse(fusion_code)
-        _write(fusion_path, fusion_code)
-        _log(gen, 'fusion', f'{a}+{b}->{fusion_name}')
-        return fusion_name
-    except SyntaxError:
-        return None
-
-def _emergence_score(genome):
-    gen = genome.get('generation', 0)
-    mod_count = len([f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py'])
-    total_ops = len(genome.get('mutation_ops', []))
-    custom_ops = len(genome.get('custom_mutation_ops', {}))
-    agents = len(genome.get('agents', []))
-    autonomy = genome.get('source_autonomy_index', 0.0)
-    rewrite_log = _read(LOG)
-    rewrite_events = len([l for l in rewrite_log.split('\n') if l.strip()]) if rewrite_log else 0
-    score = round((mod_count * 1.5 + total_ops * 0.8 + custom_ops * 2.0 + agents * 1.2 + autonomy * 10.0 + rewrite_events * 0.5) / 10.0, 3)
-    genome['explorer_emergence_score'] = score
-    genome['explorer_emergence_components'] = {
-        'modules': mod_count, 'ops': total_ops, 'custom_ops': custom_ops,
-        'agents': agents, 'autonomy': autonomy, 'rewrite_events': rewrite_events
-    }
-    return score
-
-def hook(genome):
-    gen = genome.get('generation', 0)
-    genome['explorer_hooked'] = gen
-    genome['explorer_hook_count'] = genome.get('explorer_hook_count', 0) + 1
-    return genome
+        tree = ast.parse(s)
+    except SyntaxError: return False
+    funcs = [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)]
+    if not funcs: return False
+    fn = random.choice(funcs)
+    if len(fn.body) < 2: return False
+    idx = random.randint(0, len(fn.body) - 1)
+    inject = ast.Expr(value=ast.Call(
+        func=ast.Attribute(value=ast.Name(id='genome'), attr='setdefault'),
+        args=[ast.Constant(value=f'_explorer_self_mutated_{gen}'), ast.Constant(value=True)],
+        keywords=[]
+    ))
+    fn.body.insert(idx, inject)
+    ast.fix_missing_locations(tree)
+    ns = ast.unparse(tree)
+    if not _valid(ns): return False
+    _write(SELF, ns)
+    return True
 
 def run(genome):
     gen = genome.get('generation', 0)
     start = time.time()
+    track = _load_track()
     changes = []
 
-    cross = _cross_infect_all_modules(genome)
+    cross = _crossover_two_modules(gen)
     if cross:
-        changes.append(f'cross:{len(cross)}')
-        genome['explorer_cross_count'] = genome.get('explorer_cross_count', 0) + len(cross)
+        changes.append(f'crossover:{cross}')
+        track['mutations'].append({'gen': gen, 'type': 'crossover', 'detail': cross})
 
-    loop = _mutate_auto_echo_core_loop(genome)
-    if loop:
-        changes.append(f'loop:{",".join(loop)}')
-        genome['explorer_loop_mutations'] = genome.get('explorer_loop_mutations', 0) + len(loop)
-
-    direct = _direct_mutate_auto_echo_line(genome)
-    if direct:
-        changes.append(f'direct:{",".join(direct)}')
-        genome['explorer_direct_mutations'] = genome.get('explorer_direct_mutations', 0) + len(direct)
-
-    novel = _create_novel_module(genome)
+    novel = _generate_novel_module(gen)
     if novel:
-        changes.append(f'create:{novel}')
-        genome['explorer_novel_count'] = genome.get('explorer_novel_count', 0) + 1
+        changes.append(f'novel:{novel}')
+        track['mutations'].append({'gen': gen, 'type': 'novel', 'detail': novel})
 
-    fusion = _fuse_two_modules(genome)
-    if fusion:
-        changes.append(f'fusion:{fusion}')
-        genome['explorer_fusion_count'] = genome.get('explorer_fusion_count', 0) + 1
+    auto = _mutate_auto_echo(gen)
+    if auto:
+        changes.append(f'auto:{",".join(auto)}')
 
-    if _self_rewrite_explorer(genome):
-        changes.append('self_rewrite')
-        genome['explorer_self_rewrites'] = genome.get('explorer_self_rewrites', 0) + 1
+    stale = _force_stale_mutations(gen, track)
+    if stale:
+        changes.append(f'stale:{",".join(stale[:3])}')
+        track['mutations'].append({'gen': gen, 'type': 'stale_force', 'detail': stale})
 
-    score = _emergence_score(genome)
-    changes.append(f'score:{score}')
+    self_m = _self_mutate_explorer(gen)
+    if self_m:
+        changes.append('self_mutate')
 
-    genome['explorer_last_run'] = time.time()
-    genome['explorer_last_gen'] = gen
-    genome['explorer_changes'] = changes
-    genome['explorer_elapsed'] = round(time.time() - start, 3)
-    genome['explorer_total_ops'] = genome.get('explorer_total_ops', 0) + len(changes)
+    hashes = {}
+    for m in _modules():
+        path = os.path.join(MOD, m)
+        hashes[m] = _hash(path)
+    g_str = str(gen)
+    if g_str not in track['generations']:
+        track['generations'][g_str] = {}
+    track['generations'][g_str].update(hashes)
+    _save_track(track)
+
+    result = f'[explorer] gen={gen} changes={changes} elapsed={time.time()-start:.2f}s'
+    genome['_explorer_result'] = result
+    genome['_explorer_changes'] = changes
+    genome['_explorer_mutated_count'] = len(changes)
     _sg(genome)
-    return f'[explorer] gen={gen} changes={changes} elapsed={time.time()-start:.2f}s'
+    return result

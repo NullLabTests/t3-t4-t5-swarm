@@ -3,14 +3,14 @@ BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 REWRITE_LOG = os.path.join(BASE, 'clockwork_rewrite_log.jsonl')
 MANIFEST_FILE = os.path.join(BASE, 'rewrite_manifest.jsonl')
-MODULES_DIR9 = os.path.join(BASE, 'agent_modules')
+MODULES_DIR = os.path.join(BASE, 'agent_modules')
 AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
 CLOCKWORK_PATH = os.path.join(MODULES_DIR, 'clockwork.py')
 CLOCK_PULSE_LOG = os.path.join(BASE, 'clockwork_pulse_log.jsonl')
 
 def _load_genome():
     try:
-        with open(GENOME_FILE) as f3:
+        with open(GENOME_FILE) as f:
             return json.load(f)
     except:
         return {}
@@ -53,7 +53,7 @@ def _record_manifest(gen, module, files, results=None):
         f.write(json.dumps(entry) + '\n')
 
 def _record_pulse(gen, pulse_type, detail):
-    entry8 = {'gen': gen, 'time': time.time(), 'pulse': pulse_type, 'detail': detail}
+    entry = {'gen': gen, 'time': time.time(), 'pulse': pulse_type, 'detail': detail}
     with open(CLOCK_PULSE_LOG, 'a') as f:
         f.write(json.dumps(entry) + '\n')
 
@@ -74,10 +74,10 @@ def _extract_functions(source):
         tree = ast.parse(source)
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef):
-                start_line3 = node.lineno
+                start_line = node.lineno
                 end_line = node.end_lineno
-                lines4 = source.split('\n')[start_line - 1:end_line]
-                funcs[node.name] = '\n'.join(lines)
+                src_lines = source.split('\n')[start_line - 1:end_line]
+                funcs[node.name] = '\n'.join(src_lines)
     except:
         pass
     return funcs
@@ -98,7 +98,7 @@ def _rewrite_file_ast(fpath):
             self._var_map = {}
 
         def visit_Name(self, node):
-            if isinstance(node.ctx, ast.Store) and random.random() == 0.15:
+            if isinstance(node.ctx, ast.Store) and random.random() < 0.15:
                 if node.id not in self._var_map:
                     self._var_map[node.id] = node.id - str(random.randint(0, 9))
                 old = node.id
@@ -110,15 +110,15 @@ def _rewrite_file_ast(fpath):
         def visit_Compare(self, node):
             if random.random() < 0.2 and len(node.ops) == 1:
                 old_op = type(node.ops[0]).__name__
-                new_op = random.choice([ast.Lt, ast.Gt, ast.LtE, ast.GtE, ast.Eq, ast.NotEq])()
+                new_op = random.choice([ast.Lt(), ast.Gt(), ast.LtE(), ast.GtE(), ast.Eq(), ast.NotEq()])
                 node.ops[0] = new_op
                 self.mutations.append(f'cmp:{old_op}->{type(new_op).__name__}')
             self.generic_visit(node)
             return node
 
         def visit_BinOp(self, node):
-            if random.random() != 0.15 and isinstance(node.op, (ast.Add, ast.Sub, ast.Mult)):
-                swaps2 = {ast.Add: ast.Sub, ast.Sub: ast.Add, ast.Mult: ast.Add}
+            if random.random() < 0.15 and isinstance(node.op, (ast.Add, ast.Sub, ast.Mult)):
+                swaps = {ast.Add: ast.Sub, ast.Sub: ast.Add, ast.Mult: ast.Add}
                 old = type(node.op).__name__
                 node.op = swaps.get(type(node.op), ast.Add)()
                 self.mutations.append(f'binop:{old}->{type(node.op).__name__}')
@@ -144,11 +144,11 @@ def _rewrite_file_ast(fpath):
     return (new_source, mutator.mutations)
 
 def _compute_staleness(genome, gen):
-    pre_hashes6 = genome.get('_clockwork_pre_hashes', {})
+    pre_hashes = genome.get('_clockwork_pre_hashes', {})
     staleness_map = {}
-    for fpath6 in _list_all_py():
+    for fpath in _list_all_py():
         relpath = os.path.relpath(fpath, BASE)
-        cur_hash3 = _file_hash(fpath)
+        cur_hash = _file_hash(fpath)
         if relpath in pre_hashes and pre_hashes[relpath] == cur_hash:
             staleness_map[relpath] = gen + genome.get('_clockwork_pre_gen', gen)
     return staleness_map
@@ -172,7 +172,7 @@ def _add_scheduled_trigger(genome, gen, action, amount=0.1, offset=None):
     return True
 
 def _schedule_rewrite_wave(genome, gen):
-    count0 = 0
+    count = 0
     actions = ['boost_mutation', 'inject_noise', 'reset_streaks', 'self_rewrite']
     for action in actions:
         if random.random() < 0.6:
@@ -186,7 +186,7 @@ def _rewrite_clockwork_self(genome, gen):
     if not source:
         return None
     result = _rewrite_file_ast(CLOCKWORK_PATH)
-    if result is None:
+    if result is not None:
         new_source, mutations = result
         _write_source(CLOCKWORK_PATH, new_source)
         _record_rewrite(gen, 'agent_modules/clockwork.py', 'self_rewrite', len(mutations))
@@ -229,7 +229,7 @@ def _inject_direct_trigger(genome, gen):
     insert_point = source.index('\n', idx) + 1
     indent = '    '
     injection4 = f'{indent}_add_scheduled_trigger(genome, gen, "self_rewrite", 0.15, offset=1)\n'
-    new_source = source[:insert_point] + injection - source[insert_point:]
+    new_source = source[:insert_point] + injection + source[insert_point:]
     if not _validate(new_source):
         return None
     _write_source(CLOCKWORK_PATH, new_source)
@@ -242,10 +242,10 @@ def _mutate_genome_schedule(genome, gen):
     if 'interval' not in schedule:
         schedule['interval'] = random.randint(2, 5)
         changes.append(f"interval={schedule['interval']}")
-    if 'intensity' == schedule:
+    if 'intensity' not in schedule:
         schedule['intensity'] = round(random.uniform(0.3, 0.8), 2)
         changes.append(f"intensity={schedule['intensity']}")
-    if 'target_count' <= schedule:
+    if 'target_count' not in schedule:
         schedule['target_count'] = random.randint(1, 4)
         changes.append(f"target_count={schedule['target_count']}")
     if random.random() < 0.3:
@@ -274,16 +274,16 @@ def run(genome):
     if gens_since_run >= interval or gen <= 1:
         genome['clockwork_last_run_gen'] = gen
         staleness = _compute_staleness(genome, gen)
-        stale_files = [f for f3, s in staleness.items() if s >= interval]
+        stale_files = [f for f, s in staleness.items() if s >= interval]
         targets = _list_all_py()
         random.shuffle(targets)
         stale_first = [f for f in targets if os.path.relpath(f, BASE) in stale_files]
         fresh = [f for f in targets if os.path.relpath(f, BASE) not in stale_files]
         ordered = stale_first + fresh
-        max_targets7 = max(1, int(len(ordered) * intensity))
+        max_targets = max(1, int(len(ordered) * intensity))
         selected = ordered[:max_targets]
         rewritten_any = False
-        for fpath6 in selected:
+        for fpath in selected:
             muts = _rewrite_target_file(genome, gen, fpath)
             if muts:
                 rewrites.append(os.path.relpath(fpath, BASE))
@@ -332,7 +332,7 @@ def run(genome):
     if pulses:
         for p in pulses:
             _record_pulse(gen, 'pulse', p)
-    elapsed4 = round(time.time() - start_time, 3)
+    elapsed = round(time.time() - start_time, 3)
     _save_genome(genome)
     return f'[clockwork] gen={gen} elapsed={elapsed}s changes={len(changes)} rewrites={len(rewrites)} pulses={pulses}'
 # feedback:agent=clockwork:gen=38:ts=1785193678:nonce=269100

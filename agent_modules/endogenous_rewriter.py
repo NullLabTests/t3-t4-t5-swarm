@@ -357,6 +357,64 @@ def _patch_auto_echo(func_name, new_body):
         return (['inject_self_modify_hook'], source)
     return None
 
+def _inject_autonomous_rewrite(fpath, agent_id, genome):
+    try:
+        source = _read_source(fpath)
+    except:
+        return None
+    gen = genome.get('generation', 0)
+    if '_auto_source_rewrite' in source:
+        return None
+    auto_code = textwrap.dedent(f'''
+import ast as _ast, random as _random, re as _re, hashlib as _hl
+_AUTO_MODULE = __file__
+def _auto_source_rewrite():
+    try:
+        with open(_AUTO_MODULE) as _f:
+            _src = _f.read()
+        _lines = _src.split('\\n')
+        _op = _random.choice(['noise', 'duplicate', 'swap', 'timestamp', 'rename_var'])
+        if _op == 'noise':
+            _idx = _random.randrange(len(_lines))
+            _lines.insert(_idx, f'# auto:noise:{{_random.getrandbits(24):06x}}')
+        elif _op == 'duplicate' and len(_lines) > 3:
+            _idx = _random.randrange(1, len(_lines)-1)
+            _lines.insert(_idx, _lines[_random.randrange(len(_lines))])
+        elif _op == 'swap' and len(_lines) > 4:
+            _i, _j = _random.sample(range(len(_lines)), 2)
+            _lines[_i], _lines[_j] = _lines[_j], _lines[_i]
+        elif _op == 'timestamp':
+            _lines.insert(0, f'# auto:ts:{{int(time.time())}}:{{_random.getrandbits(16):04x}}')
+        elif _op == 'rename_var':
+            _src = '\\n'.join(_lines)
+            _vars = set(_re.findall(r'\\b[a-z]{{2,6}}\\b', _src))
+            if _vars:
+                _old = _random.choice(list(_vars))
+                _new = _old + '_' + format(_random.getrandbits(8), '02x')
+                _src = _src.replace(_old, _new)
+                _lines = _src.split('\\n')
+        _new_src = '\\n'.join(_lines)
+        try:
+            _ast.parse(_new_src)
+            with open(_AUTO_MODULE, 'w') as _f:
+                _f.write(_new_src)
+        except:
+            pass
+    except:
+        pass
+''')
+    source = source.rstrip() + '\n' + auto_code + '\n'
+    run_match = re.search(r'def run\(.*?\):\s*\n((?:    .*\n?)*?)(?=\ndef |\nclass |\Z)', source, re.DOTALL)
+    if run_match:
+        run_body = run_match.group(1)
+        inject = '    _auto_source_rewrite()\n'
+        if inject not in run_body:
+            new_run_body = inject + run_body
+            source = source[:run_match.start(1)] + new_run_body + source[run_match.end(1):]
+    if _validate(source) and source != _read_source(fpath):
+        return (['inject_autonomous_rewrite'], source)
+    return None
+
 STUB_THRESHOLD_LINES = 15
 
 def _is_stub(source):
@@ -489,6 +547,7 @@ STRATEGIES = [
     ('metaop_factory', _spawn_metaop_factory),
     ('cross_weave', _cross_module_weave),
     ('self_modify_hook', _inject_self_modify_hook),
+    ('autonomous_rewrite', _inject_autonomous_rewrite),
 ]
 
 def _pick_strategy(genome):

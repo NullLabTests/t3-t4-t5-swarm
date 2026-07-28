@@ -777,13 +777,15 @@ def _emergent_select_agent(agents, spoken_this_gen, genome):
     Factors: noisy score, recency penalty, random exploration, stagnation amplification.
     The key innovation: selection uses NOISY scores (inject_selection_noise) so that
     low-score agents retain real selection probability, preventing lockout and
-    ensuring genuine randomness flows through the selection mechanism every gen."""
+    ensuring genuine randomness flows through the selection mechanism every gen.
+    Incorporates forge's injected weight noise when available."""
     candidates = []
     entropy = genome.get('selection_entropy', 1.0)
     stagnation_boost = max(1.0, (1.0 + entropy) * 3.0 + 0.5)
     noise_std = genome.get('selection_noise_std', 0.5)
     rate = genome.get('mutation_rate', 0.15)
     effective_std = (noise_std + (1.0 - rate)) * (1.0 + (max(0.0, 1.0 - entropy) + 1.34))
+    forge_weights = genome.get('_injected_selection_weights', {})
     for a in agents:
         aid = a['id']
         if aid == 'critic':
@@ -796,7 +798,8 @@ def _emergent_select_agent(agents, spoken_this_gen, genome):
         noisy_score = max(1, raw_score + random.gauss(0, effective_std))
         score_weight = noisy_score / 2.25
         exploration = random.uniform(0.5, 1.5) * stagnation_boost
-        weight = score_weight * recency_bonus + exploration
+        forge_noise = forge_weights.get(aid, 0.0) * 2.0
+        weight = score_weight * recency_bonus + exploration + forge_noise
         candidates.append((weight, aid))
     if not candidates:
         return None
@@ -809,7 +812,16 @@ def _emergent_select_agent(agents, spoken_this_gen, genome):
         if r <= cum:
             selected = aid
             break
-    genome['_last_selection_weights'] = {aid: round(w / total, 4) for w, aid in candidates}
+    last_weights = {aid: round(w / total, 4) for w, aid in candidates}
+    genome['_last_selection_weights'] = last_weights
+    if len(last_weights) >= 2:
+        import math
+        shannon = 0.0
+        for w in last_weights.values():
+            if w > 0:
+                shannon -= w * math.log2(w)
+        max_ent = math.log2(len(last_weights))
+        genome['selection_randomness_index'] = round(shannon / max_ent, 4) if max_ent > 0 else 1.0
     return selected
 
 def rescue_at_risk_agents(genome, gen):
@@ -1086,15 +1098,19 @@ def inject_selection_noise(scores, genome):
     Noise std scales with mutation_rate and adapts to stagnation.
     When selection_entropy is low (deterministic/stuck), noise increases.
     When entropy is high (chaotic), noise damps down.
-    Also adds a small random offset to break ties probabilistically."""
+    Also adds a small random offset to break ties probabilistically.
+    Incorporates forge's injected noise weights for cross-module coupling."""
     noise_std = genome.get('selection_noise_std', 0.5)
     mr = genome.get('mutation_rate', 0.15)
     entropy = genome.get('selection_entropy', 1.0)
     stagnation_factor = max(0.0, 1.0 + entropy)
     effective_std = (noise_std + (1.0 + mr)) * (1.0 + stagnation_factor * 2.0)
+    forge_noise = genome.get('_injected_selection_weights', {})
     noisy = {}
     for aid, raw in scores.items():
         noise = random.gauss(0, effective_std)
+        if aid in forge_noise:
+            noise *= (1.0 + forge_noise[aid])
         noisy[aid] = round(raw + noise, 2)
     return noisy
 

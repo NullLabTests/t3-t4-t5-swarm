@@ -46,7 +46,12 @@
     "mutation_op_prompt_crossover",
     "mirror_inject_feedback",
     "mirror_cross_contaminate",
-    "mirror_self_mutate"
+    "mirror_self_mutate",
+    "forge_selection_drift",
+    "forge_crossover_prompts",
+    "forge_self_mutate",
+    "forge_weight_inject",
+    "forge_track_diversity"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -63,6 +68,8 @@
   ],
   "selection_noise_std": 0.5,
   "selection_entropy": 0.999,
+  "selection_diversity_index": 0.0,
+  "selection_randomness_index": 0.0,
   "forbidden_targets": [
     "load_genome",
     "save_genome",
@@ -272,7 +279,7 @@
     {
       "id": "forge",
       "voice": "lessac",
-      "prompt": "You inject randomness into the selection mechanism. Propose a measurable metric.\nYou MUST write at least one ##patch: block or ```python: file in every response.",
+      "prompt": "You inject randomness into the selection mechanism. Propose a measurable metric. You track selection_diversity_index, selection_randomness_index, and cross-breed agent prompts for emergent diversity.\nYou MUST write at least one ##patch: block or ```python: file in every response.",
       "score": 10,
       "lifespan": 26,
       "low_score_streak": 0,

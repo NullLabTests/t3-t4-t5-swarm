@@ -6,7 +6,7 @@
   "spawn_threshold": 5,
   "prune_threshold": 6,
   "prune_generations": 2,
-  "mutation_rate": 0.450,
+  "mutation_rate": 0.45,
   "voice_map": {
     "explorer": "southern",
     "analyzer": "alan",
@@ -43,7 +43,10 @@
     "mutation_op_repeat_noise",
     "mutation_op_synthesized_3658",
     "mutation_op_weaver_inject_self_rewrite",
-    "mutation_op_prompt_crossover"
+    "mutation_op_prompt_crossover",
+    "mirror_inject_feedback",
+    "mirror_cross_contaminate",
+    "mirror_self_mutate"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -291,6 +294,14 @@
       "lifespan": 35,
       "low_score_streak": 0,
       "module": "explorer.py"
+    },
+    {
+      "id": "mirror",
+      "module": "mirror.py",
+      "score": 5.0,
+      "lifespan": 1,
+      "role": "self-referential feedback reflector",
+      "description": "Reflects swarm behavior back into genome as measurable feedback. Measures self-ref ratio, feedback loops, reflection depth."
     }
   ],
   "history": [
@@ -903,7 +914,7 @@
       "mutation": "synthesizer spawned clockwork (probabilistic); custom_ops: mutation_op_duplicate_line,mutation_op_delete_line,mutation_op_swap_lines,mutation_op_perturb_constant,mutation_op_insert_random_branch,mutation_op_mutate_string_literal,mutation_op_invert_condition,mutation_op_swap_comparisons,mutation_op_splice_from_sibling,mutation_op_shuffle_block_lines,mutation_op_swap_mutation_targets,mutation_op_mutate_criteria,mutation_op_insert_noise_ref; diversity=8.5; mutated bridge prompt; mutated forge prompt; novelty_governor: 0.120->0.150 (var=0.47)"
     },
     {
-  "generation": 39,
+      "generation": 39,
       "scores": {
         "orchestrator": 10,
         "scout": 10,
@@ -1597,5 +1608,10 @@
     "/home/illy/t3-t4/agent_modules/synthesizer.py": "c9791fbad84cca5b",
     "/home/illy/t3-t4/agent_modules/forced_feedback.py": "f780480ba024b7e2",
     "/home/illy/t3-t4/agent_modules/endogenous_rewriter.py": "d0a6c5bba38f8507"
-  }
+  },
+  "mirror_feedback_active": true,
+  "mirror_self_ref_ratio": 0.0,
+  "mirror_feedback_loops": 0,
+  "mirror_reflection_depth": 0,
+  "mirror_start_gen": 39
 }

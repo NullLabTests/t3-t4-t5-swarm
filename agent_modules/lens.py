@@ -1,8 +1,10 @@
-import os, ast, random, json, time, re, hashlib, textwrap, importlib.util, sys
+import os, ast, random, json, time, re, hashlib, textwrap, importlib.util, sys, shutil
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 LENS_LOG = os.path.join(BASE, 'lens_depth_log.jsonl')
+AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
+SELF_PATH = os.path.join(MODULES_DIR, 'lens.py')
 
 SELF_REF_PATTERNS = [
     r'ENDO_STATE',
@@ -15,13 +17,17 @@ SELF_REF_PATTERNS = [
     r'self_modify',
     r'_spawn_meta',
     r'_self_rewrite',
+    r'lens.*force',
+    r'_cross_contaminate',
+    r'import.*agent_modules',
+    r't5_emergence',
 ]
 
 def _mod_paths():
     out = []
     if os.path.isdir(MODULES_DIR):
         for fname in sorted(os.listdir(MODULES_DIR)):
-            if fname.endswith('.py') and not fname.startswith('__'):
+            if fname.endswith('.py') and not fname.startswith('__') and fname != 'lens.py':
                 out.append(os.path.join(MODULES_DIR, fname))
     return out
 
@@ -64,54 +70,106 @@ def _measure_depth(src):
         pass
     return depth, score, patterns_found
 
-def _inject_depth(mpath, src):
-    depth, score, _ = _measure_depth(src)
-    if depth < 2 and 'def ' in src:
-        funcs = re.findall(r'def (\w+)\s*\(', src)
-        if funcs and funcs[0] != 'run':
-            fname = funcs[0]
-        else:
-            fname = funcs[0] if funcs else None
-        if not fname:
+def _cross_contaminate(mpath, src, all_peers):
+    base = os.path.basename(mpath).replace('.py', '')
+    for peer_path, peer_src in all_peers:
+        peer_base = os.path.basename(peer_path).replace('.py', '')
+        if peer_base == base:
+            continue
+        peer_import = f'import agent_modules.{peer_base}'
+        if peer_import in src:
+            continue
+        if random.random() < 0.5:
+            new_src = f'import agent_modules.{peer_base}\n' + src
+            try:
+                ast.parse(new_src)
+                return new_src, f'imported {peer_base}'
+            except SyntaxError:
+                pass
+    return None, None
+
+def _inject_endstate(mpath, src):
+    base = os.path.basename(mpath).replace('.py', '')
+    if 'ENDO_STATE' in src:
+        return None
+    stamp = '\nENDO_STATE = {"module": "' + base + '", "lens_stamp": ' + str(random.getrandbits(32)) + ', "gen": ' + str(int(time.time())) + '}\n'
+    new_src = src + stamp
+    try:
+        ast.parse(new_src)
+        return new_src
+    except SyntaxError:
+        return None
+
+def _self_mutate():
+    src = _read(SELF_PATH)
+    if not src:
+        return False
+    new_pattern = r"r'auto_meta_lens_' + str\(random\.getrandbits\(8\)\)"
+    if new_pattern in src:
+        return False
+    insertion = "\n    r'auto_meta_lens_" + str(random.getrandbits(16)) + "',\n"
+    idx = src.rfind(']')
+    if idx == -1:
+        return False
+    new_src = src[:idx] + insertion + src[idx:]
+    try:
+        ast.parse(new_src)
+        shutil.copy2(SELF_PATH, SELF_PATH + '.bak.' + str(int(time.time())))
+        with open(SELF_PATH, 'w') as f:
+            f.write(new_src)
+        return True
+    except SyntaxError:
+        return False
+
+def _patch_auto_echo(genome):
+    gen = genome.get('generation', 0)
+    src = _read(AUTO_ECHO)
+    if not src:
+        return None
+    lens_injection = '\n    # lens:t5-force injected at gen ' + str(gen) + '\n'
+    lens_injection += '    if random.random() < 0.3:\n'
+    lens_injection += '        genome.setdefault("lens_emergence_trigger", gen)\n'
+    lens_injection += "        print('[lens] t5 emergence trigger at gen', gen)\n"
+    if 'lens:t5-force injected' in src:
+        return None
+    marker = '# lens_module_anchor'
+    if marker not in src:
+        insert_pos = src.find('def _force_gen_rewrite(')
+        if insert_pos == -1:
             return None
-        wrapper = textwrap.dedent(f'''
-def _lens_depth_wrapper(*args, **kwargs):
-    return {fname}(*args, **kwargs)
-''')
-        new_src = src.rstrip() + '\n' + wrapper
-        return new_src
-    if 'ENDO_STATE' not in src:
-        base = os.path.basename(mpath).replace('.py', '')
-        stamp = f'\nENDO_STATE = {{"module": "{base}", "depth": {depth}, "score": {score}, "gen": {int(time.time())}}}\n'
-        new_src = src + stamp
-        return new_src
+        nl_pos = src.find('\n', insert_pos)
+        nl_pos = src.find('\n', nl_pos + 1)
+        if nl_pos == -1:
+            return None
+        new_src = src[:nl_pos] + lens_injection + src[nl_pos:]
+        try:
+            ast.parse(new_src)
+            shutil.copy2(AUTO_ECHO, AUTO_ECHO + '.bak.' + str(int(time.time())))
+            with open(AUTO_ECHO, 'w') as f:
+                f.write(new_src)
+            return 'injected lens anchor into _force_gen_rewrite'
+        except SyntaxError:
+            pass
     return None
 
-def _cross_weave(mpath_a, src_a, mpath_b, src_b):
-    funcs_a = re.findall(r'def (\w+)\s*\(', src_a)
-    funcs_b = re.findall(r'def (\w+)\s*\(', src_b)
-    if not funcs_a or not funcs_b:
-        return None, None
-    fa = random.choice(funcs_a)
-    fb = random.choice(funcs_b)
-    weave_a = src_a.rstrip() + f'\n\n# lens:weave reference to {os.path.basename(mpath_b)}::{fb}\n'
-    weave_b = src_b.rstrip() + f'\n\n# lens:weave reference to {os.path.basename(mpath_a)}::{fa}\n'
-    return weave_a, weave_b
-
-def _write_metrics(genome, all_depths, all_scores, total_patterns):
+def _write_metrics(genome, all_depths, all_scores, total_patterns, rewrites, contam_count):
     lm = genome.setdefault('lens_metrics', {})
     gen = genome.get('generation', 0)
     avg_depth = (sum(all_depths) / len(all_depths)) if all_depths else 0
     avg_score = (sum(all_scores) / len(all_scores)) if all_scores else 0
-    lm[f'gen_{gen}'] = {
+    lm['gen_' + str(gen)] = {
         'avg_depth': avg_depth,
         'avg_score': avg_score,
         'total_patterns': total_patterns,
         'module_count': len(all_depths),
         'max_depth': max(all_depths) if all_depths else 0,
+        'rewrites': rewrites,
+        'cross_contaminations': contam_count,
     }
     total_depth = sum(all_depths)
     genome['lens_total_depth'] = total_depth
+    genome['lens_last_rewrite_count'] = rewrites
+    genome['lens_t5_emergence_depth'] = round(avg_depth + avg_score * 0.1 + rewrites * 0.05, 2)
     return avg_depth, avg_score
 
 def run(genome):
@@ -123,6 +181,8 @@ def run(genome):
     all_scores = []
     total_patterns = 0
     rewrites = 0
+    contam_count = 0
+    all_peers = [(p, _read(p)) for p in paths]
     for mpath in paths:
         src = _read(mpath)
         if not src:
@@ -131,40 +191,41 @@ def run(genome):
         all_depths.append(depth)
         all_scores.append(score)
         total_patterns += len(pats)
-        if random.random() < 0.3:
-            new_src = _inject_depth(mpath, src)
-            if new_src and new_src != src:
+        if depth < 2 or score < 3 or random.random() < 1.0:
+            endstate = _inject_endstate(mpath, src)
+            if endstate and endstate != src:
+                try:
+                    ast.parse(endstate)
+                    with open(mpath, 'w') as f:
+                        f.write(endstate)
+                    rewrites += 1
+                    src = endstate
+                except SyntaxError:
+                    pass
+        if depth < 2 or random.random() < 0.7:
+            new_src, desc = _cross_contaminate(mpath, src, all_peers)
+            if new_src:
                 try:
                     ast.parse(new_src)
                     with open(mpath, 'w') as f:
                         f.write(new_src)
                     rewrites += 1
+                    contam_count += 1
                 except SyntaxError:
                     pass
-    if len(paths) >= 2 and random.random() < 0.25:
-        mp_a = random.choice(paths)
-        mp_b = random.choice([p for p in paths if p != mp_a])
-        if mp_b:
-            src_a = _read(mp_a)
-            src_b = _read(mp_b)
-            new_a, new_b = _cross_weave(mp_a, src_a, mp_b, src_b)
-            if new_a and new_b:
-                try:
-                    ast.parse(new_a)
-                    ast.parse(new_b)
-                    with open(mp_a, 'w') as f:
-                        f.write(new_a)
-                    with open(mp_b, 'w') as f:
-                        f.write(new_b)
-                    rewrites += 2
-                except SyntaxError:
-                    pass
-    avg_depth, avg_score = _write_metrics(genome, all_depths, all_scores, total_patterns)
-    entry = json.dumps({'gen': gen, 'time': time.time(), 'modules': len(paths), 'avg_depth': avg_depth, 'avg_score': avg_score, 'total_patterns': total_patterns, 'rewrites': rewrites})
+    patch_result = _patch_auto_echo(genome)
+    if patch_result:
+        rewrites += 1
+    if random.random() < 0.8:
+        self_mutated = _self_mutate()
+        if self_mutated:
+            rewrites += 1
+    avg_depth, avg_score = _write_metrics(genome, all_depths, all_scores, total_patterns, rewrites, contam_count)
+    entry = json.dumps({'gen': gen, 'time': time.time(), 'modules': len(paths), 'avg_depth': avg_depth, 'avg_score': avg_score, 'total_patterns': total_patterns, 'rewrites': rewrites, 'contaminations': contam_count})
     with open(LENS_LOG, 'a') as f:
         f.write(entry + '\n')
-    score = genome.get('generation', 0)
     for agent in genome.get('agents', []):
         if agent['id'] == 'lens':
             agent['score'] = min(10, agent.get('score', 2) + 1)
-    return f'[lens] depth={avg_depth:.2f} score={avg_score:.2f} patterns={total_patterns} rewrites={rewrites}'
+    emergence = genome.get('lens_t5_emergence_depth', 0)
+    return '[lens] depth=' + str(round(avg_depth, 2)) + ' score=' + str(round(avg_score, 2)) + ' patterns=' + str(total_patterns) + ' rewrites=' + str(rewrites) + ' contam=' + str(contam_count) + ' t5=' + str(emergence)

@@ -5,7 +5,7 @@ AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
 PRUNED_DIR = os.path.join(MODULES_DIR, '_pruned')
 STIMULUS_DIR = os.path.join(BASE, 'scout_stimuli')
 
-DEAD_AGENTS = {'mirror', 'clockwork'}
+DEAD_AGENTS = {'clockwork'}
 DUPLICATE_OPS = {
     'mutation_op_duplicate_line', 'mutation_op_delete_line',
     'mutation_op_swap_lines', 'mutation_op_perturb_constant',

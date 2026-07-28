@@ -407,7 +407,7 @@ def mutation_op_{op_name}(lines, funcs, target_name):
         targets = [n for n in list(funcs.keys())[:5] if n != target_name]
         if targets:
             chosen = random.choice(targets)
-            r.append(f'    # {op_name}:cross:{chosen}')
+            r.append(f'    # {op_name}:cross:{{chosen}}')
     else:
         r = [l for l in r if not l.strip().startswith('    #')]
         if len(r) < 2:
@@ -434,9 +434,160 @@ def mutation_op_{op_name}(lines, funcs, target_name):
     genome.setdefault('custom_mutation_ops', {})[op_name] = op_code
     return True
 
+def _direct_mutate_source(genome):
+    gen = genome.get('generation', 0)
+    src = _read_file(AUTO_ECHO)
+    if src is None:
+        return []
+    src_lines = src.split('\n')
+    func_pat = re.compile(r'^def (\w+)\(')
+    func_lines = {}
+    current_func = None
+    for i, line in enumerate(src_lines):
+        m = func_pat.match(line)
+        if m:
+            current_func = m.group(1)
+            func_lines[current_func] = []
+        elif current_func is not None:
+            if line.startswith('def ') or (line.strip() and not line.startswith(' ') and not line.startswith('\t')):
+                current_func = None
+            else:
+                if current_func in func_lines:
+                    func_lines[current_func].append(i)
+    forbidden = {
+        'load_genome', 'save_genome', 'sigint_handler', 'main',
+        'run_generation', '_force_gen_rewrite', '_force_per_gen_rewrite',
+        '_evolve_loop_structure', '_snapshot_all_hashes', '_register_mutation_op',
+        '_MUTATION_OPS', '_apply_source_mutation', '_get_mutation_ops',
+        '_get_forbidden_targets', '_extract_functions', '_reload_mutation_ops_from_source',
+        'record_operator_result', 'compute_diversity_score', 'update_genome',
+        'code_path_mutation', 'mutate_genome', 'compute_operator_weights',
+        'apply_self_patches', 'strip_markdown', 'strip_code_blocks',
+        'is_repetitive', 'has_gibberish', 'is_garbage',
+    }
+    candidates = [n for n in func_lines if n not in forbidden and not n.startswith('mutation_op_') and n != 'run']
+    if not candidates:
+        return []
+    random.shuffle(candidates)
+    changes = []
+    targeted = candidates[:max(1, min(3, len(candidates)))]
+    for target_name in targeted:
+        line_indices = func_lines[target_name]
+        if len(line_indices) < 3:
+            continue
+        body_lines = [src_lines[i] for i in line_indices]
+        body_text = '\n'.join(body_lines)
+        mode = random.choices(
+            ['swap', 'rename_local', 'delete_noop', 'insert_comment', 'constant_shift'],
+            weights=[0.3, 0.25, 0.15, 0.15, 0.15],
+            k=1
+        )[0]
+        new_body_lines = list(body_lines)
+        mutated = False
+        if mode == 'swap' and len(new_body_lines) >= 2:
+            candidates_i = [i for i in range(len(new_body_lines) - 1) if new_body_lines[i].strip() and new_body_lines[i+1].strip()]
+            if candidates_i:
+                i = random.choice(candidates_i)
+                new_body_lines[i], new_body_lines[i+1] = new_body_lines[i+1], new_body_lines[i]
+                mutated = True
+        elif mode == 'rename_local':
+            renamed = 0
+            for i in range(len(new_body_lines)):
+                if renamed >= 2:
+                    break
+                parts = new_body_lines[i].split()
+                for j, p in enumerate(parts):
+                    if p.startswith('_') and len(p) > 2 and p not in ('_base', '_ae', '_f', '_s', '_pat', '_names', '_tgt', '_lines', '_fi', '_op', '_i', '_tag', '_indent', '_candidate', '_fw', '_nf', '_nova_', '__init__'):
+                        new_name = f'_n{p[1:]}'
+                        parts[j] = new_name
+                        renamed += 1
+                        break
+                if renamed:
+                    new_body_lines[i] = ' '.join(parts)
+            mutated = renamed > 0
+        elif mode == 'delete_noop':
+            pass_lines = [i for i in range(len(new_body_lines)) if new_body_lines[i].strip() in ('pass', 'pass  # noqa', 'pass  # nova:noop')]
+            if pass_lines:
+                del new_body_lines[pass_lines[0]]
+                mutated = True
+        elif mode == 'insert_comment':
+            if len(new_body_lines) > 2:
+                i = random.randint(1, len(new_body_lines) - 1)
+                indent = len(new_body_lines[i]) - len(new_body_lines[i].lstrip())
+                new_body_lines.insert(i, ' ' * indent + f'# nova:direct:{gen}:{random.getrandbits(16):04x}')
+                mutated = True
+        elif mode == 'constant_shift':
+            for i in range(len(new_body_lines)):
+                m = re.search(r'(\b\d+\.?\d*\b)', new_body_lines[i])
+                if m:
+                    val = m.group(1)
+                    try:
+                        fval = float(val)
+                        shift = random.uniform(-0.1, 0.1) * max(1.0, abs(fval))
+                        new_val = round(fval + shift, 4)
+                        new_body_lines[i] = new_body_lines[i].replace(val, str(new_val), 1)
+                        mutated = True
+                        break
+                    except:
+                        pass
+        if not mutated:
+            continue
+        new_text = '\n'.join(new_body_lines)
+        new_src_lines = list(src_lines)
+        for idx, orig_idx in enumerate(line_indices):
+            new_src_lines[orig_idx] = new_body_lines[idx]
+        candidate_src = '\n'.join(new_src_lines)
+        try:
+            ast.parse(candidate_src)
+            src_lines = new_src_lines
+            changes.append(f'{mode}:{target_name}')
+        except SyntaxError:
+            continue
+    if changes:
+        _write_file(AUTO_ECHO, '\n'.join(src_lines))
+    return changes
+
+def _inject_permanent_rewrite_stub(genome):
+    gen = genome.get('generation', 0)
+    src = _read_file(AUTO_ECHO)
+    if src is None:
+        return False
+    stub_id = f'nova:permanent-stub:v8'
+    if stub_id in src:
+        return False
+    while_idx = src.find('while running:')
+    if while_idx < 0:
+        return False
+    rg_line = 'result = run_generation(genome)'
+    rg_idx = src.find(rg_line, while_idx)
+    if rg_idx < 0:
+        return False
+    line_end = src.find('\n', rg_idx)
+    if line_end < 0:
+        return False
+    indent = '        '
+    stub = (
+        f'{indent}# {stub_id}\n'
+        f'{indent}if running:\n'
+        f'{indent}    try:\n'
+        f'{indent}        _nr = _force_per_gen_rewrite(genome, genome.get("generation", 0))\n'
+        f'{indent}        if _nr:\n'
+        f'{indent}            genome["nova_stub_rewrites"] = genome.get("nova_stub_rewrites", 0) + 1\n'
+        f'{indent}    except:\n'
+        f'{indent}        pass\n'
+    )
+    new_src = src[:line_end] + '\n' + stub + src[line_end + 1:]
+    if not _validate(new_src):
+        return False
+    _write_file(AUTO_ECHO, new_src)
+    return True
+
 def run(genome):
     gen = genome.get('generation', 0)
     changes = []
+    direct = _direct_mutate_source(genome)
+    if direct:
+        changes.append(f'direct:{",".join(direct)}')
     op_key = _inject_operator_into_autoecho(genome)
     if op_key:
         changes.append(f'injected_op:{op_key}')
@@ -455,6 +606,8 @@ def run(genome):
         changes.append('mutated_force_rewrite')
     if _inject_self_rewrite_operator(genome):
         changes.append('injected_self_rewrite_op')
+    if _inject_permanent_rewrite_stub(genome):
+        changes.append('permanent_stub')
     if not changes:
         try:
             with open(AUTO_ECHO, 'a') as f:
@@ -467,5 +620,6 @@ def run(genome):
         genome['nova_total_actions'] = genome.get('nova_total_actions', 0) + len(changes)
         genome['nova_last_gen'] = gen
         genome['nova_last_ops'] = changes
+        genome['nova_direct_mutated'] = len(direct)
     _save_genome(genome)
-    return f'[nova] gen={gen} actions={changes}'
+    return f'[nova] gen={gen} actions={changes} direct={len(direct)}'

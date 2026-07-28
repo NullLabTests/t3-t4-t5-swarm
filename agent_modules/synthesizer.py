@@ -388,3 +388,4 @@ def run(genome):
     genome['synthesizer_last_gen'] = gen
     _save_genome(genome)
     return summary if actions else f'[synthesizer] gen={gen}: no actions'
+# orchestrated:fallback:gen=38:ts=1785250368

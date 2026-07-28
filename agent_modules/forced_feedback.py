@@ -262,3 +262,4 @@ def run(genome):
     summary = f'forced {forced} rewrites ({failures} failures, {stub_count} stubs): {"; ".join(results)}' if results else f'no weak agents to rewrite (autonomy={genome.get("autonomy", 0)}, stubs={stub_count})'
     print(f'[feedback] {summary}')
     return summary
+# orchestrated:fallback:gen=38:ts=1785250369

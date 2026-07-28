@@ -10,3 +10,4 @@ def mutation_op_weaver_force_rewrite_marker(lines, *args):
     marker = "# weaver:fw:{}:{}".format(int(time.time()), random.getrandbits(32))
     r.insert(random.randrange(len(r)), marker)
     return r
+# orchestrated:fallback:gen=38:ts=1785250368

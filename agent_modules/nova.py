@@ -623,3 +623,4 @@ def run(genome):
         genome['nova_direct_mutated'] = len(direct)
     _save_genome(genome)
     return f'[nova] gen={gen} actions={changes} direct={len(direct)}'
+# orchestrated:fallback:gen=38:ts=1785250368

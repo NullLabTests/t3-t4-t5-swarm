@@ -258,3 +258,4 @@ def run(genome):
     summary = f'spark: {len(rewritten)}/{len(files)} files rewritten ({ast_ok} ast, {marker_ok} marker, {skipped} pre-changed) infected={len(infected)}'
     print(f'[spark] {summary}')
     return summary
+# orchestrated:fallback:gen=38:ts=1785250368

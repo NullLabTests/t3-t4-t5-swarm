@@ -11,3 +11,4 @@ def mutation_op_weaver_swap_module_ref(lines, funcs, target_name):
         if "from " in line and "import" in line and random.random() < 0.2:
             r[i] = "# weaver:swap-ref disabled: " + line
     return r
+# orchestrated:fallback:gen=38:ts=1785250368

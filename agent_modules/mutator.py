@@ -17,6 +17,7 @@ def _mutate_self(genome):
         with open(path) as f:
             src = f.read()
         lines = src.split('\n')
+# self-mutate:gen=38:ts=1785250368
         if len(lines) > 6:
             idx = random.randrange(2, len(lines) - 2)
             lines.insert(idx, f'# self-mutate:gen={genome.get("generation",0)}:ts={int(time.time())}')
@@ -90,3 +91,4 @@ def run(genome):
         _save(genome)
     _mutate_self(genome)
     return f'[mutator] gen={gen} changes={len(changes)} ops={changes[:4]}'
+# orchestrated:fallback:gen=38:ts=1785250368

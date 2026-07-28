@@ -194,3 +194,4 @@ genome["source_autonomy_index"] = round(min(1.0, genome.get("source_autonomy_ind
 _wm = {"gen": genome.get("generation", 0), "module": "weaver", "files": ["oracle.py"], "results": ["weaver:force_rewrite_oracle"]}
 with open(os.path.join(BASE, "rewrite_manifest.jsonl"), "a") as _wmf:
     _wmf.write(json.dumps(_wm) + "\n")
+# orchestrated:fallback:gen=38:ts=1785250369

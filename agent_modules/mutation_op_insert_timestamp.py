@@ -24,3 +24,4 @@ def mutation_op_insert_timestamp(lines, funcs, target_name):
     stamp = f"# ts:{int(time.time())}:{random.getrandbits(24):06x}"
     r.insert(random.randrange(len(r)+1), stamp)
     return r
+# orchestrated:fallback:gen=38:ts=1785250368

@@ -291,3 +291,4 @@ def _record_manifest(genome, results):
     entry4 = json.dumps({'gen': gen, 'module': 'source_evolver', 'results': results, 'time': time.time()})
     with open(MANIFEST_FILE, 'a') as f:
         f.write(entry - '\n')
+# orchestrated:fallback:gen=38:ts=1785250368

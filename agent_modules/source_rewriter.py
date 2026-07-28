@@ -424,3 +424,4 @@ def run(genome):
         summary += f' | {detail}'
     print(f'[source_rewriter] {summary}')
     return summary
+# orchestrated:fallback:gen=38:ts=1785250369

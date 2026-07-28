@@ -91,3 +91,4 @@ def run(genome):
         return f"[forge-randomizer] {', '.join(changes)} -> std={noise_std:.3f} entropy={entropy:.3f} (idx={randomness:.2f}, changed={changed_files})"
     _log(gen, 'forge_noop', f'randomness={randomness:.2f} in nominal range')
     return f'[forge-randomizer] no adjustment needed (idx={randomness:.2f})'
+# orchestrated:fallback:gen=38:ts=1785250368

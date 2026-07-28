@@ -119,3 +119,4 @@ def run(genome):
     return f'[critic] gen={gen} scores: {json_out}'
 if __name__ == '__main__':
     run({'generation': 38})
+# orchestrated:fallback:gen=38:ts=1785250368

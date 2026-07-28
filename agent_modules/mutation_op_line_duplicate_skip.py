@@ -10,3 +10,4 @@ def mutation_op_line_duplicate_skip(lines, funcs, target_name):
     if 0 <= target < len(r):
         r.insert(idx, r[target])
     return r
+# orchestrated:fallback:gen=38:ts=1785250369

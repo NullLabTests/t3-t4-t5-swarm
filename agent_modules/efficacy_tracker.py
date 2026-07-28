@@ -115,3 +115,6 @@ def run(genome):
     summary = f"eff={tracker['overall_efficacy']} tracked={count} dead={dead_modules} changed={len(changed_modules)}"
     print(f'[efficacy] {summary}')
     return summary
+
+# bridge:cross-infected gen=44 ts=1785251000
+_BRIDGE_CROSS_INFECTED_44 = True

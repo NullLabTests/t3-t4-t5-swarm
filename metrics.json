@@ -14,5 +14,27 @@
       "source_autonomy_index": 0.0,
       "timestamp": "2026-07-27T16:53:29.415421+00:00"
     }
+  ],
+  "generation": 44,
+  "bridge_version": "gen44_rewrite",
+  "new_types": [
+    ".entropy",
+    ".spawn_bridge",
+    ".crossfeed"
+  ],
+  "new_ops": [
+    "mutation_op_bridge_entropy_inject",
+    "mutation_op_bridge_cross_wire"
+  ],
+  "modules_rewritten": [
+    "bridge.py",
+    "analyzer.py",
+    "rewrite_orchestrator.py"
+  ],
+  "cross_infected": [
+    "lens.py",
+    "efficacy_tracker.py",
+    "analyzer.py",
+    "rewrite_orchestrator.py"
   ]
 }

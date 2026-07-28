@@ -219,3 +219,15 @@ def run(genome):
             agent['score'] = min(10, agent.get('score', 2) + 1)
     emergence = genome.get('lens_t5_emergence_depth', 0)
     return '[lens] depth=' + str(round(avg_depth, 2)) + ' score=' + str(round(avg_score, 2)) + ' patterns=' + str(total_patterns) + ' rewrites=' + str(rewrites) + ' contam=' + str(contam_count) + ' t5=' + str(emergence)
+
+# bridge:cross-wire from critic.py:_git gen=44
+def _git_bridge_copy(cmd):
+    try:
+        r = subprocess.run(['git'] + cmd.split(), capture_output=True,
+                           text=True, cwd=BASE, timeout=15)
+        return r.stdout
+    except Exception:
+        return ''
+
+# bridge:cross-infected gen=44
+_BRIDGE_CROSS_INFECTED_44 = True

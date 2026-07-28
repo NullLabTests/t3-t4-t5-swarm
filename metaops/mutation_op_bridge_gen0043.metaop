@@ -1,0 +1,49 @@
+@_register_mutation_op('mutation_op_bridge_entropy_inject')
+def mutation_op_bridge_entropy_inject(lines, funcs, target_name):
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
+    mode = random.choice(['drift_const', 'shuffle_block', 'inject_noise_comment', 'duplicate_branch'])
+    if mode == 'drift_const':
+        for i in range(len(r)):
+            for pat in ['0.', '1.', '2.', '3.', '5.', '10']:
+                if pat in r[i] and random.random() < 0.2:
+                    old_val = re.search(r'(\d+\.?\d*)', r[i])
+                    if old_val:
+                        drift = round(float(old_val.group(1)) * random.uniform(0.8, 1.2), 2)
+                        r[i] = r[i].replace(old_val.group(1), str(drift), 1)
+                        break
+    elif mode == 'shuffle_block':
+        block_start = random.randrange(0, max(1, len(r) - 4))
+        block_end = min(block_start + random.randint(2, 5), len(r))
+        block = r[block_start:block_end]
+        random.shuffle(block)
+        r[block_start:block_end] = block
+    elif mode == 'inject_noise_comment':
+        idx = random.randrange(len(r))
+        noise = f"  # bridge:entropy:gen={gen}:{random.getrandbits(16):04x}"
+        r.insert(idx, r[idx] + noise)
+    elif mode == 'duplicate_branch':
+        branch_lines = [i for i, l in enumerate(r) if l.strip().startswith('if ') or l.strip().startswith('elif ')]
+        if branch_lines:
+            idx = random.choice(branch_lines)
+            indent = len(r[idx]) - len(r[idx].lstrip())
+            r.insert(idx + 1, ' ' * indent + f'if random.random() < 0.5:  # bridge:entropy:branch')
+            r.insert(idx + 2, ' ' * (indent + 4) + f'pass  # bridge:entropy gen={gen}')
+    return r
+
+@_register_mutation_op('mutation_op_bridge_cross_wire')
+def mutation_op_bridge_cross_wire(lines, funcs, target_name):
+    if not lines or len(lines) < 3:
+        return lines
+    r = list(lines)
+    if funcs and len(funcs) > 1:
+        peer_funcs = [n for n in funcs if n != target_name and not n.startswith('_')]
+        if peer_funcs:
+            donor = random.choice(peer_funcs)
+            ds, de = funcs[donor]
+            if ds < len(r) and de <= len(r) and de > ds:
+                snippet = r[ds:de]
+                insert_at = random.randrange(0, len(r))
+                r[insert_at:insert_at] = [''] + list(snippet) + ['  # bridge:cross-wire from ' + donor]
+    return r

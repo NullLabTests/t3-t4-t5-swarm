@@ -1,0 +1,14 @@
+{
+  ".entropy": {
+    "handler": "_bridge_handler_entropy",
+    "description": "Inject entropy into a module: random code perturbation, line shuffle, or constant drift"
+  },
+  ".spawn_bridge": {
+    "handler": "_bridge_handler_spawn_bridge",
+    "description": "Spawn a new agent from a .spawn_bridge file and register its module"
+  },
+  ".crossfeed": {
+    "handler": "_bridge_handler_crossfeed",
+    "description": "Cross-feed: copy a function from one module into another as a new function"
+  }
+}

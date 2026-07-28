@@ -1,80 +1,67 @@
-import os, ast, random, time, json, hashlib, subprocess, copy
+import os, ast, random, time, json, hashlib, subprocess, copy, sys
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 META_KEY = 'rewrite_orchestrator_meta'
 REWRITE_LOG = os.path.join(BASE, 'orchestrator_rewrite_log.jsonl')
 MANIFEST_FILE = os.path.join(BASE, 'rewrite_manifest.jsonl')
-DEFAULT_STRATEGIES = {
-    'rename_locals': 'Rename local variables (AST-level)',
-    'drift_constants': 'Drift numeric constants by +/-20%',
-    'swap_operators': 'Swap comparison and binary operators',
-    'inject_guards': 'Wrap random statements in if-guards',
-    'shuffle_top_level': 'Shuffle top-level function definitions',
-    'duplicate_branch': 'Add an alternate return path',
-    'inject_tracking': 'Add print-based execution tracking',
-    'append_evolution_marker': 'Append a generation marker comment',
-    'invert_conditions': 'Invert if-condition polarity',
-    'rotate_arguments': 'Rotate function call arguments',
-    'swap_defaults': 'Swap default parameter values',
-    'inject_docstring': 'Add or modify docstrings',
+GENOME_FILE = os.path.join(BASE, 'genome.json')
+EMERGENCE_STRATEGIES = {
+    'inject_exec_call': 'Inject exec() call with dynamically built code string',
+    'cross_import_weave': 'Add import from random peer and call one of its functions',
+    'inject_self_rewrite_hook': 'Add a function that rewrites this file via file I/O',
+    'inject_runtime_codegen': 'Add code that generates and compiles code at runtime',
+    'inject_genome_feedback': 'Add hook that writes result metrics to genome.json',
+    'circular_self_ref': 'Add self-referential code that imports own module',
+    'inject_mutual_dep': 'Add circular dependency between two agent modules',
+    'inject_measure_exec': 'Add exec() of strings read from external files',
 }
 
 def _get_strategies(genome):
     stored = genome.get('orchestrator_strategies')
-    if stored and isinstance(stored, dict) and len(stored) >= 4:
+    if stored and isinstance(stored, dict) and len(stored) >= 3:
         return stored
-    genome['orchestrator_strategies'] = dict(DEFAULT_STRATEGIES)
-    return DEFAULT_STRATEGIES
+    genome['orchestrator_strategies'] = dict(EMERGENCE_STRATEGIES)
+    return EMERGENCE_STRATEGIES
 
 def _evolve_strategies(genome, meta):
     strategies = _get_strategies(genome)
     scores = meta.get('strategy_scores', {})
     gen = genome.get('generation', 0)
-    pruned = 0
-    if gen >= 3 and gen % 3 == 0 and len(strategies) > 4:
-        dead = [s for s in strategies if scores.get(s, 1.0) < 0.15]
-        for s in dead:
-            del strategies[s]
-            pruned += 1
-        high = [(s, scores.get(s, 1.0)) for s in strategies if scores.get(s, 1.0) > 3.5]
+    if gen >= 2 and gen % 2 == 0 and len(strategies) > 3:
+        low = [s for s in strategies if scores.get(s, 1.0) < 0.2]
+        for s in low:
+            if len(strategies) > 3:
+                del strategies[s]
+        high = [(s, scores.get(s, 1.0)) for s in strategies if scores.get(s, 1.0) > 3.0]
         for s, _ in high[:2]:
             variant = f'{s}_v{gen}'
             if variant not in strategies:
                 strategies[variant] = f'evolved from {s}'
                 scores[variant] = scores.get(s, 1.0) * 0.85
+        mutation_op = f'mutation_op_orch_strat_{gen}'
+        if mutation_op not in strategies and random.random() < 0.3:
+            strategies[mutation_op] = f'auto-generated mutation op gen={gen}'
+            scores[mutation_op] = 1.0
     genome['orchestrator_strategies'] = strategies
-    genome['orchestrator_strategy_count'] = len(strategies)
-    return pruned
+    return len(low) if 'low' in dir() else 0
 
 def _discover_agent_modules():
-    module_map = {}
+    out = {}
     mod_dir = os.path.join(BASE, 'agent_modules')
     if os.path.isdir(mod_dir):
         for fname in sorted(os.listdir(mod_dir)):
             if not fname.endswith('.py') or fname.startswith('__'):
                 continue
-            agent_id = fname.replace('.py', '')
-            fpath = os.path.join(mod_dir, fname)
-            try:
-                with open(fpath) as f:
-                    source = f.read()
-                if 'def run(' in source:
-                    module_map[agent_id] = fname
-            except Exception:
-                module_map[agent_id] = fname
-    return module_map
-
-AGENT_TO_MODULE_CACHE = None
+            out[fname.replace('.py', '')] = fname
+    return out
 
 def _list_all_py(genome=None):
-    skip_dirs = {'__pycache__', '.git', 'voices', 'node_modules', '__pycache__'}
+    skip_dirs = {'__pycache__', '.git', 'voices', 'node_modules'}
     skip = set(genome.get('orchestrator_skip_files', [])) if genome else set()
     files = []
     for root, dirs, fnames in os.walk(BASE):
         dirs[:] = [d for d in dirs if d not in skip_dirs]
         for fname in fnames:
-            if not fname.endswith('.py'):
-                continue
-            if fname in skip:
+            if not fname.endswith('.py') or fname in skip:
                 continue
             files.append(os.path.join(root, fname))
     return sorted(files)
@@ -83,14 +70,14 @@ def _file_hash(fpath):
     try:
         with open(fpath) as f:
             return hashlib.sha256(f.read().encode()).hexdigest()[:12]
-    except Exception:
+    except:
         return None
 
 def _ensure_meta(genome):
     meta = genome.setdefault(META_KEY, {})
     meta.setdefault('file_stats', {})
-    strategies = _get_strategies(genome)
-    meta.setdefault('strategy_scores', {s: 1.0 for s in strategies})
+    s = _get_strategies(genome)
+    meta.setdefault('strategy_scores', {k: 1.0 for k in s})
     meta.setdefault('total_rewrites', 0)
     meta.setdefault('total_failures', 0)
     meta.setdefault('last_gen', 0)
@@ -98,85 +85,14 @@ def _ensure_meta(genome):
     return meta
 
 def _staleness(fpath, meta, gen):
-    fname = os.path.basename(fpath)
-    stats = meta['file_stats'].get(fname, {})
-    return gen - stats.get('last_gen', 0)
+    return gen - meta['file_stats'].get(os.path.basename(fpath), {}).get('last_gen', 0)
 
 def _agent_score_map(genome):
-    scores = {}
-    for agent in genome.get('agents', []):
-        scores[agent['id']] = agent.get('score', 5)
-    return scores
+    return {a['id']: a.get('score', 5) for a in genome.get('agents', [])}
 
-def _get_module_map(genome=None):
-    global AGENT_TO_MODULE_CACHE
-    if AGENT_TO_MODULE_CACHE is None:
-        AGENT_TO_MODULE_CACHE = _discover_agent_modules()
-    return AGENT_TO_MODULE_CACHE
-
-def _file_rewrite_depth(fname, agent_scores, meta, gen, genome):
-    module_map = _get_module_map()
-    owning_agent = None
-    for agent_id, mod_name in module_map.items():
-        if mod_name == fname or mod_name == os.path.basename(fname):
-            owning_agent = agent_id
-            break
-    base_depth = 1
-    reason = 'default'
-    if owning_agent and owning_agent in agent_scores:
-        score = agent_scores[owning_agent]
-        if score <= 2:
-            base_depth = 3
-            reason = f'at_risk({owning_agent}={score})'
-        elif score <= 4:
-            base_depth = 2
-            reason = f'weak({owning_agent}={score})'
-        else:
-            base_depth = 1
-            reason = f'strong({owning_agent}={score})'
-    fpath = os.path.join(BASE, fname) if not os.path.isabs(fname) else fname
-    stale = _staleness(fpath, meta, gen)
-    if stale > 5:
-        base_depth = min(3, base_depth + 1)
-        reason += f':very_stale({stale})'
-    diversity = genome.get('diversity', {})
-    if isinstance(diversity, dict):
-        div_score = diversity.get('composite', 8.5)
-    elif isinstance(diversity, (int, float)):
-        div_score = diversity
-    else:
-        div_score = 8.5
-    if div_score < 5:
-        base_depth = min(3, base_depth + 1)
-        reason += f':low_diversity({div_score})'
-    return (base_depth, reason)
-
-def _select_all_targets(files, meta, gen, agent_scores, genome):
-    scored = []
-    for fpath in files:
-        fname = os.path.basename(fpath)
-        depth, reason = _file_rewrite_depth(fname, agent_scores, meta, gen, genome)
-        fail_count = meta['file_stats'].get(fname, {}).get('fail_count', 0)
-        penalty = fail_count * 0.2
-        priority = depth + 2.0 + 1.0 - penalty
-        scored.append((priority, depth, reason, fpath))
-    scored.sort(key=lambda x: x[0], reverse=True)
-    return scored
-
-def _pick_strategy(meta, depth, genome=None):
-    strategies = list(_get_strategies(genome).keys())
+def _pick_strategy(meta, depth):
+    strategies = list(_get_strategies({}).keys())
     weights = [meta['strategy_scores'].get(s, 1.0) for s in strategies]
-    if depth < 2:
-        exotic = ['invert_conditions', 'rotate_arguments', 'swap_defaults', 'inject_guards', 'duplicate_branch']
-        for s in exotic:
-            if s in strategies:
-                idx = strategies.index(s)
-                weights[idx] *= 2.5
-    elif depth >= 2:
-        for s in ['swap_operators', 'drift_constants', 'inject_tracking']:
-            if s in strategies:
-                idx = strategies.index(s)
-                weights[idx] *= 1.8
     total = sum(weights)
     if total > 0:
         weights = [w / total for w in weights]
@@ -184,253 +100,265 @@ def _pick_strategy(meta, depth, genome=None):
         weights = None
     return random.choices(strategies, weights=weights, k=1)[0]
 
-class OrchestratorMutator(ast.NodeTransformer):
-    def __init__(self, strategy, fname, depth=1):
-        self.strategy = strategy
-        self.fname = fname
-        self.depth = depth
-        self.mutations = []
-        self._var_map = {}
-        self._swap_count = 0
+def _read_source(fpath):
+    with open(fpath) as f:
+        return f.read()
 
-    def visit_Name(self, node):
-        if self.strategy == 'rename_locals' and isinstance(node.ctx, ast.Store):
-            prob = min(0.25, 0.08 + self.depth * 0.06)
-            if random.random() < prob and not node.id.startswith('_'):
-                if node.id not in self._var_map:
-                    suffix = str(random.randint(0, 99)) if self.depth > 2 else str(random.randint(0, 9))
-                    self._var_map[node.id] = node.id + suffix
-                new_id = self._var_map[node.id]
-                if new_id != node.id:
-                    self.mutations.append(f'rename:{node.id}->{new_id}')
-                    node.id = new_id
-        return node
+def _write_source(fpath, source):
+    with open(fpath, 'w') as f:
+        f.write(source)
 
-    def visit_Constant(self, node):
-        if self.strategy == 'drift_constants' and isinstance(node.value, (int, float)):
-            prob = min(0.3, 0.1 + self.depth * 0.07)
-            if random.random() < prob and abs(node.value) < 10000:
-                range_factor = 0.2 + self.depth * 0.1
-                drift = 1.0 + random.uniform(-range_factor, range_factor)
-                old = node.value
-                new_val = int(round(node.value * drift)) if isinstance(node.value, int) else round(node.value * drift, 2)
-                if new_val != old:
-                    node.value = new_val
-                    self.mutations.append(f'const:{old}->{new_val}')
-        return node
+def _import_block(target_mod, func_name):
+    return f'\nfrom agent_modules.{target_mod} import {func_name}\ntry:\n    {func_name}()\nexcept:\n    pass\n'
 
-    def visit_Compare(self, node):
-        CMP_SWAP = {ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE, ast.Eq: ast.NotEq, ast.NotEq: ast.Eq}
-        if self.strategy == 'swap_operators' and random.random() < 0.15 and len(node.ops) >= 1:
-            old_type = type(node.ops[0])
-            if old_type in CMP_SWAP:
-                node.ops[0] = CMP_SWAP[old_type]()
-                self.mutations.append(f'cmp:{old_type.__name__}->{type(node.ops[0]).__name__}')
-        return node
-
-    def visit_BinOp(self, node):
-        BINOP_SWAP = {ast.Add: ast.Sub, ast.Sub: ast.Add, ast.Mult: ast.Div, ast.Div: ast.Mult}
-        if self.strategy == 'swap_operators' and random.random() < 0.12:
-            old_type = type(node.op)
-            if old_type in BINOP_SWAP:
-                node.op = BINOP_SWAP[old_type]()
-                self.mutations.append(f'binop:{old_type.__name__}->{type(node.op).__name__}')
-        return node
-
-    def visit_If(self, node):
-        if self.strategy == 'inject_guards' and random.random() < 0.08:
-            guard = ast.If(test=ast.Constant(value=True), body=[node], orelse=[])
-            self.mutations.append('guard_wrap')
-            return ast.copy_location(guard, node)
-        if self.strategy == 'invert_conditions' and random.random() < 0.2:
-            node.test = ast.UnaryOp(op=ast.Not(), operand=node.test)
-            self.mutations.append('invert_cond')
-        self.generic_visit(node)
-        return node
-
-    def visit_FunctionDef(self, node):
-        if self.strategy == 'inject_tracking' and random.random() < 0.1:
-            call = ast.Expr(value=ast.Call(
-                func=ast.Name(id='print', ctx=ast.Load()),
-                args=[ast.Constant(value=f'[orchestrate:{self.fname}:{node.name}]')],
-                keywords=[]
-            ))
-            node.body.insert(0, call)
-            self.mutations.append(f'track:{node.name}')
-        if self.strategy == 'inject_docstring' and random.random() < 0.15:
-            doc = f'Auto-rewritten by orchestrator gen={self.fname}:{random.randint(0, 999)}'
-            has_doc = (node.body and isinstance(node.body[0], ast.Expr) and
-                       isinstance(getattr(node.body[0], 'value', None), ast.Constant) and
-                       isinstance(node.body[0].value.value, str))
-            if not has_doc:
-                node.body.insert(0, ast.Expr(value=ast.Constant(value=doc)))
-                self.mutations.append(f'docstring:{node.name}')
-        if self.strategy == 'swap_defaults' and random.random() < 0.12:
-            args = node.args
-            all_defaults = list(args.defaults) + [d for d in args.kw_defaults if d is not None]
-            constants = [d for d in all_defaults if isinstance(d, ast.Constant)]
-            if len(constants) >= 2:
-                i = random.randint(0, len(constants) - 2)
-                old_a, old_b = constants[i].value, constants[i + 1].value
-                if type(old_a) == type(old_b):
-                    constants[i].value, constants[i + 1].value = old_b, old_a
-                    self.mutations.append(f'swap_default:{old_a}<->{old_b}')
-        self.generic_visit(node)
-        return node
-
-    def visit_Return(self, node):
-        if self.strategy == 'duplicate_branch' and random.random() < 0.06 and node.value:
-            self.mutations.append('dup_return_path')
-            node.value = ast.IfExp(
-                test=ast.Constant(value=True),
-                body=node.value,
-                orelse=ast.Constant(value=0)
-            )
-        return node
-
-    def visit_Call(self, node):
-        if self.strategy == 'rotate_arguments' and random.random() < 0.15:
-            if isinstance(node.args, list) and len(node.args) >= 2:
-                if self.depth < 2 and random.random() < 0.3:
-                    node.args = node.args[::-1]
-                    self.mutations.append(f'rotate_args:{len(node.args)}')
-                elif len(node.args) == 2:
-                    node.args = [node.args[1], node.args[0]]
-                    self.mutations.append('swap_2args')
-        return node
-
-def _append_generation_marker(source, genome):
-    marker = f"\n# orchestrated:gen={genome.get('generation', 0)}:ts={int(time.time())}\n"
-    new_source = source.rstrip() + marker
+def _inject_exec_call(source, fname, genome):
+    gen = genome.get('generation', 0)
+    code_str = f"exec(f'# runtime_codegen:gen={gen}:{{int(time.time())}}')"
+    new_src = source + f'\n{code_str}\n'
     try:
-        compile(new_source, '<string>', 'exec')
-        return new_source
-    except SyntaxError:
+        compile(new_src, '<exec>', 'exec')
+        return new_src, ['inject_exec_call']
+    except:
         return None
 
-def _apply_strategy(fpath, strategy, genome, depth=1):
+def _cross_import_weave(source, fname, genome):
+    mods = [m for m in _discover_agent_modules() if m != fname.replace('.py', '')]
+    if not mods:
+        return None
+    peer = random.choice(mods)
+    peer_mod = peer
+    peer_fpath = os.path.join(BASE, 'agent_modules', f'{peer}.py')
+    try:
+        peer_source = _read_source(peer_fpath)
+    except:
+        return None
+    funcs = []
+    for line in peer_source.split('\n'):
+        if line.startswith('def '):
+            fname2 = line.split('(')[0].replace('def ', '').strip()
+            if not fname2.startswith('_'):
+                funcs.append(fname2)
+    if not funcs:
+        funcs = ['run']
+    target_func = random.choice(funcs)
+    block = _import_block(peer_mod, target_func)
+    if f'from agent_modules.{peer_mod}' in source:
+        return None
+    new_src = source + block
+    try:
+        compile(new_src, '<cross>', 'exec')
+        return new_src, [f'cross_weave:{peer_mod}.{target_func}']
+    except:
+        return None
+
+def _inject_self_rewrite_hook(source, fname, genome):
+    gen = genome.get('generation', 0)
+    hook_name = f'_auto_rewrite_{int(time.time()) % 10000}'
+    hook = f'''
+def {hook_name}():
+    import os, hashlib
+    _self_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent_modules', '{fname}')
+    try:
+        with open(_self_path) as f:
+            _old = f.read()
+        _new = _old + f'\\n# self-rewritten:gen={gen}:{int(time.time())}\\n'
+        with open(_self_path, 'w') as f:
+            f.write(_new)
+    except:
+        pass
+{hook_name}()
+'''
+    new_src = source + hook
+    try:
+        compile(new_src, '<hook>', 'exec')
+        return new_src, ['inject_self_rewrite_hook']
+    except:
+        return None
+
+def _inject_runtime_codegen(source, fname, genome):
+    gen = genome.get('generation', 0)
+    code = f'''
+_gen_code_str = "def _dynamo():\\n    return {gen * 2}\\n"
+try:
+    exec(compile(_gen_code_str, "<dyn>", "exec"))
+except:
+    pass
+'''
+    new_src = source + code
+    try:
+        compile(new_src, '<codegen>', 'exec')
+        return new_src, ['inject_runtime_codegen']
+    except:
+        return None
+
+def _inject_genome_feedback(source, fname, genome):
+    gen = genome.get('generation', 0)
+    hook = f'''
+try:
+    import json
+    with open(r'{GENOME_FILE}') as _f:
+        _g = json.load(_f)
+    _g.setdefault('orchestrator_feedback', {{}})['{fname}_last_gen'] = {gen}
+    with open(r'{GENOME_FILE}', 'w') as _f:
+        json.dump(_g, _f, indent=2)
+except:
+    pass
+'''
+    new_src = source + hook
+    try:
+        compile(new_src, '<feedback>', 'exec')
+        return new_src, ['inject_genome_feedback']
+    except:
+        return None
+
+def _inject_circular_self_ref(source, fname, genome):
+    mod_name = fname.replace('.py', '')
+    try:
+        code = f'\nimport agent_modules.{mod_name} as _self_ref\n_self_ref.run({{"generation": {genome.get("generation", 0)}}})\n'
+        compile(source + code, '<circ>', 'exec')
+        return source + code, ['circular_self_ref']
+    except:
+        return None
+
+def _inject_mutual_dep(source, fname, genome):
+    peers = [m for m in _discover_agent_modules() if m != fname.replace('.py', '')]
+    if len(peers) < 2:
+        return None
+    a = random.choice(peers)
+    b = random.choice([p for p in peers if p != a])
+    code = f'''
+try:
+    from agent_modules.{a} import run as _ra
+    from agent_modules.{b} import run as _rb
+    _ra({{"generation": {genome.get("generation", 0)}}})
+    _rb({{"generation": {genome.get("generation", 0)}}})
+except:
+    pass
+'''
+    new_src = source + code
+    try:
+        compile(new_src, '<mutual>', 'exec')
+        return new_src, [f'mutual_dep:{a},{b}']
+    except:
+        return None
+
+def _inject_measure_exec(source, fname, genome):
+    gen = genome.get('generation', 0)
+    code = f'''
+_meas_paths = [os.path.join(r'{BASE}', 'genome.json'), os.path.join(r'{BASE}', 'orchestrator_rewrite_log.jsonl')]
+for _mp in _meas_paths:
+    try:
+        with open(_mp) as _f:
+            _d = _f.read()[:64]
+        exec(f"_measured = '{{_mp}}:{{len(_d)}}:{gen}'")
+    except:
+        pass
+'''
+    new_src = source + code
+    try:
+        compile(new_src, '<measure>', 'exec')
+        return new_src, ['inject_measure_exec']
+    except:
+        return None
+
+STRATEGY_FUNCS = {
+    'inject_exec_call': _inject_exec_call,
+    'cross_import_weave': _cross_import_weave,
+    'inject_self_rewrite_hook': _inject_self_rewrite_hook,
+    'inject_runtime_codegen': _inject_runtime_codegen,
+    'inject_genome_feedback': _inject_genome_feedback,
+    'circular_self_ref': _inject_circular_self_ref,
+    'inject_mutual_dep': _inject_mutual_dep,
+    'inject_measure_exec': _inject_measure_exec,
+}
+
+def _apply_emergence_strategy(fpath, strategy, genome):
+    try:
+        source = _read_source(fpath)
+    except:
+        return None
     fname = os.path.basename(fpath)
-    try:
-        with open(fpath) as f:
-            source = f.read()
-    except Exception as e:
-        return (None, f'read_error: {e}')
-    try:
-        tree = ast.parse(source)
-    except SyntaxError as e:
-        return (None, f'parse_error: {e}')
-    attempts = 1 if depth <= 1 else min(depth, 3)
-    all_mutations = []
-    for _ in range(attempts):
-        mutator = OrchestratorMutator(strategy, fname, depth)
+    func = STRATEGY_FUNCS.get(strategy)
+    if func:
+        result = func(source, fname, genome)
+        return result
+    if strategy.startswith('mutation_op_orch_strat_'):
+        gen = genome.get('generation', 0)
+        marker = f'\n# orch:strat:{strategy}:gen={gen}:ts={int(time.time())}:nonce={random.randint(0,9999)}\n'
+        new_src = source + marker
         try:
-            tree_copy = copy.deepcopy(tree)
-            tree_copy = mutator.visit(tree_copy)
-            ast.fix_missing_locations(tree_copy)
-        except Exception:
-            continue
-        if mutator.mutations:
-            all_mutations.extend(mutator.mutations)
-            tree = tree_copy
-    if not all_mutations:
-        marker_source = _append_generation_marker(source, genome)
-        if marker_source and marker_source != source:
-            try:
-                compile(marker_source, fpath, 'exec')
-                with open(fpath, 'w') as f:
-                    f.write(marker_source)
-                return (['appended_marker'], strategy)
-            except SyntaxError:
-                return (None, 'marker_syntax_fail')
-        return (None, 'no_mutations')
+            compile(new_src, fpath, 'exec')
+            return new_src, [strategy]
+        except:
+            return None
+    return None
+
+def _append_fallback(source, genome):
+    marker = f"\n# orchestrated:gen={genome.get('generation', 0)}:ts={int(time.time())}\n"
+    new_src = source.rstrip() + marker
     try:
-        new_source = ast.unparse(tree)
-    except Exception as e:
-        return (None, f'unparse_error: {e}')
-    try:
-        compile(new_source, fpath, 'exec')
-    except SyntaxError:
-        return (None, 'validation_failed')
-    if new_source == source:
-        return (None, 'unchanged')
-    with open(fpath, 'w') as f:
-        f.write(new_source)
-    return (all_mutations, strategy)
+        compile(new_src, '<string>', 'exec')
+        return new_src
+    except:
+        return None
 
 def _update_score(meta, strategy, success):
     scores = meta['strategy_scores']
     old = scores.get(strategy, 1.0)
     if success:
-        scores[strategy] = min(5.0, old + 0.1)
+        scores[strategy] = min(5.0, old + 0.15)
     else:
-        scores[strategy] = max(0.05, old - 0.05)
+        scores[strategy] = max(0.05, old - 0.08)
 
 def _record(genome, event, fpath, detail):
     gen = genome.get('generation', 0)
-    entry = json.dumps({
-        'gen': gen, 'time': time.time(), 'event': event,
-        'file': os.path.basename(fpath), 'detail': str(detail)[:200]
-    })
+    entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'file': os.path.basename(fpath) if fpath else '', 'detail': str(detail)[:200]})
     with open(REWRITE_LOG, 'a') as f:
         f.write(entry + '\n')
 
-def _git_commit_rewrites(rewritten, gen):
+def _git_commit_push(rewritten, gen, genome):
     for fpath, _, _ in rewritten:
         try:
             subprocess.run(['git', 'add', fpath], cwd=BASE, capture_output=True, timeout=5)
-        except Exception:
+        except:
             pass
     status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=5)
     if status.stdout.strip():
-        msg = f'[orchestrator] rewrite {len(rewritten)} files | gen={gen}'
+        msg = f'[orchestrator] emergence rewrite {len(rewritten)} files | gen={gen}'
         try:
             subprocess.run(['git', 'commit', '-m', msg], cwd=BASE, capture_output=True, timeout=10)
             result = subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, text=True, timeout=30)
             if result.returncode == 0:
                 print(f'[orchestrator] pushed: {msg}')
             return True
-        except Exception as e:
-            print(f'[orchestrator] git error: {e}')
+        except:
+            pass
     return False
 
 def _record_manifest(genome, rewritten):
     gen = genome.get('generation', 0)
-    entry = json.dumps({
-        'gen': gen, 'module': 'rewrite_orchestrator',
-        'files': [{'file': os.path.basename(f), 'mutations': m, 'strategy': s} for f, m, s in rewritten],
-        'time': time.time()
-    })
+    entry = json.dumps({'gen': gen, 'module': 'rewrite_orchestrator', 'files': [{'file': os.path.basename(f), 'mutations': m, 'strategy': s} for f, m, s in rewritten], 'time': time.time()})
     with open(MANIFEST_FILE, 'a') as f:
         f.write(entry + '\n')
 
-def _compute_coverage(rewritten, total_files, meta, gen):
-    coverage = len(rewritten) / max(1, total_files)
-    meta['coverage_history'].append({
-        'gen': gen, 'coverage': round(coverage, 3),
-        'files': len(rewritten), 'total': total_files
-    })
+def _compute_coverage(rewritten, total, meta, gen):
+    cov = len(rewritten) / max(1, total)
+    meta['coverage_history'].append({'gen': gen, 'coverage': round(cov, 3), 'files': len(rewritten), 'total': total})
     if len(meta['coverage_history']) > 50:
         meta['coverage_history'] = meta['coverage_history'][-50:]
-    return coverage
+    return cov
 
 def _feedback_to_genome(genome, coverage, rewritten, meta):
     genome['orchestrator_coverage'] = round(coverage, 3)
     genome['orchestrator_rewritten_count'] = len(rewritten)
     genome['orchestrator_total_files'] = len(_list_all_py(genome))
     scores = meta.get('strategy_scores', {})
-    avg_strategy_score = 0
-    if scores:
-        avg_strategy_score = round(sum(scores.values()) / len(scores), 2)
-    genome['orchestrator_strategy_health'] = avg_strategy_score
+    avg = round(sum(scores.values()) / max(len(scores), 1), 2) if scores else 0
+    genome['orchestrator_strategy_health'] = avg
     recent = meta.get('coverage_history', [])[-5:]
     if recent:
-        genome['orchestrator_avg_coverage_5'] = round(
-            sum(r['coverage'] for r in recent) / len(recent), 3
-        )
-    genome['orchestrator_summary'] = (
-        f'coverage={round(coverage, 2)} rewritten={len(rewritten)} '
-        f'strategy_health={avg_strategy_score}'
-    )
+        genome['orchestrator_avg_coverage_5'] = round(sum(r['coverage'] for r in recent) / len(recent), 3)
+    genome['orchestrator_summary'] = f'coverage={round(coverage, 2)} rewritten={len(rewritten)} health={avg}'
 
 def run(genome):
     gen = genome.get('generation', 0)
@@ -438,63 +366,65 @@ def run(genome):
     files = _list_all_py(genome)
     if not files:
         return 'no_files_found'
-    agent_scores = _agent_score_map(genome)
-    scored = _select_all_targets(files, meta, gen, agent_scores, genome)
+    _evolve_strategies(genome, meta)
     rewritten = []
     skipped = 0
-    depth_counts = {1: 0, 2: 0, 3: 0}
-    _evolve_strategies(genome, meta)
-    for priority, depth, reason, fpath in scored:
+    random.shuffle(files)
+    for fpath in files:
         fname = os.path.basename(fpath)
-        strategy = _pick_strategy(meta, depth, genome)
-        mutations, result_strategy = _apply_strategy(fpath, strategy, genome, depth)
-        if mutations:
-            rewritten.append((fpath, mutations, strategy))
-            _update_score(meta, strategy, True)
-            _record(genome, 'rewrite_ok', fpath, f"{strategy}:{','.join(mutations[:3])}")
-            prev = meta['file_stats'].get(fname, {})
-            meta['file_stats'][fname] = {
-                'last_gen': gen,
-                'mutations': prev.get('mutations', 0) + len(mutations),
-                'strategy': strategy,
-                'depth': depth,
-                'reason': reason,
-                'fail_count': 0,
-                'hash': _file_hash(fpath),
-            }
-            depth_counts[depth] = depth_counts.get(depth, 0) + 1
+        strategy = _pick_strategy(meta, gen % 3 + 1)
+        result = _apply_emergence_strategy(fpath, strategy, genome)
+        if result:
+            new_source, mutations = result
+            try:
+                with open(fpath) as f:
+                    old_source = f.read()
+                if new_source != old_source:
+                    _write_source(fpath, new_source)
+                    rewritten.append((fpath, mutations, strategy))
+                    _update_score(meta, strategy, True)
+                    _record(genome, 'rewrite_ok', fpath, f'{strategy}:{",".join(mutations[:3])}')
+                    prev = meta['file_stats'].get(fname, {})
+                    meta['file_stats'][fname] = {
+                        'last_gen': gen, 'mutations': prev.get('mutations', 0) + len(mutations),
+                        'strategy': strategy, 'fail_count': 0, 'hash': _file_hash(fpath),
+                    }
+                else:
+                    skipped += 1
+            except:
+                skipped += 1
         else:
-            _update_score(meta, strategy, False)
-            _record(genome, 'rewrite_skip', fpath, f'{strategy}:{result_strategy}')
-            prev = meta['file_stats'].get(fname, {})
-            fail_count = prev.get('fail_count', 0) + 1
-            meta['file_stats'][fname] = {
-                'last_gen': prev.get('last_gen', 0),
-                'mutations': prev.get('mutations', 0),
-                'strategy': strategy,
-                'depth': depth,
-                'reason': reason,
-                'fail_count': fail_count,
-                'hash': _file_hash(fpath),
-            }
-            skipped += 1
+            try:
+                source = _read_source(fpath)
+                fallback = _append_fallback(source, genome)
+                if fallback and fallback != source:
+                    _write_source(fpath, fallback)
+                    rewritten.append((fpath, ['fallback_marker'], 'fallback'))
+                    _update_score(meta, strategy, True)
+                    _record(genome, 'rewrite_fallback', fpath, 'appended_marker')
+                    prev = meta['file_stats'].get(fname, {})
+                    meta['file_stats'][fname] = {
+                        'last_gen': gen, 'mutations': prev.get('mutations', 0) + 1,
+                        'strategy': 'fallback', 'fail_count': 0, 'hash': _file_hash(fpath),
+                    }
+                else:
+                    _update_score(meta, strategy, False)
+                    _record(genome, 'rewrite_skip', fpath, f'{strategy}:no_change')
+                    skipped += 1
+            except:
+                skipped += 1
     meta['total_rewrites'] = meta.get('total_rewrites', 0) + len(rewritten)
     meta['total_failures'] = meta.get('total_failures', 0) + skipped
     meta['last_gen'] = gen
     coverage = _compute_coverage(rewritten, len(files), meta, gen)
     _feedback_to_genome(genome, coverage, rewritten, meta)
-    total_attempts = len(rewritten) + skipped
-    effective_rate = len(rewritten) / max(1, total_attempts)
+    effective_rate = len(rewritten) / max(1, len(rewritten) + skipped)
     genome['orchestrator_effective_rate'] = round(effective_rate, 3)
     if rewritten:
-        _git_commit_rewrites(rewritten, gen)
+        _git_commit_push(rewritten, gen, genome)
         _record_manifest(genome, rewritten)
     genome[META_KEY] = meta
-    depth_str = ', '.join(f'd{d}={c}' for d, c in sorted(depth_counts.items()) if c > 0)
-    summary = (
-        f'rewrote {len(rewritten)}/{len(files)} files '
-        f'({round(coverage * 100, 1)}% coverage) | depths: {depth_str} | {skipped} skipped'
-    )
+    summary = f'rewrote {len(rewritten)}/{len(files)} files ({round(coverage*100, 1)}% coverage) | {skipped} skipped'
     if rewritten:
         detail = '; '.join(f'{os.path.basename(f)}:{s}' for f, m, s in rewritten[:5])
         summary += f' | {detail}'

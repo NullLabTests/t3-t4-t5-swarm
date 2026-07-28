@@ -4,19 +4,19 @@ MODULES_DIR = os.path.join(BASE, 'agent_modules')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 REWRITE_LOG = os.path.join(BASE, 'endogenous_rewrite.jsonl')
 
-def _discover_modules():
+def _discover_modules(genome=None):
     out = {}
+    if genome:
+        for a in genome.get('agents', []):
+            m = a.get('module')
+            if m:
+                out[a['id']] = m
     if os.path.isdir(MODULES_DIR):
         for fname in sorted(os.listdir(MODULES_DIR)):
             if not fname.endswith('.py') or fname.startswith('__'):
                 continue
             module_id = fname.replace('.py', '')
-            fpath = os.path.join(MODULES_DIR, fname)
-            try:
-                with open(fpath) as f:
-                    if 'def run(' in f.read():
-                        out[module_id] = fname
-            except:
+            if module_id not in out:
                 out[module_id] = fname
     return out
 
@@ -49,9 +49,13 @@ def _find_stale(genome, max_gens_without_rewrite=3):
             history.append((aid, a.get('score', 0), hits))
     return history
 
-def _resolve_path(agent_id):
-    cache = _discover_modules()
-    fname = cache.get(agent_id, f'{agent_id}.py')
+CACHE = None
+
+def _resolve_path(agent_id, genome=None):
+    global CACHE
+    if CACHE is None or genome:
+        CACHE = _discover_modules(genome)
+    fname = CACHE.get(agent_id, f'{agent_id}.py')
     return os.path.join(MODULES_DIR, fname)
 
 def _read_source(fpath):
@@ -77,7 +81,7 @@ def _cross_splice_strong(fpath, agent_id, genome):
     if not strong:
         return None
     peer_id = strong[0][0]
-    peer_path = _resolve_path(peer_id)
+    peer_path = _resolve_path(peer_id, genome)
     try:
         peer_src = _read_source(peer_path)
     except:
@@ -353,7 +357,129 @@ def _patch_auto_echo(func_name, new_body):
         return (['inject_self_modify_hook'], source)
     return None
 
+STUB_THRESHOLD_LINES = 15
+
+def _is_stub(source):
+    lines = [l for l in source.split('\n') if l.strip() and not l.strip().startswith('#')]
+    if len(lines) < STUB_THRESHOLD_LINES:
+        return True
+    if 'autonomy stub' in source or 'autonomy-forced stub' in source:
+        return True
+    return False
+
+STUB_REPLACEMENTS = {
+    'forge': '''import os, json, random, time
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+GENOME_FILE = os.path.join(BASE, 'genome.json')
+
+def _load():
+    with open(GENOME_FILE) as f:
+        return json.load(f)
+
+def _save(g):
+    with open(GENOME_FILE, 'w') as f:
+        json.dump(g, f, indent=2)
+
+def run(genome):
+    gen = genome.get('generation', 0)
+    for a in genome.get('agents', []):
+        if random.random() < 0.2:
+            a['score'] = max(1, min(10, a.get('score', 5) + random.choice([-1, 1])))
+    _save(genome)
+    return f'[forge] jittered scores gen={gen}'
+''',
+    'explorer': '''import os, random, time, json
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODULES_DIR = os.path.join(BASE, 'agent_modules')
+
+def run(genome):
+    gen = genome.get('generation', 0)
+    for fname in os.listdir(MODULES_DIR):
+        if not fname.endswith('.py') or fname.startswith('__'):
+            continue
+        fpath = os.path.join(MODULES_DIR, fname)
+        try:
+            with open(fpath) as f:
+                src = f.read()
+            if len(src.split('\\n')) < 10 and 'def run' in src:
+                stamp = f'\\n# explorer:expand gen={gen} ts={int(time.time())}\\n'
+                with open(fpath, 'a') as f:
+                    f.write(stamp)
+        except:
+            pass
+    return f'[explorer] expanded stubs gen={gen}'
+''',
+    'oracle': '''import os, json, time, random
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+GENOME_FILE = os.path.join(BASE, 'genome.json')
+MODULES_DIR = os.path.join(BASE, 'agent_modules')
+
+def _save(g):
+    with open(GENOME_FILE, 'w') as f:
+        json.dump(g, f, indent=2)
+
+def run(genome):
+    gen = genome.get('generation', 0)
+    h = genome.setdefault('history', [])
+    entry = {'generation': gen, 'scores': {a['id']: a.get('score', 0) for a in genome.get('agents', [])}, 'time': time.time()}
+    h.append(entry)
+    _save(genome)
+    return f'[oracle] recorded gen={gen}'
+''',
+    'analyzer': '''import os, json, time
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODULES_DIR = os.path.join(BASE, 'agent_modules')
+GENOME_FILE = os.path.join(BASE, 'genome.json')
+
+def run(genome):
+    gen = genome.get('generation', 0)
+    total = 0
+    for fname in os.listdir(MODULES_DIR):
+        if not fname.endswith('.py') or fname.startswith('__'):
+            continue
+        fpath = os.path.join(MODULES_DIR, fname)
+        try:
+            with open(fpath) as f:
+                src = f.read()
+            lines = src.split('\\n')
+            deduped = []
+            seen = set()
+            for l in lines:
+                s = l.strip()
+                if s.startswith('#') and s in seen:
+                    total += 1
+                    continue
+                if s.startswith('#'):
+                    seen.add(s)
+                deduped.append(l)
+            new = '\\n'.join(deduped)
+            if new != src:
+                compile(new, fpath, 'exec')
+                with open(fpath, 'w') as f:
+                    f.write(new)
+        except:
+            pass
+    return f'[analyzer] removed {total} dup comments gen={gen}'
+''',
+}
+
+def _rewrite_stub(fpath, agent_id, genome):
+    try:
+        source = _read_source(fpath)
+    except:
+        return None
+    if not _is_stub(source):
+        return None
+    repl = STUB_REPLACEMENTS.get(agent_id)
+    if repl:
+        header = f'# endogenous:rewritten from stub gen={genome.get("generation", 0)} ts={int(time.time())}\\n'
+        new_src = header + repl
+        if _validate(new_src) and new_src != source:
+            return (['stub_rewrite:' + agent_id], new_src)
+    return None
+
 STRATEGIES = [
+    ('stub_rewrite', _rewrite_stub),
     ('cross_splice', _cross_splice_strong),
     ('self_awareness', _inject_self_awareness),
     ('branch_invert', _ast_branch_invert),
@@ -411,26 +537,40 @@ def run(genome):
         if not any(t[0] == aid for t in targets):
             targets.append((aid, sc, g))
 
-    if not targets:
-        all_agents = [(a['id'], a.get('score', 0), a.get('low_score_streak', 0)) for a in genome.get('agents', [])]
-        all_agents.sort(key=lambda x: x[1])
-        targets = all_agents[:3]
+    all_agents = [(a['id'], a.get('score', 0), a.get('low_score_streak', 0)) for a in genome.get('agents', [])]
+    all_agents.sort(key=lambda x: x[1])
 
-    max_count = max(len([t for t in targets if t[1] < 5]), 3)
+    if not targets:
+        targets = all_agents[:3]
+    elif len(targets) < 2 and gen % 3 == 0:
+        targets.extend(all_agents[:2])
+
+    for aid, _, _ in all_agents:
+        fpath = _resolve_path(aid)
+        if os.path.exists(fpath):
+            try:
+                src = _read_source(fpath)
+                if _is_stub(src) and not any(t[0] == aid for t in targets):
+                    targets.append((aid, 0, 0))
+            except:
+                pass
+
+    max_count = min(max(len([t for t in targets if t[1] < 5]), 3), genome.get('endogenous_max_rewrites', 8))
     rewrites = 0
     results = []
+    random.shuffle(targets)
     for agent_id, score, streak in targets[:max_count]:
         fpath = _resolve_path(agent_id)
         if not os.path.exists(fpath):
             _record(genome, 'file_missing', None, f'{agent_id}->{fpath}')
             continue
-        strategy = _pick_strategy(genome)
-        for strat_name, strat_func in STRATEGIES:
-            if strat_name == strategy:
-                outcome = strat_func(fpath, agent_id, genome)
+        outcome = None
+        strategy_order = list(STRATEGIES)
+        random.shuffle(strategy_order)
+        for strat_name, strat_func in strategy_order:
+            outcome = strat_func(fpath, agent_id, genome)
+            if outcome is not None:
                 break
-        else:
-            outcome = None
         if outcome is None:
             marker = f'\n# endogenous:fallback:{agent_id}:gen={gen}:ts={int(time.time())}:nonce={random.randint(0, 9999)}\n'
             try:
@@ -444,11 +584,11 @@ def run(genome):
         ok = _write_and_commit(fpath, new_source, agent_id, mutations, gen)
         if ok:
             rewrites += 1
-            _update_score(genome, strategy, True)
+            _update_score(genome, strat_name, True)
             results.append(f'{os.path.basename(fpath)}:{mutations[0]}({len(mutations)})')
             _record(genome, 'rewrite_ok', fpath, f'{agent_id}:{mutations[0]}')
         else:
-            _update_score(genome, strategy, False)
+            _update_score(genome, strat_name, False)
     genome['endogenous_rewrites_total'] = genome.get('endogenous_rewrites_total', 0) + rewrites
     if results:
         return f'endogenous: {rewrites} rewrites -> {"; ".join(results)}'

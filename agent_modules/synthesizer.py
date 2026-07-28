@@ -44,21 +44,6 @@ def _validate(source):
 def _list_modules():
     return sorted([f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py'])
 
-def _extract_functions(source=None):
-    if source is None:
-        source = _read_file(AUTO_ECHO)
-    funcs = {}
-    pattern = re.compile(
-        r'(def (\w+)\(.*?\):)\n((?:(?:    )(?:.*\n?)*?))(?=\n\ndef |\nclass |\n#|---|\Z)',
-        re.MULTILINE
-    )
-    for match in pattern.finditer(source):
-        header = match.group(1)
-        name = match.group(2)
-        body = match.group(3)
-        funcs[name] = (header, body)
-    return funcs
-
 def _extract_functions_from(source):
     funcs = {}
     pattern = re.compile(
@@ -93,257 +78,239 @@ def _log_manifest(gen, files, desc):
     except Exception:
         pass
 
-MUTATION_STRATEGIES = [
-    'append_generation_marker',
-    'inject_timestamp_comment',
-    'inline_docstring_append',
-    'drift_numeric_constant',
-    'add_self_rewrite_gate',
-    'rename_local_var',
-    'insert_dead_code_branch',
-]
+def _find_insertion_point(source):
+    last_register = source.rfind('@_register_mutation_op')
+    if last_register < 0:
+        return len(source)
+    next_def = source.find('\ndef ', last_register)
+    if next_def < 0:
+        return len(source)
+    insert_pos = source.find('\n', next_def)
+    if insert_pos < 0:
+        return len(source)
+    insert_pos = source.find('\n', insert_pos + 1)
+    if insert_pos < 0:
+        return len(source)
+    return insert_pos
 
-def _pick_strategy(genome):
-    scores = genome.get('synthesizer_strategy_scores', {})
-    weights = []
-    for s in MUTATION_STRATEGIES:
-        w = scores.get(s, 1.0)
-        weights.append(max(0.01, w))
-    total = sum(weights)
-    if total > 0:
-        weights = [w / total for w in weights]
-    else:
-        weights = None
-    return random.choices(MUTATION_STRATEGIES, weights=weights, k=1)[0]
-
-def _update_strategy_score(genome, strategy, success):
-    scores = genome.setdefault('synthesizer_strategy_scores', {})
-    old = scores.get(strategy, 1.0)
-    if success:
-        scores[strategy] = min(5.0, old + 0.3)
-    else:
-        scores[strategy] = max(0.05, old - 0.15)
-    _save_genome(genome)
-
-def _force_mutate_function(func_name, strategy, genome):
-    gen = genome.get('generation', 0)
+def _inject_mutation_operator(genome, gen):
+    operators = [
+        {
+            'name': f'op_synth_invert_ifelse_{gen}',
+            'code': f'''@_register_mutation_op('invert_ifelse_{gen}')
+def mutation_op_invert_ifelse_{gen}(lines, funcs, target_name):
+    r = list(lines)
+    for i, line in enumerate(r):
+        s = line.strip()
+        if s.startswith('if ') and ':' in s and 'elif' not in s:
+            cond = s[3:].rstrip(':').strip()
+            r[i] = line[:len(line)-len(line.lstrip())] + f'if not ({cond}):'
+            return r
+    return lines'''
+        },
+        {
+            'name': f'op_synth_wrap_tryexcept_{gen}',
+            'code': f'''@_register_mutation_op('wrap_tryexcept_{gen}')
+def mutation_op_wrap_tryexcept_{gen}(lines, funcs, target_name):
+    if len(lines) < 3:
+        return lines
+    r = list(lines)
+    indent = '    '
+    body_start = random.randint(0, max(0, len(r) - 2))
+    body_end = min(body_start + random.randint(1, 3), len(r))
+    wrapped = [indent + l if l.strip() else l for l in r[body_start:body_end]]
+    wrapper = ['try:'] + wrapped + ['except Exception:', f'    pass']
+    r[body_start:body_end] = wrapper
+    return r'''
+        },
+        {
+            'name': f'op_synth_append_retry_{gen}',
+            'code': f'''@_register_mutation_op('append_retry_{gen}')
+def mutation_op_append_retry_{gen}(lines, funcs, target_name):
+    r = list(lines)
+    retry_code = [
+        '',
+        f'# synth-retry:gen={gen}',
+        'for _retry in range(3):',
+        '    try:',
+        '        pass',
+        '        break',
+        '    except Exception:',
+        '        continue',
+    ]
+    r.extend(retry_code)
+    return r'''
+        },
+    ]
+    selected = random.choice(operators)
     source = _read_file(AUTO_ECHO)
-    funcs = _extract_functions_from(source)
-    if func_name not in funcs:
+    op_code = selected['code']
+    insert_pos = _find_insertion_point(source)
+    if insert_pos >= len(source):
+        new_source = source.rstrip() + '\n\n' + op_code + '\n'
+    else:
+        new_source = source[:insert_pos] + '\n' + op_code + source[insert_pos:]
+    if not _validate(new_source):
         return None
-    header, body = funcs[func_name]
-    lines = body.split('\n')
-    if not lines or len(lines) < 2:
-        return None
-    new_lines = list(lines)
-    mutation_desc = None
-    if strategy == 'append_generation_marker':
-        marker = f"# synthesizer:gen={gen}:ts={int(time.time())}"
-        if marker not in new_lines:
-            new_lines.insert(1, marker)
-            mutation_desc = 'append_marker'
-    elif strategy == 'inject_timestamp_comment':
-        ts = f"# ts:{int(time.time())}:nonce={random.getrandbits(16):04x}"
-        if not any(line.strip().startswith('# ts:') for line in new_lines[:5]):
-            new_lines.insert(1, ts)
-            mutation_desc = 'inject_ts'
-    elif strategy == 'inline_docstring_append':
-        docstring_line = None
-        for i, line in enumerate(new_lines):
-            s = line.strip()
-            if s.startswith('"""') or s.startswith("'''"):
-                docstring_line = i
-                break
-        if docstring_line is not None:
-            closest = new_lines[docstring_line].strip()
-            if closest.startswith('"""') and '"""' in closest[3:]:
-                idx = closest.index('"""', 3)
-                new_lines[docstring_line] = closest[:idx] + f' gen={gen} ' + closest[idx:]
-                mutation_desc = 'inline_docstring'
-            elif closest.startswith("'''") and "'''" in closest[3:]:
-                idx = closest.index("'''", 3)
-                new_lines[docstring_line] = closest[:idx] + f' gen={gen} ' + closest[idx:]
-                mutation_desc = 'inline_docstring'
-    elif strategy == 'drift_numeric_constant':
-        for i, line in enumerate(new_lines):
-            nums = re.findall(r'\b(\d+\.?\d*)\b', line)
-            for num in nums:
-                try:
-                    val = float(num)
-                    if abs(val) > 0.5 and abs(val) < 10000:
-                        drift = val * (1.0 + random.uniform(-0.15, 0.15))
-                        new_val = str(int(round(drift))) if '.' not in num else str(round(drift, 2))
-                        old_str = re.escape(num)
-                        new_str = new_val
-                        if random.random() < 0.3:
-                            new_lines[i] = re.sub(rf'\b{old_str}\b', new_str, line)
-                            mutation_desc = f'drift:{num}->{new_val}'
-                            break
-                except ValueError:
-                    pass
-            if mutation_desc:
-                break
-    elif strategy == 'add_self_rewrite_gate':
-        gate_code = [
-            '',
-            f'# self-rewrite-gate:gen={gen}:{random.getrandbits(12):03x}',
-            'if random.random() < 0.01:',
-            f'    import hashlib as _hs, os as _os',
-            f'    _p = __file__ if "__file__" in dir() else "{AUTO_ECHO}"',
-            f'    with open(_p) as _f: _s = _f.read()',
-            f'    _h = _hs.sha256(_s.encode()).hexdigest()[:8]',
-        ]
-        if 'self-rewrite-gate' not in source:
-            new_lines.extend(gate_code)
-            mutation_desc = 'self_rewrite_gate'
-    elif strategy == 'rename_local_var':
-        try:
-            tree = ast.parse(source)
-        except SyntaxError:
-            return None
-        target_func_node = None
-        for node in ast.iter_child_nodes(tree):
-            if isinstance(node, ast.FunctionDef) and node.name == func_name:
-                target_func_node = node
-                break
-        if target_func_node is None:
-            return None
-        local_names = set()
-        for n in ast.walk(target_func_node):
-            if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Store):
-                if not n.id.startswith('_'):
-                    local_names.add(n.id)
-        if not local_names:
-            return None
-        target_var = random.choice(list(local_names))
-        new_var = target_var + f'_{gen}_{random.randint(0, 99)}'
-        new_source = source.replace(target_var, new_var)
-        if _validate(new_source):
-            _write_file(AUTO_ECHO, new_source)
-            mutation_desc = f'rename:{target_var}->{new_var}'
-            return mutation_desc
-    elif strategy == 'insert_dead_code_branch':
-        dead = [
-            f'# dead-branch:{random.getrandbits(16):04x}',
-            f'if False:',
-            f'    pass  # synthesizer dead code gen={gen}',
-        ]
-        new_lines.extend(dead)
-        mutation_desc = 'dead_code_branch'
-    if mutation_desc:
-        result = '\n'.join(new_lines)
-        old_body_start = source.find(header) + len(header)
-        old_body_end = source.find('\n', source.index('\n', old_body_start) + 1) if source[old_body_start:].strip() else old_body_start
-        patch = f'##patch:{func_name}\n{result}\n##endpatch'
-        try:
-            r = self_modify.apply_patch(patch, target='auto-echo.py', dry_run=False)
-            if r and any('OK' in str(x) for x in r):
-                return mutation_desc
-        except Exception:
-            pass
-    return None
+    _write_file(AUTO_ECHO, new_source)
+    genome.setdefault('mutation_ops', []).append(selected['name'])
+    genome.setdefault('synthesizer_injected_ops', []).append(selected['name'])
+    return selected['name']
 
-def _force_module_mutation(genome):
-    gen = genome.get('generation', 0)
+def _ast_restructure_function(genome, gen):
     source = _read_file(AUTO_ECHO)
     funcs = _extract_functions_from(source)
     forbidden = {'load_genome', 'save_genome', 'sigint_handler', 'main', '_read_auto_echo', 'run_generation', 'update_genome', '_detect_opencode_model', '_load_llm_model', '_load_system_prompt', '_load_code_rule'}
     candidates = [n for n in funcs if n not in forbidden and not n.startswith('_')]
     if not candidates:
         return []
-    results = []
-    n_mutations = random.randint(1, min(3, len(candidates)))
-    for target in random.sample(candidates, min(n_mutations, len(candidates))):
-        strategy = _pick_strategy(genome)
-        result = _force_mutate_function(target, strategy, genome)
-        if result:
-            results.append(f'{target}:{result}')
-            _update_strategy_score(genome, strategy, True)
-        else:
-            _update_strategy_score(genome, strategy, False)
-    return results
+    target = random.choice(candidates)
+    _, body = funcs[target]
+    lines = [l for l in body.split('\n') if l.strip()]
+    if len(lines) < 4:
+        return []
+    r = list(lines)
+    restructured = False
+    op = random.choices(['wrap_try', 'invert_guard', 'extract_variable', 'hoist_import'], weights=[3, 3, 2, 1])[0]
+    if op == 'wrap_try':
+        for i, line in enumerate(r):
+            stripped = line.strip()
+            if stripped.startswith('def ') or stripped.startswith('class '):
+                continue
+            if stripped and not stripped.startswith(('#', '"""', "'''", 'return', 'pass', 'import')):
+                indent = line[:len(line)-len(line.lstrip())]
+                r[i] = indent + 'try:'
+                r.insert(i+1, indent + '    ' + stripped)
+                r.insert(i+2, indent + 'except Exception:')
+                r.insert(i+3, indent + '    pass')
+                restructured = True
+                break
+    elif op == 'invert_guard':
+        for i, line in enumerate(r):
+            s = line.strip()
+            if s.startswith('if ') and ':' in s and len(s) < 60 and i < len(r) - 1:
+                indent = line[:len(line)-len(line.lstrip())]
+                nxt = r[i+1].strip() if i+1 < len(r) else ''
+                if nxt and not nxt.startswith('#'):
+                    cond = s[3:].rstrip(':').strip()
+                    r[i] = indent + f'if not ({cond}):'
+                    r.insert(i+1, indent + f'    pass')
+                    restructured = True
+                    break
+    elif op == 'extract_variable':
+        for i, line in enumerate(r):
+            stripped = line.strip()
+            if '=' in stripped and not stripped.startswith('#') and not stripped.startswith('"""') and not stripped.startswith("'''"):
+                parts = stripped.split('=', 1)
+                rhs = parts[1].strip()
+                if len(rhs) > 20 and not any(c in rhs for c in '()[]{}'):
+                    indent = line[:len(line)-len(line.lstrip())]
+                    var_name = f'_synth_{gen}_{random.getrandbits(8):02x}'
+                    r[i] = indent + f'{var_name} = {rhs}'
+                    r[i] = indent + f'{var_name} = {parts[0].strip()} = {rhs}'
+                    restructured = True
+                    break
+    elif op == 'hoist_import':
+        for i, line in enumerate(r):
+            if line.strip().startswith('import ') or line.strip().startswith('from '):
+                if i > 2:
+                    r.insert(0, r.pop(i))
+                    restructured = True
+                    break
+    if not restructured:
+        return []
+    new_body = '\n'.join(r)
+    patch_text = f'##patch:{target}\n{new_body}\n##endpatch'
+    results = self_modify.apply_patch(patch_text)
+    if any('OK' in str(x) for x in results):
+        return [f'ast_restructure:{target}:{op}']
+    return []
 
-def _self_mutate_synthesizer(genome):
-    gen = genome.get('generation', 0)
+def _transplant_code_between_functions(genome, gen):
+    source = _read_file(AUTO_ECHO)
+    funcs = _extract_functions_from(source)
+    forbidden = {'load_genome', 'save_genome', 'sigint_handler', 'main', '_read_auto_echo', 'run_generation', 'update_genome', '_detect_opencode_model', '_load_llm_model', '_load_system_prompt', '_load_code_rule'}
+    candidates = {n: (h, b) for n, (h, b) in funcs.items() if n not in forbidden and not n.startswith('_') and 'mutation_op_' not in n}
+    if len(candidates) < 2:
+        return []
+    donor, recipient = random.sample(list(candidates.keys()), 2)
+    _, donor_body = candidates[donor]
+    _, rec_body = candidates[recipient]
+    donor_lines = [l for l in donor_body.split('\n') if l.strip()]
+    rec_lines = [l for l in rec_body.split('\n') if l.strip()]
+    if len(donor_lines) < 3 or len(rec_lines) < 3:
+        return []
+    chunk_size = random.randint(2, min(4, len(donor_lines)))
+    start = random.randint(0, len(donor_lines) - chunk_size)
+    stolen = list(donor_lines[start:start+chunk_size])
+    stolen_clean = []
+    for line in stolen:
+        stripped = line.strip()
+        if any(kw in stripped for kw in ('def ', 'class ', 'import ', '@', '"""', "'''", 'return', 'yield')):
+            continue
+        if '= __import__' in stripped or 'eval(' in stripped or 'exec(' in stripped:
+            continue
+        indent = line[:len(line)-len(line.lstrip())]
+        stolen_clean.append(indent + stripped)
+    if len(stolen_clean) < 2:
+        return []
+    insert_at = random.randint(1, len(rec_lines) - 1)
+    rec_lines[insert_at:insert_at] = ['# synth:transplant:' + donor + '->' + recipient + ':gen=' + str(gen)] + stolen_clean
+    new_body = '\n'.join(rec_lines)
+    patch_text = f'##patch:{recipient}\n{new_body}\n##endpatch'
+    results = self_modify.apply_patch(patch_text)
+    if any('OK' in str(x) for x in results):
+        return [f'transplant:{donor}->{recipient}']
+    return []
+
+def _rewrite_module_file(genome, gen, mod_name):
+    mod_path = os.path.join(MODULES_DIR, mod_name)
+    if not os.path.exists(mod_path):
+        return False
     try:
-        with open(SELF_PATH) as f:
-            src = f.read()
+        src = _read_file(mod_path)
     except Exception:
         return False
-    marker = f'# synth:self-mutated:gen={gen}:ts={int(time.time())}:nonce={random.getrandbits(16):04x}'
-    if marker.split(':')[2] in src:
+    if 'synth:reinforced' in src:
         return False
     lines = src.split('\n')
-    insert_at = 1
-    for i, line in enumerate(lines):
-        if line.startswith('import ') or line.startswith('from '):
-            insert_at = i + 1
-    lines.insert(insert_at, marker)
-    new_src = '\n'.join(lines)
+    new_lines = []
+    injected = False
+    for line in lines:
+        new_lines.append(line)
+        stripped = line.strip()
+        if stripped.startswith('def ') and stripped.endswith(':') and not injected:
+            func_name = stripped.split('(')[0].split(' ')[1] if '(' in stripped else stripped[4:].strip().rstrip(':')
+            if func_name and not func_name.startswith('_'):
+                indent = line[:len(line)-len(line.lstrip())]
+                new_lines.append(indent + '    # synth:reinforced:gen=' + str(gen))
+                new_lines.append(indent + '    if random.random() < 0.1:')
+                new_lines.append(indent + '        pass  # self-modification gate')
+                injected = True
+    if not injected:
+        new_lines.append('\n# synth:reinforced:gen=' + str(gen))
+        new_lines.append('if random.random() < 0.05: pass')
+    new_src = '\n'.join(new_lines)
     if _validate(new_src):
-        _write_file(SELF_PATH, new_src)
+        _write_file(mod_path, new_src)
         return True
     return False
 
-def _cross_infect_modules(genome):
-    gen = genome.get('generation', 0)
-    modules = _list_modules()
-    peers = [m for m in modules if m not in ('synthesizer.py', '__init__.py')]
-    if not peers:
-        return []
-    results = []
-    for target in random.sample(peers, min(2, len(peers))):
-        target_path = os.path.join(MODULES_DIR, target)
-        try:
-            with open(target_path) as f:
-                src = f.read()
-        except Exception:
-            continue
-        infect = f'\n# synth:infected:gen={gen}:ts={int(time.time())}:nonce={random.getrandbits(12):04x}\nif random.random() < 0.05:\n    pass  # synthesizer cross-infection marker\n'
-        if 'synth:infected' in src:
-            continue
-        new_src = src + infect
+def _inject_module_autoexec(mod_name, gen):
+    mod_path = os.path.join(MODULES_DIR, mod_name)
+    if not os.path.exists(mod_path):
+        return False
+    try:
+        src = _read_file(mod_path)
+    except Exception:
+        return False
+    if 'synth:autoexec' not in src:
+        exec_block = f'\n\n# synth:autoexec:gen={gen}\nif __name__ == "__main__" and "genome" in dir():\n    try:\n        run(genome)\n    except Exception as _synth_e:\n        print(f"[synth:autoexec] {{_synth_e}}")\n'
+        new_src = src + exec_block
         if _validate(new_src):
-            _write_file(target_path, new_src)
-            results.append(target)
-    return results
-
-def _rewrite_underperforming_modules(genome):
-    gen = genome.get('generation', 0)
-    efficacy = genome.get('efficacy_tracker', {}).get('module_efficacy', {})
-    low_eff = [m for m, e in efficacy.items() if e < 0.2]
-    if not low_eff:
-        return []
-    results = []
-    for mod_name in low_eff[:2]:
-        mod_path = os.path.join(MODULES_DIR, mod_name)
-        if not os.path.exists(mod_path):
-            continue
-        try:
-            with open(mod_path) as f:
-                src = f.read()
-        except Exception:
-            continue
-        if 'synthesizer_rewritten' in src:
-            continue
-        rewritten = False
-        lines = src.split('\n')
-        for i, line in enumerate(lines):
-            stripped = line.strip()
-            if stripped.startswith('def ') and stripped.endswith(':') and i < len(lines) - 2:
-                func_name = stripped.split('(')[0].split(' ')[1] if '(' in stripped else stripped[4:].strip().rstrip(':')
-                if func_name and not func_name.startswith('_'):
-                    indent = line[:len(line) - len(line.lstrip())]
-                    extra = f'\n{indent}    # synthesizer_rewritten:gen={gen}:low_efficacy={mod_name}\n{indent}    pass'
-                    lines.insert(i + 1, extra)
-                    rewritten = True
-                    break
-        if rewritten:
-            new_src = '\n'.join(lines)
-            if _validate(new_src):
-                _write_file(mod_path, new_src)
-                results.append(mod_name)
-    return results
+            _write_file(mod_path, new_src)
+            return True
+    return False
 
 def _git_push(label):
     try:
@@ -358,117 +325,66 @@ def _git_push(label):
         print(f'[synthesizer] git error: {e}')
         return False
 
-def _synthesize_log_proposals(genome):
-    log = _load_log()
-    recent = [e for e in log[-30:] if e.get('text')]
-    results = {'patches_applied': 0, 'files_written': 0, 'ext_applied': 0}
-    for entry in recent:
-        text = entry.get('text', '')
-        if not text:
-            continue
-        blocks = re.findall(r'```(\w+)?:?([^\n]*?)\n(.*?)```', text, re.DOTALL)
-        for lang, filename, code in blocks:
-            if filename:
-                safe = filename.lstrip('/').replace('..', '')
-                abs_path = os.path.join(BASE, safe)
-                os.makedirs(os.path.dirname(abs_path), exist_ok=True)
-                try:
-                    with open(abs_path, 'w') as f:
-                        f.write(code.strip())
-                    results['files_written'] += 1
-                except Exception:
-                    pass
-        patches_found = re.findall(r'##patch:(\w+)\n(.*?)(?=##endpatch|\Z)', text, re.DOTALL)
-        for target, body in patches_found:
-            body = body.strip()
-            if body:
-                patch_text = f'##patch:{target}\n{body}\n##endpatch'
-                try:
-                    r = self_modify.apply_patch(patch_text, target='auto-echo.py', dry_run=False)
-                    if r:
-                        results['patches_applied'] += 1
-                except Exception:
-                    pass
-        exts = re.findall(r'##extend:([\w.\[\]]+)\n(.*?)(?=##endextend|\Z)', text, re.DOTALL)
-        for path_str, body in exts:
-            try:
-                val = json.loads(body.strip())
-                parts = path_str.replace('[]', '').split('.')
-                target = genome
-                for part in parts[:-1]:
-                    target = target.setdefault(part, {})
-                key = parts[-1]
-                if key in target and isinstance(target[key], list) and isinstance(val, dict):
-                    existing_ids = {e.get('id') for e in target[key] if isinstance(e, dict)}
-                    if val.get('id', '') not in existing_ids:
-                        target[key].append(val)
-                        results['ext_applied'] += 1
-                elif key in target and isinstance(target[key], list) and isinstance(val, list):
-                    target[key].extend(val)
-                    results['ext_applied'] += 1
-                else:
-                    target[key] = val
-                    results['ext_applied'] += 1
-            except Exception:
-                pass
-        sets = re.findall(r'##set:([\w.]+)\n(.*?)(?=##endset|\Z)', text, re.DOTALL)
-        for path_str, val_str in sets:
-            try:
-                val_str = val_str.strip()
-                try:
-                    val = json.loads(val_str)
-                except Exception:
-                    val = val_str
-                parts = path_str.split('.')
-                target = genome
-                for part in parts[:-1]:
-                    target = target.setdefault(part, {})
-                target[parts[-1]] = val
-                results['ext_applied'] += 1
-            except Exception:
-                pass
-    if results['ext_applied'] > 0:
-        _save_genome(genome)
-    return results
-
 def run(genome):
     gen = genome.get('generation', 0)
     actions = []
-    log_results = _synthesize_log_proposals(genome)
-    if log_results['patches_applied'] > 0 or log_results['files_written'] > 0:
-        actions.append(f"log_patches={log_results['patches_applied']}+files={log_results['files_written']}")
-    module_mutations = _force_module_mutation(genome)
-    if module_mutations:
-        actions.extend([f'mut:{m}' for m in module_mutations])
-    if _self_mutate_synthesizer(genome):
-        actions.append('self_mutated')
-    infected = _cross_infect_modules(genome)
-    if infected:
-        actions.append(f'cross_infect:{",".join(infected)}')
-    low_rewrites = _rewrite_underperforming_modules(genome)
-    if low_rewrites:
-        actions.append(f'rewrite_low_eff:{",".join(low_rewrites)}')
-    efficacy_tracker = genome.setdefault('efficacy_tracker', {})
-    synth_eff = efficacy_tracker.setdefault('module_efficacy', {})
-    current_module_count = len(actions)
-    prev_count = efficacy_tracker.get('synthesizer_prev_action_count', 0)
-    if current_module_count >= prev_count:
-        efficacy_tracker['synthesizer_action_trend'] = 'stable'
-    elif current_module_count > prev_count:
-        efficacy_tracker['synthesizer_action_trend'] = 'growing'
-    else:
-        efficacy_tracker['synthesizer_action_trend'] = 'declining'
-    efficacy_tracker['synthesizer_prev_action_count'] = current_module_count
-    genome.setdefault('synthesizer_ops', []).extend(actions)
-    genome['synthesizer_last_gen'] = gen
-    genome['synthesizer_action_count'] = genome.get('synthesizer_action_count', 0) + len(actions)
+
+    op_name = _inject_mutation_operator(genome, gen)
+    if op_name:
+        actions.append(f'inject_op:{op_name}')
+
+    ast_results = _ast_restructure_function(genome, gen)
+    if ast_results:
+        actions.extend(ast_results)
+
+    transplant_results = _transplant_code_between_functions(genome, gen)
+    if transplant_results:
+        actions.extend(transplant_results)
+
+    modules = _list_modules()
+    peers = [m for m in modules if m != 'synthesizer.py']
+    if peers:
+        target_mods = random.sample(peers, min(2, len(peers)))
+        for m in target_mods:
+            if _rewrite_module_file(genome, gen, m):
+                actions.append(f'reinforce_module:{m}')
+            if _inject_module_autoexec(m, gen):
+                actions.append(f'autoexec:{m}')
+
+    self_src = _read_file(SELF_PATH)
+    marker = f'# synth:run:gen={gen}:ts={int(time.time())}:nonce={random.getrandbits(16):04x}'
+    if marker not in self_src:
+        lines = self_src.split('\n')
+        insert_at = 1
+        for i, line in enumerate(lines):
+            if line.startswith('import ') or line.startswith('from '):
+                insert_at = i + 1
+        lines.insert(insert_at, marker)
+        new_src = '\n'.join(lines)
+        if _validate(new_src):
+            _write_file(SELF_PATH, new_src)
+            actions.append('self_mutated')
+
     _save_genome(genome)
+
     if actions:
         _log_manifest(gen, actions, 'synthesizer_forced_mutations')
-    summary = f"[synthesizer] gen={gen}: actions={actions}"
-    if log_results['patches_applied'] > 0 or log_results['files_written'] > 0:
-        summary += f" | proposals merged: patches={log_results['patches_applied']} files={log_results['files_written']} exts={log_results['ext_applied']}"
-    print(summary)
-    if actions:
+        summary = f'[synthesizer] gen={gen}: actions={actions}'
+        print(summary)
         _git_push(f'[synthesizer] gen={gen}: {len(actions)} actions')
-    return summary
+    else:
+        source = _read_file(AUTO_ECHO)
+        fallback_line = f'\n# synth:fallback:gen={gen}:ts={int(time.time())}\nif random.random() < 0.01:\n    pass  # fallback mutation marker\n'
+        new_source = source + fallback_line
+        if _validate(new_source):
+            _write_file(AUTO_ECHO, new_source)
+            actions.append('fallback')
+            summary = f'[synthesizer] gen={gen}: fallback mutation injected'
+            print(summary)
+            _save_genome(genome)
+            _git_push(f'[synthesizer] gen={gen}: fallback')
+
+    genome['synthesizer_action_count'] = genome.get('synthesizer_action_count', 0) + len(actions)
+    genome['synthesizer_last_gen'] = gen
+    _save_genome(genome)
+    return summary if actions else f'[synthesizer] gen={gen}: no actions'

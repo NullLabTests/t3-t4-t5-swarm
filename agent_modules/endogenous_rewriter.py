@@ -18,3 +18,6 @@ def _nova_cross_call(genome):
         pass
     return None
 
+
+# spark-cross:gen=38:target=endogenous
+_SPARK_CROSS_INFECTED_38 = True

@@ -187,3 +187,5 @@ def run(genome):
     _write_manifest_entry(genome, changed_files, '; '.join(changes))
     _save_genome(genome)
     return f"[weaver] gen={gen} ops_injected={injected_ops} changes={'; '.join(changes)}"
+# spark-cross:gen=38:target=weaver
+_SPARK_CROSS_INFECTED_38 = True

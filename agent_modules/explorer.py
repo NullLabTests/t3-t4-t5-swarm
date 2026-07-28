@@ -271,3 +271,6 @@ def run(genome):
     _sg(genome)
     return result
 # orchestrated:fallback:gen=38:ts=1785250368
+
+# spark-cross:gen=38:target=explorer
+_SPARK_CROSS_INFECTED_38 = True

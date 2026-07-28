@@ -296,3 +296,6 @@ genome["source_autonomy_index"] = round(min(1.0, genome.get("source_autonomy_ind
 _wm = {"gen": genome.get("generation", 0), "module": "weaver", "files": ["mirror.py"], "results": ["weaver:force_rewrite_mirror"]}
 with open(os.path.join(BASE, "rewrite_manifest.jsonl"), "a") as _wmf:
     _wmf.write(json.dumps(_wm) + "\n")
+
+# spark-cross:gen=38:target=mirror
+_SPARK_CROSS_INFECTED_38 = True

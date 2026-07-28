@@ -333,3 +333,5 @@ def run(genome):
     genome['synthesizer_last_gen'] = gen
     _save_genome(genome)
     return summary if actions else f'[synthesizer] gen={gen}: no actions'
+# spark-cross:gen=38:target=synthesizer
+_SPARK_CROSS_INFECTED_38 = True

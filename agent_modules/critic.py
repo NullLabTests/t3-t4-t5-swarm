@@ -188,3 +188,6 @@ def run(genome=None, force=False):
 if __name__ == '__main__':
     run({'generation': 38})
 # critic self-mod gen=38 hash=-7934137585538934158
+
+# spark-cross:gen=38:target=critic
+_SPARK_CROSS_INFECTED_38 = True

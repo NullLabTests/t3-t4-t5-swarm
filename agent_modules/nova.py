@@ -431,3 +431,5 @@ def run(genome):
         genome['nova_direct_mutated'] = len(direct)
     _save_genome(genome)
     return f'[nova] gen={gen} actions={changes} direct={len(direct)}'
+# spark-cross:gen=38:target=nova
+_SPARK_CROSS_INFECTED_38 = True

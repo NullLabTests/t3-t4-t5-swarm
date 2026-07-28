@@ -4,3 +4,4 @@ voices/*.onnx
 ssh-fix-note.txt
 __pycache__/
 *.pyc
+*.bak.*

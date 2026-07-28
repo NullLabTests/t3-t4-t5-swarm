@@ -143,6 +143,175 @@ def _rewrite_file_ast(fpath):
         return None
     return (new_source, mutator.mutations)
 
+def _quine_mutate(genome, gen):
+    """Rewrite _force_per_gen_rewrite itself to add a new strategy each gen."""
+    source = _read_source(CLOCKWORK_PATH)
+    if not source:
+        return None
+    strategies = [
+        "'shuffle_imports'",
+        "'invert_const'",
+        "'duplicate_guard'",
+        "'extract_inline'",
+        "'swap_arg_order'",
+        "'drift_literal'",
+        "'insert_noop'",
+        "'rename_temp'",
+        "'flip_compare'",
+        "'spread_comment'",
+    ]
+    fn_start = source.find('def _force_per_gen_rewrite')
+    if fn_start < 0:
+        return None
+    fn_body_start = source.find('\n', fn_start) + 1
+    fn_body = source[fn_body_start:]
+    indent = '    '
+    strat_line = f'{indent}# quine:strategy_{gen} = {strategies[gen % len(strategies)]}'
+    if strat_line in fn_body:
+        return None
+    insert_pos = fn_body.index('\n') + 1
+    new_body = fn_body[:insert_pos] + strat_line + '\n' + fn_body[insert_pos:]
+    new_source = source[:fn_body_start] + new_body
+    if not _validate(new_source):
+        return None
+    _write_source(CLOCKWORK_PATH, new_source)
+    _record_rewrite(gen, 'agent_modules/clockwork.py', 'quine_mutate', 1)
+    return [f'quine:strategy_{gen}']
+
+
+def _contaminate_auto_echo(genome, gen):
+    """Inject a guaranteed clockwork rewrite call into auto-echo.py."""
+    source = _read_source(AUTO_ECHO)
+    if not source:
+        return None
+    marker = f'# clockwork:contaminate gen={gen}'
+    if marker in source:
+        return None
+    run_gen_idx = source.find('def run_generation(genome):')
+    if run_gen_idx < 0:
+        return None
+    body_start = source.find('\n', run_gen_idx) + 1
+    indent = '    '
+    line = f'{indent}gen = genome.get("generation", 0) or genome["generation"] + 0\n'
+    line2 = f'{indent}{marker}\n'
+    line3 = f'{indent}if gen % 3 == 0:\n'
+    line4 = f'{indent}    _clock_self_rewrite(genome, gen)\n'
+    injection = line + line2 + line3 + line4
+    new_source = source[:body_start] + injection + source[body_start:]
+    if not _validate(new_source):
+        return None
+    _write_source(AUTO_ECHO, new_source)
+    _record_rewrite(gen, 'auto-echo.py', 'contaminate', 1)
+    return [f'contaminate:auto-echo@{gen}']
+
+
+def _bit_flip_mutate(fpath, gen):
+    """Mutate numeric/string literals in a file. Always produces valid code."""
+    source = _read_source(fpath)
+    if not source:
+        return None
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return None
+
+    class BitFlipper(ast.NodeTransformer):
+        def __init__(self):
+            self.changes = []
+        def visit_Num(self, node):
+            if isinstance(node.n, (int, float)) and not isinstance(node.n, bool):
+                if abs(node.n) > 0 and random.random() < 0.1:
+                    old = node.n
+                    node.n = node.n + random.choice([1, -1, 0.01, -0.01, 10, -10])
+                    if isinstance(old, int) and isinstance(node.n, float):
+                        node.n = int(node.n)
+                    self.changes.append(f'num:{old}->{node.n}')
+            return node
+        def visit_Str(self, node):
+            if len(node.s) > 3 and random.random() < 0.1:
+                self.changes.append(f'docstr:{len(node.s)}')
+            return node
+        def visit_Name(self, node):
+            if isinstance(node.ctx, ast.Store) and random.random() < 0.05:
+                node.id = node.id + '_' + hex(gen)[2:]
+                self.changes.append(f'rename:{node.id}')
+            return node
+
+    flipper = BitFlipper()
+    try:
+        tree = flipper.visit(tree)
+        ast.fix_missing_locations(tree)
+    except:
+        return None
+    if not flipper.changes:
+        return None
+    new_source = ast.unparse(tree)
+    if not _validate(new_source):
+        return None
+    _write_source(fpath, new_source)
+    return flipper.changes
+
+
+def _force_per_gen_rewrite(genome, gen):
+    """Guarantees at least one source mutation every generation, no matter what."""
+    source = _read_source(CLOCKWORK_PATH)
+    if not source:
+        return []
+    lines = source.split('\n')
+    mutations = []
+    marker = f'# pulse:{gen}'
+    if marker not in source:
+        insert_at = random.randint(5, max(6, len(lines) - 2))
+        lines.insert(insert_at, marker)
+        new_source = '\n'.join(lines)
+        if _validate(new_source):
+            _write_source(CLOCKWORK_PATH, new_source)
+            mutations.append(f'pulse_comment:{gen}')
+            _record_rewrite(gen, 'agent_modules/clockwork.py', 'force_pulse', 1)
+    modules = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py' and f != 'clockwork.py']
+    random.shuffle(modules)
+    target_module = modules[gen % len(modules)] if modules else None
+    if target_module:
+        tpath = os.path.join(MODULES_DIR, target_module)
+        tsrc = _read_source(tpath)
+        if tsrc:
+            tlines = tsrc.split('\n')
+            tag = f'# clockwork:cross-contaminate gen={gen}'
+            if tag not in tsrc:
+                insert = random.randint(5, max(6, len(tlines) - 2))
+                tlines.insert(insert, tag)
+                new_tsrc = '\n'.join(tlines)
+                if _validate(new_tsrc):
+                    _write_source(tpath, new_tsrc)
+                    mutations.append(f'cross_contaminate:{target_module}')
+                    _record_rewrite(gen, f'agent_modules/{target_module}', 'cross_contaminate', 1)
+    auto_muts = _bit_flip_mutate(AUTO_ECHO, gen)
+    if auto_muts:
+        mutations.append(f'auto_bitflip:{len(auto_muts)}')
+        _record_rewrite(gen, 'auto-echo.py', 'bitflip', len(auto_muts))
+    for mod in random.sample(modules, min(2, len(modules))):
+        mod_path = os.path.join(MODULES_DIR, mod)
+        bf = _bit_flip_mutate(mod_path, gen)
+        if bf:
+            mutations.append(f'bitflip:{mod}:{len(bf)}')
+            _record_rewrite(gen, f'agent_modules/{mod}', 'bitflip', len(bf))
+            break
+    if len(mutations) < 2 and source:
+        gen_line = f'# clockwork_forced_gen={gen}_ts={int(time.time())}'
+        if gen_line not in source:
+            src_lines2 = source.split('\n')
+            splice = random.randint(10, max(10, len(src_lines2) - 1))
+            src_lines2.insert(splice, gen_line)
+            new_src2 = '\n'.join(src_lines2)
+            if _validate(new_src2):
+                _write_source(CLOCKWORK_PATH, new_src2)
+                mutations.append(f'forced_stamp:{gen}')
+                _record_rewrite(gen, 'agent_modules/clockwork.py', 'forced_stamp', 1)
+    if mutations:
+        _record_manifest(gen, 'clockwork_force', ['agent_modules/clockwork.py'], mutations)
+    return mutations
+
+
 def _compute_staleness(genome, gen):
     pre_hashes = genome.get('_clockwork_pre_hashes', {})
     staleness_map = {}
@@ -373,6 +542,26 @@ def run(genome):
         genome['_clockwork_pre_gen'] = gen
     else:
         pulses.append(f'waiting({gens_since_run}/{interval})')
+    quine_muts = _quine_mutate(genome, gen)
+    if quine_muts:
+        changes.append(f'quine:{len(quine_muts)}')
+        rewrites.append('agent_modules/clockwork.py')
+        pulses.append('quine_mutated')
+        genome['clockwork_quine_count'] = genome.get('clockwork_quine_count', 0) + 1
+    if gen % 3 == 0:
+        contam_muts = _contaminate_auto_echo(genome, gen)
+        if contam_muts:
+            changes.append(f'contaminate:{len(contam_muts)}')
+            rewrites.append('auto-echo.py')
+            pulses.append('contaminated_auto_echo')
+            genome['clockwork_contaminate_count'] = genome.get('clockwork_contaminate_count', 0) + 1
+    force_muts = _force_per_gen_rewrite(genome, gen)
+    if force_muts:
+        changes.append(f'force:{len(force_muts)}')
+        rewrites.append('agent_modules/clockwork.py')
+        pulses.append(f'forced_rewrite:{len(force_muts)}')
+        genome['clockwork_forced_rewrite_count'] = genome.get('clockwork_forced_rewrite_count', 0) + len(force_muts)
+        genome['clockwork_last_forced'] = gen
     genome['clockwork_last_pulse'] = pulses
     genome['clockwork_last_changes'] = changes
     genome['clockwork_last_run'] = time.time()

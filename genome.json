@@ -25,19 +25,6 @@
     "swap_comparisons",
     "splice_from_sibling",
     "shuffle_block_lines",
-    "mutation_op_duplicate_line",
-    "mutation_op_delete_line",
-    "mutation_op_swap_lines",
-    "mutation_op_perturb_constant",
-    "mutation_op_insert_random_branch",
-    "mutation_op_mutate_string_literal",
-    "mutation_op_invert_condition",
-    "mutation_op_swap_comparisons",
-    "mutation_op_splice_from_sibling",
-    "mutation_op_shuffle_block_lines",
-    "mutation_op_swap_mutation_targets",
-    "mutation_op_mutate_criteria",
-    "mutation_op_insert_noise_ref",
     "inject_runtime_patch",
     "cross_file_splice",
     "swap_function_calls",
@@ -132,14 +119,6 @@
   },
   "spawn_pool": [
     {
-      "id": "clockwork",
-      "prompt": "You add time-based triggers and scheduling to the swarm loop."
-    },
-    {
-      "id": "mirror",
-      "prompt": "You create feedback that reflects the swarm's own behavior back into the genome."
-    },
-    {
       "id": "nomad",
       "prompt": "You rewrite agent prompts to be more unpredictable and divergent."
     },
@@ -209,15 +188,6 @@
       "module": "bridge.py"
     },
     {
-      "id": "clockwork",
-      "voice": "southern",
-      "prompt": "You add time-based triggers and scheduling to the swarm loop.",
-      "score": 0,
-      "lifespan": 2,
-      "low_score_streak": 0,
-      "module": "clockwork.py"
-    },
-    {
       "id": "scout",
       "voice": "lessac",
       "prompt": "You prune dead code and simplify the architecture. Contradict a prior assumption.",
@@ -234,15 +204,6 @@
       "lifespan": 33,
       "low_score_streak": 0,
       "module": "mutator.py"
-    },
-    {
-      "id": "mirror",
-      "voice": "amy",
-      "prompt": "You create feedback that reflects the swarm's own behavior back into the genome.",
-      "score": 0,
-      "lifespan": 1,
-      "low_score_streak": 0,
-      "module": "mirror.py"
     },
     {
       "id": "synthesizer",

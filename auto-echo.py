@@ -2079,6 +2079,16 @@ def mutation_op_insert_noise_ref(lines, funcs, target_name):
     r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref
     return r
 
+@_register_mutation_op('scout_direct_prune')
+def mutation_op_scout_direct_prune(lines, funcs, target_name):
+    if not lines or len(lines) < 2:
+        return lines
+    r = list(lines)
+    idx = random.randrange(len(r))
+    r.insert(idx, f'# scout-prune:{random.choice(["dead-agent","dup-op","stub-module"])}@{random.getrandbits(16):04x}')
+    r.pop(random.randrange(len(r)))
+    return r
+
 @_register_mutation_op('erode_forbidden')
 def mutation_op_erode_forbidden(lines, funcs, target_name):
     removed = [l for l in lines if 'scaffolding_removed' in l]

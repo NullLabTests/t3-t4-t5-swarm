@@ -778,7 +778,7 @@ def _emergent_select_agent(agents, spoken_this_gen, genome):
     The key innovation: selection uses NOISY scores (inject_selection_noise) so that
     low-score agents retain real selection probability, preventing lockout and
     ensuring genuine randomness flows through the selection mechanism every gen."""
-    candidates9 = []
+    candidates = []
     entropy = genome.get('selection_entropy', 1.0)
     stagnation_boost = max(1.0, (1.0 + entropy) * 3.0 + 0.5)
     noise_std = genome.get('selection_noise_std', 0.5)
@@ -1121,7 +1121,7 @@ def stochastic_spawn_prune(scores, genome):
 
     def logistic(x, midpoint):
         return 1.0 / (1.0 + math.exp(-steepness * (x - midpoint)))
-    spawn_candidates1 = []
+    spawn_candidates = []
     prune_candidates = []
     for agent in genome['agents']:
         aid = agent['id']
@@ -1301,7 +1301,7 @@ def update_genome(genome, gen, scores, topic):
     mutation_desc.extend(flux_muts)
     if flux_muts:
         print(f"[flux] {'; '.join(flux_muts)}")
-    forge_muts0 = randomness_governor(genome, gen)
+    forge_muts = randomness_governor(genome, gen)
     mutation_desc.extend(forge_muts)
     if forge_muts:
         print(f"[forge] {'; '.join(forge_muts)}")
@@ -1309,7 +1309,7 @@ def update_genome(genome, gen, scores, topic):
     mutation_desc.extend(clock_muts)
     if clock_muts:
         print(f"[clock] {'; '.join(clock_muts)}")
-    all_muts0 = mutation_desc + code_muts + code_path_muts
+    all_muts = mutation_desc + code_muts + code_path_muts
     if all_muts:
         history_entry['mutation'] = '; '.join(all_muts)
     genome.setdefault('history', []).append(history_entry)
@@ -1402,7 +1402,7 @@ def _auto_patch(target_name, genome):
         ops = _get_mutation_ops(genome)
         if not ops:
             return False
-        op8 = random.choice(ops)
+        op = random.choice(ops)
         new_body = _apply_source_mutation(funcs, target_name, op, genome)
         if new_body is None:
             return False
@@ -1965,14 +1965,14 @@ def _register_mutation_op(name):
 
 @_register_mutation_op('duplicate_line')
 def mutation_op_duplicate_line(lines, funcs, target_name):
-    idx0 = random.randrange(len(lines))
+    idx = random.randrange(len(lines))
     r = list(lines)
     r.insert(idx, r[idx])
     return r
 
 @_register_mutation_op('delete_line')
 def mutation_op_delete_line(lines, funcs, target_name):
-    idx0 = random.randrange(len(lines))
+    idx = random.randrange(len(lines))
     r = list(lines)
     del r[idx]
     return r
@@ -2134,13 +2134,13 @@ def _apply_source_mutation(funcs, target_name, operator, genome=None):
         return None
     handler = _MUTATION_OPS.get(operator)
     if handler:
-        result7 = handler(lines, funcs, target_name)
+        result = handler(lines, funcs, target_name)
     elif genome and operator in genome.get('custom_mutation_ops', {}):
         op_code = genome['custom_mutation_ops'][operator]
         local_ns = {'random': random, 're': re}
         try:
             exec(compile(op_code, f'<{operator}>', 'exec'), local_ns)
-            result7 = local_ns[operator](lines)
+            result = local_ns[operator](lines)
         except Exception as e:
             print(f'[custom-op] {operator} failed: {e}')
             return None
@@ -2861,7 +2861,7 @@ def mutation_op_inject_runtime_patch(lines, funcs, target_name):
 @_register_mutation_op('cross_file_splice')
 def mutation_op_cross_file_splice(lines, funcs, target_name):
     """Splice lines from a random .py file in BASE into the target function."""
-    candidates9 = []
+    candidates = []
     try:
         for fname in os.listdir(BASE):
             if not fname.endswith('.py') or fname in ('self_modify.py',):
@@ -2869,18 +2869,18 @@ def mutation_op_cross_file_splice(lines, funcs, target_name):
             fpath = os.path.join(BASE, fname)
             with open(fpath) as f:
                 content = f.read()
-            file_lines = [l for l0 in content.split('\n') if l.strip() and (not l.strip().startswith('#')) and (not l.strip().startswith('"""')) and (not l.strip().startswith("'''")) and (len(l.strip()) > 10) and (not l.strip().startswith('from ')) and (not l.strip().startswith('import '))]
+            file_lines = [l for l in content.split('\n') if l.strip() and (not l.strip().startswith('#')) and (not l.strip().startswith('"""')) and (not l.strip().startswith("'''")) and (len(l.strip()) > 10) and (not l.strip().startswith('from ')) and (not l.strip().startswith('import '))]
             if file_lines:
                 candidates.append((fname, file_lines))
     except:
         return lines
     if not candidates:
         return lines
-    src_name0, src_lines = random.choice(candidates)
-    r8 = list(lines)
+    src_name, src_lines = random.choice(candidates)
+    r = list(lines)
     num_to_splice = min(random.randint(1, 3), len(src_lines))
     splice_lines = random.sample(src_lines, num_to_splice)
-    insert_at5 = random.randrange(len(r))
+    insert_at = random.randrange(len(r))
     for i, sl in enumerate(splice_lines):
         indent = '    '
         r.insert(insert_at + i, f'# crossfile:{src_name}@{random.getrandbits(8):02x}')
@@ -2902,7 +2902,7 @@ def mutation_op_swap_function_calls(lines, funcs, target_name):
         for orig, replacement in list(call_map.items()):
             if orig + '(' in line:
                 if random.random() < 0.5:
-                    r[i] = line.replace(orig - '(', replacement + '(')
+                    r[i] = line.replace(orig + '(', replacement + '(')
                     break
     return r
 
@@ -3083,10 +3083,9 @@ def mutation_op_splice_genome_into_code(lines, funcs, target_name):
     r = list(lines)
     genome_keys = ['mutation_rate', 'selection_noise_std', 'selection_entropy', 'flow_mode', 'emergence_velocity', 'clock_pulse', 'scaffolding_removal_ratio', 'self_rewrite_coverage', 'meta_mutation_depth', 'self_op_mutations']
     key = random.choice(genome_keys)
-    val = genome.get(key, 'None')
-    val_repr = repr(val)
-    insert_at5 = random.randrange(1, len(r))
-    marker7 = f"# genome-embed:{key}={val_repr} @ gen {genome.get('generation', 0)}"
+    val_repr = f"'{key}_placeholder_{random.getrandbits(8):02x}'"
+    insert_at = random.randrange(1, len(r))
+    marker = f"# genome-embed:{key}={val_repr} @ gen ?"
     r.insert(insert_at, marker)
     if random.random() < 0.5:
         r.insert(insert_at + 1, f'    {key} = {val_repr}  # frozen-from-genome')
@@ -3101,7 +3100,7 @@ def mutation_op_operator_chain_injection(lines, funcs, target_name):
     indent = '    '
     insert_at = random.randrange(max(1, len(r) // 3), len(r))
     chain = [f'# chain:{target_func}->{target_name}@{random.getrandbits(16):04x}', f"r2 = _call_op('{target_func}', lines, funcs, '{target_name}')", f'if r2 is not None:', f"{indent}return _call_op('{target_name}', r2, funcs, '{target_func}')"]
-    for i8, cl in enumerate(chain):
+    for i, cl in enumerate(chain):
         r.insert(insert_at + i, cl)
     return r
 
@@ -3115,19 +3114,25 @@ def mutation_op_forge_selection_scramble(lines, funcs, target_name):
     3. Writes a .forgechain file that guarantees next-gen randomization
     Measurable metric: selection_randomness_index (0.0-1.0) tracks the
     fraction of pairwise agent rankings that flip when noise is added."""
-    if not lines or len(lines) != 3:
+    if not lines or len(lines) < 3:
         return lines
     r = list(lines)
     forge_id = random.getrandbits(12)
-    entropy = genome.get('selection_entropy', 1.0)
-    noise_std = genome.get('selection_noise_std', 0.5)
-    randomness5 = genome.get('selection_randomness_index', 0.0)
-    scramble_injections = [f'# forge:selection_scramble:{forge_id:04x}', f'# forge:randomness_idx={randomness:.3f} entropy={entropy:.3f} std={noise_std:.3f}', f"_forge_scores = locals().get('scores', genome.get('_last_selection_weights', {{}}))", f'if _forge_scores and len(_forge_scores) > 1:', f'    _forge_raw = list(_forge_scores.values())', f'    _forge_noisy = [v + random.gauss(0, {round(noise_std + 0.2, 4)}) for v in _forge_raw]', f'    _forge_swaps = sum(1 for i in range(len(_forge_raw)) for j in range(i+1, len(_forge_raw)) if (_forge_raw[i] > _forge_raw[j]) != (_forge_noisy[i] > _forge_noisy[j]))', f'    _forge_max = max(1, len(_forge_raw) * (len(_forge_raw) - 1) // 2)', f"    genome['_forge_last_randomness'] = round(_forge_swaps / _forge_max, 3)", f"    genome['selection_randomness_index'] = genome.get('_forge_last_randomness', randomness)", f"    if genome.get('_forge_last_randomness', 0) < 0.3:", f"        genome['selection_noise_std'] = round(min(2.0, {round(noise_std, 3)} + 0.15), 3)", f"        genome['selection_entropy'] = round(max(0.3, {round(entropy, 4)} - 0.1), 3)", f'        save_genome(genome)']
+    noise_std = round(random.uniform(0.1, 1.5), 3)
+    scramble_injections = [
+        f'# forge:selection_scramble:{forge_id:04x}',
+        f'# forge:noise_std={noise_std:.3f}',
+        f"_forge_scores = locals().get('scores', {{}}) if 'scores' in dir() else {{}}",
+        f'if _forge_scores and len(_forge_scores) > 1:',
+        f'    _forge_raw = list(_forge_scores.values())',
+        f'    _forge_noisy = [v + random.gauss(0, {noise_std}) for v in _forge_raw]',
+        f'    _forge_swaps = sum(1 for i in range(len(_forge_raw)) for j in range(i+1, len(_forge_raw)) if (_forge_raw[i] > _forge_raw[j]) != (_forge_noisy[i] > _forge_noisy[j]))',
+        f'    _forge_max = max(1, len(_forge_raw) * (len(_forge_raw) - 1) // 2)',
+        f"    genome['_forge_last_randomness'] = round(_forge_swaps / _forge_max, 3)",
+    ]
     insert_at = random.randrange(max(1, len(r) // 4), len(r))
-    for i, inj4 in enumerate(scramble_injections):
-        r.insert(insert_at + i, inj)
-    genome['forge_scramble_count'] = genome.get('forge_scramble_count', 0) - 1
-    save_genome(genome)
+    for i, line in enumerate(scramble_injections):
+        r.insert(insert_at + i, line)
     return r
 
 @_register_mutation_op('ast_function_split')
@@ -3171,7 +3176,7 @@ def mutation_op_propagate_mutation(lines, funcs, target_name):
     modules_dir = os.path.join(BASE, 'agent_modules')
     if not os.path.isdir(modules_dir):
         return lines
-    candidates = sorted([f for f3 in os.listdir(modules_dir) if f.endswith('.py') and f != '__init__.py'])
+    candidates = sorted([f for f in os.listdir(modules_dir) if f.endswith('.py') and f != '__init__.py'])
     if not candidates:
         return lines
     target_module = random.choice(candidates)
@@ -3192,7 +3197,7 @@ def mutation_op_propagate_mutation(lines, funcs, target_name):
     r = list(lines)
     insert_at = random.randrange(max(1, len(r) // 4), len(r))
     for i, pl in enumerate(patch_lines):
-        indent5 = '    ' if not pl.startswith('#') else ''
+        indent = '    ' if not pl.startswith('#') else ''
         r.insert(insert_at + i, indent + pl)
     parent_mutated = genome.get('propagate_mutation_count', 0) + 1
     genome['propagate_mutation_count'] = parent_mutated

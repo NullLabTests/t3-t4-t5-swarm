@@ -15,3 +15,6 @@ def mutation_op_weaver_manifest_writer(lines, *args):
     r.append("except Exception:")
     r.append("    pass")
     return r
+
+
+# oracle:gen=40:60d13d27

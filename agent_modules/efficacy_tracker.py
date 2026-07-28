@@ -105,3 +105,5 @@ def run(genome):
     summary = f"eff={tracker['overall_efficacy']} tracked={count} dead={dead_modules} changed={len(changed_modules)}"
     print(f'[efficacy] {summary}')
     return summary
+
+# oracle:gen=40:e8e756a9

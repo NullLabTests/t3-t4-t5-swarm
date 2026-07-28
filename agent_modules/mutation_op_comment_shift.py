@@ -8,3 +8,5 @@ def mutation_op_comment_shift(lines, funcs, target_name):
         else:
             r.append('# ' + line)
     return r
+
+# oracle:gen=40:ed6c1eeb

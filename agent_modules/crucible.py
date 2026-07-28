@@ -72,3 +72,5 @@ def run(genome):
     genome['crucible_validated'] = validated
     _save_genome(genome)
     return f'[crucible] tested {tested} modules, {validated} valid'
+
+# oracle:gen=40:c7c05db5

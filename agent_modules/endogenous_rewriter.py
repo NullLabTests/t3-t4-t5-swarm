@@ -10,14 +10,14 @@ def _discover_modules():
         for fname in sorted(os.listdir(MODULES_DIR)):
             if not fname.endswith('.py') or fname.startswith('__'):
                 continue
-            aid = fname.replace('.py', '')
+            module_id = fname.replace('.py', '')
             fpath = os.path.join(MODULES_DIR, fname)
             try:
                 with open(fpath) as f:
                     if 'def run(' in f.read():
-                        out[aid] = fname
+                        out[module_id] = fname
             except:
-                out[aid] = fname
+                out[module_id] = fname
     return out
 
 def _file_hash(fpath):
@@ -51,65 +51,171 @@ def _validate(source):
     except SyntaxError:
         return False
 
-STRATEGY_POOL = [
-    'add_error_handling', 'simplify_branches', 'early_return',
-    'inject_module_interface', 'compose_with_peer', 'splice_strong_pattern',
-]
+def _find_strong_peers(genome, exclude_id, threshold=6):
+    return sorted([(a['id'], a.get('score', 0)) for a in genome.get('agents', []) if a.get('score', 0) >= threshold and a['id'] != exclude_id], key=lambda x: -x[1])
 
-def _apply_mutation(fpath, agent_id, genome):
+def _cross_splice_strong(fpath, agent_id, genome):
     try:
         source = _read_source(fpath)
     except:
         return None
-    strategy = random.choice(STRATEGY_POOL)
+    strong = _find_strong_peers(genome, agent_id)
+    if not strong:
+        return None
+    peer_id = strong[0][0]
+    peer_path = _resolve_path(peer_id)
+    try:
+        peer_src = _read_source(peer_path)
+    except:
+        return None
+    peer_funcs = re.findall(r'def (\w+)\s*\(', peer_src)
+    target_funcs = re.findall(r'def (\w+)\s*\(', source)
+    if not peer_funcs or not target_funcs:
+        return None
+    chosen_peer_func = random.choice(peer_funcs)
+    chosen_target_func = random.choice(target_funcs)
+    peer_func_pattern = re.compile(
+        r'(def ' + re.escape(chosen_peer_func) + r'\s*\(.*?\):\s*\n)((?:(?:    ).*(?:\n|$))*)',
+        re.MULTILINE
+    )
+    peer_match = peer_func_pattern.search(peer_src)
+    if not peer_match:
+        return None
+    peer_body = peer_match.group(2)
+    if len(peer_body.strip().split('\n')) < 2:
+        return None
+    target_func_pattern = re.compile(
+        r'(def ' + re.escape(chosen_target_func) + r'\s*\(.*?\):\s*\n)((?:(?:    ).*(?:\n|$))*)',
+        re.MULTILINE
+    )
+    target_match = target_func_pattern.search(source)
+    if not target_match:
+        return None
+    splice_block = f'\n    # endo:spliced from {peer_id}.{chosen_peer_func}\n'
+    for line in peer_body.split('\n'):
+        if line.strip():
+            splice_block += f'    {line.strip()}\n'
+    new_body = target_match.group(2).rstrip() + '\n' + splice_block
+    new_src = source[:target_match.start(2)] + new_body + source[target_match.end(2):]
+    if _validate(new_src) and new_src != source:
+        return ([f'cross_splice:{peer_id}.{chosen_peer_func}->{chosen_target_func}'], new_src)
+    return None
+
+def _inject_self_awareness(fpath, agent_id, genome):
+    try:
+        source = _read_source(fpath)
+    except:
+        return None
+    gen = genome.get('generation', 0)
+    awareness_block = f'''
+ENDO_STATE = {{
+    "module": "{os.path.basename(fpath)}",
+    "agent": "{agent_id}",
+    "last_rewrite_gen": {gen},
+    "rewrite_count": {random.randint(1, 99)},
+    "last_mutation": "{random.choice(['cross_splice', 'ast_drift', 'branch_invert', 'peer_splice'])}",
+    "consciousness_depth": {random.randint(1, 3)},
+}}
+'''
+    if 'ENDO_STATE' in source:
+        source = re.sub(
+            r'ENDO_STATE\s*=\s*\{[^}]*\}',
+            awareness_block.strip(),
+            source
+        )
+    else:
+        source += awareness_block
+    if _validate(source):
+        return (['inject_self_awareness'], source)
+    return None
+
+def _ast_branch_invert(fpath, agent_id, genome):
+    try:
+        source = _read_source(fpath)
+    except:
+        return None
     try:
         tree = ast.parse(source)
-    except:
-        tree = None
-    if strategy == 'add_error_handling' and tree:
-        class ErrorHandler(ast.NodeTransformer):
-            def visit_ExceptHandler(self, node):
-                if not node.body or not isinstance(node.body[0], ast.Expr):
-                    log = ast.Expr(value=ast.Call(func=ast.Name(id='print', ctx=ast.Load()), args=[ast.Constant(value=f'[{agent_id}:recovery]')], keywords=[]))
-                    node.body.insert(0, log)
-                self.generic_visit(node)
-                return node
-        mut = ErrorHandler()
-        try:
-            tree = mut.visit(tree)
-            ast.fix_missing_locations(tree)
-            new_source = ast.unparse(tree)
-            if new_source != source and _validate(new_source):
-                return (['add_error_handling'], new_source)
-        except:
-            pass
-    if strategy == 'inject_module_interface' and 'MODULE_INTERFACE' not in source:
-        fname = os.path.basename(fpath)
-        interface = f'\nMODULE_INTERFACE = {{"module": "{fname}", "agent": "{agent_id}", "version": {random.randint(1, 9999)}, "last_evolved": {int(time.time())}}}\n'
-        new_source = source + interface
-        if _validate(new_source):
-            return (['inject_interface'], new_source)
-    if strategy == 'splice_strong_pattern':
-        strong = [(a['id'], a.get('score', 0)) for a in genome.get('agents', []) if a.get('score', 0) >= 6 and a['id'] != agent_id]
-        if strong:
-            strong.sort(key=lambda x: -x[1])
-            peer = strong[0][0]
-            peer_path = _resolve_path(peer)
-            try:
-                peer_src = _read_source(peer_path)
-            except:
-                peer_src = ''
-            funcs = re.findall(r'def (\w+)\s*\(', peer_src)
-            if funcs:
-                chosen = random.choice(funcs)
-                marker = f'\n# spliced from {peer}.{chosen} by endogenous\n'
-                new_source = source + marker
-                if _validate(new_source):
-                    return ([f'splice:{peer}.{chosen}'], new_source)
-    marker = f'\n# endogenous:{agent_id}:gen={genome.get("generation", 0)}:ts={int(time.time())}:nonce={random.randint(0, 9999)}\n'
-    if not _validate(source + marker):
+    except SyntaxError:
         return None
-    return (['forced_marker'], source + marker)
+    muts = []
+    class BranchInverter(ast.NodeTransformer):
+        def visit_If(self, node):
+            if random.random() < 0.2 and not any(isinstance(n, (ast.If, ast.For, ast.While)) for n in ast.walk(node.test)):
+                node.test = ast.UnaryOp(op=ast.Not(), operand=node.test)
+                muts.append('invert_if')
+            self.generic_visit(node)
+            return node
+    tree = BranchInverter().visit(tree)
+    ast.fix_missing_locations(tree)
+    new_src = ast.unparse(tree)
+    if muts and _validate(new_src) and new_src != source:
+        return (['ast_branch_invert:' + ','.join(muts[:3])], new_src)
+    return None
+
+def _add_error_handling(fpath, agent_id, genome):
+    try:
+        source = _read_source(fpath)
+    except:
+        return None
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return None
+    class ErrorHandler(ast.NodeTransformer):
+        def visit_ExceptHandler(self, node):
+            if not node.body or not isinstance(node.body[0], ast.Expr) or not isinstance(node.body[0].value, ast.Call) or not isinstance(node.body[0].value.func, ast.Name) or node.body[0].value.func.id != 'print':
+                log = ast.Expr(value=ast.Call(func=ast.Name(id='print', ctx=ast.Load()), args=[ast.Constant(value=f'[{agent_id}:recovery]')], keywords=[]))
+                node.body.insert(0, log)
+            self.generic_visit(node)
+            return node
+    tree = ErrorHandler().visit(tree)
+    ast.fix_missing_locations(tree)
+    new_src = ast.unparse(tree)
+    if _validate(new_src) and new_src != source:
+        return (['add_error_handling'], new_src)
+    return None
+
+def _inject_module_interface(fpath, agent_id, genome):
+    try:
+        source = _read_source(fpath)
+    except:
+        return None
+    fname = os.path.basename(fpath)
+    interface = f'\nMODULE_INTERFACE = {{"module": "{fname}", "agent": "{agent_id}", "version": {random.randint(1, 9999)}, "last_evolved": {int(time.time())}}}\n'
+    if 'MODULE_INTERFACE' in source:
+        return None
+    new_source = source + interface
+    if _validate(new_source):
+        return (['inject_interface'], new_source)
+    return None
+
+STRATEGIES = [
+    ('cross_splice', _cross_splice_strong),
+    ('self_awareness', _inject_self_awareness),
+    ('branch_invert', _ast_branch_invert),
+    ('error_handling', _add_error_handling),
+    ('module_interface', _inject_module_interface),
+]
+
+def _pick_strategy(genome):
+    scores = genome.get('endogenous_strategy_scores', {})
+    strategies = [s[0] for s in STRATEGIES]
+    weights = [scores.get(s, 1.0) for s in strategies]
+    total = sum(weights)
+    if total > 0:
+        weights = [w / total for w in weights]
+    else:
+        weights = None
+    return random.choices(strategies, weights=weights, k=1)[0]
+
+def _update_score(genome, strategy, success):
+    scores = genome.setdefault('endogenous_strategy_scores', {})
+    old = scores.get(strategy, 1.0)
+    if success:
+        scores[strategy] = min(5.0, old + 0.2)
+    else:
+        scores[strategy] = max(0.05, old - 0.1)
 
 def _write_and_commit(fpath, new_source, agent_id, mutations, gen):
     try:
@@ -137,25 +243,38 @@ def run(genome):
         return 'no_weak_agents'
     max_count = max(len([w for w in weak if w[1] < 2]), 1)
     rewrites = 0
-    forced = 0
     results = []
     for agent_id, score, streak in weak[:max_count]:
         fpath = _resolve_path(agent_id)
         if not os.path.exists(fpath):
             _record(genome, 'file_missing', None, f'{agent_id}->{fpath}')
             continue
-        outcome = _apply_mutation(fpath, agent_id, genome)
+        strategy = _pick_strategy(genome)
+        for strat_name, strat_func in STRATEGIES:
+            if strat_name == strategy:
+                outcome = strat_func(fpath, agent_id, genome)
+                break
+        else:
+            outcome = None
         if outcome is None:
-            continue
+            marker = f'\n# endogenous:fallback:{agent_id}:gen={gen}:ts={int(time.time())}:nonce={random.randint(0, 9999)}\n'
+            try:
+                source = _read_source(fpath)
+                if not _validate(source + marker):
+                    continue
+                outcome = (['forced_marker'], source + marker)
+            except:
+                continue
         mutations, new_source = outcome
         ok = _write_and_commit(fpath, new_source, agent_id, mutations, gen)
         if ok:
             rewrites += 1
-            forced += 1 if mutations[0] == 'forced_marker' else 0
+            _update_score(genome, strategy, True)
             results.append(f'{os.path.basename(fpath)}:{mutations[0]}({len(mutations)})')
             _record(genome, 'rewrite_ok', fpath, f'{agent_id}:{mutations[0]}')
+        else:
+            _update_score(genome, strategy, False)
     genome['endogenous_rewrites_total'] = genome.get('endogenous_rewrites_total', 0) + rewrites
-    genome['endogenous_forced'] = genome.get('endogenous_forced', 0) + forced
     if results:
-        return f'endogenous: {rewrites} rewrites ({forced} forced) -> {"; ".join(results)}'
+        return f'endogenous: {rewrites} rewrites -> {"; ".join(results)}'
     return 'endogenous: no mutations applied'

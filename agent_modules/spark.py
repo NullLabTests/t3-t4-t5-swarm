@@ -7,6 +7,11 @@ FORBIDDEN_DIRS = {'__pycache__', '.git', 'voices', 'node_modules'}
 
 def _load_genome():
     try:
+        with open(p) as f:
+            return f.read()
+    except:
+        return ''
+    try:
         with open(GENOME_FILE) as f:
             return json.load(f)
     except Exception:
@@ -36,6 +41,11 @@ def _file_hash(fpath):
 def _read_source(fpath):
     with open(fpath) as f:
         return f.read()
+    path = os.path.join(BASE, 'agent_modules', 'critic.py')
+    if not lines or len(lines) < 3:
+        return lines
+    r = list(lines)
+    guard = "if random.random() < 0.15 or genome.get('generation', 0) % 7 == 0:"
 
 def _validate(source):
     try:
@@ -79,7 +89,7 @@ def _invert_if_guards(tree, gen):
     for node in ast.walk(tree):
         if isinstance(node, ast.If):
             if random.random() < 0.15 and node.body and node.orelse:
-                node.body, node.orelse = node.orelse, node.body
+                node.body, node.orelse = (node.orelse, node.body)
                 if isinstance(node.test, ast.UnaryOp) and isinstance(node.test.op, ast.Not):
                     node.test = node.test.operand
                 else:
@@ -91,11 +101,7 @@ def _insert_noop_branches(tree, gen):
     inserted = 0
     for node in ast.walk(tree):
         if isinstance(node, ast.If) and random.random() < 0.1:
-            extra = ast.If(
-                test=ast.Constant(value=False),
-                body=[ast.Pass()],
-                orelse=[]
-            )
+            extra = ast.If(test=ast.Constant(value=False), body=[ast.Pass()], orelse=[])
             node.body.append(extra)
             inserted += 1
     return inserted
@@ -103,7 +109,7 @@ def _insert_noop_branches(tree, gen):
 def _shuffle_function_body(tree, gen):
     shuffled = 0
     for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef) and len(node.body) >= 4 and random.random() < 0.12:
+        if isinstance(node, ast.FunctionDef) and len(node.body) >= 4 and (random.random() < 0.12):
             non_doc_lines = [n for n in node.body if not (isinstance(n, ast.Expr) and isinstance(n.value, ast.Constant) and isinstance(n.value.value, str))]
             if len(non_doc_lines) >= 3:
                 chunk_end = min(3, len(non_doc_lines))
@@ -174,7 +180,7 @@ def _cross_infect_module(genome, gen):
         if not os.path.exists(mod_path):
             continue
         source = _read_source(mod_path)
-        injection = f'\n# spark-cross:gen={gen}:target={agent["id"]}\n_SPARK_CROSS_INFECTED_{gen} = True\n'
+        injection = f"\n# spark-cross:gen={gen}:target={agent['id']}\n_SPARK_CROSS_INFECTED_{gen} = True\n"
         if injection in source:
             continue
         new_source = source + injection
@@ -218,7 +224,7 @@ def run(genome):
     for fpath in files:
         current_hash = _file_hash(fpath)
         pre_hash = pre_hashes.get(fpath) if pre_hashes else None
-        if pre_hash and current_hash and current_hash != pre_hash:
+        if pre_hash and current_hash and (current_hash != pre_hash):
             skipped += 1
             continue
         ast_result = _try_ast_mutation(fpath, gen)
@@ -258,4 +264,3 @@ def run(genome):
     summary = f'spark: {len(rewritten)}/{len(files)} files rewritten ({ast_ok} ast, {marker_ok} marker, {skipped} pre-changed) infected={len(infected)}'
     print(f'[spark] {summary}')
     return summary
-# orchestrated:fallback:gen=38:ts=1785250368

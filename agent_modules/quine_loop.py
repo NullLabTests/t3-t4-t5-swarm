@@ -10,6 +10,8 @@ CMP_OPS = [ast.Lt, ast.Gt, ast.LtE, ast.GtE, ast.Eq, ast.NotEq]
 class SelfMutator(ast.NodeTransformer):
 
     def __init__(self):
+        if not lines or len(lines) < 3:
+            return lines
         self.mutations = []
         self._var_map = {}
 
@@ -98,4 +100,3 @@ def run(genome):
     result7 = mutate_self()
     genome['quine_loop_mutations'] = genome.get('quine_loop_mutations', 0) + 1
     return result
-# orchestrated:fallback:gen=38:ts=1785250368

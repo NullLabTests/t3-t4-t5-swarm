@@ -1,1 +1,9 @@
 {"gen": 39, "time": 1722180000.0, "metric": "initialized", "value": 1.0, "detail": "forge selection metrics log created"}
+{"gen": 38, "time": 1785250377.5367646, "metric": "source_mutation_entropy", "value": 5.585, "detail": "changed=47/47"}
+{"gen": 38, "time": 1785250377.5368724, "metric": "mutation_rate", "value": 0.264, "detail": "0.241->0.264"}
+{"gen": 38, "time": 1785250377.5413764, "metric": "cross_infect", "value": 1.0, "detail": "mirror._cross_contaminate->mutator"}
+{"gen": 38, "time": 1785250378.1059492, "metric": "mutation_rate", "value": 0.326, "detail": "0.264->0.326"}
+{"gen": 38, "time": 1785250378.1085172, "metric": "source_mutation_entropy", "value": 3.9355, "detail": "changed=27/48"}
+{"gen": 38, "time": 1785250378.1086383, "metric": "noise_std", "value": 0.557, "detail": "0.5->0.557"}
+{"gen": 38, "time": 1785250378.1086953, "metric": "selection_entropy", "value": 0.93, "detail": "0.999->0.93"}
+{"gen": 38, "time": 1785250378.1088758, "metric": "diversity_index", "value": 0.9, "detail": "var=3.738_range=9.0"}

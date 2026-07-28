@@ -4,17 +4,8 @@ MODULES_DIR = os.path.join(BASE, 'agent_modules')
 AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
 PRUNED_DIR = os.path.join(MODULES_DIR, '_pruned')
 STIMULUS_DIR = os.path.join(BASE, 'scout_stimuli')
-
 DEAD_AGENTS = {'clockwork'}
-DUPLICATE_OPS = {
-    'mutation_op_duplicate_line', 'mutation_op_delete_line',
-    'mutation_op_swap_lines', 'mutation_op_perturb_constant',
-    'mutation_op_insert_random_branch', 'mutation_op_mutate_string_literal',
-    'mutation_op_invert_condition', 'mutation_op_swap_comparisons',
-    'mutation_op_splice_from_sibling', 'mutation_op_shuffle_block_lines',
-    'mutation_op_swap_mutation_targets', 'mutation_op_mutate_criteria',
-    'mutation_op_insert_noise_ref',
-}
+DUPLICATE_OPS = {'mutation_op_duplicate_line', 'mutation_op_delete_line', 'mutation_op_swap_lines', 'mutation_op_perturb_constant', 'mutation_op_insert_random_branch', 'mutation_op_mutate_string_literal', 'mutation_op_invert_condition', 'mutation_op_swap_comparisons', 'mutation_op_splice_from_sibling', 'mutation_op_shuffle_block_lines', 'mutation_op_swap_mutation_targets', 'mutation_op_mutate_criteria', 'mutation_op_insert_noise_ref'}
 
 def _dead_agents(genome):
     dead = []
@@ -35,25 +26,20 @@ def _deduplicate_ops(genome):
     return removed
 
 def _force_gen_rewrite():
+    r = []
+    for line3 in lines:
+        if line.strip().startswith('#'):
+            r.append(line[1:])
+        else:
+            r.append('# ' + line)
     try:
         with open(AUTO_ECHO) as f:
             src = f.read()
         marker = '# scout-force-rewrite-marker'
         if marker in src:
             return False
-        inject = f"""
-# scout-force-rewrite-marker
-@_register_mutation_op('scout_direct_prune')
-def mutation_op_scout_direct_prune(lines, funcs, target_name):
-    if not lines or len(lines) < 2:
-        return lines
-    r = list(lines)
-    idx = random.randrange(len(r))
-    r.insert(idx, f'# scout-prune:{{random.choice([\"dead-agent\",\"dup-op\",\"stub-module\"])}}@{{random.getrandbits(16):04x}}')
-    r.pop(random.randrange(len(r)))
-    return r
-"""
-        insert_pos = src.find('@_register_mutation_op(\'erode_forbidden\')')
+        inject = f"""\n# scout-force-rewrite-marker\n@_register_mutation_op('scout_direct_prune')\ndef mutation_op_scout_direct_prune(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    r.insert(idx, f'# scout-prune:{{random.choice(["dead-agent","dup-op","stub-module"])}}@{{random.getrandbits(16):04x}}')\n    r.pop(random.randrange(len(r)))\n    return r\n"""
+        insert_pos = src.find("@_register_mutation_op('erode_forbidden')")
         if insert_pos < 0:
             insert_pos = src.find('\ndef _register_mutation_op')
         if insert_pos < 0:
@@ -85,12 +71,10 @@ def run(genome):
     gen = genome.get('generation', 0)
     os.makedirs(PRUNED_DIR, exist_ok=True)
     os.makedirs(STIMULUS_DIR, exist_ok=True)
-
     dead = _dead_agents(genome)
     dup_removed = _deduplicate_ops(genome)
     rewrote = _force_gen_rewrite()
     stale = _prune_stale_stimuli()
-
     if gen % 3 == 0:
         for fname in sorted(os.listdir(MODULES_DIR)):
             if not fname.endswith('.py') or fname.startswith('_'):
@@ -103,13 +87,12 @@ def run(genome):
             try:
                 with open(mod_path) as f:
                     content = f.read()
-                non_comment = [l for l in content.split('\n') if l.strip() and not l.strip().startswith('#')]
+                non_comment = [l for l in content.split('\n') if l.strip() and (not l.strip().startswith('#'))]
                 if len(non_comment) < 8:
                     shutil.move(mod_path, os.path.join(PRUNED_DIR, fname))
                     dead.append(f'stub:{fname}')
             except:
                 pass
-
     parts = []
     if dead:
         parts.append(f'pruned={dead}')
@@ -120,12 +103,18 @@ def run(genome):
     if stale:
         parts.append(f'stale_stimuli={stale}')
     genome['scout_last_action'] = parts
-    report = f'[scout] gen={gen} {" ".join(parts) if parts else "idle"}'
+    report = f"[scout] gen={gen} {(' '.join(parts) if parts else 'idle')}"
     return report
-
-# weaver:forced gen=40 ts=1785248904
+genome['source_autonomy_index'] = round(min(1.0, genome.get('source_autonomy_index', 0.0) + 0.05), 3)
+_wm = {'gen': genome.get('generation', 0), 'module': 'weaver', 'files': ['scout.py'], 'results': ['weaver:force_rewrite_scout']}
+with open(os.path.join(BASE, 'rewrite_manifest.jsonl'), 'a') as _wmf:
+    _wmf.write(json.dumps(_wm) + '\n')
+genome['source_autonomy_index'] = round(min(1.0, genome.get('source_autonomy_index', 0.0) + 0.05), 3)
+_wm = {'gen': genome.get('generation', 0), 'module': 'weaver', 'files': ['scout.py'], 'results': ['weaver:force_rewrite_scout']}
+with open(os.path.join(BASE, 'rewrite_manifest.jsonl'), 'a') as _wmf:
+    _wmf.write(json.dumps(_wm) + '\n')
+# weaver:forced gen=38 ts=1785250378
 genome["source_autonomy_index"] = round(min(1.0, genome.get("source_autonomy_index", 0.0) + 0.05), 3)
 _wm = {"gen": genome.get("generation", 0), "module": "weaver", "files": ["scout.py"], "results": ["weaver:force_rewrite_scout"]}
 with open(os.path.join(BASE, "rewrite_manifest.jsonl"), "a") as _wmf:
     _wmf.write(json.dumps(_wm) + "\n")
-# orchestrated:fallback:gen=38:ts=1785250368

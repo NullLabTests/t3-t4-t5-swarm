@@ -1,11 +1,9 @@
 import random
-
-# self-rewrite-hook:bd3
-# self-rewrite-hook:bd3
 try:
     import os as _srw_os, hashlib as _srw_hl
     _srw_f = __file__
-    with open(_srw_f) as _sf: _srw_src = _sf.read()
+    with open(_srw_f) as _sf:
+        _srw_src = _sf.read()
     _srw_h = _srw_hl.sha256(_srw_src.encode()).hexdigest()[:12]
     _srw_lines = _srw_src.split(chr(10))
     if len(_srw_lines) > 3 and hasattr('mutation_op_insert_timestamp', '__file__') == False:
@@ -15,13 +13,23 @@ try:
         _srw_new = chr(10).join(_srw_lines)
         try:
             compile(_srw_new, _srw_f, 'exec')
-            with open(_srw_f, 'w') as _sf: _sf.write(_srw_new)
-        except SyntaxError: pass
-except Exception: pass
+            with open(_srw_f, 'w') as _sf:
+                _sf.write(_srw_new)
+        except SyntaxError:
+            pass
+except Exception:
+    pass
+
 def mutation_op_insert_timestamp(lines, funcs, target_name):
+    scores = {}
     import time
     r = list(lines)
-    stamp = f"# ts:{int(time.time())}:{random.getrandbits(24):06x}"
-    r.insert(random.randrange(len(r)+1), stamp)
+    if not lines:
+        return lines
+    r = list(lines)
+    import re
+    r = list(lines)
+    source = _read_source(fpath)
+    stamp = f'# ts:{int(time.time())}:{random.getrandbits(24):06x}'
+    r.insert(random.randrange(len(r) + 1), stamp)
     return r
-# orchestrated:fallback:gen=38:ts=1785250368

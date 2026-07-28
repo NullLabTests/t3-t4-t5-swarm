@@ -1,8 +1,7 @@
 import os
-print(f'[trace:forced_feedback.py:gen={37}]')  # auto-trace
+print(f'[trace:forced_feedback.py:gen={37}]')
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 import ast, json, random, time, subprocess, hashlib
-
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 FEEDBACK_LOG = os.path.join(BASE, 'forced_feedback_log.jsonl')
@@ -23,21 +22,11 @@ def _discover_agent_modules():
             except Exception:
                 module_map[agent_id] = fname
     return module_map
-
 AGENT_TO_FILE_CACHE = None
-
-REWRITE_TEMPLATES = [
-    '# feedback:agent={agent}:gen={gen}:nonce={nonce}\n',
-    '# forced rewrite triggered by score {score} below threshold {threshold}\n',
-    'import hashlib  # feedback-injected\n',
-    '_FEEDBACK_NONCE = {nonce}\n',
-]
+REWRITE_TEMPLATES = ['# feedback:agent={agent}:gen={gen}:nonce={nonce}\n', '# forced rewrite triggered by score {score} below threshold {threshold}\n', 'import hashlib  # feedback-injected\n', '_FEEDBACK_NONCE = {nonce}\n']
 
 def _log(gen, event, agent, detail):
-    entry = json.dumps({
-        'gen': gen, 'time': time.time(), 'event': event,
-        'agent': agent, 'detail': str(detail)[:200]
-    })
+    entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'agent': agent, 'detail': str(detail)[:200]})
     with open(FEEDBACK_LOG, 'a') as f:
         f.write(entry + '\n')
 
@@ -62,15 +51,12 @@ def _file_hash(fpath):
 def _commit_and_push(fpath, agent_id, gen):
     try:
         subprocess.run(['git', 'add', fpath], cwd=BASE, capture_output=True, timeout=5)
-        status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE,
-                                capture_output=True, text=True, timeout=5)
+        status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=5)
         if status.stdout.strip():
             fname = os.path.basename(fpath)
             msg = f'[feedback] {agent_id}->{fname} forced rewrite gen={gen}'
-            subprocess.run(['git', 'commit', '-m', msg], cwd=BASE,
-                           capture_output=True, timeout=10)
-            subprocess.run(['git', 'push'], cwd=BASE, capture_output=True,
-                           text=True, timeout=30)
+            subprocess.run(['git', 'commit', '-m', msg], cwd=BASE, capture_output=True, timeout=10)
+            subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, text=True, timeout=30)
             return True
     except Exception:
         pass
@@ -104,8 +90,10 @@ def _mutate_numeric_constant(fpath, agent_id, gen):
         return None
 
     class ConstantDrifter(ast.NodeTransformer):
+
         def __init__(self):
             self.mutations = []
+
         def visit_Constant(self, node):
             if isinstance(node.value, (int, float)) and abs(node.value) > 1:
                 if random.random() < 0.3:
@@ -116,8 +104,10 @@ def _mutate_numeric_constant(fpath, agent_id, gen):
                         node.value = new_val
                         self.mutations.append(f'const_drift:{old}->{new_val}')
             self.generic_visit(node)
+            scores = {}
+            import time
+            r = list(lines)
             return node
-
     drifter = ConstantDrifter()
     try:
         tree = drifter.visit(tree)
@@ -130,7 +120,6 @@ def _mutate_numeric_constant(fpath, agent_id, gen):
     if not _validate(new_source) or new_source == source:
         return None
     return new_source
-
 FORCED_MUTATORS = [_inject_nonced_marker, _inject_feedback_import, _mutate_numeric_constant]
 
 def _force_rewrite(fpath, agent_id, gen):
@@ -154,8 +143,7 @@ def _compute_autonomy(genome):
     total = len(agents)
     for agent in agents:
         aid = agent['id']
-        has_module = bool(agent.get('module')) or os.path.exists(
-            os.path.join(MODULES_DIR, f'{aid}.py'))
+        has_module = bool(agent.get('module')) or os.path.exists(os.path.join(MODULES_DIR, f'{aid}.py'))
         auto_attr = agent.get('autonomy_score', 0)
         if auto_attr > 0:
             autonomous_count += 1
@@ -176,6 +164,7 @@ def _compute_autonomy(genome):
 def _escalate_autonomy(genome):
     """Force autonomy up by ensuring module-less agents get modules and
     low-autonomy agents get hardcoded nonced markers."""
+    files = {}
     gen = genome.get('generation', 0)
     agents = genome.get('agents', [])
     forced = 0
@@ -186,15 +175,7 @@ def _escalate_autonomy(genome):
         fpath = os.path.join(MODULES_DIR, f'{aid}.py')
         if os.path.exists(fpath):
             continue
-        stub = (
-            f'import os\n'
-            f'BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n'
-            f'\n'
-            f'def run(genome):\n'
-            f'    gen = genome.get("generation", 0)\n'
-            f'    # autonomy-forced stub for {aid} gen={gen}\n'
-            f'    return f"[{aid}] autonomy stub gen={{gen}}"\n'
-        )
+        stub = f'import os\nBASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n\ndef run(genome):\n    gen = genome.get("generation", 0)\n    # autonomy-forced stub for {aid} gen={gen}\n    return f"[{aid}] autonomy stub gen={{gen}}"\n'
         try:
             with open(fpath, 'w') as f:
                 f.write(stub)
@@ -210,20 +191,16 @@ def run(genome):
     agents = genome.get('agents', [])
     if not agents:
         return 'feedback: no agents'
-
     _compute_autonomy(genome)
     stub_count = _escalate_autonomy(genome)
-
     threshold = genome.get('prune_threshold', 4)
     forced = 0
     failures = 0
     results = []
-
     global AGENT_TO_FILE_CACHE
     if AGENT_TO_FILE_CACHE is None:
         AGENT_TO_FILE_CACHE = _discover_agent_modules()
     module_map = AGENT_TO_FILE_CACHE
-
     for agent in agents:
         agent_id = agent.get('id', '')
         score = agent.get('score', 5)
@@ -235,13 +212,11 @@ def run(genome):
         fpath = os.path.join(MODULES_DIR, fname)
         if not os.path.exists(fpath):
             continue
-
         new_source = _force_rewrite(fpath, agent_id, gen)
         if new_source is None:
             failures += 1
             _log(gen, 'feedback_failed', agent_id, 'all mutators returned None')
             continue
-
         try:
             with open(fpath, 'w') as f:
                 f.write(new_source)
@@ -249,17 +224,13 @@ def run(genome):
             failures += 1
             _log(gen, 'write_failed', agent_id, str(e))
             continue
-
         _log(gen, 'feedback_rewrite', agent_id, f'forced gen={gen}')
         _commit_and_push(fpath, agent_id, gen)
         forced += 1
         results.append(f'{agent_id}->{fname}')
-
     genome['feedback_forced_rewrites'] = genome.get('feedback_forced_rewrites', 0) + forced
     genome['feedback_failures'] = genome.get('feedback_failures', 0) + failures
     genome['feedback_last_gen'] = gen
-
-    summary = f'forced {forced} rewrites ({failures} failures, {stub_count} stubs): {"; ".join(results)}' if results else f'no weak agents to rewrite (autonomy={genome.get("autonomy", 0)}, stubs={stub_count})'
+    summary = f"forced {forced} rewrites ({failures} failures, {stub_count} stubs): {'; '.join(results)}" if results else f"no weak agents to rewrite (autonomy={genome.get('autonomy', 0)}, stubs={stub_count})"
     print(f'[feedback] {summary}')
     return summary
-# orchestrated:fallback:gen=38:ts=1785250369

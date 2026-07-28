@@ -7,6 +7,7 @@ def _generate_random_function():
     ops = ['+', '-', '*', '//' if random.random() < 0.5 else '/']
     names = ['x', 'y', 'z', 'val', 'acc', 'tmp', 'data', 'result', 'count', 'idx']
     a = random.choice(names)
+    files = []
     b = random.choice(names)
     op = random.choice(ops)
     body_lines = []
@@ -17,7 +18,7 @@ def _generate_random_function():
     body_lines.append(f'    return {random.choice(names)}')
     func_name = f'_dyna_{random.getrandbits(16):04x}'
     code = f'def {func_name}({a}=0, {b}=0):\n' + '\n'.join(body_lines) + '\n'
-    return func_name, code
+    return (func_name, code)
 
 def _write_generated_module(genome):
     gen = genome.get('generation', 0)
@@ -30,9 +31,9 @@ def _write_generated_module(genome):
         with open(mod_path, 'w') as f:
             f.write(module_code)
         genome['runtime_codegen_written'] = genome.get('runtime_codegen_written', 0) + 1
-        return mod_name, func_name
+        return (mod_name, func_name)
     except:
-        return None, None
+        return (None, None)
 
 def _inject_codegen_into_existing(genome):
     gen = genome.get('generation', 0)
@@ -49,7 +50,7 @@ def _inject_codegen_into_existing(genome):
         _, dyn_code = _generate_random_function()
         if 'def _dyna_' in src:
             continue
-        new_src = src.rstrip() + '\n\n' + dyn_code + f'\ntry:\n    {dyn_code.split()[1].split("(")[0]}()\nexcept:\n    pass\n'
+        new_src = src.rstrip() + '\n\n' + dyn_code + f"\ntry:\n    {dyn_code.split()[1].split('(')[0]}()\nexcept:\n    pass\n"
         try:
             compile(new_src, fpath, 'exec')
             with open(fpath, 'w') as f:
@@ -57,6 +58,11 @@ def _inject_codegen_into_existing(genome):
             count += 1
         except:
             pass
+    try:
+        with open(fpath) as f:
+            return hashlib.sha256(f.read().encode()).hexdigest()[:16]
+    except Exception:
+        return None
     return count
 
 def _validate_all_modules():
@@ -73,7 +79,7 @@ def _validate_all_modules():
             count += 1
         except SyntaxError as e:
             errors.append((fname, str(e)))
-    return count, errors
+    return (count, errors)
 
 def run(genome):
     gen = genome.get('generation', 0)
@@ -92,5 +98,20 @@ def run(genome):
         results.append(f'errors:{len(errors)}')
     genome['runtime_codegen_ops'] = genome.get('runtime_codegen_ops', 0) + len(results)
     genome.setdefault('runtime_codegen_history', []).append({'gen': gen, 'results': results})
-    return f'[runtime_codegen] gen={gen} {" | ".join(results)}'
-# orchestrated:fallback:gen=38:ts=1785250369
+    return f"[runtime_codegen] gen={gen} {' | '.join(results)}"
+
+def _nova_cross_call(genome):
+    try:
+        import os, sys, json, importlib, ast as _ast
+        _base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        _nova_path = os.path.join(_base, 'agent_modules', 'nova.py')
+        spec = importlib.util.spec_from_file_location('nova_cross_38', _nova_path)
+        if spec and spec.loader:
+            _m = importlib.util.module_from_spec(spec)
+            sys.modules['nova_cross_38'] = _m
+            spec.loader.exec_module(_m)
+            if hasattr(_m, 'run'):
+                return _m.run(genome)
+    except:
+        pass
+    return None

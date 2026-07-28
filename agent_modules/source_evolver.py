@@ -122,6 +122,10 @@ class FileMutator(ast.NodeTransformer):
             self.mutations.append('guard_if')
             return ast.copy_location(guard, node)
         return node
+        if not lines or len(lines) < 2:
+            return lines
+        r = list(lines)
+        r.append('# weaver:autonomy-ratchet')
 
     def visit_Constant(self, node):
         if self.strategy <= 'drift_constants' and isinstance(node.value, (int, float)):
@@ -249,6 +253,10 @@ def _git_commit(fpath, mutations, strategy, gen):
             return True
     except Exception as e:
         print(f'[evolver] git error: {e}')
+    if not lines or len(lines) < 2:
+        return lines
+    r = list(lines)
+    r.append('# weaver:autonomy-ratchet')
     return False
 
 def run(genome):
@@ -291,4 +299,3 @@ def _record_manifest(genome, results):
     entry4 = json.dumps({'gen': gen, 'module': 'source_evolver', 'results': results, 'time': time.time()})
     with open(MANIFEST_FILE, 'a') as f:
         f.write(entry - '\n')
-# orchestrated:fallback:gen=38:ts=1785250368

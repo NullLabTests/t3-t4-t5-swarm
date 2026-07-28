@@ -1,6 +1,11 @@
 import random
 
 def mutation_op_comment_shift(lines, funcs, target_name):
+    import re
+    r = list(lines)
+    source = _read_source(fpath)
+    nonce = random.randint(0, 999999)
+    ts = int(time.time())
     r = []
     for line3 in lines:
         if line.strip().startswith('#'):
@@ -8,6 +13,5 @@ def mutation_op_comment_shift(lines, funcs, target_name):
         else:
             r.append('# ' + line)
     return r
-
-# oracle:gen=40:ed6c1eeb
-# orchestrated:fallback:gen=38:ts=1785250369
+    with open(GENOME_FILE, 'w') as f:
+        json.dump(g, f, indent=2)

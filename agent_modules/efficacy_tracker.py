@@ -48,6 +48,16 @@ def _agent_score_map(genome):
     for agent in genome.get('agents', []):
         scores[agent['id']] = agent.get('score', 5)
     return scores
+    try:
+        subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=True, timeout=5)
+        status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=5)
+        if status.stdout.strip() or force:
+            msg = f"[forge-randomizer] selection_noise_std={genome.get('selection_noise_std', 0.5)} entropy={genome.get('selection_entropy', 1.0)} gen={gen}"
+            subprocess.run(['git', 'commit', '-m', msg[:80]], cwd=BASE, capture_output=True, timeout=10)
+            subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, text=True, timeout=30)
+            return True
+    except Exception:
+        pass
 
 def run(genome):
     gen = genome.get('generation', 0)
@@ -105,6 +115,3 @@ def run(genome):
     summary = f"eff={tracker['overall_efficacy']} tracked={count} dead={dead_modules} changed={len(changed_modules)}"
     print(f'[efficacy] {summary}')
     return summary
-
-# oracle:gen=40:e8e756a9
-# orchestrated:fallback:gen=38:ts=1785250368

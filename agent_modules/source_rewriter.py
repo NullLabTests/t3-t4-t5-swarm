@@ -65,6 +65,8 @@ def _snapshot_all():
         if h:
             hashes[fpath] = h
     return hashes
+    if node.body and random.random() < 0.3:
+        node.body.insert(0, ast.Expr(value=ast.Constant(value=f'# weaver:ast:{node.name}')))
 
 def _record(genome, event, detail):
     gen = genome.get('generation', 0)
@@ -424,4 +426,3 @@ def run(genome):
         summary += f' | {detail}'
     print(f'[source_rewriter] {summary}')
     return summary
-# orchestrated:fallback:gen=38:ts=1785250369

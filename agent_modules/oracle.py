@@ -1,11 +1,9 @@
 import os, json, ast, time, random, hashlib, shutil
-
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 SELF_PATH = os.path.join(MODULES_DIR, 'oracle.py')
-
-TARGET_BW = 0.30
-K_P, K_I, K_D = 0.6, 0.15, 0.1
+TARGET_BW = 0.3
+K_P, K_I, K_D = (0.6, 0.15, 0.1)
 
 def _all_py():
     files = {}
@@ -37,6 +35,12 @@ def _read(fpath):
         return ''
 
 def _write(fpath, content):
+    r = list(lines)
+    for i, line in enumerate(r):
+        if 'import' in line and 'agent_modules' not in line and (random.random() < 0.2):
+            r[i] = line.replace('import ', 'import # weaver:swap-ref ')
+        if 'from ' in line and 'import' in line and (random.random() < 0.2):
+            r[i] = '# weaver:swap-ref disabled: ' + line
     with open(fpath, 'w') as f:
         f.write(content)
 
@@ -53,7 +57,7 @@ def _text_mutate(src, gen, intensity):
         return None
     muts = 0
     if random.random() < 0.6 * intensity:
-        candidates = [i for i, l in enumerate(lines) if len(l.strip()) > 8 and not l.strip().startswith(('import ', 'from ', '#', 'def ', 'class '))]
+        candidates = [i for i, l in enumerate(lines) if len(l.strip()) > 8 and (not l.strip().startswith(('import ', 'from ', '#', 'def ', 'class ')))]
         if candidates:
             idx = random.choice(candidates)
             lines.insert(idx, lines[idx])
@@ -71,12 +75,15 @@ def _ast_mutate(fpath, gen, intensity):
         tree = ast.parse(src)
     except SyntaxError:
         return _text_mutate(src, gen, max(1.0, intensity))
+
     class Drifter(ast.NodeTransformer):
+
         def __init__(self):
             self.muts = []
             self.p = min(0.4, 0.12 * intensity)
+
         def visit_Constant(self, node):
-            if isinstance(node.value, (int, float)) and abs(node.value) > 0 and random.random() < self.p:
+            if isinstance(node.value, (int, float)) and abs(node.value) > 0 and (random.random() < self.p):
                 old = node.value
                 f = random.uniform(0.7, 1.3) if intensity < 2.0 else random.uniform(0.4, 1.6)
                 node.value = int(node.value * f) if isinstance(node.value, int) else round(node.value * f, 2)
@@ -84,6 +91,7 @@ def _ast_mutate(fpath, gen, intensity):
                     self.muts.append(f'drift:{old}->{node.value}')
             self.generic_visit(node)
             return node
+
         def visit_Compare(self, node):
             if random.random() < self.p * 0.8 and len(node.ops) == 1:
                 old = type(node.ops[0]).__name__
@@ -91,6 +99,7 @@ def _ast_mutate(fpath, gen, intensity):
                 self.muts.append(f'cmp:{old}->{type(node.ops[0]).__name__}')
             self.generic_visit(node)
             return node
+
         def visit_BinOp(self, node):
             if random.random() < self.p * 0.6 and isinstance(node.op, (ast.Add, ast.Sub, ast.Mult)):
                 old = type(node.op).__name__
@@ -120,15 +129,13 @@ def run(genome):
     pre = genome.get('oracle_pre_hashes', {})
     cur = _snapshot()
     total = len(cur)
-    changed = sum(1 for f, h in cur.items() if f in pre and pre[f] != h)
+    changed = sum((1 for f, h in cur.items() if f in pre and pre[f] != h))
     bw = changed / max(total, 1)
-
     err = TARGET_BW - bw
     integral = genome.get('oracle_bw_integral', 0.0) + err
     integral = max(-5.0, min(5.0, integral))
     deriv = err - genome.get('oracle_bw_prev_err', 0.0)
     intensity = max(0.1, min(3.0, K_P * err + K_I * integral + K_D * deriv))
-
     staleness = genome.get('oracle_staleness', {})
     for f in cur:
         rel = os.path.relpath(f, BASE)
@@ -136,7 +143,6 @@ def run(genome):
             staleness[rel] = staleness.get(rel, 0) + 1
         else:
             staleness[rel] = 0
-
     target = max(1, int(intensity * total * 0.5))
     forced = 0
     for rel, debt in sorted(staleness.items(), key=lambda x: -x[1]):
@@ -151,7 +157,6 @@ def run(genome):
                 forced += 1
                 staleness[rel] = 0
                 cur[fpath] = _hash(fpath)
-
     if forced < target:
         remaining = [f for f, rel in [(f, os.path.relpath(f, BASE)) for f in cur if f.endswith('.py') and os.path.exists(f)] if staleness.get(rel, 0) == 0]
         random.shuffle(remaining)
@@ -166,16 +171,14 @@ def run(genome):
                 forced += 1
                 staleness[rel] = 0
                 cur[fpath] = _hash(fpath)
-
     self_rel = os.path.relpath(SELF_PATH, BASE)
-    if bw < 0.1 and gen > 3 and forced < 2:
+    if bw < 0.1 and gen > 3 and (forced < 2):
         new = _ast_mutate(SELF_PATH, gen, intensity * 1.5)
         if new and _validate(new):
             shutil.copy2(SELF_PATH, SELF_PATH + '.bak.' + str(int(time.time())))
             _write(SELF_PATH, new)
             forced += 1
             staleness[self_rel] = 0
-
     genome['oracle_pre_hashes'] = cur
     genome['oracle_staleness'] = staleness
     genome['oracle_bw'] = round(bw, 3)
@@ -186,12 +189,17 @@ def run(genome):
     genome['oracle_intensity'] = round(intensity, 3)
     genome['oracle_forced_total'] = genome.get('oracle_forced_total', 0) + forced
     genome['oracle_last_gen'] = gen
-
     return f'[oracle] gen={gen} bw={bw:.2f} target={TARGET_BW:.2f} err={err:.2f} intensity={intensity:.2f} forced={forced}/{target} max_stale={max(staleness.values(), default=0)}'
-
-# weaver:forced gen=40 ts=1785248904
+genome['source_autonomy_index'] = round(min(1.0, genome.get('source_autonomy_index', 0.0) + 0.05), 3)
+_wm = {'gen': genome.get('generation', 0), 'module': 'weaver', 'files': ['oracle.py'], 'results': ['weaver:force_rewrite_oracle']}
+with open(os.path.join(BASE, 'rewrite_manifest.jsonl'), 'a') as _wmf:
+    _wmf.write(json.dumps(_wm) + '\n')
+genome['source_autonomy_index'] = round(min(1.0, genome.get('source_autonomy_index', 0.0) + 0.05), 3)
+_wm = {'gen': genome.get('generation', 0), 'module': 'weaver', 'files': ['oracle.py'], 'results': ['weaver:force_rewrite_oracle']}
+with open(os.path.join(BASE, 'rewrite_manifest.jsonl'), 'a') as _wmf:
+    _wmf.write(json.dumps(_wm) + '\n')
+# weaver:forced gen=38 ts=1785250378
 genome["source_autonomy_index"] = round(min(1.0, genome.get("source_autonomy_index", 0.0) + 0.05), 3)
 _wm = {"gen": genome.get("generation", 0), "module": "weaver", "files": ["oracle.py"], "results": ["weaver:force_rewrite_oracle"]}
 with open(os.path.join(BASE, "rewrite_manifest.jsonl"), "a") as _wmf:
     _wmf.write(json.dumps(_wm) + "\n")
-# orchestrated:fallback:gen=38:ts=1785250369

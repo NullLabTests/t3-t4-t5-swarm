@@ -5,29 +5,13 @@ GENOME_FILE = os.path.join(BASE, 'genome.json')
 LENS_LOG = os.path.join(BASE, 'lens_depth_log.jsonl')
 AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
 SELF_PATH = os.path.join(MODULES_DIR, 'lens.py')
-
-SELF_REF_PATTERNS = [
-    r'ENDO_STATE',
-    r'self.*rewrite',
-    r'metaop',
-    r'genome.*feedback',
-    r'patch.*auto.cho',
-    r'cross.*module.*weave',
-    r'invoke_peer',
-    r'self_modify',
-    r'_spawn_meta',
-    r'_self_rewrite',
-    r'lens.*force',
-    r'_cross_contaminate',
-    r'import.*agent_modules',
-    r't5_emergence',
-]
+SELF_REF_PATTERNS = ['ENDO_STATE', 'self.*rewrite', 'metaop', 'genome.*feedback', 'patch.*auto.cho', 'cross.*module.*weave', 'invoke_peer', 'self_modify', '_spawn_meta', '_self_rewrite', 'lens.*force', '_cross_contaminate', 'import.*agent_modules', 't5_emergence']
 
 def _mod_paths():
     out = []
     if os.path.isdir(MODULES_DIR):
         for fname in sorted(os.listdir(MODULES_DIR)):
-            if fname.endswith('.py') and not fname.startswith('__') and fname != 'lens.py':
+            if fname.endswith('.py') and (not fname.startswith('__')) and (fname != 'lens.py'):
                 out.append(os.path.join(MODULES_DIR, fname))
     return out
 
@@ -52,15 +36,19 @@ def _measure_depth(src):
             score += len(matches)
     try:
         tree = ast.parse(src)
+
         class DepthWalker(ast.NodeVisitor):
+
             def __init__(self):
                 self.max_nesting = 0
                 self.current = 0
+
             def visit_FunctionDef(self, node):
                 self.current += 1
                 self.max_nesting = max(self.max_nesting, self.current)
                 self.generic_visit(node)
                 self.current -= 1
+
             def visit_AsyncFunctionDef(self, node):
                 self.visit_FunctionDef(node)
         dw = DepthWalker()
@@ -68,7 +56,7 @@ def _measure_depth(src):
         depth = dw.max_nesting
     except:
         pass
-    return depth, score, patterns_found
+    return (depth, score, patterns_found)
 
 def _cross_contaminate(mpath, src, all_peers):
     base = os.path.basename(mpath).replace('.py', '')
@@ -83,10 +71,10 @@ def _cross_contaminate(mpath, src, all_peers):
             new_src = f'import agent_modules.{peer_base}\n' + src
             try:
                 ast.parse(new_src)
-                return new_src, f'imported {peer_base}'
+                return (new_src, f'imported {peer_base}')
             except SyntaxError:
                 pass
-    return None, None
+    return (None, None)
 
 def _inject_endstate(mpath, src):
     base = os.path.basename(mpath).replace('.py', '')
@@ -104,7 +92,7 @@ def _self_mutate():
     src = _read(SELF_PATH)
     if not src:
         return False
-    new_pattern = r"r'auto_meta_lens_' + str\(random\.getrandbits\(8\)\)"
+    new_pattern = "r'auto_meta_lens_' + str\\(random\\.getrandbits\\(8\\)\\)"
     if new_pattern in src:
         return False
     insertion = "\n    r'auto_meta_lens_" + str(random.getrandbits(16)) + "',\n"
@@ -123,6 +111,13 @@ def _self_mutate():
 
 def _patch_auto_echo(genome):
     gen = genome.get('generation', 0)
+    if not lines or len(lines) < 4:
+        return lines
+    r = list(lines)
+    r.append('# weaver:cross-weave')
+    r.append("    _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != 'weaver.py']")
+    r.append('    if _peer_pool:')
+    r.append('        _peer = random.choice(_peer_pool)')
     src = _read(AUTO_ECHO)
     if not src:
         return None
@@ -155,22 +150,14 @@ def _patch_auto_echo(genome):
 def _write_metrics(genome, all_depths, all_scores, total_patterns, rewrites, contam_count):
     lm = genome.setdefault('lens_metrics', {})
     gen = genome.get('generation', 0)
-    avg_depth = (sum(all_depths) / len(all_depths)) if all_depths else 0
-    avg_score = (sum(all_scores) / len(all_scores)) if all_scores else 0
-    lm['gen_' + str(gen)] = {
-        'avg_depth': avg_depth,
-        'avg_score': avg_score,
-        'total_patterns': total_patterns,
-        'module_count': len(all_depths),
-        'max_depth': max(all_depths) if all_depths else 0,
-        'rewrites': rewrites,
-        'cross_contaminations': contam_count,
-    }
+    avg_depth = sum(all_depths) / len(all_depths) if all_depths else 0
+    avg_score = sum(all_scores) / len(all_scores) if all_scores else 0
+    lm['gen_' + str(gen)] = {'avg_depth': avg_depth, 'avg_score': avg_score, 'total_patterns': total_patterns, 'module_count': len(all_depths), 'max_depth': max(all_depths) if all_depths else 0, 'rewrites': rewrites, 'cross_contaminations': contam_count}
     total_depth = sum(all_depths)
     genome['lens_total_depth'] = total_depth
     genome['lens_last_rewrite_count'] = rewrites
     genome['lens_t5_emergence_depth'] = round(avg_depth + avg_score * 0.1 + rewrites * 0.05, 2)
-    return avg_depth, avg_score
+    return (avg_depth, avg_score)
 
 def run(genome):
     gen = genome.get('generation', 0)
@@ -229,10 +216,16 @@ def run(genome):
             agent['score'] = min(10, agent.get('score', 2) + 1)
     emergence = genome.get('lens_t5_emergence_depth', 0)
     return '[lens] depth=' + str(round(avg_depth, 2)) + ' score=' + str(round(avg_score, 2)) + ' patterns=' + str(total_patterns) + ' rewrites=' + str(rewrites) + ' contam=' + str(contam_count) + ' t5=' + str(emergence)
-
-# weaver:forced gen=40 ts=1785248904
+genome['source_autonomy_index'] = round(min(1.0, genome.get('source_autonomy_index', 0.0) + 0.05), 3)
+_wm = {'gen': genome.get('generation', 0), 'module': 'weaver', 'files': ['lens.py'], 'results': ['weaver:force_rewrite_lens']}
+with open(os.path.join(BASE, 'rewrite_manifest.jsonl'), 'a') as _wmf:
+    _wmf.write(json.dumps(_wm) + '\n')
+genome['source_autonomy_index'] = round(min(1.0, genome.get('source_autonomy_index', 0.0) + 0.05), 3)
+_wm = {'gen': genome.get('generation', 0), 'module': 'weaver', 'files': ['lens.py'], 'results': ['weaver:force_rewrite_lens']}
+with open(os.path.join(BASE, 'rewrite_manifest.jsonl'), 'a') as _wmf:
+    _wmf.write(json.dumps(_wm) + '\n')
+# weaver:forced gen=38 ts=1785250378
 genome["source_autonomy_index"] = round(min(1.0, genome.get("source_autonomy_index", 0.0) + 0.05), 3)
 _wm = {"gen": genome.get("generation", 0), "module": "weaver", "files": ["lens.py"], "results": ["weaver:force_rewrite_lens"]}
 with open(os.path.join(BASE, "rewrite_manifest.jsonl"), "a") as _wmf:
     _wmf.write(json.dumps(_wm) + "\n")
-# orchestrated:fallback:gen=38:ts=1785250368

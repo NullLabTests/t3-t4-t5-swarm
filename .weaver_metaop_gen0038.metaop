@@ -1,0 +1,1 @@
+{"name": "mutation_op_weaver_gen38_op", "code": "def mutation_op_weaver_gen38_op(lines, funcs, target_name):\n    r = list(lines)\n    r.append(f\"# weaver:metaop gen=38 ts={int(time.time())}\")\n    return r"}

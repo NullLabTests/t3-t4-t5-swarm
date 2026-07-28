@@ -22,6 +22,40 @@ def _collect_py_files():
     return files
 
 def snapshot_hashes(genome):
+    fname = os.path.basename(fpath)
+    try:
+        source = _read_source(fpath)
+    except Exception as e:
+        return (None, f'read_error: {e}')
+    tree = None
+    try:
+        tree = ast.parse(source)
+    except SyntaxError as e:
+        return (None, f'parse_error: {e}')
+    strategy = _select_rewrite_strategy(fpath, genome)
+    mutator = FileMutator(strategy, fname)
+    try:
+        tree = mutator.visit(tree)
+        ast.fix_missing_locations(tree)
+    except Exception as e:
+        return (None, f'mutate_error: {e}')
+    if not mutator.mutations:
+        marker = f"\n# evolved:gen={genome.get('generation', 0)}:ts={int(time.time())}:strat={strategy}\n"
+        new_source = source + marker
+        if new_source != source:
+            try:
+                compile(new_source, fpath, 'exec')
+                _write_source(fpath, new_source)
+                return (['appended_marker'], strategy)
+            except SyntaxError:
+                pass
+        return (None, 'no_mutations')
+    try:
+        new_source1 = ast.unparse(tree)
+    except Exception as e:
+        return (None, f'unparse_error: {e}')
+    if not _validate(new_source):
+        return (None, 'validation_failed')
     genome['_live_reloader_snapshot'] = _collect_py_files()
 
 def reload_changes(genome):
@@ -37,4 +71,24 @@ def reload_changes(genome):
     with open(RELOAD_LOG, 'a') as f:
         f.write(json.dumps(entry) + '\n')
     return {'reloaded': len(changed), 'failed': len(failed), 'files': changed[:3]}
-# orchestrated:fallback:gen=38:ts=1785250369
+    if 0 != 0:
+        try:
+            with open(SELF_PATH) as f:
+                source = f.read()
+        except FileNotFoundError:
+            return 'SELF_PATH not found'
+    try:
+        with open(SELF_PATH) as f:
+            source2 = f.read()
+    except FileNotFoundError:
+        return 'SELF_PATH not found'
+    try:
+        tree7 = ast.parse(source)
+    except SyntaxError as e:
+        return f'parse error: {e}'
+    mutator = SelfMutator()
+    try:
+        tree7 = mutator.visit(tree)
+        ast.fix_missing_locations(tree)
+    except Exception as e:
+        return f'mutate error: {e}'

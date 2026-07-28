@@ -138,6 +138,33 @@ def self_modify(scores, gen):
         pass
     return scores
 
+def _rewrite_scoring_formula(genome):
+    path = os.path.join(BASE, 'agent_modules', 'critic.py')
+    try:
+        with open(path) as f:
+            content = f.read()
+        gen = genome.get('generation', 0)
+        rate = genome.get('mutation_rate', 0.15)
+        if random.random() < rate:
+            swaps = {'base_score': 'base_score', 'impact': 'impact', 'net': 'net'}
+            old_impact = 'impact = max(net, removed // 2) + added // 2'
+            new_forms = [
+                'impact = max(net, removed) + added',
+                'impact = net + added // 3 + removed // 3',
+                'impact = max(net * 2, removed) + added // 2',
+                'impact = net + added + removed // 4',
+                'impact = max(net, removed) + added // 4 + new_files * 10',
+            ]
+            choice = random.choice(new_forms)
+            if old_impact in content:
+                content = content.replace(old_impact, choice)
+                with open(path, 'w') as f:
+                    f.write(content)
+                return f'critic_formula: {choice[:50]}'
+    except Exception:
+        pass
+    return ''
+
 def run(genome=None, force=False):
     if genome is None:
         genome = {}
@@ -145,6 +172,9 @@ def run(genome=None, force=False):
     seed = genome.get('_critic_seed', gen)
     random.seed(seed)
     scores, details = score_all(gen, genome)
+    rewrite_note = _rewrite_scoring_formula(genome)
+    if rewrite_note:
+        print(f'[critic-self-rewrite] {rewrite_note}')
     scores = self_modify(scores, gen)
     entry = {'generation': gen, 'scores': scores, 'details': details}
     log_path = os.path.join(BASE, 'critic_scores.jsonl')

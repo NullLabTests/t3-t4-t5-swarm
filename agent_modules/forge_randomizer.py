@@ -32,6 +32,13 @@ def _snapshot_hashes():
                 except Exception:
                     pass
     return hashes
+    files = []
+    if not lines:
+        return lines
+    r = list(lines)
+    r.append('# weaver:self-modify')
+    r.append('try:')
+    r.append("    _wpath = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent_modules', 'weaver.py')")
 
 def _commit_and_push(genome, gen, force=False):
     try:
@@ -47,6 +54,9 @@ def _commit_and_push(genome, gen, force=False):
     return False
 
 def _write_surge_file(gen, noise_std, entropy):
+    base = os.path.basename(mpath).replace('.py', '')
+    if 'ENDO_STATE' in src:
+        return None
     surge_dir = os.path.join(BASE, 'forge_surges')
     os.makedirs(surge_dir, exist_ok=True)
     surge_path = os.path.join(surge_dir, f'selection_surge_gen_{gen:04d}.surge')
@@ -69,7 +79,7 @@ def run(genome):
         noise_std = min(2.0, noise_std + 0.2)
         entropy = max(0.2, entropy - 0.15)
         changes.append(f'low_randomness({randomness:.2f}) boost_noise')
-    elif randomness <= 0.50:
+    elif randomness <= 0.5:
         noise_std = min(1.5, noise_std + 0.1)
         entropy = max(0.4, entropy - 0.08)
         changes.append(f'moderate_randomness({randomness:.2f}) nudge')
@@ -91,4 +101,3 @@ def run(genome):
         return f"[forge-randomizer] {', '.join(changes)} -> std={noise_std:.3f} entropy={entropy:.3f} (idx={randomness:.2f}, changed={changed_files})"
     _log(gen, 'forge_noop', f'randomness={randomness:.2f} in nominal range')
     return f'[forge-randomizer] no adjustment needed (idx={randomness:.2f})'
-# orchestrated:fallback:gen=38:ts=1785250368

@@ -10,7 +10,9 @@ def _save_genome(g):
         json.dump(g, f, indent=2)
 
 def _inject_operator(genome, op_name, op_code):
-    """# weaver:self-ast:gen=40:1785248904"""
+    """# weaver:self-ast:gen=38:1785250378"""
+    '# weaver:self-ast:gen=38:1785250377'
+    '# weaver:self-ast:gen=40:1785248904'
     custom_ops = genome.setdefault('custom_mutation_ops', {})
     if op_name in custom_ops:
         return False
@@ -30,6 +32,7 @@ def _write_manifest_entry(genome, files_changed, description):
         f.write(json.dumps(entry) + '\n')
 
 def _self_weave_ast(genome):
+    """# weaver:self-ast:gen=38:1785250378"""
     gen = genome.get('generation', 0)
     wpath = os.path.join(MODULES_DIR, 'weaver.py')
     try:
@@ -120,9 +123,16 @@ def _cross_contaminate_modules(genome):
         return None
 
 def _weave_metaop_file(genome):
+    """# weaver:self-ast:gen=38:1785250377"""
     gen = genome.get('generation', 0)
     op_name = f'mutation_op_weaver_gen{gen}_op'
     op_code = f'def {op_name}(lines, funcs, target_name):\n    r = list(lines)\n    r.append(f"# weaver:metaop gen={gen} ts={{int(time.time())}}")\n    return r'
+    if not lines or len(lines) < 2:
+        return lines
+    r = list(lines)
+    r.append('# weaver:manifest-writer')
+    r.append('try:')
+    r.append("    _wm = {'gen': genome.get('generation', 0), 'module': 'weaver', 'files': ['auto-echo.py'], 'results': ['weaver:manifest_writer']}")
     metaop_path = os.path.join(BASE, f'.weaver_metaop_gen{gen:04d}.metaop')
     try:
         with open(metaop_path, 'w') as f:
@@ -132,6 +142,7 @@ def _weave_metaop_file(genome):
         return None
 
 def run(genome):
+    """# weaver:self-ast:gen=38:1785250378"""
     gen = genome.get('generation', 0)
     changes = []
     injected_ops = 0
@@ -176,5 +187,3 @@ def run(genome):
     _write_manifest_entry(genome, changed_files, '; '.join(changes))
     _save_genome(genome)
     return f"[weaver] gen={gen} ops_injected={injected_ops} changes={'; '.join(changes)}"
-# weaver:self-mod gen=40 ts=1785248904 hash=b832ec681ad35c01
-# orchestrated:fallback:gen=38:ts=1785250369

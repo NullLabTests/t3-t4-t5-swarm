@@ -1,5 +1,4 @@
 import os, random, re, ast, json, hashlib
-
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
@@ -18,6 +17,14 @@ def _save_genome(g):
             json.dump(g, f, indent=2)
     except:
         pass
+    if isinstance(node.ctx, ast.Store) and random.random() < 0.15:
+        if node.id not in self._var_map:
+            pool = [n for n in VARIABLE_POOL if n != node.id] + [node.id + str(random.randint(0, 9))]
+            self._var_map[node.id] = random.choice(pool)
+        old = node.id
+        node.id = self._var_map[node.id]
+        if old != node.id:
+            self.mutations.append(f'rename:{old}->{node.id}')
 
 def _validate(source):
     try:
@@ -29,7 +36,7 @@ def _validate(source):
 def mutation_op_lens_force_meta(lines, funcs, target_name):
     r = list(lines)
     if random.random() < 0.5:
-        note = "# lens-force-meta:" + str(random.getrandbits(32)) + " @ forced by lens_force_meta"
+        note = '# lens-force-meta:' + str(random.getrandbits(32)) + ' @ forced by lens_force_meta'
         r.insert(random.randrange(len(r) + 1), note)
     if random.random() < 0.3 and len(r) > 2:
         idx = random.randrange(len(r))
@@ -55,7 +62,7 @@ def run(genome):
             continue
         if 'lens-force-meta' in src:
             continue
-        note = "# lens-force-meta:" + str(random.getrandbits(32)) + " gen=" + str(gen)
+        note = '# lens-force-meta:' + str(random.getrandbits(32)) + ' gen=' + str(gen)
         new_src = src.rstrip() + '\n' + note + '\n'
         try:
             ast.parse(new_src)
@@ -68,4 +75,3 @@ def run(genome):
         genome['lens_force_meta_count'] = genome.get('lens_force_meta_count', 0) + changes
         _save_genome(genome)
     return '[lens-force-meta] tagged ' + str(changes) + ' modules'
-# orchestrated:fallback:gen=38:ts=1785250369

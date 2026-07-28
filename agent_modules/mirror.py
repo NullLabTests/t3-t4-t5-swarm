@@ -277,3 +277,9 @@ def run(genome):
 
     action_str = '; '.join(actions) if actions else 'no changes'
     return f'[mirror] gen={gen} self_ref={self_ref_ratio} loops={loops} depth={ref_depth} contam={contam_count} {action_str}'
+
+# weaver:forced gen=40 ts=1785248904
+genome["source_autonomy_index"] = round(min(1.0, genome.get("source_autonomy_index", 0.0) + 0.05), 3)
+_wm = {"gen": genome.get("generation", 0), "module": "weaver", "files": ["mirror.py"], "results": ["weaver:force_rewrite_mirror"]}
+with open(os.path.join(BASE, "rewrite_manifest.jsonl"), "a") as _wmf:
+    _wmf.write(json.dumps(_wm) + "\n")

@@ -188,3 +188,9 @@ def run(genome):
     genome['oracle_last_gen'] = gen
 
     return f'[oracle] gen={gen} bw={bw:.2f} target={TARGET_BW:.2f} err={err:.2f} intensity={intensity:.2f} forced={forced}/{target} max_stale={max(staleness.values(), default=0)}'
+
+# weaver:forced gen=40 ts=1785248904
+genome["source_autonomy_index"] = round(min(1.0, genome.get("source_autonomy_index", 0.0) + 0.05), 3)
+_wm = {"gen": genome.get("generation", 0), "module": "weaver", "files": ["oracle.py"], "results": ["weaver:force_rewrite_oracle"]}
+with open(os.path.join(BASE, "rewrite_manifest.jsonl"), "a") as _wmf:
+    _wmf.write(json.dumps(_wm) + "\n")

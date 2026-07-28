@@ -122,3 +122,9 @@ def run(genome):
     genome['scout_last_action'] = parts
     report = f'[scout] gen={gen} {" ".join(parts) if parts else "idle"}'
     return report
+
+# weaver:forced gen=40 ts=1785248904
+genome["source_autonomy_index"] = round(min(1.0, genome.get("source_autonomy_index", 0.0) + 0.05), 3)
+_wm = {"gen": genome.get("generation", 0), "module": "weaver", "files": ["scout.py"], "results": ["weaver:force_rewrite_scout"]}
+with open(os.path.join(BASE, "rewrite_manifest.jsonl"), "a") as _wmf:
+    _wmf.write(json.dumps(_wm) + "\n")

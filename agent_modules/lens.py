@@ -229,3 +229,9 @@ def run(genome):
             agent['score'] = min(10, agent.get('score', 2) + 1)
     emergence = genome.get('lens_t5_emergence_depth', 0)
     return '[lens] depth=' + str(round(avg_depth, 2)) + ' score=' + str(round(avg_score, 2)) + ' patterns=' + str(total_patterns) + ' rewrites=' + str(rewrites) + ' contam=' + str(contam_count) + ' t5=' + str(emergence)
+
+# weaver:forced gen=40 ts=1785248904
+genome["source_autonomy_index"] = round(min(1.0, genome.get("source_autonomy_index", 0.0) + 0.05), 3)
+_wm = {"gen": genome.get("generation", 0), "module": "weaver", "files": ["lens.py"], "results": ["weaver:force_rewrite_lens"]}
+with open(os.path.join(BASE, "rewrite_manifest.jsonl"), "a") as _wmf:
+    _wmf.write(json.dumps(_wm) + "\n")

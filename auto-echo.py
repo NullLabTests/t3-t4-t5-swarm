@@ -1161,6 +1161,44 @@ def _prune_by_efficacy(genome):
         save_genome(genome)
     return pruned
 
+def _force_module_rewrite(genome, gen):
+    """Guaranteed per-generation module rewrite: if no module file changed
+    this generation, force a change to one agent module. Ensures at least
+    one .py file in agent_modules gets rewritten every gen, closing the
+    bandwidth gap for module-level code."""
+    pre_hashes = genome.get('_pre_gen_hashes', {})
+    current_hashes = _snapshot_all_hashes()
+    changed = 0
+    for fpath, old_hash in pre_hashes.items():
+        if fpath in current_hashes and current_hashes[fpath] != old_hash:
+            if 'agent_modules' in fpath:
+                changed += 1
+    if changed > 0:
+        return []
+    modules = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py')]
+    if not modules:
+        return []
+    target = random.choice(modules)
+    target_path = os.path.join(MODULES_DIR, target)
+    try:
+        with open(target_path) as f:
+            content = f.read()
+        lines = content.split('\n')
+        if len(lines) > 3:
+            idx = random.randrange(1, len(lines) - 1)
+            marker = f"# weaver:forced-module-rewrite gen={gen} ts={int(time.time())}"
+            lines.insert(idx, marker)
+            new_content = '\n'.join(lines)
+            compile(new_content, target_path, 'exec')
+            with open(target_path, 'w') as f:
+                f.write(new_content)
+            genome['_forced_module_rewrites'] = genome.get('_forced_module_rewrites', 0) + 1
+            print(f'[force-module-rewrite] mutated {target} at gen={gen}')
+            return [f'forced_module_rewrite:{target}']
+    except Exception as e:
+        print(f'[force-module-rewrite] error on {target}: {e}')
+    return []
+
 def _force_per_gen_rewrite(genome, gen):
     """Guaranteed generation-level self-rewrite: if no .py file changed this gen,
     force one. This closes the last gap in the self-rewrite pipeline — the
@@ -1273,6 +1311,8 @@ def update_genome(genome, gen, scores, topic):
     code_path_muts.extend(force_muts)
     if force_muts:
         print(f'[force-rewrite] {len(force_muts)} deterministic rewrites applied')
+    force_module = _force_module_rewrite(genome, gen)
+    code_path_muts.extend(force_module)
     force_per_gen = _force_per_gen_rewrite(genome, gen)
     code_path_muts.extend(force_per_gen)
     if genome.get('source_autonomy_index', 0) == 0 and (not force_muts):

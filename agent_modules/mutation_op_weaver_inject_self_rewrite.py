@@ -1,4 +1,4 @@
-import os, random, json, time, importlib
+import os, random, json, time, importlib, ast
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, "agent_modules")
 GENOME_FILE = os.path.join(BASE, "genome.json")

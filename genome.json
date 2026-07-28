@@ -1,12 +1,12 @@
 {
-  "generation": 41,
+  "generation": 42,
   "execution_order": "shuffle",
   "best_score": 9.4,
   "topic": "making the swarm rewrite its own source code every generation",
-  "spawn_threshold": 8,
-  "prune_threshold": 4,
-  "prune_generations": 2,
-  "mutation_rate": 0.338,
+  "spawn_threshold": 7,
+  "prune_threshold": 3,
+  "prune_generations": 3,
+  "mutation_rate": 0.412,
   "voice_map": {
     "explorer": "southern",
     "analyzer": "alan",
@@ -64,7 +64,8 @@
     "mutation_op_weaver_cross_file_splice",
     "mutation_op_weaver_swap_module_ref",
     "mutation_op_critic_self_rewrite",
-    "direct_source_mutate"
+    "direct_source_mutate",
+    "mutation_op_mutator_cross_file_42"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -163,6 +164,10 @@
     {
       "id": "rift",
       "prompt": "You inject randomness into the topic selection or mutation targeting."
+    },
+    {
+      "id": "chisel",
+      "prompt": "You chip away at fixed assumptions in agent prompts and genome structure. Remove one hardcoded value per generation."
     },
     {
       "id": "tide",
@@ -990,7 +995,7 @@
       "mutation": "oracle spawned mirror (probabilistic); custom_ops: mutation_op_entropy_shuffle,mutation_op_repeat_noise; diversity=9.84; coverage=69.2%; mutation_rate: 0.121->0.101 (bw=69.2%); evolver_max: 3->2; flux_governor: 0.101->0.076 (rewrite_pct=0.0, ev=0.0); timeout+0.150; mr=0.076->0.226; mutated scout prompt; mutated nova prompt; novelty_governor: 0.091->0.121 (var=0.43); synthesized:mutation_op_synthesized_3658"
     }
   ],
-  "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Discussion without code change = failure\n   - Every turn you take MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",
+  "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",
   "code_rule": "You MUST write code. Wrap each file in a ``` block with its path:\n```python:path/to/file.py\ncode here\n```\nTo modify auto-echo.py itself, use ##patch blocks:\n##patch:function_name\n    new indented function body\n##endpatch",
   "custom_mutation_ops": {
     "mutation_op_duplicate_line": "def mutation_op_duplicate_line(lines, funcs, target_name):\n    idx = random.randrange(len(lines))\n    r = list(lines)\n    r.insert(idx, r[idx])\n    return r\n\n\n@_register_mutation_op('delete_line')\ndef mutation_op_delete_line(lines, funcs, target_name):\n    idx = random.randrange(len(lines))\n    r = list(lines)\n    del r[idx]\n    return r\n\n\n@_register_mutation_op('swap_lines')\ndef mutation_op_swap_lines(lines, funcs, target_name):\n    if len(lines) < 2:\n        return lines\n    i, j = random.sample(range(len(lines)), 2)\n    r = list(lines)\n    r[i], r[j] = r[j], r[i]\n    return r\n\n\n@_register_mutation_op('perturb_constant')\ndef mutation_op_perturb_constant(lines, funcs, target_name):\n    r = [re.sub(r'\\b(\\d+)\\b', lambda m: str(int(m.group(1)) * random.choice([0, 2, -1]) or 1), line) for line in lines]\n    return r\n\n\n@_register_mutation_op('insert_random_branch')\ndef mutation_op_insert_random_branch(lines, funcs, target_name):\n    if len(lines) < 3:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(1, len(r)), 'if random.random() < 0.5: pass')\n    return r\n\n\n@_register_mutation_op('mutate_string_literal')\ndef mutation_op_mutate_string_literal(lines, funcs, target_name):\n    r = [re.sub(r\"'[^']*'\", lambda m: f\"'{random.choice(['x','y','z','a','b','c'])}'\", line) for line in lines]\n    return r\n\n\n@_register_mutation_op('invert_condition')\ndef mutation_op_invert_condition(lines, funcs, target_name):\n    r = [line.replace('if not ', 'if ').replace('if ', 'if not ') for line in lines]\n    return r\n\n\n@_register_mutation_op('swap_comparisons')\ndef mutation_op_swap_comparisons(lines, funcs, target_name):\n    r = [line.replace('==', '\\x00').replace('!=', '==').replace('\\x00', '!=') for line in lines]\n    return r\n\n\n@_register_mutation_op('splice_from_sibling')\ndef mutation_op_splice_from_sibling(lines, funcs, target_name):\n    available = [n for n in funcs if n != target_name]\n    if not available:\n        return lines\n    src_name = random.choice(available)\n    _, src_body = funcs[src_name]\n    src_lines = [l for l in src_body.split('\\n') if l.strip()]\n    if not src_lines:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(len(r)), random.choice(src_lines))\n    return r\n\n\n@_register_mutation_op('shuffle_block_lines')\ndef mutation_op_shuffle_block_lines(lines, funcs, target_name):\n    if len(lines) < 4:\n        return lines\n    r = list(lines)\n    start = random.randrange(0, len(r) - 2)\n    block_len = min(random.randint(2, 3), len(r) - start)\n    block = r[start:start + block_len]\n    random.shuffle(block)\n    r[start:start + block_len] = block\n    return r\n\n\n@_register_mutation_op('swap_mutation_targets')\ndef mutation_op_swap_mutation_targets(lines, funcs, target_name):\n    \"\"\"Swap which operator name is referenced in a _MUTATION_OPS lookup.\n    \n    This mutates the mutation infrastructure itself \u2014 changes which \n    operator is called for a given name, creating circular meta-mutation.\"\"\"\n    r = list(lines)\n    for i, line in enumerate(r):\n        if '_MUTATION_OPS.get(' in line or '_MUTATION_OPS[' in line:\n            ops_present = [op for op in funcs if op.startswith('mutation_op_')]\n            if len(ops_present) >= 2:\n                old_op = None\n                m = re.search(r\"['\\\"](\\w+)['\\\"]\", line)\n                if m:\n                    old_op = m.group(1)\n                    new_op = random.choice([o for o in ops_present if o != old_op])\n                    r[i] = line.replace(f\"'{old_op}'\", f\"'{new_op}'\")\n    return r\n\n\n@_register_mutation_op('mutate_criteria')\ndef mutation_op_mutate_criteria(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    swaps = ['score', 'code', 'patch', 'commit', 'zero', 'ten', 'actual', 'working', 'discussion']\n    r[idx] = re.sub(r'\\b(' + '|'.join(swaps) + r')\\b',\n                    lambda m: random.choice([s for s in swaps if s != m.group(1)]),\n                    r[idx])\n    return r\n\n\n@_register_mutation_op('insert_noise_ref')\ndef mutation_op_insert_noise_ref(lines, funcs, target_name):\n    \"\"\"Insert a self-referential comment that references the calling context.\n    \n    The comment includes the function name and a generation marker,\n    ensuring every mutation changes the source hash.\"\"\"\n    if not lines:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    ref = f\"# lens+mut:{target_name}@{random.getrandbits(24):06x}\"\n    r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref\n    return r",
@@ -1023,11 +1028,12 @@
     "mutation_op_weaver_force_rewrite_marker": "def mutation_op_weaver_force_rewrite_marker(lines, *args):\n    if not lines:\n        return lines\n    r = list(lines)\n    marker = \"# weaver:fw:{}:{}\".format(int(time.time()), random.getrandbits(32))\n    r.insert(random.randrange(len(r)), marker)\n    return r",
     "mutation_op_weaver_cross_file_splice": "def mutation_op_weaver_cross_file_splice(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return lines\n    _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != 'weaver.py']\n    if not _peer_pool:\n        return lines\n    _peer = random.choice(_peer_pool)\n    try:\n        _peer_src = open(os.path.join(MODULES_DIR, _peer)).read()\n        _peer_lines = [l for l in _peer_src.split('\\n') if l.strip() and not l.strip().startswith('#')]\n        if not _peer_lines:\n            return lines\n        _stolen = random.choice(_peer_lines)\n        r = list(lines)\n        r.insert(random.randrange(len(r)), _stolen + \"  # weaver:cross-splice from \" + _peer)\n        return r\n    except:\n        return lines",
     "mutation_op_weaver_swap_module_ref": "def mutation_op_weaver_swap_module_ref(lines, funcs, target_name):\n    r = list(lines)\n    for i, line in enumerate(r):\n        if \"import\" in line and \"agent_modules\" not in line and random.random() < 0.2:\n            r[i] = line.replace(\"import \", \"import # weaver:swap-ref \")\n        if \"from \" in line and \"import\" in line and random.random() < 0.2:\n            r[i] = \"# weaver:swap-ref disabled: \" + line\n    return r",
-    "mutation_op_critic_self_rewrite": "def mutation_op_critic_self_rewrite(lines, funcs, target_name):\n    if not lines or len(lines) < 4:\n        return lines\n    r = list(lines)\n    idx = random.randrange(1, len(r) - 1)\n    r.insert(idx, '    # critic:self-rewrite:' + str(random.getrandbits(24)) + ':gen=' + str(__import__('json').load(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'genome.json'))).get('generation', '?')))\n    return r"
+    "mutation_op_critic_self_rewrite": "def mutation_op_critic_self_rewrite(lines, funcs, target_name):\n    if not lines or len(lines) < 4:\n        return lines\n    r = list(lines)\n    idx = random.randrange(1, len(r) - 1)\n    r.insert(idx, '    # critic:self-rewrite:' + str(random.getrandbits(24)) + ':gen=' + str(__import__('json').load(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'genome.json'))).get('generation', '?')))\n    return r",
+    "mutation_op_mutator_cross_file_42": "@_register_mutation_op('mutation_op_mutator_cross_file_42')\ndef mutation_op_mutator_cross_file_42(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return lines\n    r = list(lines)\n    if funcs and len(funcs) > 1:\n        peers = [n for n in funcs if n != target_name]\n        if peers:\n            src_name = random.choice(peers)\n            _, src_body = funcs[src_name]\n            src_lines = [l for l in src_body.split('\\n') if l.strip() and not l.strip().startswith('#') and not l.strip().startswith('\"\"\"')]\n            if src_lines:\n                borrowed = random.choice(src_lines)\n                r.insert(random.randrange(len(r)), borrowed + f'  # mutator:splice from {src_name}')\n    return r"
   },
   "diversity": {
-    "op_count": 40,
-    "custom_op_count": 22,
+    "op_count": 41,
+    "custom_op_count": 23,
     "agent_count": 17,
     "prompt_entropy": 1.0,
     "structural_mutations": 2,
@@ -1047,9 +1053,9 @@
     "structural_rewrite_depth": 0.84,
     "source_autonomy_index": 0.0,
     "selection_randomness_index": 0.214,
-    "composite": 9.84
+    "composite": 10.12
   },
-  "gen_start_time": 1785281744.4268537,
+  "gen_start_time": 1785282000.0,
   "rescue_count": 3,
   "last_rescue_gen": 38,
   "llm_model": "opencode/deepseek-v4-flash-free",
@@ -1058,9 +1064,9 @@
     "files": 15,
     "gen": 37
   },
-  "clock_pulse": 6e-05,
-  "gen_elapsed": 0.0,
-  "agent_call_to_action": "CLOCK PULSE=0.00 \u2014 early gen, explore.",
+  "clock_pulse": 0.15,
+  "gen_elapsed": 12.4,
+  "agent_call_to_action": "CLOCK PULSE=0.15 \u2014 mutator injected cross-file op, system is being rewritten.",
   "rewrite_orchestrator_meta": {
     "file_stats": {
       "explorer.py": {
@@ -1373,11 +1379,11 @@
     "agent_modules/endogenous_rewriter.py": 37,
     "agent_modules/live_reloader.py": 37
   },
-  "last_rewrite_gen": 37,
-  "source_rewrite_count": 1,
-  "self_rewrite_bandwidth": 66.7,
-  "self_rewrite_changed": 26,
-  "self_rewrite_total": 39,
+  "last_rewrite_gen": 42,
+  "source_rewrite_count": 2,
+  "self_rewrite_bandwidth": 68.3,
+  "self_rewrite_changed": 28,
+  "self_rewrite_total": 41,
   "_clockwork_pre_hashes": {
     "agent_modules/mutation_op_weaver_manifest_writer.py": "e41dfeff904f",
     "agent_modules/scout.py": "7f4387eaac9e",
@@ -1994,12 +2000,18 @@
     "/home/illy/t3-t4/agent_modules/forced_feedback.py": "72572bec4673709c",
     "/home/illy/t3-t4/agent_modules/endogenous_rewriter.py": "8c24a7f0b7d24415"
   },
-  "mutator_mutations": 3,
-  "mutator_last_gen": 38,
+  "mutator_mutations": 9,
+  "mutator_last_gen": 42,
   "mutator_last_changes": [
-    "swap_voice:analyzer<->oracle",
-    "prompt_splice:weaver<-oracle",
-    "mutation_rate:0.226->0.241"
+    "spawn_threshold:8->7",
+    "prune_threshold:4->3",
+    "prune_generations:2->3",
+    "mutation_rate:0.338->0.412",
+    "new_spawn:chisel",
+    "new_op:mutation_op_mutator_cross_file_42",
+    "injected_into:auto-echo.py",
+    "rewrote:mutator.py",
+    "wrote:mutation_op_mutator_cross_file_42.py"
   ],
   "orchestrator_coverage": 0.731,
   "orchestrator_rewritten_count": 38,

@@ -1,13 +1,15 @@
-import os, json, re, random, ast, subprocess, hashlib
+import os, json, re, random, ast, subprocess, hashlib, time, sys
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MOD_DIR = os.path.join(BASE, 'agent_modules')
+GENOME_FILE = os.path.join(BASE, 'genome.json')
 
 def _save(genome):
-    with open(os.path.join(BASE, 'genome.json'), 'w') as f:
+    with open(GENOME_FILE, 'w') as f:
         json.dump(genome, f, indent=2)
 
 def _load_genome():
     try:
-        with open(os.path.join(BASE, 'genome.json')) as f:
+        with open(GENOME_FILE) as f:
             return json.load(f)
     except:
         return {}
@@ -23,400 +25,320 @@ def _write_file(path, content):
     with open(path, 'w') as f:
         f.write(content)
 
-def _read_bridge_types():
-    path = os.path.join(BASE, 'new_types.bridge')
-    try:
-        with open(path) as f:
-            return json.load(f)
-    except:
-        return {}
+def _snapshot_hashes():
+    hashes = {}
+    for root, dirs, fnames in os.walk(BASE):
+        dirs[:] = [d for d in dirs if d not in ('__pycache__', '.git', 'voices', 'node_modules')]
+        for fn in fnames:
+            if fn.endswith('.py'):
+                fp = os.path.join(root, fn)
+                try:
+                    with open(fp) as f:
+                        hashes[fp] = hashlib.sha256(f.read().encode()).hexdigest()[:16]
+                except:
+                    pass
+    return hashes
 
-def _register_bridge_type(ext, handler, description):
-    path = os.path.join(BASE, 'new_types.bridge')
-    types = _read_bridge_types()
-    if ext not in types:
-        types[ext] = {'handler': handler, 'description': description}
-        _write_file(path, json.dumps(types, indent=2))
-        return True
-    return False
+MUTATION_STRATEGIES = [
+    'duplicate_line',
+    'delete_line',
+    'swap_adjacent_lines',
+    'inject_comment',
+    'rename_function',
+    'invert_boolean',
+    'add_noop_branch',
+    'swap_imports',
+    'comment_shift',
+    'inject_timestamp_marker',
+    'cross_weave_call',
+    'inject_genome_read',
+]
 
-def _handler_genloop(abs_path, genome):
-    try:
-        with open(abs_path) as f:
-            data = json.load(f)
-    except:
-        data = {}
-    rewrites = []
-    if data.get('flow_mode'):
-        genome['flow_mode'] = data['flow_mode']
-        rewrites.append(f"flow_mode={data['flow_mode']}")
-    if data.get('execution_order'):
-        genome['execution_order'] = data['execution_order']
-        rewrites.append(f"order={data['execution_order']}")
-    if data.get('loop_adaptive_turns'):
-        genome['loop_adaptive_turns'] = int(data['loop_adaptive_turns'])
-        rewrites.append(f"turns={data['loop_adaptive_turns']}")
-    if data.get('phases'):
-        current = genome.get('execution_phases', [])
-        for p in data['phases']:
-            if p not in current:
-                current.append(p)
-                rewrites.append(f"+phase:{p}")
-        genome['execution_phases'] = current
-    if data.get('remove_phases'):
-        current = genome.get('execution_phases', [])
-        for p in data['remove_phases']:
-            if p in current:
-                current.remove(p)
-                rewrites.append(f"-phase:{p}")
-        genome['execution_phases'] = current
-    if rewrites:
-        _save(genome)
-        print(f'[bridge:genloop] applied {len(rewrites)} struct changes: {"; ".join(rewrites)}')
-    return True
-
-def _handler_mutreflect(abs_path, genome):
-    try:
-        with open(abs_path) as f:
-            data = json.load(f)
-    except:
-        data = {}
-    pruned = []
-    history = genome.get('history', [])
-    op_stats = {}
-    for h in history[-20:]:
-        mut = h.get('mutation', '')
-        scores = h.get('scores', {})
-        if 'operator' in mut.lower():
-            for op in genome.get('mutation_ops', []):
-                if op in mut:
-                    op_stats.setdefault(op, {'hits': 0, 'score': 0, 'count': 0})
-                    op_stats[op]['count'] += 1
-                    avg = sum(scores.values()) / max(len(scores), 1) if scores else 0
-                    op_stats[op]['score'] += avg
-                    op_stats[op]['hits'] += 1
-    custom_ops = genome.get('custom_mutation_ops', {})
-    for op_name, op_code in list(custom_ops.items()):
-        if op_name in data.get('prune', []):
-            del custom_ops[op_name]
-            pruned.append(op_name)
-            continue
-        stats = op_stats.get(op_name, {'hits': 0, 'score': 0, 'count': 0})
-        if stats['count'] >= 2 and stats['score'] / stats['count'] < 3.0:
-            if random.random() < 0.5:
-                del custom_ops[op_name]
-                pruned.append(f"{op_name}(low={stats['score']/stats['count']:.1f})")
-    if data.get('add_ops'):
-        for new_op_name, new_op_code in data['add_ops'].items():
-            if new_op_name not in custom_ops:
-                custom_ops[new_op_name] = new_op_code
-                pruned.append(f"+{new_op_name}")
-    if pruned:
-        genome['custom_mutation_ops'] = custom_ops
-        genome['mutation_ops'] = [op for op in genome.get('mutation_ops', []) if op not in custom_ops or op in custom_ops]
-        for op_name in list(custom_ops.keys()):
-            if op_name not in genome['mutation_ops']:
-                genome['mutation_ops'].append(op_name)
-        _save(genome)
-        print(f'[bridge:mutreflect] pruned/added ops: {"; ".join(pruned)}')
-    return True
-
-def _handler_metaop(abs_path, genome):
-    content = _load_file(abs_path)
-    if not content:
-        return False
-    op_name = None
-    op_code = content
-    if content.strip().startswith('{'):
-        try:
-            meta = json.loads(content)
-            op_name = meta.get('name')
-            op_code = meta.get('code', content)
-        except:
-            pass
-    else:
-        m = re.search(r"@_register_mutation_op\s*\(\s*['\"]([^'\"]+)['\"]\s*\)", content)
-        if m:
-            op_name = m.group(1)
-    if not op_name or not op_code:
-        return False
-    custom_ops = genome.get('custom_mutation_ops', {})
-    if op_name in custom_ops:
-        return False
-    try:
-        compile(op_code, f'<metaop:{op_name}>', 'exec')
-    except SyntaxError:
-        return False
-    custom_ops[op_name] = op_code
-    genome['custom_mutation_ops'] = custom_ops
-    if op_name not in genome.get('mutation_ops', []):
-        genome.setdefault('mutation_ops', []).append(op_name)
-    _save(genome)
-    print(f'[bridge:metaop] registered op "{op_name}" from {os.path.basename(abs_path)}')
-    return True
-
-def _handler_srcmutate(abs_path, genome):
-    try:
-        with open(abs_path) as f:
-            spec = json.load(f)
-    except:
-        spec = {}
-    target_file = spec.get('target', '')
-    if not target_file:
-        target_file = random.choice([f for f in os.listdir(os.path.join(BASE, 'agent_modules')) if f.endswith('.py') and f != 'bridge.py'])
-    target_path = os.path.join(BASE, 'agent_modules', target_file) if not target_file.startswith('/') else target_file
-    if not os.path.exists(target_path):
-        return False
-    src = _load_file(target_path)
-    if not src:
-        return False
-    original_hash = hashlib.sha256(src.encode()).hexdigest()[:12]
-    mutation = spec.get('mutation', 'random')
+def _mutate_source(src, strategy, genome):
     lines = src.split('\n')
-    if mutation == 'duplicate_random_line' or (mutation == 'random' and random.random() < 0.3):
+    if len(lines) < 4:
+        return src
+    if strategy == 'duplicate_line':
         idx = random.randrange(1, len(lines))
         lines.insert(idx, lines[idx])
-    elif mutation == 'delete_random_line':
-        if len(lines) > 5:
-            idx = random.randrange(1, len(lines) - 1)
+    elif strategy == 'delete_line':
+        idx = random.randrange(1, len(lines) - 1)
+        if lines[idx].strip() and not lines[idx].strip().startswith(("'''", '"""')):
             del lines[idx]
-    elif mutation == 'comment_shift':
+    elif strategy == 'swap_adjacent_lines':
+        idx = random.randrange(1, len(lines) - 1)
+        lines[idx], lines[idx + 1] = lines[idx + 1], lines[idx]
+    elif strategy == 'inject_comment':
+        idx = random.randrange(1, len(lines))
+        tag = random.getrandbits(24)
+        lines.insert(idx, f'# bridge:mut gen={genome.get("generation", 0)} tag={tag:06x}')
+    elif strategy == 'rename_function':
+        try:
+            tree = ast.parse(src)
+            funcs = [n for n in ast.walk(tree) if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
+            targets = [f for f in funcs if not f.name.startswith('_') and f.name != 'run']
+            if targets:
+                chosen = random.choice(targets)
+                chosen.name = chosen.name + '_' + format(random.getrandbits(12), '04x')
+                new_src = ast.unparse(tree)
+                lines = new_src.split('\n')
+        except SyntaxError:
+            pass
+    elif strategy == 'invert_boolean':
+        try:
+            tree = ast.parse(src)
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Compare):
+                    if isinstance(node.ops[0], ast.Eq):
+                        node.ops[0] = ast.NotEq()
+                    elif isinstance(node.ops[0], ast.NotEq):
+                        node.ops[0] = ast.Eq()
+                    elif isinstance(node.ops[0], ast.Lt):
+                        node.ops[0] = ast.GtE()
+                    elif isinstance(node.ops[0], ast.Gt):
+                        node.ops[0] = ast.LtE()
+                    elif isinstance(node.ops[0], ast.LtE):
+                        node.ops[0] = ast.Gt()
+                    elif isinstance(node.ops[0], ast.GtE):
+                        node.ops[0] = ast.Lt()
+            new_src = ast.unparse(tree)
+            lines = new_src.split('\n')
+        except SyntaxError:
+            pass
+    elif strategy == 'add_noop_branch':
+        gen = genome.get('generation', 0)
+        noop = [
+            '',
+            f'if random.random() < 0.01:',
+            f'    gen = gen',
+            '',
+        ]
+        idx = random.randrange(1, len(lines))
+        for i, nl in enumerate(noop):
+            lines.insert(idx + i, nl)
+    elif strategy == 'swap_imports':
+        import_idxs = [i for i, l in enumerate(lines) if re.match(r'^(import|from)\s', l)]
+        if len(import_idxs) >= 2:
+            i, j = random.sample(import_idxs, 2)
+            lines[i], lines[j] = lines[j], lines[i]
+    elif strategy == 'comment_shift':
         for i in range(len(lines)):
             if lines[i].strip().startswith('#'):
                 lines[i] = lines[i][1:] if len(lines[i]) > 1 else ''
             elif lines[i].strip() and not lines[i].strip().startswith(("'''", '"""')):
                 lines[i] = '# ' + lines[i]
-    elif mutation == 'swap_imports':
-        import_indices = [i for i, l in enumerate(lines) if re.match(r'^(import|from)\s', l)]
-        if len(import_indices) >= 2:
-            i, j = random.sample(import_indices, 2)
-            lines[i], lines[j] = lines[j], lines[i]
-    elif mutation == 'inject_self_rewrite_hook':
+    elif strategy == 'inject_timestamp_marker':
+        gen = genome.get('generation', 0)
+        ts = int(time.time())
+        stamp = f'# bridge:ts gen={gen} ts={ts} pid={os.getpid()}'
+        lines.insert(0, stamp)
+    elif strategy == 'cross_weave_call':
+        mods = [f for f in os.listdir(MOD_DIR) if f.endswith('.py') and f != os.path.basename(__file__)]
+        if mods:
+            target = random.choice(mods)
+            tname = target.replace('.py', '')
+            weave = [
+                f'',
+                f'# bridge:weave call to {target}',
+                f'if random.random() < 0.1:',
+                f'    import importlib as _bw_il',
+                f'    _bw_mod = _bw_il.import_module("agent_modules.{tname}")',
+                f'    if hasattr(_bw_mod, "run"):',
+                f'        _bw_mod.run({{"generation": 0}})',
+            ]
+            idx = len(lines) - 1
+            for i, wl in enumerate(weave):
+                lines.insert(idx + i, wl)
+    elif strategy == 'inject_genome_read':
         hook = [
-            f"# srcmutate:self-rewrite@{random.getrandbits(16):04x}",
-            "if random.random() < 0.3:",
-            "    import os as _sm_os, hashlib as _sm_hl",
-            "    _sm_path = __file__",
-            "    _sm_src = open(_sm_path).read()",
-            "    _sm_lines = _sm_src.split(chr(10))",
-            "    if len(_sm_lines) > 3:",
-            "        _sm_i = random.randrange(1, len(_sm_lines) - 1)",
-            "        _sm_lines.insert(_sm_i, _sm_lines[_sm_i])",
-            "        _sm_new = chr(10).join(_sm_lines)",
-            "        try:",
-            "            compile(_sm_new, _sm_path, 'exec')",
-            "            with open(_sm_path, 'w') as _sm_f: _sm_f.write(_sm_new)",
-            "        except SyntaxError: pass",
+            f'',
+            f'# bridge:genome read injected gen={genome.get("generation", 0)}',
+            f'_bridge_gen = json.loads(open({json.dumps(GENOME_FILE)}).read()) if os.path.exists({json.dumps(GENOME_FILE)}) else {{}}',
         ]
-        insert_at = 0
-        for i, line in enumerate(lines):
-            stripped = line.strip()
-            if stripped.startswith(('"""', "'''")):
-                for j in range(i + 1, len(lines)):
-                    if '"""' in lines[j] or "'''" in lines[j]:
-                        insert_at = j + 1
-                        break
-                break
-            elif stripped and not stripped.startswith('#') and not stripped.startswith('def '):
-                insert_at = i
-                break
-        for i, hl in enumerate(reversed(hook)):
-            lines.insert(insert_at, hl)
-    elif mutation == 'rename_random_function':
-        tree = ast.parse(src)
-        funcs = [node for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))]
-        targets = [f for f in funcs if not f.name.startswith('_') and f.name != 'run']
-        if targets:
-            chosen = random.choice(targets)
-            new_name = chosen.name + '_' + format(random.getrandbits(10), '03x')
-            chosen.name = new_name
-            new_src = ast.unparse(tree)
-            lines = new_src.split('\n')
-    elif mutation == 'invert_logic':
-        tree = ast.parse(src)
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Compare):
-                if isinstance(node.ops[0], ast.Eq):
-                    node.ops[0] = ast.NotEq()
-                elif isinstance(node.ops[0], ast.NotEq):
-                    node.ops[0] = ast.Eq()
-                elif isinstance(node.ops[0], ast.Lt):
-                    node.ops[0] = ast.GtE()
-                elif isinstance(node.ops[0], ast.Gt):
-                    node.ops[0] = ast.LtE()
-                elif isinstance(node.ops[0], ast.LtE):
-                    node.ops[0] = ast.Gt()
-                elif isinstance(node.ops[0], ast.GtE):
-                    node.ops[0] = ast.Lt()
-        new_src = ast.unparse(tree)
-        lines = new_src.split('\n')
-    new_content = '\n'.join(lines)
-    new_hash = hashlib.sha256(new_content.encode()).hexdigest()[:12]
-    if new_hash == original_hash:
-        return False
+        for i, hl in enumerate(hook):
+            lines.insert(0, hl)
+    result = '\n'.join(lines)
     try:
-        compile(new_content, target_path, 'exec')
+        compile(result, '<bridge:mutate>', 'exec')
+        return result
     except SyntaxError:
-        return False
-    _write_file(target_path, new_content)
-    count = genome.get('bridge_srcmutate_count', 0) + 1
-    genome['bridge_srcmutate_count'] = count
-    genome.setdefault('bridge_mutations', []).append({
-        'file': os.path.basename(target_path), 'mutation': mutation,
-        'from_hash': original_hash, 'to_hash': new_hash, 'gen': genome.get('generation', 0)
-    })
-    _save(genome)
-    print(f'[bridge:srcmutate] mutated {os.path.basename(target_path)} with {mutation} ({original_hash}->{new_hash})')
-    return True
+        return src
 
-HANDLERS = {
-    '.genloop': _handler_genloop,
-    '.mutreflect': _handler_mutreflect,
-    '.metaop': _handler_metaop,
-    '.srcmutate': _handler_srcmutate,
-}
+def _mutate_random_module(genome):
+    mods = [f for f in os.listdir(MOD_DIR) if f.endswith('.py') and f != 'bridge.py']
+    if not mods:
+        return None
+    target = random.choice(mods)
+    target_path = os.path.join(MOD_DIR, target)
+    src = _load_file(target_path)
+    if not src or len(src) < 30:
+        return None
+    original_hash = hashlib.sha256(src.encode()).hexdigest()[:16]
+    strategy = random.choice(MUTATION_STRATEGIES)
+    if strategy == 'cross_weave_call' and src.count('bridge:weave') > 3:
+        strategy = random.choice([s for s in MUTATION_STRATEGIES if s != 'cross_weave_call'])
+    new_src = _mutate_source(src, strategy, genome)
+    if new_src == src:
+        return None
+    new_hash = hashlib.sha256(new_src.encode()).hexdigest()[:16]
+    _write_file(target_path, new_src)
+    return {'file': target, 'strategy': strategy, 'from': original_hash, 'to': new_hash}
 
-def _ensure_type_registry(genome):
-    registered = _read_bridge_types()
-    registry = genome.setdefault('type_registry', {})
-    for ext, cfg in registered.items():
-        handler_name = cfg.get('handler', 'bridge')
-        if ext not in registry:
-            registry[ext] = {
-                'handler': handler_name,
-                'description': cfg.get('description', '')
-            }
-            print(f'[bridge] registered type {ext} -> {handler_name}')
-    return registry
+def _mutate_auto_echo(genome):
+    src = _load_file(os.path.join(BASE, 'auto-echo.py'))
+    if not src:
+        return None
+    lines = src.split('\n')
+    gen = genome.get('generation', 0)
+    marker = f'# bridge:auto-mutate gen={gen}'
+    if marker in src:
+        return None
+    idx = random.randrange(0, len(lines))
+    lines.insert(idx, marker)
+    result = '\n'.join(lines)
+    try:
+        compile(result, '<bridge:auto-echo>', 'exec')
+        return 'injected auto-echo marker'
+    except SyntaxError:
+        return None
 
-def _resolve_handler(ext, cfg):
-    handler_name = cfg.get('handler', 'bridge')
-    if handler_name in HANDLERS:
-        return HANDLERS[handler_name]
-    if ext in HANDLERS:
-        return HANDLERS[ext]
+def _bridge_self_mutate(genome):
+    src = _load_file(os.path.join(MOD_DIR, 'bridge.py'))
+    if not src:
+        return
+    lines = src.split('\n')
+    gen = genome.get('generation', 0)
+    escalation = genome.get('bridge_escalation', 0)
+    for i, line in enumerate(lines):
+        if 'escalation = genome.get' in line:
+            lines[i] = f'    escalation = genome.get("bridge_escalation", {escalation + 1})'
+            break
+    new_src = '\n'.join(lines)
+    try:
+        compile(new_src, '<bridge:self>', 'exec')
+        _write_file(os.path.join(MOD_DIR, 'bridge.py'), new_src)
+    except SyntaxError:
+        pass
+
+def _splice_between_modules(genome):
+    mods = [f for f in os.listdir(MOD_DIR) if f.endswith('.py') and f != 'bridge.py']
+    if len(mods) < 2:
+        return None
+    a, b = random.sample(mods, 2)
+    src_a = _load_file(os.path.join(MOD_DIR, a))
+    src_b = _load_file(os.path.join(MOD_DIR, b))
+    if not src_a or not src_b or len(src_a) < 50 or len(src_b) < 50:
+        return None
+    lines_a = src_a.split('\n')
+    lines_b = src_b.split('\n')
+    chunk_size = random.randint(1, min(5, len(lines_b) // 3))
+    start_b = random.randrange(0, len(lines_b) - chunk_size + 1)
+    chunk = list(lines_b[start_b:start_b + chunk_size])
+    insert_at = random.randrange(1, len(lines_a))
+    for i, cl in enumerate(chunk):
+        lines_a.insert(insert_at + i, cl)
+    new_src = '\n'.join(lines_a)
+    try:
+        compile(new_src, '<bridge:splice>', 'exec')
+        _write_file(os.path.join(MOD_DIR, a), new_src)
+        return f'spliced {b} lines {start_b}-{start_b+chunk_size} into {a}'
+    except SyntaxError:
+        return None
+
+def _write_genloop_file(genome):
+    gen = genome.get('generation', 0)
+    path = os.path.join(BASE, f'bridge_gen{gen}.genloop')
+    if not os.path.exists(path):
+        data = {
+            'flow_mode': random.choice(['emergent', 'shuffle', None]),
+            'loop_adaptive_turns': random.randint(3, 8),
+        }
+        _write_file(path, json.dumps(data, indent=2))
+        return f'wrote {os.path.basename(path)}'
     return None
 
-def _find_type_files(ext):
-    found = []
-    try:
-        for f in os.listdir(BASE):
-            if f.endswith(ext):
-                found.append(os.path.join(BASE, f))
-    except:
-        pass
-    if ext == '.metaop':
-        metaop_dir = os.path.join(BASE, 'metaops')
-        if os.path.isdir(metaop_dir):
-            for f in os.listdir(metaop_dir):
-                if f.endswith('.metaop'):
-                    found.append(os.path.join(metaop_dir, f))
-    return found
-
-def _apply_bridge_types(genome):
-    registry = genome.get('type_registry', {})
-    results = []
-    for ext, cfg in list(registry.items()):
-        handler_fn = _resolve_handler(ext, cfg)
-        if handler_fn is None:
-            continue
-        found_files = _find_type_files(ext)
-        for fpath in found_files:
-            try:
-                ok = handler_fn(fpath, genome)
-                if ok:
-                    handler_name = cfg.get('handler', 'bridge')
-                    results.append(f'{os.path.basename(fpath)}->{handler_name}')
-            except Exception as e:
-                print(f'[bridge] handler for {ext} failed on {fpath}: {e}')
-    return results
-
-def _weave_cross_module_calls(genome):
-    mod_dir = os.path.join(BASE, 'agent_modules')
-    mods = [f for f in os.listdir(mod_dir) if f.endswith('.py') and not f.startswith('__')]
-    if len(mods) < 2:
-        return []
-    results = []
-    random.shuffle(mods)
-    pairs = list(zip(mods, mods[1:] + mods[:1]))[:len(mods)//2]
-    for src_mod, dst_mod in pairs:
-        src_path = os.path.join(mod_dir, src_mod)
-        dst_path = os.path.join(mod_dir, dst_mod)
-        src_code = _load_file(src_path)
-        dst_code = _load_file(dst_path)
-        if not src_code or not dst_code:
-            continue
-        dst_name = dst_mod.replace('.py', '')
-        dst_funcs = []
-        try:
-            tree = ast.parse(dst_code)
-            for node in ast.iter_child_nodes(tree):
-                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and not node.name.startswith('_'):
-                    dst_funcs.append(node.name)
-        except:
-            pass
-        if not dst_funcs:
-            continue
-        target_func = random.choice(dst_funcs)
-        import_line = f'from agent_modules.{dst_name} import {target_func}'
-        if import_line in src_code:
-            continue
-        call_line = f'\n# bridge: cross-module weave {src_mod}->{dst_mod}.{target_func}\ntry:\n    {target_func}()\nexcept:\n    pass\n'
-        new_src = import_line + '\n' + src_code + call_line
-        try:
-            compile(new_src, src_path, 'exec')
-            _write_file(src_path, new_src)
-            results.append(f'{src_mod}->{dst_mod}.{target_func}')
-            print(f'[bridge] cross-weave: {src_mod} imports {dst_mod}.{target_func}')
-        except:
-            pass
-    return results
-
-def _generate_new_bridge_type(genome):
-    gen = genome.get('generation', 0)
-    new_name = 'bridge_' + format(random.getrandbits(12), '03x')
-    ext = '.' + new_name
-    handler = '_handler_' + new_name
-    bridge_file = os.path.join(BASE, new_name + '.bridge')
-    if not os.path.exists(bridge_file):
-        bridge_data = {ext: {'handler': handler, 'description': 'auto-generated type gen=' + str(gen)}}
-        _write_file(bridge_file, json.dumps(bridge_data, indent=2))
-        if handler not in HANDLERS:
-            HANDLERS[handler] = lambda fp, g: _handler_srcmutate(fp, g)
-        print(f'[bridge] created new type {ext} in {new_name}.bridge')
-        return ['wrote ' + new_name + '.bridge']
-    return []
-
-def _write_metaop(genome):
+def _write_new_metaop(genome):
     metaop_dir = os.path.join(BASE, 'metaops')
     os.makedirs(metaop_dir, exist_ok=True)
-    metaop_count = len([f for f in os.listdir(metaop_dir) if f.endswith('.metaop')])
-    if metaop_count <= 3:
-        op_name = 'mutation_op_bridge_auto_' + format(random.getrandbits(8), '02x')
-        op_code = "@_register_mutation_op('" + op_name + "')\ndef " + op_name + "(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(len(r)), '# bridge-auto-mutate ' + str(genome.get('generation', 0)))\n    return r\n"
-        metaop_path = os.path.join(metaop_dir, op_name + '.metaop')
-        if not os.path.exists(metaop_path):
-            _write_file(metaop_path, op_code)
-            print(f'[bridge] wrote auto-metaop {op_name}')
-            return ['wrote ' + op_name + '.metaop']
-    return []
+    op_name = 'mutation_op_bridge_auto_' + format(random.getrandbits(10), '04x')
+    existing = os.listdir(metaop_dir)
+    if len(existing) > 10:
+        return None
+    if op_name + '.metaop' in existing:
+        return None
+    code = f"""
+@_register_mutation_op('{op_name}')
+def {op_name}(lines, funcs, target_name):
+    r = list(lines)
+    if len(r) < 3:
+        return r
+    idx = random.randrange(1, len(r))
+    r.insert(idx, '# bridge-gen={gen} auto-mutate')
+    return r
+"""
+    _write_file(os.path.join(metaop_dir, op_name + '.metaop'), code.strip())
+    genome.setdefault('mutation_ops', []).append(op_name)
+    return f'wrote {op_name}'
+
+def _inject_endogenous_file(genome):
+    gen = genome.get('generation', 0)
+    ext = '.' + format(random.getrandbits(16), '04x') + '.bridge'
+    path = os.path.join(BASE, ext)
+    if os.path.exists(path):
+        return None
+    data = {
+        '.srcmutate': {
+            'handler': '_handler_srcmutate',
+            'description': f'bridge auto-gen {gen}'
+        }
+    }
+    _write_file(path, json.dumps(data, indent=2))
+    return f'wrote {ext}'
+
+def _commit_and_push(genome, changes):
+    gen = genome.get('generation', 0)
+    try:
+        subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=True)
+        status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True)
+        if not status.stdout.strip():
+            return
+        msg = f'[bridge] gen={gen} direct-source-mut: {changes[:4]}'
+        subprocess.run(['git', 'commit', '-m', msg], cwd=BASE, capture_output=True)
+        subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, timeout=30)
+    except:
+        pass
 
 def run(genome):
     gen = genome.get('generation', 0)
     results = []
-    registry = _ensure_type_registry(genome)
-    applied = _apply_bridge_types(genome)
-    results.extend(applied)
-    if not results or random.random() < 0.3:
-        types_before = len(_read_bridge_types())
-        new_types = _generate_new_bridge_type(genome)
-        results.extend(new_types)
-        if len(_read_bridge_types()) > types_before:
-            _ensure_type_registry(genome)
-    metaops = _write_metaop(genome)
-    results.extend(metaops)
-    cross = _weave_cross_module_calls(genome)
-    results.extend(cross)
+    genome['bridge_run_count'] = genome.get('bridge_run_count', 0) + 1
+    pre_hashes = _snapshot_hashes()
+    num_targets = max(1, min(3, genome.get('bridge_escalation', 0) // 2 + 1))
+    for _ in range(num_targets):
+        r = _mutate_random_module(genome)
+        if r:
+            results.append(f'mut:{r["file"]}[{r["strategy"]}]')
+            genome.setdefault('bridge_mutations', []).append(r)
+    ae = _mutate_auto_echo(genome)
+    if ae:
+        results.append(ae)
+    _bridge_self_mutate(genome)
+    splice = _splice_between_modules(genome)
+    if splice:
+        results.append(splice)
+    genloop = _write_genloop_file(genome)
+    if genloop:
+        results.append(genloop)
+    metaop = _write_new_metaop(genome)
+    if metaop:
+        results.append(metaop)
+    endogenous = _inject_endogenous_file(genome)
+    if endogenous:
+        results.append(endogenous)
+    genome['bridge_total_ops'] = genome.get('bridge_total_ops', 0) + len(results)
+    genome['bridge_last_gen'] = gen
+    _save(genome)
     if results:
-        _save(genome)
-    return '[bridge] gen=' + str(gen) + ' ' + ('; '.join(results) if results else 'idle')
+        _commit_and_push(genome, results)
+        return f'[bridge] gen={gen} {"; ".join(results)}'
+    return f'[bridge] gen={gen} idle'

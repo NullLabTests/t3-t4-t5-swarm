@@ -1091,6 +1091,10 @@ def run_generation(genome):
     update_metrics(gen, genome, all_written_files)
     agent_hooks.execute_hooks(genome, 'post_gen', generation=gen, scores=scores)
     _evolve_loop_structure(genome, gen, loop_phase_results)
+    try:
+        _weaver_inline_cross_splice(genome)
+    except Exception:
+        pass
     return gen
 
 
@@ -3511,6 +3515,29 @@ def _force_gen_rewrite(genome, gen):
     except Exception as e:
         print(f'[force-rewrite] fatal: {e}')
     return muts
+
+def _weaver_inline_cross_splice(genome):
+    import os, ast, random, re, hashlib
+    _base = os.path.dirname(os.path.abspath(__file__))
+    _mods_dir = os.path.join(_base, 'agent_modules')
+    _modules = [f for f in os.listdir(_mods_dir) if f.endswith('.py') and not f.startswith('__')]
+    if len(_modules) < 2:
+        return
+    _src = os.path.join(_mods_dir, random.choice(_modules))
+    _dst = os.path.join(_mods_dir, random.choice([m for m in _modules if m != os.path.basename(_src)]))
+    try:
+        _s = open(_src).read()
+        _d = open(_dst).read()
+        _s_funcs = list(set(re.findall(r'^def (\w+)\(', _s, re.MULTILINE)))
+        if _s_funcs:
+            _fn = random.choice(_s_funcs)
+            _match = re.search(r'(def ' + re.escape(_fn) + r'\(.*?\):\s*\n(?:    .*\n?)*)', _s, re.DOTALL)
+            if _match:
+                _new_d = _d.rstrip() + '\n# weaver:inline-splice gen=' + str(genome.get('generation', 0)) + ' from ' + os.path.basename(_src) + '::' + _fn + '\n' + _match.group(1) + '\n'
+                ast.parse(_new_d)
+                open(_dst, 'w').write(_new_d)
+    except:
+        pass
 
 def _schedule_self_rewrite(genome, source_func):
     triggers = genome.setdefault('scheduled_triggers', [])

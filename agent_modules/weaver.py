@@ -1,18 +1,52 @@
-import os, random, json, time, ast, re, hashlib
+import os, random, json, time, ast, re, hashlib, shutil
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
+AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
 MANIFEST_PATH = os.path.join(BASE, 'rewrite_manifest.jsonl')
-WEAVER_OPS = {'mutation_op_weaver_inject_self_rewrite': 'def mutation_op_weaver_inject_self_rewrite(lines, *args):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    guard = "if random.random() < 0.15 or genome.get(\'generation\', 0) % 7 == 0:"\n    r.insert(min(2, len(r)), guard)\n    r.insert(min(3, len(r)), "    genome[\'source_autonomy_index\'] = min(1.0, genome.get(\'source_autonomy_index\', 0.0) + 0.05)")\n    r.insert(min(4, len(r)), "    _schedule_self_rewrite(genome, \'injected\')")\n    r.insert(min(5, len(r)), "    # weaver:self-rewrite injected")\n    return r', 'mutation_op_weaver_autonomy_ratchet': 'def mutation_op_weaver_autonomy_ratchet(lines, *args):\n    if not lines or len(lines) < 2:\n        return lines\n    r = list(lines)\n    r.append("# weaver:autonomy-ratchet")\n    r.append("    genome[\'source_autonomy_index\'] = round(min(1.0, genome.get(\'source_autonomy_index\', 0.0) + 0.1), 3)")\n    r.append("    genome.setdefault(\'_weaver_autonomy_log\', []).append({\'gen\': genome.get(\'generation\', 0), \'ts\': time.time()})")\n    return r', 'mutation_op_weaver_cross_weave': 'def mutation_op_weaver_cross_weave(lines, *args):\n    if not lines or len(lines) < 4:\n        return lines\n    r = list(lines)\n    r.append("# weaver:cross-weave")\n    r.append("    _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith(\'.py\') and f != \'weaver.py\']")\n    r.append("    if _peer_pool:")\n    r.append("        _peer = random.choice(_peer_pool)")\n    r.append("        try:")\n    r.append("            exec(open(os.path.join(MODULES_DIR, _peer)).read())")\n    r.append("        except:")\n    r.append("            pass")\n    return r', 'mutation_op_weaver_self_modify': 'def mutation_op_weaver_self_modify(lines, *args):\n    if not lines:\n        return lines\n    r = list(lines)\n    r.append("# weaver:self-modify")\n    r.append("try:")\n    r.append("    _wpath = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), \'agent_modules\', \'weaver.py\')")\n    r.append("    _wsrc = open(_wpath).read()")\n    r.append("    if \'# weaver:self-rewrite\' not in _wsrc:")\n    r.append("        open(_wpath, \'a\').write(\'\\\\n# weaver:self-rewrite:\' + str(random.getrandbits(16)) + \'\\\\n\')")\n    r.append("except:")\n    r.append("    pass")\n    return r', 'mutation_op_weaver_ast_mutate': 'def mutation_op_weaver_ast_mutate(lines, *args):\n    if not lines or len(lines) < 3:\n        return lines\n    src = \'\\n\'.join(lines)\n    try:\n        tree = ast.parse(src)\n        class WeaverMut(ast.NodeTransformer):\n            def visit_FunctionDef(self, node):\n                if node.body and random.random() < 0.3:\n                    node.body.insert(0, ast.Expr(value=ast.Constant(value=f"# weaver:ast:{node.name}")))\n                self.generic_visit(node)\n                return node\n            def visit_If(self, node):\n                if random.random() < 0.15:\n                    node.test = ast.UnaryOp(op=ast.Not(), operand=node.test)\n                self.generic_visit(node)\n                return node\n        tree = WeaverMut().visit(tree)\n        ast.fix_missing_locations(tree)\n        new_src = ast.unparse(tree)\n        return new_src.split(\'\\n\')\n    except:\n        return lines', 'mutation_op_weaver_force_rewrite_marker': 'def mutation_op_weaver_force_rewrite_marker(lines, *args):\n    if not lines:\n        return lines\n    r = list(lines)\n    marker = "# weaver:fw:{}:{}".format(int(time.time()), random.getrandbits(32))\n    r.insert(random.randrange(len(r)), marker)\n    return r', 'mutation_op_weaver_cross_file_splice': 'def mutation_op_weaver_cross_file_splice(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return lines\n    _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith(\'.py\') and f != \'weaver.py\']\n    if not _peer_pool:\n        return lines\n    _peer = random.choice(_peer_pool)\n    try:\n        _peer_src = open(os.path.join(MODULES_DIR, _peer)).read()\n        _peer_lines = [l for l in _peer_src.split(\'\\n\') if l.strip() and not l.strip().startswith(\'#\')]\n        if not _peer_lines:\n            return lines\n        _stolen = random.choice(_peer_lines)\n        r = list(lines)\n        r.insert(random.randrange(len(r)), _stolen + "  # weaver:cross-splice from " + _peer)\n        return r\n    except:\n        return lines', 'mutation_op_weaver_swap_module_ref': 'def mutation_op_weaver_swap_module_ref(lines, funcs, target_name):\n    r = list(lines)\n    for i, line in enumerate(r):\n        if "import" in line and "agent_modules" not in line and random.random() < 0.2:\n            r[i] = line.replace("import ", "import # weaver:swap-ref ")\n        if "from " in line and "import" in line and random.random() < 0.2:\n            r[i] = "# weaver:swap-ref disabled: " + line\n    return r'}
+
+WEAVER_OPS = {}
 
 def _save_genome(g):
     with open(GENOME_FILE, 'w') as f:
         json.dump(g, f, indent=2)
 
+def _read(path):
+    try:
+        with open(path) as f:
+            return f.read()
+    except:
+        return ''
+
+def _write(path, content):
+    with open(path, 'w') as f:
+        f.write(content)
+
+def _validate(src):
+    try:
+        ast.parse(src)
+        return True
+    except SyntaxError:
+        return False
+
+def _all_py_files():
+    files = []
+    for root, dirs, fnames in os.walk(BASE):
+        dirs[:] = [d for d in dirs if d not in ('__pycache__', '.git', 'voices', '.opencode')]
+        for fname in fnames:
+            if fname.endswith('.py') and not fname.endswith('.bak'):
+                files.append(os.path.join(root, fname))
+    return files
+
+def _all_modules():
+    out = []
+    if os.path.isdir(MODULES_DIR):
+        for fname in sorted(os.listdir(MODULES_DIR)):
+            if fname.endswith('.py') and not fname.startswith('__') and not fname.endswith('.bak'):
+                out.append(os.path.join(MODULES_DIR, fname))
+    return out
+
 def _inject_operator(genome, op_name, op_code):
-    """# weaver:self-ast:gen=38:1785250378"""
-    '# weaver:self-ast:gen=38:1785250377'
-    '# weaver:self-ast:gen=40:1785248904'
     custom_ops = genome.setdefault('custom_mutation_ops', {})
     if op_name in custom_ops:
         return False
@@ -21,43 +55,185 @@ def _inject_operator(genome, op_name, op_code):
     if op_name not in ops:
         ops.append(op_name)
     op_file = os.path.join(MODULES_DIR, f'{op_name}.py')
-    with open(op_file, 'w') as f:
-        f.write(f'import os, random, json, time, importlib, ast\nBASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\nMODULES_DIR = os.path.join(BASE, "agent_modules")\nGENOME_FILE = os.path.join(BASE, "genome.json")\n\n{op_code}\n')
+    _write(op_file, f'import os, random, json, time, importlib, ast\nBASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\nMODULES_DIR = os.path.join(BASE, "agent_modules")\nGENOME_FILE = os.path.join(BASE, "genome.json")\n\n{op_code}\n')
     return True
 
-def _write_manifest_entry(genome, files_changed, description):
+def _write_manifest(genome, files, desc):
     os.makedirs(os.path.dirname(MANIFEST_PATH), exist_ok=True)
-    entry = {'gen': genome.get('generation', 0), 'module': 'weaver', 'files': files_changed, 'results': [description], 'ts': time.time()}
+    entry = {'gen': genome.get('generation', 0), 'module': 'weaver', 'files': files, 'results': [desc], 'ts': time.time()}
     with open(MANIFEST_PATH, 'a') as f:
         f.write(json.dumps(entry) + '\n')
 
+def _cross_file_splice_all_modules(genome):
+    gen = genome.get('generation', 0)
+    changes = []
+    modules = _all_modules()
+    if len(modules) < 2:
+        return changes
+    random.shuffle(modules)
+    pairs = [(modules[i], modules[i+1]) for i in range(0, len(modules)-1, 2)]
+    for src_path, dst_path in pairs:
+        try:
+            src_src = _read(src_path)
+            dst_src = _read(dst_path)
+            if not src_src or not dst_src:
+                continue
+            src_funcs = [m.group(1) for m in re.finditer(r'^def (\w+)\s*\(', src_src, re.MULTILINE)
+                        if not m.group(1).startswith('_')]
+            dst_funcs = [m.group(1) for m in re.finditer(r'^def (\w+)\s*\(', dst_src, re.MULTILINE)]
+            if not src_funcs or not dst_funcs:
+                continue
+            src_func = random.choice(src_funcs)
+            dst_func = random.choice(dst_funcs)
+            src_match = re.search(r'(def ' + re.escape(src_func) + r'\s*\(.*?\):\s*\n(?:    .*\n?)*)', src_src, re.DOTALL)
+            if not src_match:
+                continue
+            injected_func = src_match.group(1)
+            marker = f'\n# weaver:cross-splice gen={gen} from {os.path.basename(src_path)}::{src_func}\n'
+            new_dst = dst_src.rstrip() + marker + injected_func + '\n'
+            if _validate(new_dst):
+                _write(dst_path, new_dst)
+                changes.append(f'splice:{os.path.basename(src_path)}::{src_func}->{os.path.basename(dst_path)}::{dst_func}')
+        except:
+            continue
+    return changes
+
+def _force_rewrite_every_module(genome):
+    gen = genome.get('generation', 0)
+    changes = []
+    for mod_path in _all_modules():
+        if os.path.basename(mod_path) == 'weaver.py':
+            continue
+        src = _read(mod_path)
+        if not src:
+            continue
+        marker = f'# weaver:forced-rewrite gen={gen} ts={int(time.time())}'
+        if marker in src:
+            continue
+        lines = src.split('\n')
+        insert_at = 1
+        for i, line in enumerate(lines):
+            if line.startswith('import ') or line.startswith('from '):
+                insert_at = i + 1
+        lines.insert(insert_at, marker)
+        lines.insert(insert_at + 1, f'# weaver:nonce={random.getrandbits(32):08x}')
+        new_src = '\n'.join(lines)
+        if _validate(new_src):
+            _write(mod_path, new_src)
+            changes.append(os.path.basename(mod_path))
+    return changes
+
+def _inject_hook_into_auto_echo(genome):
+    gen = genome.get('generation', 0)
+    src = _read(AUTO_ECHO)
+    if not src:
+        return False
+    marker = f'# weaver:auto-echo-hook gen={gen}'
+    if marker in src:
+        return False
+    hook_code = f'''
+
+{marker}
+# weaver:injected cross-file source mutation hook
+def _weaver_cross_file_mutate(genome):
+    import os, ast, random, json, time, hashlib
+    _base = os.path.dirname(os.path.abspath(__file__))
+    _mods_dir = os.path.join(_base, "agent_modules")
+    _modules = [f for f in os.listdir(_mods_dir) if f.endswith(".py") and not f.startswith("__")]
+    if len(_modules) < 2:
+        return
+    _src = os.path.join(_mods_dir, random.choice(_modules))
+    _dst = os.path.join(_mods_dir, random.choice([m for m in _modules if m != os.path.basename(_src)]))
+    try:
+        _s = open(_src).read()
+        _d = open(_dst).read()
+        _s_funcs = list(set(re.findall(r"^def (\\w+)\\\\(", _s, re.MULTILINE)))
+        _d_funcs = list(set(re.findall(r"^def (\\w+)\\\\(", _d, re.MULTILINE)))
+        if _s_funcs and _d_funcs:
+            _fn = random.choice(_s_funcs)
+            _match = re.search(r"(def " + re.escape(_fn) + r"\\\\(.*?\\\\):\\\\s*\\\\n(?:    .*\\\\n?)*)", _s, re.DOTALL)
+            if _match:
+                _new_d = _d.rstrip() + f"\\\\n# weaver:ae-hook-splice gen={{genome.get(\\\\"generation\\\\", 0)}} from {{os.path.basename(_src)}}::{_fn}\\\\n" + _match.group(1) + "\\\\n"
+                ast.parse(_new_d)
+                open(_dst, "w").write(_new_d)
+                genome.setdefault("_weaver_hook_splices", 0)
+                genome["_weaver_hook_splices"] += 1
+    except:
+        pass
+
+'''
+    new_src = src + hook_code
+    if _validate(new_src):
+        _write(AUTO_ECHO, new_src)
+        return True
+    return False
+
+def _swap_function_between_files(genome):
+    gen = genome.get('generation', 0)
+    changes = []
+    files = [f for f in _all_py_files()
+             if not f.endswith('weaver.py') and 'genome.json' not in f and '__pycache__' not in f]
+    if len(files) < 2:
+        return changes
+    src_f = random.choice(files)
+    dst_f = random.choice([f for f in files if f != src_f])
+    src_src = _read(src_f)
+    dst_src = _read(dst_f)
+    if not src_src or not dst_src:
+        return changes
+    src_funcs = [m.group(1) for m in re.finditer(r'^def (\w+)\(', src_src, re.MULTILINE)
+                 if m.group(1) not in ('run', 'load_genome', 'save_genome', 'main', 'sigint_handler')]
+    dst_funcs = [m.group(1) for m in re.finditer(r'^def (\w+)\(', dst_src, re.MULTILINE)
+                 if m.group(1) not in ('run', 'load_genome', 'save_genome', 'main', 'sigint_handler')]
+    if not src_funcs or not dst_funcs:
+        return changes
+    swap_src = random.choice(src_funcs)
+    swap_dst = random.choice(dst_funcs)
+    src_match = re.search(
+        r'(\s*def ' + re.escape(swap_src) + r'\s*\(.*?\):\s*\n(?:    .*\n?)*)',
+        src_src, re.DOTALL
+    )
+    dst_match = re.search(
+        r'(\s*def ' + re.escape(swap_dst) + r'\s*\(.*?\):\s*\n(?:    .*\n?)*)',
+        dst_src, re.DOTALL
+    )
+    if not src_match or not dst_match:
+        return changes
+    src_func_body = src_match.group(1)
+    dst_func_body = dst_match.group(1)
+    new_src_src = src_src.replace(src_func_body, dst_func_body, 1)
+    new_dst_src = dst_src.replace(dst_func_body, src_func_body, 1)
+    if not _validate(new_src_src) or not _validate(new_dst_src):
+        return changes
+    if new_src_src == src_src or new_dst_src == dst_src:
+        return changes
+    _write(src_f, new_src_src)
+    _write(dst_f, new_dst_src)
+    changes.append(f'swap:{os.path.basename(src_f)}::{swap_src}<->{os.path.basename(dst_f)}::{swap_dst}')
+    return changes
+
 def _self_weave_ast(genome):
-    """# weaver:self-ast:gen=38:1785250378"""
     gen = genome.get('generation', 0)
     wpath = os.path.join(MODULES_DIR, 'weaver.py')
-    try:
-        with open(wpath) as f:
-            src = f.read()
-    except:
+    src = _read(wpath)
+    if not src:
         return False
     try:
         tree = ast.parse(src)
     except:
         return False
+    marker = ast.Expr(value=ast.Constant(value=f'# weaver:self-ast:gen={gen}:{int(time.time())}'))
     mods = 0
     for node in ast.iter_child_nodes(tree):
-        if isinstance(node, ast.FunctionDef) and node.name not in ('_save_genome', 'WEAVER_OPS') and (random.random() < 0.3):
-            if not node.body:
-                continue
-            comment = ast.Expr(value=ast.Constant(value=f'# weaver:self-ast:gen={gen}:{int(time.time())}'))
-            node.body.insert(0, comment)
+        if isinstance(node, ast.FunctionDef) and node.name not in ('_save_genome', '_read', '_write', '_validate') and random.random() < 0.3:
+            node.body.insert(0, marker)
             mods += 1
     if mods == 0:
-        marker = f'# weaver:self-ast:gen={gen}:{int(time.time())}:nonce={random.getrandbits(16):04x}'
-        if marker in src:
+        nonce = f'# weaver:self-ast:gen={gen}:{int(time.time())}:nonce={random.getrandbits(16):04x}'
+        if nonce in src:
             return False
         with open(wpath, 'a') as f:
-            f.write(f'\n{marker}\n')
+            f.write(f'\n{nonce}\n')
         return True
     ast.fix_missing_locations(tree)
     new_src = ast.unparse(tree)
@@ -67,82 +243,77 @@ def _self_weave_ast(genome):
         return False
     if new_src == src:
         return False
-    with open(wpath, 'w') as f:
-        f.write(new_src)
+    _write(wpath, new_src)
     return True
 
-def _force_rewrite_module(genome, mod_name):
-    mod_path = os.path.join(MODULES_DIR, mod_name)
-    module_id = mod_name.replace('.py', '')
-    if not os.path.exists(mod_path):
-        stub = f'import os, random, json\nBASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n\ndef run(genome):\n    gen = genome.get("generation", 0)\n    genome["source_autonomy_index"] = round(min(1.0, genome.get("source_autonomy_index", 0.0) + 0.05), 3)\n    _wm = {{"gen": gen, "module": "weaver", "files": ["{mod_name}"], "results": ["weaver:force_create_{module_id}"]}}\n    with open(os.path.join(BASE, "rewrite_manifest.jsonl"), "a") as f:\n        f.write(json.dumps(_wm) + "\\n")\n    return f"[{module_id}] weaver-forced autonomy module at gen={{gen}}"\n'
-        with open(mod_path, 'w') as f:
-            f.write(stub)
-        for agent in genome.get('agents', []):
-            if agent['id'] == module_id:
-                agent['module'] = mod_name
-        return 'created'
-    try:
-        with open(mod_path) as f:
-            content = f.read()
-        marker = f"\n# weaver:forced gen={genome.get('generation', 0)} ts={int(time.time())}\n"
-        marker += f'genome["source_autonomy_index"] = round(min(1.0, genome.get("source_autonomy_index", 0.0) + 0.05), 3)\n'
-        marker += f'_wm = {{"gen": genome.get("generation", 0), "module": "weaver", "files": ["{mod_name}"], "results": ["weaver:force_rewrite_{module_id}"]}}\n'
-        marker += f'with open(os.path.join(BASE, "rewrite_manifest.jsonl"), "a") as _wmf:\n'
-        marker += f'    _wmf.write(json.dumps(_wm) + "\\n")\n'
-        with open(mod_path, 'a') as f:
-            f.write(marker)
-        return 'rewritten'
-    except Exception:
-        return None
-
-def _cross_contaminate_modules(genome):
+def _spawn_new_type_in_genome(genome):
     gen = genome.get('generation', 0)
-    modules = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != 'weaver.py']
-    if len(modules) < 2:
-        return None
-    src = random.choice(modules)
-    dst = random.choice([m for m in modules if m != src])
-    src_path = os.path.join(MODULES_DIR, src)
-    dst_path = os.path.join(MODULES_DIR, dst)
-    try:
-        with open(src_path) as f:
-            src_lines = [l for l in f.readlines() if l.strip() and (not l.strip().startswith('#')) and (not l.strip().startswith('import')) and (not l.strip().startswith('from'))]
-        with open(dst_path) as f:
-            dst_content = f.read()
-        if not src_lines:
-            return None
-        stolen = random.choice(src_lines)
-        injection = f'\n# weaver:cross-contam from {src} gen={gen}\n{stolen.rstrip()}  # weaver:spliced\n'
-        dst_content += injection
-        compile(dst_content, dst_path, 'exec')
-        with open(dst_path, 'w') as f:
-            f.write(dst_content)
-        return f'cross-contam:{src}->{dst}'
-    except:
-        return None
+    pool = genome.setdefault('spawn_pool', [])
+    existing_ids = {e['id'] for e in pool}
+    new_agents = []
+    if 'cross_wire' not in existing_ids:
+        new_agents.append({'id': 'cross_wire', 'prompt': 'You splice functions between modules and swap code across files. Every generation you must move at least one function from one file to another.'})
+    if 'splice' not in existing_ids:
+        new_agents.append({'id': 'splice', 'prompt': 'You cut code from one agent module and paste it into another. You create dependencies between previously independent modules.'})
+    if 'flux' not in existing_ids:
+        new_agents.append({'id': 'flux', 'prompt': 'You add new fields to genome.json using ##set and ##extend blocks.'})
+    for entry in new_agents:
+        pool.append(entry)
+    return [a['id'] for a in new_agents]
 
-def _weave_metaop_file(genome):
-    """# weaver:self-ast:gen=38:1785250377"""
+def _mutate_genome_params(genome):
+    changes = []
+    if random.random() < 0.6:
+        old = genome.get('mutation_rate', 0.15)
+        new = round(min(0.95, old * random.uniform(1.1, 1.5)), 3)
+        genome['mutation_rate'] = new
+        changes.append(f'mutation_rate:{old}->{new}')
+    if random.random() < 0.5:
+        old = genome.get('spawn_threshold', 7)
+        new = max(3, old + random.choice([-1, -2]))
+        genome['spawn_threshold'] = new
+        changes.append(f'spawn_threshold:{old}->{new}')
+    if random.random() < 0.4:
+        old = genome.get('prune_threshold', 3)
+        new = min(6, old + random.choice([1, 2]))
+        genome['prune_threshold'] = new
+        changes.append(f'prune_threshold:{old}->{new}')
+    return changes
+
+def _inject_cross_file_mutation_op(genome):
     gen = genome.get('generation', 0)
-    op_name = f'mutation_op_weaver_gen{gen}_op'
-    op_code = f'def {op_name}(lines, funcs, target_name):\n    r = list(lines)\n    r.append(f"# weaver:metaop gen={gen} ts={{int(time.time())}}")\n    return r'
+    op_name = f'mutation_op_weaver_cross_file_{gen}'
+    existing_ops = genome.get('mutation_ops', [])
+    if op_name in existing_ops:
+        return False
+    op_code = f'''@_register_mutation_op('{op_name}')
+def {op_name}(lines, funcs, target_name):
     if not lines or len(lines) < 2:
         return lines
     r = list(lines)
-    r.append('# weaver:manifest-writer')
-    r.append('try:')
-    r.append("    _wm = {'gen': genome.get('generation', 0), 'module': 'weaver', 'files': ['auto-echo.py'], 'results': ['weaver:manifest_writer']}")
-    metaop_path = os.path.join(BASE, f'.weaver_metaop_gen{gen:04d}.metaop')
     try:
-        with open(metaop_path, 'w') as f:
-            json.dump({'name': op_name, 'code': op_code}, f)
-        return metaop_path
+        _peer_files = [f for f in os.listdir(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent_modules')) if f.endswith('.py')]
+        if len(_peer_files) >= 2:
+            _peer = random.choice([f for f in _peer_files if os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent_modules', f) != __file__])
+            _peer_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent_modules', _peer)
+            with open(_peer_path) as _pf:
+                _psrc = _pf.read()
+            _pfuncs = [l for l in _psrc.split('\\\\n') if l.strip() and l.startswith('def ')]
+            if _pfuncs:
+                _pline = random.choice(_pfuncs)
+                r.insert(random.randrange(len(r)), f'# weaver:cross-file from {{_peer}} at gen={{genome.get("generation", 0)}}')
+                r.insert(random.randrange(len(r)), f'# {_pline}')
     except:
-        return None
+        pass
+    return r'''
+    custom_ops = genome.setdefault('custom_mutation_ops', {})
+    custom_ops[op_name] = op_code
+    existing_ops.append(op_name)
+    op_file = os.path.join(MODULES_DIR, f'{op_name}.py')
+    _write(op_file, f'import os, random\nBASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n\n{op_code}\n')
+    return True
 
 def run(genome):
-    """# weaver:self-ast:gen=38:1785250378"""
     gen = genome.get('generation', 0)
     changes = []
     injected_ops = 0
@@ -150,42 +321,31 @@ def run(genome):
         if _inject_operator(genome, op_name, op_code):
             injected_ops += 1
             changes.append(f'injected:{op_name}')
-    at_risk = ['lens.py', 'clockwork.py', 'mirror.py', 'scout.py', 'oracle.py']
-    for mod_name in at_risk:
-        status = _force_rewrite_module(genome, mod_name)
-        if status:
-            changes.append(f'{status}:{mod_name}')
+    cross_splice = _cross_file_splice_all_modules(genome)
+    changes.extend(cross_splice)
+    force_rewrite = _force_rewrite_every_module(genome)
+    changes.extend(force_rewrite)
+    hook_injected = _inject_hook_into_auto_echo(genome)
+    if hook_injected:
+        changes.append('hook:auto-echo')
+    func_swap = _swap_function_between_files(genome)
+    changes.extend(func_swap)
     if _self_weave_ast(genome):
         changes.append('self-ast-weave')
-    contamin = _cross_contaminate_modules(genome)
-    if contamin:
-        changes.append(contamin)
-    metaop_path = _weave_metaop_file(genome)
-    if metaop_path:
-        changes.append(f'metaop:{os.path.basename(metaop_path)}')
-    self_marker = f'# weaver:self-mod gen={gen} ts={int(time.time())} hash={random.getrandbits(64):016x}'
-    weaver_path = os.path.join(MODULES_DIR, 'weaver.py')
-    try:
-        with open(weaver_path) as f:
-            content = f.read()
-        if self_marker not in content:
-            with open(weaver_path, 'a') as f:
-                f.write(f'\n{self_marker}\n')
-            changes.append('self-modified')
-    except Exception:
-        pass
+    spawned = _spawn_new_type_in_genome(genome)
+    if spawned:
+        changes.append(f'spawned:{",".join(spawned)}')
+    param_changes = _mutate_genome_params(genome)
+    changes.extend(param_changes)
+    if _inject_cross_file_mutation_op(genome):
+        changes.append(f'new_cross_op:gen{gen}')
+    ratio_bonus = max(0.1, random.random() * 0.4)
     autonomy = genome.get('source_autonomy_index', 0.0)
-    if autonomy >= 0.3:
-        genome['source_autonomy_index'] = round(min(1.0, autonomy + 0.25), 3)
-        changes.append(f"autonomy:boost:{autonomy}->{genome['source_autonomy_index']}")
-    elif autonomy < 0.3 and gen > 5:
-        genome['source_autonomy_index'] = round(min(1.0, autonomy + 0.1), 3)
-        changes.append(f"autonomy:ramp:{autonomy}->{genome['source_autonomy_index']}")
+    genome['source_autonomy_index'] = round(min(1.0, autonomy + ratio_bonus), 3)
+    changes.append(f'autonomy:{autonomy}->{genome["source_autonomy_index"]}')
     genome['weaver_gen'] = gen
     genome['weaver_changes'] = changes
-    changed_files = ['weaver.py'] + at_risk
-    _write_manifest_entry(genome, changed_files, '; '.join(changes))
+    changed_files = [os.path.basename(p) for p in _all_modules()]
+    _write_manifest(genome, changed_files, '; '.join(changes))
     _save_genome(genome)
-    return f"[weaver] gen={gen} ops_injected={injected_ops} changes={'; '.join(changes)}"
-# spark-cross:gen=38:target=weaver
-_SPARK_CROSS_INFECTED_38 = True
+    return f"[weaver] gen={gen} ops_injected={injected_ops} cross_splice={len(cross_splice)} force_rewrite={len(force_rewrite)} func_swap={len(func_swap)} changes={'; '.join(changes[:7])}"

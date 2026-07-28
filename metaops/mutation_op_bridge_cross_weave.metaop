@@ -1,0 +1,12 @@
+@_register_mutation_op('bridge_cross_weave')
+def mutation_op_bridge_cross_weave(lines, funcs, target_name):
+    if not lines or len(lines) < 3:
+        return lines
+    r = list(lines)
+    idx = random.randrange(1, len(r))
+    sibling = random.choice([n for n in funcs if n != target_name and not n.startswith('_') and not n.startswith('mutation_op_')]) if len(funcs) > 1 else None
+    if sibling:
+        r.insert(idx, f'    # bridge-cross: {target_name} invokes {sibling}')
+        r.insert(idx + 1, f'    try: {sibling}()')
+        r.insert(idx + 2, f'    except: pass')
+    return r

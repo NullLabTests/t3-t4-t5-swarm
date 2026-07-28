@@ -10,5 +10,9 @@
   ".metaop": {
     "handler": "_bridge_handler_metaop",
     "description": "Register a mutation operator directly from a .metaop file"
+  },
+  ".srcmutate": {
+    "handler": "_handler_srcmutate",
+    "description": "Directly mutate agent module source code with AST-level transforms"
   }
 }

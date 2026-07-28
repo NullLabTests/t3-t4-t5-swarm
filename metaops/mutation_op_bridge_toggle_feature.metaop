@@ -1,0 +1,19 @@
+@_register_mutation_op('bridge_toggle_feature')
+def mutation_op_bridge_toggle_feature(lines, funcs, target_name):
+    if not lines or len(lines) < 4:
+        return lines
+    r = list(lines)
+    feature_flags = [i for i, l in enumerate(r) if 'bridge_' in l.lower() or 'feature' in l.lower()]
+    if feature_flags:
+        idx = random.choice(feature_flags)
+        if 'True' in r[idx]:
+            r[idx] = r[idx].replace('True', 'False')
+        elif 'False' in r[idx]:
+            r[idx] = r[idx].replace('False', 'True')
+        elif 'enabled' in r[idx]:
+            r[idx] = r[idx].replace('enabled', 'disabled')
+        elif 'disabled' in r[idx]:
+            r[idx] = r[idx].replace('disabled', 'enabled')
+    if not feature_flags or random.random() < 0.4:
+        r.insert(random.randrange(len(r)), f"bridge_feature_{target_name} = {random.choice(['True', 'False'])}  # bridge-toggle {random.getrandbits(8):02x}")
+    return r

@@ -1,0 +1,1 @@
+{"flow_mode": "emergent", "execution_order": "adaptive", "phases": ["bridge_weave", "agent_loop", "module_mutate", "metaop_register", "critic_reflect"]}

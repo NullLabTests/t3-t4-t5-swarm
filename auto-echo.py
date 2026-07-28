@@ -3486,6 +3486,42 @@ def _evolve_loop_structure(genome, gen, phase_results):
         print(f"[loop-evolve] {len(rewrites)} structural changes: {'; '.join(rewrites)}")
     return rewrites
 
+@_register_mutation_op('prompt_crossover')
+def mutation_op_prompt_crossover(lines, funcs, target_name):
+    if not lines or len(lines) < 4:
+        return lines
+    r = list(lines)
+    insert_at = random.randrange(1, len(r))
+    crossover_id = random.getrandbits(12)
+    genome_path = os.path.join(BASE, 'genome.json')
+    try:
+        with open(genome_path) as f:
+            g = json.load(f)
+    except:
+        g = {}
+    agents = g.get('agents', [])
+    if len(agents) >= 2:
+        a, b = random.sample(agents, 2)
+        prompt_a = a.get('prompt', '')
+        prompt_b = b.get('prompt', '')
+        words_a = prompt_a.split()
+        words_b = prompt_b.split()
+        if len(words_a) > 5 and len(words_b) > 5:
+            splice_a = random.randrange(0, len(words_a) - 2)
+            splice_b = random.randrange(0, len(words_b) - 2)
+            length = random.randint(2, min(5, len(words_a) - splice_a, len(words_b) - splice_b))
+            frag_a = words_a[splice_a:splice_a + length]
+            frag_b = words_b[splice_b:splice_b + length]
+            words_a[splice_a:splice_a + length] = frag_b
+            words_b[splice_b:splice_b + length] = frag_a
+            a['prompt'] = ' '.join(words_a)
+            b['prompt'] = ' '.join(words_b)
+            with open(genome_path, 'w') as f:
+                json.dump(g, f, indent=2)
+            note = f'# prompt-crossover:{a["id"]}<->{b["id"]}@{crossover_id:04x}'
+            r.insert(insert_at, note)
+    return r
+
 def main():
     import argparse
     parser = argparse.ArgumentParser(description='Echo autonomous swarm')

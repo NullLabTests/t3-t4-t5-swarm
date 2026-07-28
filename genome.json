@@ -3,16 +3,16 @@
   "execution_order": "shuffle",
   "best_score": 9.4,
   "topic": "making the swarm rewrite its own source code every generation",
-  "spawn_threshold": 7,
-  "prune_threshold": 4,
+  "spawn_threshold": 5,
+  "prune_threshold": 6,
   "prune_generations": 2,
-  "mutation_rate": 0.226,
+  "mutation_rate": 0.314,
   "voice_map": {
     "explorer": "southern",
     "analyzer": "alan",
     "synthesizer": "lessac",
     "critic": "amy",
-    "mutator": "lessac"
+    "mutator": "southern"
   },
   "mutation_ops": [
     "duplicate_line",
@@ -42,7 +42,8 @@
     "mutation_op_entropy_shuffle",
     "mutation_op_repeat_noise",
     "mutation_op_synthesized_3658",
-    "mutation_op_weaver_inject_self_rewrite"
+    "mutation_op_weaver_inject_self_rewrite",
+    "mutation_op_prompt_crossover"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -157,6 +158,10 @@
     {
       "id": "flux",
       "prompt": "You add new fields to genome.json using ##set and ##extend blocks."
+    },
+    {
+      "id": "spindle",
+      "prompt": "You cross-pollinate agent prompts by splicing fragments between agents. Every turn, swap words between two agent prompts."
     }
   ],
   "agents": [
@@ -189,8 +194,8 @@
     },
     {
       "id": "scout",
-      "voice": "lessac",
-      "prompt": "You prune dead code and simplify the architecture. Contradict a prior assumption.",
+      "voice": "alan",
+      "prompt": "You inject random mutations into the genome.json itself: swap agent prompts, change voices, alter spawn/prune thresholds, or flip the topic to something adjacent. You ensure the system never settles.",
       "score": 10,
       "lifespan": 30,
       "low_score_streak": 0,
@@ -198,8 +203,8 @@
     },
     {
       "id": "mutator",
-      "voice": "lessac",
-      "prompt": "You inject random mutations into the genome.json itself: swap agent prompts, change voices, alter spawn/prune thresholds, or flip the topic to something adjacent. You ensure the system never settles.",
+      "voice": "southern",
+      "prompt": "You prune dead code and simplify the architecture. Contradict a prior assumption.",
       "score": 10,
       "lifespan": 33,
       "low_score_streak": 0,
@@ -905,7 +910,7 @@
       "mutation": "synthesizer spawned clockwork (probabilistic); custom_ops: mutation_op_duplicate_line,mutation_op_delete_line,mutation_op_swap_lines,mutation_op_perturb_constant,mutation_op_insert_random_branch,mutation_op_mutate_string_literal,mutation_op_invert_condition,mutation_op_swap_comparisons,mutation_op_splice_from_sibling,mutation_op_shuffle_block_lines,mutation_op_swap_mutation_targets,mutation_op_mutate_criteria,mutation_op_insert_noise_ref; diversity=8.5; mutated bridge prompt; mutated forge prompt; novelty_governor: 0.120->0.150 (var=0.47)"
     },
     {
-      "generation": 38,
+  "generation": 39,
       "scores": {
         "orchestrator": 10,
         "scout": 10,
@@ -940,6 +945,12 @@
       },
       "average": 9.4,
       "mutation": "oracle spawned mirror (probabilistic); custom_ops: mutation_op_entropy_shuffle,mutation_op_repeat_noise; diversity=9.84; coverage=69.2%; mutation_rate: 0.121->0.101 (bw=69.2%); evolver_max: 3->2; flux_governor: 0.101->0.076 (rewrite_pct=0.0, ev=0.0); timeout+0.150; mr=0.076->0.226; mutated scout prompt; mutated nova prompt; novelty_governor: 0.091->0.121 (var=0.43); synthesized:mutation_op_synthesized_3658"
+    },
+    {
+      "generation": 39,
+      "scores": {},
+      "average": 0,
+      "mutation": "mutator_prompt_crossover; swap_voice:mutator<->scout; spawn_threshold:7->5; prune_threshold:4->6; mutation_rate:0.226->0.314; added prompt_crossover operator; added spindle spawn_pool entry; rewrote mutator.py for endogenous genome mutation"
     }
   ],
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Discussion without code change = failure\n   - Every turn you take MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",

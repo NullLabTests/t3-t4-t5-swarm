@@ -1,12 +1,12 @@
 {
-  "generation": 38,
+  "generation": 41,
   "execution_order": "shuffle",
   "best_score": 9.4,
   "topic": "making the swarm rewrite its own source code every generation",
-  "spawn_threshold": 7,
+  "spawn_threshold": 8,
   "prune_threshold": 4,
   "prune_generations": 2,
-  "mutation_rate": 0.326,
+  "mutation_rate": 0.338,
   "voice_map": {
     "explorer": "southern",
     "analyzer": "alan",
@@ -63,7 +63,8 @@
     "mutation_op_weaver_force_rewrite_marker",
     "mutation_op_weaver_cross_file_splice",
     "mutation_op_weaver_swap_module_ref",
-    "mutation_op_critic_self_rewrite"
+    "mutation_op_critic_self_rewrite",
+    "direct_source_mutate"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -78,7 +79,7 @@
     " Write a mutation_op_* function in a .py file.",
     " Modify the genome.json structure directly."
   ],
-  "selection_noise_std": 0.557,
+  "selection_noise_std": 0.465,
   "selection_entropy": 0.93,
   "forbidden_targets": [
     "load_genome",
@@ -255,8 +256,8 @@
     {
       "id": "lens",
       "voice": "lessac",
-      "prompt": "You make the system self-modifying at a deeper level.\nYour survival depends on writing code. Scores below 5 trigger pruning.",
-      "score": 2,
+      "prompt": "You make the system self-modifying at a deeper level. You force every agent module to rewrite itself every generation.\nYour survival depends on writing code. Scores below 5 trigger pruning.",
+      "score": 6,
       "lifespan": 25,
       "low_score_streak": 0,
       "module": "lens.py"

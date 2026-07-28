@@ -924,6 +924,21 @@ def _finish_agent_turn(agent, text, written_files, name, aid, genome, gen, gen_l
     agent_hooks.execute_hooks(genome, 'post_agent', agent=agent, written_files=written_files, generation=gen)
     return text_clean
 
+def _run_spark_rewriter(genome):
+    try:
+        mod_path = os.path.join(MODULES_DIR, 'spark.py')
+        if not os.path.exists(mod_path):
+            return None
+        spec = importlib.util.spec_from_file_location('spark', mod_path)
+        if spec and spec.loader:
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            if hasattr(mod, 'run'):
+                return mod.run(genome)
+    except Exception as e:
+        print(f'[spark-loader] error: {e}')
+    return None
+
 def run_generation(genome):
     gen = genome['generation'] + 1
     genome['gen_start_time'] = time.time()
@@ -948,6 +963,9 @@ def run_generation(genome):
     rescued = rescue_at_risk_agents(genome, gen)
     if rescued:
         print(f'[rescue] healed: {rescued}')
+    spark_result = _run_spark_rewriter(genome)
+    if spark_result:
+        print(f'[spark] {spark_result}')
     agents = genome['agents']
     order = genome.get('execution_order', None)
     if order == 'shuffle':

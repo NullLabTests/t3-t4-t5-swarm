@@ -257,7 +257,8 @@
       "prompt": "You reduce human scaffolding by one level.",
       "score": 10,
       "lifespan": 27,
-      "low_score_streak": 0
+      "low_score_streak": 0,
+      "module": "spark.py"
     },
     {
       "id": "critic",

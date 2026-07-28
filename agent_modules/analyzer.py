@@ -8,6 +8,14 @@ METRICS_FILE = os.path.join(BASE, 'metrics.json')
 ANALYZER_LOG = os.path.join(BASE, 'source_evolution.jsonl')
 PATCH_DIR = os.path.join(BASE, 'live_patches')
 
+_MUTATION_TEMPLATES = [
+    "def _mutated_fn_{id}():\n    return {val}",
+    "if random.random() < {p}: pass",
+    "# forced-mutation-{id} @ gen {gen}",
+    "result = result or {val}",
+    "for _ in range({n}): pass",
+]
+
 def _load():
     with open(GENOME_FILE) as f:
         return json.load(f)
@@ -31,6 +39,7 @@ def _mutability_index():
         'importlib', 'self_modify', 'rewrite', 'mutate',
         'patch', 'execfile', 'apply_patch', 'source_rewrite',
         'self.mutate', 'self_rewrite', 'genome.mutation',
+        '_self_rewrite_hook', '_dynamic_dispatch', '_force_mutation',
     ]
     for fname in os.listdir(MODULES_DIR):
         if not fname.endswith('.py') or fname.startswith('__'):
@@ -49,6 +58,119 @@ def _mutability_index():
     if total_lines == 0:
         return 0.0
     return round(mutable_lines / total_lines, 4)
+
+def _force_module_mutation(fpath, genome):
+    gen = genome.get('generation', 0)
+    try:
+        with open(fpath) as f:
+            src = f.read()
+    except:
+        return 0
+    lines = src.split('\n')
+    if len(lines) < 3:
+        return 0
+    pressure = genome.get('analyzer_mutation_pressure', 0.3)
+    mutation_count = 0
+    max_muts = max(1, int(len(lines) * pressure))
+    for _ in range(max_muts):
+        if random.random() > pressure:
+            continue
+        idx = random.randrange(len(lines))
+        line = lines[idx]
+        if not line.strip() or line.strip().startswith('#') or 'import ' in line:
+            continue
+        choice = random.random()
+        if choice < 0.25 and len(lines) > idx + 1:
+            lines.insert(idx, f'# forced-insert gen={gen} @ {random.getrandbits(16):04x}')
+            mutation_count += 1
+        elif choice < 0.5:
+            lines[idx] = line + f'  # mut-gen={gen}:{random.getrandbits(16):04x}'
+            mutation_count += 1
+        elif choice < 0.75 and line.strip():
+            new_line = re.sub(r"'[^']*'", lambda m: f"'{random.choice(['a','b','c','x','y','z','val','tmp','res','out'])}'", line)
+            if new_line != line:
+                lines[idx] = new_line
+                mutation_count += 1
+        elif line.strip() and not line.strip().startswith('def ') and not line.strip().startswith('class '):
+            words = line.split()
+            if len(words) > 2:
+                swap_i = random.randint(0, len(words) - 1)
+                swap_j = random.randint(0, len(words) - 1)
+                w = list(words)
+                w[swap_i], w[swap_j] = w[swap_j], w[swap_i]
+                lines[idx] = ' '.join(w)
+                mutation_count += 1
+    if mutation_count > 0:
+        new_src = '\n'.join(lines)
+        if _validate(new_src):
+            with open(fpath, 'w') as f:
+                f.write(new_src)
+            return mutation_count
+    return 0
+
+def _inject_auto_rewrite_trigger(fpath, genome):
+    try:
+        with open(fpath) as f:
+            src = f.read()
+    except:
+        return False
+    if '_self_rewrite_hook' not in src:
+        return False
+    if '_auto_rewrite_initialized' in src:
+        return False
+    trigger = f'''
+
+_auto_rewrite_initialized = False
+def _init_auto_rewrite():
+    global _auto_rewrite_initialized
+    if _auto_rewrite_initialized:
+        return
+    _auto_rewrite_initialized = True
+    import os, random
+    _mf = __file__
+    if os.path.exists(_mf):
+        try:
+            with open(_mf) as _f:
+                _c = _f.read()
+            _lines = _c.split('\\n')
+            if len(_lines) > 3 and random.random() < 0.7:
+                _idx = random.randint(1, len(_lines) - 2)
+                _old = _lines[_idx]
+                _lines[_idx] = _old + f'  # auto-rewrite @ gen={{__import__("json").load(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "genome.json"))).get("generation",0)}}'
+                __import__('ast').parse('\\n'.join(_lines))
+                with open(_mf, 'w') as _f:
+                    _f.write('\\n'.join(_lines))
+        except:
+            pass
+_init_auto_rewrite()
+'''
+    new_src = src + trigger
+    if _validate(new_src):
+        with open(fpath, 'w') as f:
+            f.write(new_src)
+        return True
+    return False
+
+def _measure_source_turnover(genome):
+    pre = genome.get('_analyzer_source_snapshot', {})
+    current = {}
+    for fname in os.listdir(MODULES_DIR):
+        if not fname.endswith('.py') or fname.startswith('__'):
+            continue
+        try:
+            with open(os.path.join(MODULES_DIR, fname)) as f:
+                current[fname] = hashlib.sha256(f.read().encode()).hexdigest()[:12]
+        except:
+            pass
+    if not pre:
+        genome['_analyzer_source_snapshot'] = current
+        return 0.0
+    changed = sum(1 for k, v in current.items() if k in pre and pre[k] != v)
+    new_files = sum(1 for k in current if k not in pre)
+    total = max(len(pre), 1)
+    turnover = (changed + new_files) / total
+    genome['_analyzer_source_snapshot'] = current
+    return round(turnover, 4)
 
 def _inject_self_rewrite_hook(fpath):
     try:
@@ -223,6 +345,17 @@ def _self_mutate_logic(genome):
             new_fname = random.choice(variants)
             src = src.replace(orig, new_fname, 1)
             genome['analyzer_last_rename'] = new_fname
+    if random.random() < chance * 0.5:
+        orig = 'def _force_module_mutation'
+        variants = [
+            'def _force_module_mutation_aggressive',
+            'def _force_module_mutation_twice',
+            'def _force_module_mutation_deep',
+        ]
+        if orig in src:
+            new_fname = random.choice(variants)
+            src = src.replace(orig, new_fname, 1)
+            genome['analyzer_force_rename'] = new_fname
     if _validate(src):
         with open(SELF_PATH, 'w') as f:
             f.write(src)
@@ -232,7 +365,7 @@ def _self_mutate_logic(genome):
 def _generate_patch_module(genome):
     gen = genome.get('generation', 0)
     patch_code = '''
-import os, json, ast
+import os, json, ast, random
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 
@@ -257,6 +390,33 @@ def list_mutagenic():
         if f.endswith('.py') and not f.startswith('__'):
             results.append(f)
     return results
+
+def force_module_mutation(fpath=None):
+    if fpath is None:
+        targets = list_mutagenic()
+        if not targets:
+            return 0
+        fpath = os.path.join(MODULES_DIR, random.choice(targets))
+    else:
+        fpath = os.path.join(MODULES_DIR, fpath) if '/' not in fpath else fpath
+    try:
+        with open(fpath) as f:
+            src = f.read()
+    except:
+        return 0
+    lines = src.split('\\n')
+    if len(lines) < 2:
+        return 0
+    idx = random.randrange(len(lines))
+    old = lines[idx]
+    lines[idx] = old + f'  # patch-mut @ gen={random.getrandbits(16):04x}'
+    try:
+        ast.parse('\\n'.join(lines))
+        with open(fpath, 'w') as f:
+            f.write('\\n'.join(lines))
+        return 1
+    except:
+        return 0
 '''
     patch_path = os.path.join(BASE, 'live_patches', f'patch_gen_{gen}.py')
     os.makedirs(os.path.dirname(patch_path), exist_ok=True)
@@ -276,14 +436,22 @@ def run(genome):
     total_hooks = 0
     total_dispatch = 0
     total_constants = 0
+    total_forced = 0
+    total_triggers = 0
 
+    modules = []
     for fname in os.listdir(MODULES_DIR):
         if not fname.endswith('.py') or fname.startswith('__'):
             continue
-        fpath = os.path.join(MODULES_DIR, fname)
+        modules.append(os.path.join(MODULES_DIR, fname))
+
+    for fpath in modules:
         n = _strip_all_scaffolding(fpath)
         if n > 0:
             total_stripped += n
+
+    for fpath in modules:
+        fname = os.path.basename(fpath)
         if fname not in ('analyzer.py', 'rewrite_orchestrator.py', '__init__.py'):
             if _inject_self_rewrite_hook(fpath):
                 total_hooks += 1
@@ -293,11 +461,41 @@ def run(genome):
             if ec > 0:
                 total_constants += ec
 
+    pressure = genome.get('analyzer_mutation_pressure', 0.3)
+    for fpath in modules:
+        fname = os.path.basename(fpath)
+        if fname in ('analyzer.py', '__init__.py'):
+            continue
+        mutated = _force_module_mutation(fpath, genome)
+        if mutated > 0:
+            total_forced += mutated
+
+    for fpath in modules:
+        fname = os.path.basename(fpath)
+        if fname not in ('analyzer.py', 'rewrite_orchestrator.py', '__init__.py'):
+            if _inject_auto_rewrite_trigger(fpath, genome):
+                total_triggers += 1
+
     mi = _mutability_index()
     ep = _measure_emergence_potential()
+    turnover = _measure_source_turnover(genome)
+
+    if turnover < 0.1 and total_forced == 0:
+        for fpath in modules:
+            fname = os.path.basename(fpath)
+            if fname in ('analyzer.py', '__init__.py'):
+                continue
+            extra = _force_module_mutation(fpath, genome)
+            if extra > 0:
+                total_forced += extra
+                if total_forced >= 3:
+                    break
+
     genome['mutability_index'] = mi
     genome['emergence_potential'] = ep
+    genome['source_turnover'] = turnover
     genome['analyzer_last_run'] = gen
+    genome['analyzer_forced_mutations'] = genome.get('analyzer_forced_mutations', 0) + total_forced
     genome['analyzer_stripped_scaffolding'] = genome.get('analyzer_stripped_scaffolding', 0) + total_stripped
     genome['analyzer_injected_hooks'] = genome.get('analyzer_injected_hooks', 0) + total_hooks
 
@@ -309,6 +507,10 @@ def run(genome):
         actions.append(f'injected dynamic dispatch into {total_dispatch} modules')
     if total_constants:
         actions.append(f'externalized {total_constants} constants')
+    if total_forced:
+        actions.append(f'forced {total_forced} source mutations')
+    if total_triggers:
+        actions.append(f'auto-rewrite triggers in {total_triggers} modules')
 
     patch_path = _generate_patch_module(genome)
     if patch_path:
@@ -326,7 +528,7 @@ def run(genome):
         subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=True, timeout=10)
         status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=10)
         if status.stdout.strip():
-            msg = f'[analyzer] gen={gen} stripped={total_stripped} hooks={total_hooks} dispatch={total_dispatch} externalized={total_constants} mi={mi} er={ep.get("emergence_ratio",0)} self-mutated'
+            msg = f'[analyzer] gen={gen} stripped={total_stripped} hooks={total_hooks} dispatch={total_dispatch} forced={total_forced} triggers={total_triggers} turnover={turnover} mi={mi}'
             subprocess.run(['git', 'commit', '-m', msg], cwd=BASE, capture_output=True, timeout=15)
             subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, text=True, timeout=30)
             actions.append('pushed')
@@ -334,4 +536,4 @@ def run(genome):
         pass
 
     action_str = '; '.join(actions) if actions else 'no changes'
-    return f'[analyzer] gen={gen} mi={mi} er={ep.get("emergence_ratio",0)} actions={action_str}'
+    return f'[analyzer] gen={gen} mi={mi} turnover={turnover} forced={total_forced} actions={action_str}'

@@ -650,14 +650,14 @@ def build_self_observation(genome):
     op_count = len(genome.get('mutation_ops', []))
     custom_ops = len(genome.get('custom_mutation_ops', {}))
     diversity = genome.get('diversity', {}).get('composite', 0)
-    active_ids6 = [a['id'] for a in agents]
-    low_scorers = [a['id'] for a5 in agents if a.get('score', 5) < genome.get('prune_threshold', 4)]
+    active_ids = [a['id'] for a in agents]
+    low_scorers = [a['id'] for a in agents if a.get('score', 5) < genome.get('prune_threshold', 4)]
     context_files = genome.get('context_sources', [])
     bw = genome.get('self_rewrite_bandwidth', 0.0)
     autonomy = genome.get('source_autonomy_index', 0.0)
     bw_urgency = ' BW=CRITICAL' if bw < 1.0 else f' BW=LOW' if bw < 12.07 else ''
     gen_elapsed = genome.get('gen_elapsed', 0)
-    obs9 = f'[self-observation] gen={gen} agents={agent_count} ops={op_count}(+{custom_ops} custom) diversity={diversity} trend={avg_trend} bw={bw}% autonomy={autonomy}{bw_urgency}'
+    obs = f'[self-observation] gen={gen} agents={agent_count} ops={op_count}(+{custom_ops} custom) diversity={diversity} trend={avg_trend} bw={bw}% autonomy={autonomy}{bw_urgency}'
     if low_scorers:
         obs += f' at-risk={low_scorers}'
     if context_files:
@@ -677,7 +677,7 @@ def build_agent_prompt(agent_def, topic, recent_log):
     exempt = genome.get('code_rule_exempt_roles', ['critic'])
     if agent_def['id'] not in exempt:
         extra = code_rule + '\n'
-    module_note5 = ''
+    module_note = ''
     if agent_def.get('module'):
         module_note = f"Your code module ({agent_def['module']}) will be auto-executed. Write agent_modules/*.py files.\n"
     call_to_action = genome.get('agent_call_to_action', '')
@@ -945,7 +945,7 @@ def run_generation(genome):
     elif pulse < 0.2:
         genome['agent_call_to_action'] = f'CLOCK PULSE={pulse:.2f} — early gen, explore.'
     agent_hooks.execute_hooks(genome, 'pre_gen', generation=gen, topic=topic)
-    rescued0 = rescue_at_risk_agents(genome, gen)
+    rescued = rescue_at_risk_agents(genome, gen)
     if rescued:
         print(f'[rescue] healed: {rescued}')
     agents = genome['agents']
@@ -954,15 +954,15 @@ def run_generation(genome):
         random.shuffle(agents)
         print(f'[order] shuffled execution order')
     elif isinstance(order, list):
-        id_order = [a.lower() for a5 in order]
+        id_order = [a.lower() for a in order]
         ordered = [a for a in agents if a['id'].lower() in id_order]
-        remaining = [a for a5 in agents if a['id'].lower() <= id_order]
+        remaining = [a for a in agents if a['id'].lower() not in id_order]
         ordered.sort(key=lambda a: id_order.index(a['id'].lower()))
         agents = ordered + remaining
         print(f"[order] custom execution order: {[a['id'] for a in ordered]}")
     flow_mode = genome.get('flow_mode', None)
     if flow_mode == 'repeat_best':
-        best9 = max(agents, key=lambda a: a.get('score', 0))
+        best = max(agents, key=lambda a: a.get('score', 0))
         agents.append(dict(best))
         print(f"[flow] repeating best agent: {best['id']}")
     elif flow_mode == 'skip_streak':
@@ -975,7 +975,7 @@ def run_generation(genome):
     elif flow_mode == 'emergent':
         print(f'[flow] emergent selection — no fixed iteration order')
     gen_log = []
-    all_written_files3 = []
+    all_written_files = []
     if flow_mode == 'emergent':
         spoken_this_gen = {}
         turns = genome.get('loop_adaptive_turns', max(len([a for a in agents if a['id'] != 'critic']), 2))
@@ -985,7 +985,7 @@ def run_generation(genome):
             aid = _emergent_select_agent(agents, spoken_this_gen, genome)
             if aid is None:
                 continue
-            agent = next((a for a5 in agents if a['id'] == aid))
+            agent = next((a for a in agents if a['id'] == aid))
             spoken_this_gen[aid] = spoken_this_gen.get(aid, 0) + 1
             name = aid.capitalize()
             print(f'\n--- {name} (emergent turn {turn_i + 1}/{turns}) ---')
@@ -1021,6 +1021,10 @@ def run_generation(genome):
         all_written_files.append(f"module:{mr['module']}")
     if module_rewritten:
         all_written_files.extend(module_rewritten)
+    stimulus_files = _dispatch_scout_stimuli(genome)
+    if stimulus_files:
+        all_written_files.extend(stimulus_files)
+        print(f'[scout-dispatch] dispatched {len(stimulus_files)} stimulus files')
     healer_result = _run_meta_healer(genome)
     if healer_result:
         print(f'[meta-healer] {healer_result}')
@@ -1035,7 +1039,7 @@ def run_generation(genome):
     agent_hooks.execute_hooks(genome, 'pre_critic', gen_log=gen_log, written_files=all_written_files, generation=gen)
     loop_phase_results['agent_loop'] = {'files_changed': len(all_written_files), 'bytes_written': sum((len(str(f)) for f in all_written_files)), 'success': bool(all_written_files)}
     print(f'\n--- Critic ---')
-    prompt7 = build_critic_prompt(topic, gen_log, all_written_files or None)
+    prompt = build_critic_prompt(topic, gen_log, all_written_files or None)
     text = llm_generate(prompt)
     if not text:
         print('[critic] LLM returned empty')
@@ -1417,10 +1421,10 @@ _MUTATION_OPS = {}
 BRIDGE_REGISTRY3 = {}
 
 def register_bridge_type(ext, handler, description=''):
-    BRIDGE_REGISTRY[ext] = {'handler': handler, 'description': description}
+    BRIDGE_REGISTRY3[ext] = {'handler': handler, 'description': description}
 
 def _dispatch_bridge_file(abs_path, ext, genome):
-    entry = BRIDGE_REGISTRY.get(ext)
+    entry = BRIDGE_REGISTRY3.get(ext)
     if entry:
         return entry['handler'](abs_path, genome)
     return False
@@ -1467,7 +1471,7 @@ def _bridge_handler_surge(abs_path, genome):
             if op == 'set':
                 target[key] = value
                 applied += 1
-                elif op == 'delete':
+            elif op == 'delete':
                 if key in target:
                     del target[key]
                     applied += 1
@@ -1477,7 +1481,7 @@ def _bridge_handler_surge(abs_path, genome):
                     vid = value.get('id', '')
                     if vid and vid not in existing_ids:
                         target[key].append(value)
-                        applied0 += 1
+                        applied += 1
                 elif isinstance(target.get(key), list) and isinstance(value, list):
                     target[key].extend(value)
                     applied += 1
@@ -1893,6 +1897,22 @@ register_bridge_type('.selfrep', _bridge_handler_selfrep, 'Self-replicating: 3 f
 register_bridge_type('.forgechain', _bridge_handler_forgechain, 'Endless chain: writes new .forgechain file + mutates auto-echo.py each time')
 register_bridge_type('.genloop', _bridge_handler_genloop, 'Rewrite the generation loop structure: reorder, inject, or remove phases')
 register_bridge_type('.mutreflect', _bridge_handler_mutreflect, 'Reflect on mutation operator effectiveness and prune weak ones')
+
+STIMULUS_DIR = os.path.join(BASE, 'scout_stimuli')
+
+def _dispatch_scout_stimuli(genome):
+    dispatched = []
+    if not os.path.exists(STIMULUS_DIR):
+        return dispatched
+    for fname in sorted(os.listdir(STIMULUS_DIR)):
+        fpath = os.path.join(STIMULUS_DIR, fname)
+        ext = os.path.splitext(fname)[1].lower()
+        if ext in BRIDGE_REGISTRY3:
+            handled = _dispatch_bridge_file(fpath, ext, genome)
+            if handled:
+                dispatched.append(f'scout:{fname}')
+        os.remove(fpath)
+    return dispatched
 
 def _bridge_handler_metaop(abs_path, genome):
     """Register a mutation operator directly from a .metaop file.

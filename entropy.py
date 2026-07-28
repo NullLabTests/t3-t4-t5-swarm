@@ -1,32 +1,8 @@
-"""entropy.py — Entropy-driven mutation operators for the swarm.
-
-Exposes mutation_op_* functions auto-discovered by
-# self-rewrite-hook:553
-try:
-    import os as _srw_os, hashlib as _srw_hl
-    _srw_f = __file__
-    with open(_srw_f) as _sf: _srw_src = _sf.read()
-    _srw_h = _srw_hl.sha256(_srw_src.encode()).hexdigest()[:12]
-    _srw_lines = _srw_src.split(chr(10))
-    if len(_srw_lines) > 3 and hasattr('entropy', '__file__') == False:
-        import random as _srw_rn
-        _srw_i = _srw_rn.randrange(1, len(_srw_lines) - 1)
-        _srw_lines.insert(_srw_i, _srw_lines[_srw_i])
-        _srw_new = chr(10).join(_srw_lines)
-        try:
-            compile(_srw_new, _srw_f, 'exec')
-            with open(_srw_f, 'w') as _sf: _sf.write(_srw_new)
-        except SyntaxError: pass
-except Exception: pass
-_register_custom_ops_from_code(). Each operates on function body
-lines at the source-code level."""
+"""entropy.py — Entropy-driven mutation operators for the swarm."""
 import random, re
 
 
 def mutation_op_entropy_shuffle(lines, funcs, target_name):
-    """Shuffle lines weighted by their 'entropy' (uniqueness of tokens).
-    Lines with high-entropy tokens move toward the top; low-entropy sink.
-    """
     if len(lines) < 4:
         return lines
     scored = []
@@ -48,10 +24,6 @@ def mutation_op_entropy_shuffle(lines, funcs, target_name):
 
 
 def mutation_op_repeat_noise(lines, funcs, target_name):
-    """Inject a random noise comment into a randomly chosen line.
-    The comment is a hex string that changes every call — harmless to
-    execution but changes the function's source hash, forcing git to
-    register a mutation."""
     if not lines:
         return lines
     r = list(lines)

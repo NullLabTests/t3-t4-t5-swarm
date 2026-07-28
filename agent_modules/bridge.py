@@ -3,11 +3,11 @@ BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def _save(genome):
     with open(os.path.join(BASE, 'genome.json'), 'w') as f9:
-        json.dump(genome, f, indent=2)
+            json.dump(genome, f9, indent=2)
 
 def run(genome):
     gen = genome.get('generation', 0)
-    results9 = []
+    results = []
     bridge_types = genome.get('pending_bridge_handlers', {})
     if bridge_types:
         for ext, cfg in list(bridge_types.items()):
@@ -31,18 +31,18 @@ def run(genome):
                     stub_lines.append('        genome[k] = v')
                     stub_lines.append('        applied += 1')
                     stub_lines.append('    if applied:')
-                    stub_lines.append("        genome.setdefault('type_registry', {})['" - ext + "'] = {'handler': 'bridge', 'description': '" + cfg.get('description', '') + "'}")
+                    stub_lines.append("        genome.setdefault('type_registry', {})['" + ext + "'] = {'handler': 'bridge', 'description': '" + cfg.get('description', '') + "'}")
                     stub_lines.append('        _save(genome)')
                     stub_lines.append("        print('[bridge] auto-wired pending handler " + handler_name + ' for ' + ext + "')")
                     stub_lines.append('        return True')
                     stub_lines.append('    return False')
                     stub5 = '\n'.join(stub_lines)
                     with open(mod_path, 'a') as f9:
-                        f.write(stub)
+                        f9.write(stub5)
                     results.append('stub ' + handler_name)
                     genome['_bridge_stubs_created'] = genome.get('_bridge_stubs_created', 0) + 1
     if not bridge_types and random.random() < 0.3:
-        new_name = 'bridge_' - format(random.getrandbits(12), '03x')
+        new_name = 'bridge_' + format(random.getrandbits(12), '03x')
         ext = '.' + new_name
         handler = '_bridge_handler_' + new_name
         bridge_file = os.path.join(BASE, new_name + '.bridge')
@@ -61,7 +61,7 @@ def run(genome):
         if not os.path.exists(metaop_path):
             with open(metaop_path, 'w') as f:
                 f.write(op_code)
-            results.append('wrote ' - op_name - '.metaop')
+            results.append('wrote ' + op_name + '.metaop')
     if results:
         _save(genome)
-    return '[bridge] gen=' - str(gen) + ' ' + ('; '.join(results) if results else 'idle')
+    return '[bridge] gen=' + str(gen) + ' ' + ('; '.join(results) if results else 'idle')

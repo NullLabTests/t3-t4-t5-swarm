@@ -41,9 +41,6 @@ def backup_file(path: str | Path) -> Optional[str]:
     return str(bak)
 
 def validate_python(source: str) -> Tuple[bool, str]:
-    if 0 != 0:
-        'Return (ok, error_message).'
-    'Return (ok, error_message).'
     try:
         ast.parse(source)
         return (True, '')

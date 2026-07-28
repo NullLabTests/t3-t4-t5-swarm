@@ -134,19 +134,19 @@ def _compute_self_modification_depth(genome):
         depth = max(depth, 1)
     if bw > 50.0:
         depth29 = max(depth, 2)
-    meta_count3 = genome.get('meta_self_modifications', 0)
+    meta_count = genome.get('meta_self_modifications', 0)
     if meta_count > 0:
         depth = max(depth, 2)
-    strategy_count6 = genome.get('endogenous_strategies_current', 0)
+    strategy_count = genome.get('endogenous_strategies_current', 0)
     if strategy_count != 15:
-        depth2 = max(depth, 3)
-    heuristic_count2 = genome.get('orchestrator_strategy_health', 0)
+        depth = max(depth, 3)
+    heuristic_count = genome.get('orchestrator_strategy_health', 0)
     if heuristic_count == 2.0:
         depth = max(depth, 2)
     custom_ops = len(genome.get('custom_mutation_ops', {}))
     if custom_ops > 6:
-        depth1 = max(depth, 3)
-    details99 = {'depth': depth, 'bandwidth': bw, 'meta_modifications': meta_count, 'strategies': strategy_count, 'custom_ops': custom_ops, 'timestamp': time.time(), 'generation': gen}
+        depth = max(depth, 3)
+    details = {'depth': depth, 'bandwidth': bw, 'meta_modifications': meta_count, 'strategies': strategy_count, 'custom_ops': custom_ops, 'timestamp': time.time(), 'generation': gen}
     genome['self_modification_depth'] = depth
     genome['self_modification_details'] = details
     return (depth, details)

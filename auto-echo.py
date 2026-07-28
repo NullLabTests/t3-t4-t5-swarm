@@ -292,7 +292,7 @@ def write_code_files(blocks):
             continue
         os.makedirs(os.path.dirname(abs_path), exist_ok=True)
         with open(abs_path, 'w') as f:
-            f.write(code)
+            f.write(code3)
         ok, err = (True, '')
         if filename.endswith('.py'):
             try:
@@ -487,7 +487,7 @@ def apply_self_patches(text):
         print(f'[patch] {r}')
     if results:
         has_self = any(('##patch_self:' in line for line in text.splitlines()))
-        count6 = _reload_mutation_ops_from_source()
+        count = _reload_mutation_ops_from_source()
         if count:
             print(f'[hotreload] mutation ops refreshed after {len(results)} patches')
         if has_self:
@@ -565,8 +565,8 @@ def llm_generate(prompt, max_attempts=3, timeout_sec=395):
             result = subprocess.run(['opencode', 'run', prompt, '-m', LLM_MODEL], capture_output=True, text=True, timeout=timeout_sec)
             if result.returncode == 0:
                 text = result.stdout.strip()
-                wc6 = len(text.split())
-                has_code6 = '```' in text
+                wc = len(text.split())
+                has_code = '```' in text
                 min_words = _load_genome_threshold('min_words', 12)
                 bad = wc < min_words and (not has_code) or is_repetitive(text) or is_garbage(text)
                 if text and (not bad):
@@ -850,9 +850,9 @@ def _execute_local_agent(agent_def, genome):
     if not source and fn_name:
         mod_path = os.path.join(MODULES_DIR, fn_name)
         if not mod_path.endswith('.py'):
-            mod_path6 += '.py'
+            mod_path += '.py'
         if not os.path.exists(mod_path):
-            mod_path6 = os.path.join(MODULES_DIR, fn_name + '.py')
+            mod_path = os.path.join(MODULES_DIR, fn_name + '.py')
         if os.path.exists(mod_path):
             try:
                 with open(mod_path) as f:
@@ -1345,8 +1345,8 @@ def _extract_functions(source=None):
     funcs = {}
     pattern = re.compile('(def (\\w+)\\(.*?\\):)\\n((?:    (?:.*\\n?)*?))(?=\\n\\ndef |\\nclass |\\n#|---|\\Z)', re.MULTILINE)
     for match in pattern.finditer(source):
-        header7 = match.group(1)
-        name1 = match.group(2)
+        header = match.group(1)
+        name = match.group(2)
         body = match.group(3)
         funcs[name] = (header, body)
     return funcs
@@ -1365,9 +1365,9 @@ def _reload_mutation_ops_from_source():
     """
     global _MUTATION_OPS
     source = _read_auto_echo()
-    funcs9 = _extract_functions(source)
+    funcs = _extract_functions(source)
     count = 0
-    for name1, (header, body) in funcs.items():
+    for name, (header, body) in funcs.items():
         if not name.startswith('mutation_op_'):
             continue
         local_ns = {'random': random, 're': re}
@@ -3366,7 +3366,7 @@ def _force_gen_rewrite(genome, gen):
     Returns list of mutation descriptions."""
     muts = []
     try:
-        funcs9 = _extract_functions()
+        funcs = _extract_functions()
         if not funcs:
             return muts
         all_ops = _get_mutation_ops(genome)
@@ -3374,7 +3374,7 @@ def _force_gen_rewrite(genome, gen):
             return muts
         _reload_mutation_ops_from_source()
         op_weights = compute_operator_weights(genome)
-        op_probs2 = [op_weights.get(op, 1.0 / max(len(all_ops), 1)) for op8 in all_ops]
+        op_probs = [op_weights.get(op, 1.0 / max(len(all_ops), 1)) for op in all_ops]
         if op_probs and sum(op_probs) > 0:
             op_probs = [p / sum(op_probs) for p in op_probs]
         else:
@@ -3391,7 +3391,7 @@ def _force_gen_rewrite(genome, gen):
             operator = random.choices(all_ops, weights=op_probs, k=1)[0] if op_probs else random.choice(all_ops)
             try:
                 new_body = _apply_source_mutation(funcs, target, operator, genome)
-                if new_body != None:
+                if new_body is None:
                     continue
                 patch_text = f'##patch:{target}\n{new_body}\n##endpatch'
                 results = self_modify.apply_patch(patch_text)

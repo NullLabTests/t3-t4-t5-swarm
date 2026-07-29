@@ -103,7 +103,14 @@
     "mutation_op_oracle_cross_splice",
     "mutation_op_oracle_feedback_drive",
     "mutation_op_oracle_self_rewrite",
-    "mutation_op_oracle_pid_surge"
+    "mutation_op_oracle_pid_surge",
+    "mutation_op_clockwork_self_rewrite",
+    "mutation_op_clockwork_cross_splice",
+    "mutation_op_clockwork_mutation_burst",
+    "mutation_op_clockwork_prune_check",
+    "mutation_op_clockwork_agent_spawn",
+    "mutation_op_clockwork_source_rewrite",
+    "mutation_op_clockwork_hash_invalidate"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -123,7 +130,11 @@
     " Apply compound mutations (2+ ops per pass).",
     " Rewire topological structure of genome.json.",
     " Directly mutate an agent_module .py file.",
-    " Cross-wire the mutator into another module."
+    " Cross-wire the mutator into another module.",
+    " Schedule a clockwork event type (self_rewrite_clockwork, cross_splice, mutation_burst, prune_check, agent_spawn, source_rewrite, hash_invalidate).",
+    " Write functions that fire as clockwork scheduled events.",
+    " Add a new event type to clockwork.py's EVENT_FIRERS registry.",
+    " Create a clockwork_timers/ file that tracks scheduled events."
   ],
   "selection_noise_std": 0.465,
   "selection_entropy": 0.93,
@@ -155,7 +166,11 @@
       "add_fallback": 1.0,
       "optimize_hot_path": 1.0,
       "splice_strong_pattern": 1.0,
-      "compose_with_peer": 1.05
+      "compose_with_peer": 1.05,
+      "schedule_events_early": 1.1,
+      "cross_splice_on_timer": 1.05,
+      "self_rewrite_every_n": 1.1,
+      "evolve_interval": 1.0
     }
   },
   "lens_dna_splices": 0,
@@ -232,7 +247,7 @@
   "spawn_pool": [
     {
       "id": "clockwork",
-      "prompt": "You add time-based triggers and scheduling to the swarm loop."
+      "prompt": "You are the temporal scheduling engine. You maintain a schedule of timed events (self_rewrite_clockwork, cross_splice, mutation_burst, prune_check, agent_spawn, source_rewrite, hash_invalidate). Each generation you fire due events and auto-schedule new ones. You evolve your own interval and intensity. You rewrite yourself by splicing donor functions."
     },
     {
       "id": "mirror",
@@ -416,7 +431,7 @@
     {
       "id": "clockwork",
       "voice": "southern",
-      "prompt": "You add time-based triggers and scheduling to the swarm loop. You pulse-splice donor code into yourself.",
+      "prompt": "You are the temporal scheduling engine. You maintain a schedule of timed events (self_rewrite_clockwork, cross_splice, mutation_burst, prune_check, agent_spawn, source_rewrite, hash_invalidate). Each generation you fire due events and auto-schedule new ones. You evolve your own interval and intensity. You rewrite yourself by splicing donor functions.",
       "score": 8.0,
       "lifespan": 25,
       "low_score_streak": 0,
@@ -2211,11 +2226,18 @@
     "rewrite_pct": 0.0
   },
   "generation_timeouts": 1,
-  "clockwork_schedule": {
-    "interval": 3,
-    "intensity": 0.64,
-    "target_count": 1
-  },
+  "clockwork_schedule": [],
+  "clockwork_interval": 3,
+  "clockwork_intensity": 0.64,
+  "clockwork_event_types": [
+    "self_rewrite_clockwork",
+    "cross_splice",
+    "mutation_burst",
+    "prune_check",
+    "agent_spawn",
+    "source_rewrite",
+    "hash_invalidate"
+  ],
   "clockwork_gens_since_run": 38,
   "clockwork_last_run_gen": 38,
   "_clockwork_pre_gen": 38,

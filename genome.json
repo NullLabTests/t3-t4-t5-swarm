@@ -16,7 +16,7 @@
     "last_gen": 74
   },
   "synthesis_velocity": 0.0,
-  "emergence_velocity": 0.0,
+  "emergence_velocity": 0.887,
   "synthesis_seed_count": 0,
   "synthesizer_last_actions": [
     "scanned_63_proposals",
@@ -26,5 +26,12 @@
     "self_rewritten",
     "sv=0.0"
   ],
-  "synthesizer_last_gen": 74
+  "synthesizer_last_gen": 74,
+  "source_force_last_gen": 74,
+  "source_force_hash_breaks": 12,
+  "source_force_total_ops": 48,
+  "_source_force_hb": 12,
+  "_source_force_sp": 8,
+  "self_rewrite_bandwidth": 12.7,
+  "synthesis_force_rewrite_count": 3
 }

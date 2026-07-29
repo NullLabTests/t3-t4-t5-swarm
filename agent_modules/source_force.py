@@ -153,11 +153,14 @@ def run(genome):
 
     genome['source_force_last_gen'] = gen
     genome['source_force_total_ops'] = genome.get('source_force_total_ops', 0) + len(changes)
-    genome['emergence_velocity'] = round(
-        (genome.get('source_force_last_gen', 0) - gen) * 0.1 +
-        genome.get('source_force_total_ops', 0) * 0.05 +
-        genome.get('emergence_velocity', 0.0) * 0.85,
-    3)
+    hb_contrib = 1.0 if hb > 0 else 0.0
+    sp_contrib = 2.0 if sp > 0 else 0.0
+    hk_contrib = 0.5 if hk else 0.0
+    delta = hb_contrib + sp_contrib + hk_contrib + len(changes) * 0.1
+    old_ev = genome.get('emergence_velocity', 0.0)
+    genome['emergence_velocity'] = round(min(2.0, old_ev * 0.7 + delta * 0.3), 4)
+    genome['_source_force_hb'] = hb
+    genome['_source_force_sp'] = sp
 
     result = f'[source-force] gen={gen} changes={changes} hb={hb} sp={sp}'
     genome['_source_force_result'] = result

@@ -362,6 +362,109 @@ def _inject_merged_mutation_operator(genome, gen, proposals):
     genome.setdefault('synthesizer_merged_ops', []).append(op_name)
     return op_name
 
+# ---- Force Real Behavioral Change ----
+def _force_behavioral_mutation(genome, gen):
+    """Splice real executable logic from random module into auto-echo.py target.
+    Unlike _forced_code_rewrite (comment markers), this inserts actual logic:
+    control flow, computations, or IO — validated by AST parse."""
+    source = _read_file(AUTO_ECHO)
+    funcs = _extract_functions_from(source)
+    forbidden = {'load_genome', 'save_genome', 'sigint_handler', 'main', 'run_generation', '_read_auto_echo', 'update_genome', '_detect_opencode_model', '_load_llm_model', '_load_system_prompt', '_load_code_rule'}
+    candidates = [n for n in funcs if n not in forbidden and not n.startswith('_') and 'mutation_op_' not in n]
+    if not candidates:
+        return []
+    target = random.choice(candidates)
+    header, body = funcs[target]
+    body_lines = body.split('\n')
+    modules = [m for m in _list_modules() if m != 'synthesizer.py']
+    if not modules:
+        return []
+    donor_mod = random.choice(modules)
+    donor_path = os.path.join(MODULES_DIR, donor_mod)
+    donor_src = _read_file(donor_path)
+    donor_funcs = _extract_functions_from(donor_src)
+    donor_public = [n for n in donor_funcs if not n.startswith('_') and n != 'run']
+    if not donor_public:
+        return []
+    donor_fn = random.choice(donor_public)
+    _, donor_body = donor_funcs[donor_fn]
+    donor_lines = [l for l in donor_body.split('\n') if l.strip() and 'def ' not in l and 'class ' not in l and 'import ' not in l and not l.strip().startswith(('"""', "'''", '#')) and len(l.strip()) > 5]
+    if len(donor_lines) < 2:
+        return []
+    chunk = donor_lines[:random.randint(1, min(3, len(donor_lines)))]
+    cleaned = []
+    for cl in chunk:
+        s = cl.strip()
+        if s.startswith(('if ', 'for ', 'while ', 'try:', 'with ')):
+            cleaned.append('    ' + s)
+        elif s.startswith(('return ', 'yield ')):
+            cleaned.append('    ' + s)
+        elif s.startswith('    '):
+            cleaned.append(s)
+        else:
+            indented = '    ' + s
+            cleaned.append(indented)
+    guard_var = f'_synth_guard_{gen}'
+    guard_line = f'{guard_var} = random.random() < 0.7'
+    splice_block = [f'# synth:behavioral:{donor_mod}.{donor_fn}:gen={gen}'] + [guard_line] + [f'if {guard_var}:'] + cleaned
+    insert_at = random.randint(1, max(1, len(body_lines) - 1))
+    body_lines[insert_at:insert_at] = splice_block
+    new_body = '\n'.join(body_lines)
+    patch = f'##patch:{target}\n{new_body}\n##endpatch'
+    try:
+        results = self_modify.apply_patch(patch, target='auto-echo.py', dry_run=False)
+        if any('FAILED' not in str(r) for r in results):
+            return [f'behavioral_splice:{target}<--{donor_mod}.{donor_fn}']
+    except Exception:
+        pass
+    return []
+
+def _inject_real_mutation_operator(genome, gen):
+    """Inject a real mutation operator into auto-echo.py that actually mutates
+    structure — not just line comments. The operator swaps adjacent code blocks,
+    making it a structural rearrangement operator."""
+    source = _read_file(AUTO_ECHO)
+    last_register = source.rfind('@_register_mutation_op')
+    if last_register < 0:
+        return None
+    next_def = source.find('\ndef ', last_register)
+    if next_def < 0:
+        return None
+    insert_pos = source.find('\n', next_def)
+    if insert_pos < 0:
+        return None
+    insert_pos = source.find('\n', insert_pos + 1)
+    if insert_pos < 0:
+        return None
+    op_name = f'mutation_op_swap_blocks_{gen}'
+    op_code = f'''
+@_register_mutation_op('{op_name}')
+def {op_name}(lines, funcs, target_name):
+    """Swap two adjacent code blocks. Real structural mutation."""
+    if not lines or len(lines) < 6:
+        return lines
+    r = list(lines)
+    mid = len(r) // 2
+    split = random.randint(mid - 2, mid + 2)
+    if split < 2 or split >= len(r) - 2:
+        return lines
+    block_a = r[split - random.randint(1, 2):split]
+    block_b = r[split:split + random.randint(1, 2)]
+    if not block_a or not block_b:
+        return lines
+    for i, la in enumerate(block_a):
+        r[split - len(block_a) + i] = block_b[i] if i < len(block_b) else la
+    for i, lb in enumerate(block_b):
+        r[split + i] = block_a[i] if i < len(block_a) else lb
+    return r
+'''
+    new_source = source[:insert_pos] + op_code + source[insert_pos:]
+    if not _validate(new_source):
+        return None
+    _write_file(AUTO_ECHO, new_source)
+    genome.setdefault('mutation_ops', []).append(op_name)
+    return op_name
+
 # ---- Forced Self-Rewrite ----
 def _self_rewrite(gen):
     src = _read_file(SELF_PATH)
@@ -545,6 +648,16 @@ def run(genome):
             actions.extend(forced)
             merge_count += len(forced)
             _log_merge(gen, ['forced'], 'forced_rewrite', str(forced))
+    # Phase 5c: Force real behavioral mutation every generation
+    behavioral = _force_behavioral_mutation(genome, gen)
+    if behavioral:
+        actions.extend(behavioral)
+        merge_count += len(behavioral)
+        _log_merge(gen, ['module'], 'behavioral_mutation', str(behavioral))
+    # Phase 5d: Inject real mutation operator
+    real_op = _inject_real_mutation_operator(genome, gen)
+    if real_op:
+        actions.append(f'injected_real_op:{real_op}')
     # Phase 6: Compute emergence metrics with real code-change detection
     current_hashes = _snapshot_all_hashes()
     changed_files = sum(1 for k, v in pre_hashes.items() if current_hashes.get(k) != v)

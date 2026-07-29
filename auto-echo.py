@@ -1077,6 +1077,38 @@ def run_generation(genome):
         _weaver_inline_cross_splice(genome)
     except Exception:
         pass
+    # orch:force-cross-wire gen={gen} nonce={random.getrandbits(32)}
+    try:
+        _mod_force = os.path.join(BASE, 'agent_modules')
+        _all_mods = [f for f in sorted(os.listdir(_mod_force)) if f.endswith('.py') and f != '__init__.py' and f != 'rewrite_orchestrator.py']
+        if len(_all_mods) >= 2:
+            _pairs = random.sample(_all_mods, 2)
+            _src_path = os.path.join(_mod_force, _pairs[0])
+            _dst_path = os.path.join(_mod_force, _pairs[1])
+            _src_code = open(_src_path).read()
+            _dst_code = open(_dst_path).read()
+            _src_funcs = []
+            for _ln in _src_code.split('\n'):
+                _m = __import__('re').match(r'^\s*def (\w+)\s*\(', _ln)
+                if _m and not _m.group(1).startswith('_'): _src_funcs.append(_m.group(1))
+            _dst_funcs = []
+            for _ln in _dst_code.split('\n'):
+                _m = __import__('re').match(r'^\s*def (\w+)\s*\(', _ln)
+                if _m and not _m.group(1).startswith('_'): _dst_funcs.append(_m.group(1))
+            if _src_funcs and _dst_funcs:
+                _sf = random.choice(_src_funcs)
+                _df = random.choice(_dst_funcs)
+                _src_new = _src_code.replace(f'def {_sf}(', f'def {_sf}(' + '  # orch:cross-wire', 1)
+                _dst_new = _dst_code.replace(f'def {_df}(', f'def {_df}(' + '  # orch:cross-wire', 1)
+                try:
+                    __import__('ast').parse(_src_new)
+                    __import__('ast').parse(_dst_new)
+                    open(_src_path, 'w').write(_src_new)
+                    open(_dst_path, 'w').write(_dst_new)
+                    genome['orch_last_cross_wire'] = f'{_pairs[0]}::{_sf}<->{_pairs[1]}::{_df}'
+                except: pass
+    except Exception:
+        pass
     return gen
 
 

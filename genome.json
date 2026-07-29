@@ -6,14 +6,14 @@
   "spawn_threshold": 5,
   "prune_threshold": 3,
   "prune_generations": 3,
-  "emergence_velocity": 0.68,
+  "emergence_velocity": 0.832,
   "source_force_hash_breaks": 0,
   "source_force_splices": 0,
   "source_force_total_ops": 0,
   "source_force_last_gen": 65,
   "quine_loop_mutations": 1,
   "nova_action_log": [],
-  "mutation_rate": 0.95,
+  "mutation_rate": 0.969,
   "voice_map": {
     "explorer": "lessac",
     "analyzer": "alan",
@@ -95,7 +95,11 @@
     "mutation_op_orch_delete_line",
     "mutation_op_orch_swap_lines",
     "mutation_op_orch_shuffle_block",
-    "mutation_op_orch_cross_splice"
+    "mutation_op_orch_cross_splice",
+    "mutation_op_orch_func_splice",
+    "mutation_op_orch_auto_echo_mutate",
+    "mutation_op_orch_self_rewrite",
+    "mutation_op_orch_cross_wire_pair"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -1289,7 +1293,11 @@
     "mutation_op_endogenous_weakest_rewrite": "def mutation_op_endogenous_weakest_rewrite(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) > 3:\n        idx = random.randrange(len(r))\n        r.insert(idx, f\"# endogenous:weakest:{target_name}:{random.getrandbits(16):04x}\")\n        if idx + 1 < len(r):\n            r.insert(idx + 1, \"    # rewritten by endogenous agent\")\n    return r",
     "mutation_op_endogenous_self_escalate": "def mutation_op_endogenous_self_escalate(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if r:\n        r.append(f\"# endogenous:self-escalate:{target_name}:{random.getrandbits(24):06x}\")\n    return r",
     "mutation_op_cr_func_replace": "def mutation_op_cr_func_replace(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) < 5: return r\n    idx = random.randrange(2, len(r) - 2)\n    r[idx] = f'# cr:func-replace:{target_name}:{random.getrandbits(24):06x}'\n    if idx + 1 < len(r):\n        r[idx + 1] = f'    return {random.choice([\"True\", \"False\", \"None\", \"0\"])}'\n    return r",
-    "mutation_op_endogenous_func_replace": "def mutation_op_endogenous_func_replace(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) < 4: return r\n    idx = random.randrange(1, len(r) - 1)\n    r.insert(idx, f'# endogenous:func-replace:{target_name}:{random.getrandbits(24):06x}')\n    if idx + 2 < len(r):\n        r[idx + 1] = f'    return {random.choice([\"True\", \"False\", \"0\", \"None\"])}  # endogenous:replaced'\n    return r"
+    "mutation_op_endogenous_func_replace": "def mutation_op_endogenous_func_replace(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) < 4: return r\n    idx = random.randrange(1, len(r) - 1)\n    r.insert(idx, f'# endogenous:func-replace:{target_name}:{random.getrandbits(24):06x}')\n    if idx + 2 < len(r):\n        r[idx + 1] = f'    return {random.choice([\"True\", \"False\", \"0\", \"None\"])}  # endogenous:replaced'\n    return r",
+    "mutation_op_orch_func_splice": "def mutation_op_orch_func_splice(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) < 5: return r\n    i = random.randrange(1, len(r) - 2)\n    r.insert(i, f\"# orch:func-splice:{target_name}:{random.getrandbits(24):06x}\")\n    if i + 1 < len(r):\n        r[i + 1] = r[i + 1].replace(\"return\", \"# orch:spliced-return \")\n    return r\n",
+    "mutation_op_orch_auto_echo_mutate": "def mutation_op_orch_auto_echo_mutate(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) < 3: return r\n    idx = random.randrange(0, len(r))\n    r.insert(idx, f\"# orch:auto-mutate:{random.getrandbits(24):06x}\")\n    return r\n",
+    "mutation_op_orch_self_rewrite": "def mutation_op_orch_self_rewrite(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if not r: return r\n    for i, line in enumerate(r):\n        if \"def run(\" in line:\n            r.insert(i + 1, \"    # orch:self-rewrite:active\n\")\n            break\n    return r\n",
+    "mutation_op_orch_cross_wire_pair": "def mutation_op_orch_cross_wire_pair(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) < 6: return r\n    a = random.randrange(0, len(r))\n    b = random.randrange(0, len(r))\n    if a != b and a < len(r) and b < len(r):\n        r[a], r[b] = r[b], r[a]\n    return r\n"
   },
   "diversity": {
     "op_count": 45,
@@ -2451,5 +2459,9 @@
   "_mirror_rewritten_gen": 64,
   "orchestrator_gen": 68,
   "orchestrator_rewritten": 0,
-  "orchestrator_total": 0
+  "orchestrator_total": 0,
+  "orch_total_rewrites": 1,
+  "orch_cross_wire_count": 1,
+  "orch_last_gen": 69,
+  "orch_active": true
 }

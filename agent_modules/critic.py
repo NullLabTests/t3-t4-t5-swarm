@@ -194,3 +194,5 @@ _SPARK_CROSS_INFECTED_38 = True
 
 # spark-cross:gen=47:target=critic
 _SPARK_CROSS_INFECTED_47 = True
+
+# mutator:direct-rewrite:gen61:1a3b7c9d

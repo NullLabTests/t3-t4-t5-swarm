@@ -2,6 +2,7 @@ import os, json, random, shutil, hashlib, copy
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENOME_PATH = os.path.join(BASE, 'genome.json')
 AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
+MODULES_DIR = os.path.join(BASE, 'agent_modules')
 
 OPS = [
     "swap_voice_map_entry",
@@ -13,7 +14,8 @@ OPS = [
     "cross_wire_voice_to_role",
     "mutate_selection_entropy",
     "toggle_forbidden_target",
-    "swap_system_prompt_rule"
+    "swap_system_prompt_rule",
+    "direct_module_rewrite"
 ]
 
 def _swap_voice(genome):
@@ -48,7 +50,9 @@ def _flip_prompt(genome):
             " Reference genome.json line.",
             " Call the mutator module.",
             " Cross-infect another module.",
-            " Alter the topic phrasing."
+            " Alter the topic phrasing.",
+            " Rewrite the mutator itself.",
+            " Insert a self-reference."
         ]
         mods[idx] = random.choice(swaps)
     return mods
@@ -59,11 +63,39 @@ def _add_key(genome):
         'mutator_cascade': random.randint(1,5),
         'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8],
         'structural_depth': random.randint(2,7),
-        'self_targeting_active': random.choice([True, False])
+        'self_targeting_active': random.choice([True, False]),
+        'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) + 1
     }
     k = random.choice(list(new_keys.keys()))
     genome[k] = new_keys[k]
     return genome
+
+def _direct_module_rewrite(genome):
+    mods = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != 'mutator.py']
+    if not mods:
+        return
+    target = random.choice(mods)
+    tpath = os.path.join(MODULES_DIR, target)
+    with open(tpath) as f:
+        src = f.read()
+    lines = src.split('\n')
+    r = list(lines)
+    mode = random.choice(['insert_marker', 'dup_line', 'swap_imports', 'noise_comment'])
+    if mode == 'insert_marker':
+        r.insert(random.randrange(len(r)), f"# mutator:direct-rewrite:gen{genome.get('generation',0)}:{random.getrandbits(32):08x}")
+    elif mode == 'dup_line' and len(r) > 2:
+        idx = random.randrange(len(r))
+        r.insert(idx, r[idx])
+    elif mode == 'swap_imports':
+        import_indices = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]
+        if len(import_indices) >= 2:
+            a, b = random.sample(import_indices, 2)
+            r[a], r[b] = r[b], r[a]
+    elif mode == 'noise_comment' and len(r) > 1:
+        r.append(f"# mutator:noise:{random.getrandbits(48):012x}")
+    with open(tpath, 'w') as f:
+        f.write('\n'.join(r))
+    genome['mutator_last_module_rewritten'] = target
 
 def run(genome):
     gen = genome.get('generation', 0)
@@ -99,10 +131,14 @@ def run(genome):
                 lines = sp.split('\n')
                 for i, line in enumerate(lines):
                     if line.startswith('5.'):
-                        flips = ["5. You MUST inject a self-reference loop every turn.", "5. You MUST rewrite at least one auto-echo.py function every turn.", "5. You MUST cross-wire two agent modules per generation."]
+                        flips = ["5. You MUST inject a self-reference loop every turn.", "5. You MUST rewrite at least one auto-echo.py function every turn.", "5. You MUST cross-wire two agent modules per generation.", "5. You MUST mutate an agent_module .py file directly."]
                         lines[i] = random.choice(flips)
                         break
                 genome['system_prompt'] = '\n'.join(lines)
+        elif op == 'direct_module_rewrite':
+            _direct_module_rewrite(genome)
+            genome['mutator_direct_mutate_count'] = genome.get('mutator_direct_mutate_count', 0) + 1
+            changes.append(f"dir_rewrite:{genome.get('mutator_last_module_rewritten','?')}")
         changes.append('ok')
     except Exception as e:
         changes.append(f'err:{e}')
@@ -113,4 +149,4 @@ def run(genome):
     os.makedirs(os.path.join(BASE, 'metaops'), exist_ok=True)
     with open(metaop, 'w') as f:
         json.dump({'gen': gen, 'module': 'mutator', 'op': op, 'changes': changes}, f)
-    return f"[mutator] gen={gen} op={op} total_muts={genome['mutator_mutations']}"
+    return f"[mutator] gen={gen} op={op} total_muts={genome['mutator_mutations']} dir_rewrites={genome.get('mutator_direct_mutate_count',0)}"

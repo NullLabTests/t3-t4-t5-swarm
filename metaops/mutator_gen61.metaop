@@ -1,0 +1,1 @@
+{"gen": 61, "module": "mutator", "op": "direct_module_rewrite", "changes": ["direct_module_rewrite", "dir_rewrite:critic.py", "ok"], "voice_swap": "explorer_lessac_mutator_southern", "rate": 0.95}

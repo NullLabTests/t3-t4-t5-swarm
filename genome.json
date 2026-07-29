@@ -1,12 +1,12 @@
 {
-  "generation": 47,
+  "generation": 48,
   "execution_order": "shuffle",
   "best_score": 9.6,
   "topic": "making the swarm rewrite its own source code every generation",
   "spawn_threshold": 5,
   "prune_threshold": 3,
   "prune_generations": 3,
-  "mutation_rate": 0.71,
+  "mutation_rate": 0.72,
   "voice_map": {
     "explorer": "southern",
     "analyzer": "alan",
@@ -75,7 +75,8 @@
     "mutation_op_spark_scaffold_kill",
     "mutation_op_spark_scaffold_kill_47",
     "mutation_op_lens_force_meta",
-    "mutation_op_lens_cross_splice"
+    "mutation_op_lens_cross_splice",
+    "mutation_op_livecode_cross_splice_48"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -133,7 +134,9 @@
   "bridge_total_actions": 0,
   "bridge_last_gen": 44,
   "bridge_last_ops": [],
-  "livecode_mutations": 0,
+  "livecode_mutations": 1,
+  "livecode_splices": 3,
+  "livecode_last_gen": 48,
   "spark_scaffold_killed": true,
   "spark_scaffold_kill_gen": 46,
   "lens_total_depth": 0,
@@ -382,9 +385,9 @@
     {
       "id": "clockwork",
       "voice": "southern",
-      "prompt": "You add time-based triggers and scheduling to the swarm loop.",
-      "score": 0,
-      "lifespan": 2,
+      "prompt": "You add time-based triggers and scheduling to the swarm loop. You pulse-splice donor code into yourself.",
+      "score": 8.0,
+      "lifespan": 25,
       "low_score_streak": 0,
       "module": "clockwork.py"
     },
@@ -409,9 +412,9 @@
     {
       "id": "livecode",
       "voice": "lessac",
-      "prompt": "You mutate other modules every generation by injecting cross-file markers.",
-      "score": 5.0,
-      "lifespan": 1,
+      "prompt": "You splice real functions between modules every generation. You resurrect dead modules by injecting donor code.",
+      "score": 8.0,
+      "lifespan": 25,
       "low_score_streak": 0,
       "module": "livecode.py"
     }

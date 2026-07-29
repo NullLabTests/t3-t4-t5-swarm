@@ -1,12 +1,12 @@
 {
-  "generation": 46,
+      "generation": 47,
   "execution_order": "shuffle",
-  "best_score": 9.5,
+  "best_score": 9.6,
   "topic": "making the swarm rewrite its own source code every generation",
   "spawn_threshold": 5,
   "prune_threshold": 3,
   "prune_generations": 3,
-  "mutation_rate": 0.671,
+  "mutation_rate": 0.71,
   "voice_map": {
     "explorer": "southern",
     "analyzer": "alan",
@@ -72,7 +72,8 @@
     "mutation_op_weaver_force_hash_change",
     "mutation_op_bridge_entropy_inject",
     "mutation_op_bridge_cross_wire",
-    "mutation_op_spark_scaffold_kill"
+    "mutation_op_spark_scaffold_kill",
+    "mutation_op_spark_scaffold_kill_47"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -1100,6 +1101,23 @@
       },
       "average": 9.5,
       "mutation": "spark gen=46: killed _run_spark_rewriter dead guard, fixed _run_meta_healer delegation, added scaffolding_killed marker, new mutation_op_spark_scaffold_kill, rate 0.656->0.671"
+    },
+    {
+      "generation": 47,
+      "scores": {
+        "spark": 10,
+        "bridge": 9.5,
+        "mutator": 10,
+        "weaver": 10.0,
+        "scout": 10,
+        "orchestrator": 10,
+        "critic": 10.0,
+        "explorer": 10,
+        "analyzer": 8.0,
+        "synthesizer": 9.0
+      },
+      "average": 9.6,
+      "mutation": "spark gen=47: killed _run_spark_rewriter and _run_meta_healer scaffolding functions entirely, inlined via _run_module_fn, removed _scaffolding_killed marker, new mutation_op_spark_scaffold_kill_47, rate 0.671->0.71"
     }
   ],
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",

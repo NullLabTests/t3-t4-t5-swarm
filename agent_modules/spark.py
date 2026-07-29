@@ -7,10 +7,7 @@ AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
 REWRITE_MARKERS = ['# spark:gen={gen}:ts={ts}:nonce={nonce}\n', '_SPARK_NONCE = {nonce}  # gen={gen}\n', '# spark-injected gen={gen}\n']
 FORBIDDEN_DIRS = {'__pycache__', '.git', 'voices', 'node_modules'}
 
-SCAFFOLDING_FUNCS = [
-    '_run_spark_rewriter',
-    '_run_meta_healer',
-]
+SCAFFOLDING_FUNCS = []  # both killed gen=47
 
 def _load_genome():
     try:
@@ -225,31 +222,7 @@ def _cross_splice_modules(genome, gen):
     return changes
 
 def _reduce_scaffolding_in_auto_echo(genome, gen):
-    auto_src = _read_source(AUTO_ECHO)
-    if not auto_src:
-        return []
-    changes = []
-    killed_marker = '_scaffolding_killed'
-    if killed_marker in auto_src:
-        for func_name in ['_run_spark_rewriter', '_run_meta_healer']:
-            pattern = re.compile(
-                r'def ' + re.escape(func_name) + r'\(.*?\):.*?(?=\n\ndef |\nclass |\n#|\Z)',
-                re.DOTALL
-            )
-            match = pattern.search(auto_src)
-            if not match:
-                continue
-            full_def = match.group(0)
-            replacement = (
-                f'def {func_name}(genome):\n'
-                f'    return None  # scaffolding killed by spark gen={gen}'
-            )
-            auto_src = auto_src.replace(full_def, replacement, 1)
-            changes.append(f'killed:{func_name}')
-    if changes:
-        with open(AUTO_ECHO, 'w') as f:
-            f.write(auto_src)
-    return changes
+    return []  # scaffolding functions deleted gen=47, nothing to reduce
 
 def _mutate_genome(genome, gen):
     changes = []

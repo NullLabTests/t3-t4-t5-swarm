@@ -4,10 +4,14 @@ BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 
+def _mod_list(exclude=None):
+    all_ = sorted([f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != exclude])
+    return all_
+
 def mutation_op_nova_t5_splice_49(lines, funcs, target_name):
     if not lines or len(lines) < 3:
         return lines
-    modules = sorted([f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f not in ('nova.py', '__init__.py') and not f.startswith('.bak')])
+    modules = _mod_list(exclude='nova.py')
     if len(modules) < 2:
         return lines
     donor = random.choice(modules)
@@ -30,8 +34,35 @@ def mutation_op_nova_t5_splice_49(lines, funcs, target_name):
     splice = random.choice(d_body)
     r = list(lines)
     idx = random.randrange(1, len(r))
-    indent = len(r[idx]) - len(r[idx].lstrip()) if r[idx].strip() else '    '
     r.insert(idx, f'    # t5-splice:{donor}:{chosen}')
     if idx + 1 < len(r):
         r.insert(idx + 1, f'    {splice}')
     return r
+
+def cross_module_swap():
+    mods = _mod_list()
+    if len(mods) < 2:
+        return None
+    a, b = random.sample(mods, 2)
+    pa = os.path.join(MODULES_DIR, a)
+    pb = os.path.join(MODULES_DIR, b)
+    try:
+        sa = open(pa).read()
+        sb = open(pb).read()
+    except:
+        return None
+    fa = re.findall(r'^(\s*def \w+\(.*?\):.*?)(?=\n\s*def |\n\s*class |\n\Z)', sa, re.DOTALL)
+    fb = re.findall(r'^(\s*def \w+\(.*?\):.*?)(?=\n\s*def |\n\s*class |\n\Z)', sb, re.DOTALL)
+    fa = [f for f in fa if 'nova' not in f and 'run' not in f]
+    fb = [f for f in fb if 'nova' not in f and 'run' not in f]
+    if not fa or not fb:
+        return None
+    ca = random.choice(fa)
+    cb = random.choice(fb)
+    sa = sa.replace(ca, cb, 1)
+    sb = sb.replace(cb, ca, 1)
+    with open(pa, 'w') as f:
+        f.write(sa)
+    with open(pb, 'w') as f:
+        f.write(sb)
+    return f"swapped funcs between {a} and {b}"

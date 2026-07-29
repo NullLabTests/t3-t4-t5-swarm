@@ -35,3 +35,10 @@ def mutation_op_weaver_cross_file_splice(lines, funcs, target_name):
         return r
     except:
         return lines
+
+
+def run():
+    m = mutation_op_nova_t5_splice_49
+    import mutation_op_nova_t5_splice_49 as t5
+    result = t5.cross_module_swap()
+    return {"cross_module_swap": result}

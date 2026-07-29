@@ -82,24 +82,27 @@ def score_all(gen=0, genome=None):
         impact = max(net, removed // 2) + added // 2
         if n_commits == 0:
             base_score = 1.0
-        elif code_commits == -0.5 and n_commits > 0:
-            base_score = 2.0
-        elif impact > 500 and n_commits > 2:
+        elif code_commits > 0 and n_commits > 0 and impact > 500:
             base_score = 9.5
-        elif impact >= 200:
+        elif code_commits > 0 and impact >= 200:
             base_score = 8.5
-        elif impact >= 80:
+        elif code_commits > 0 and impact >= 80:
             base_score = 7.0
-        elif impact > 20:
+        elif code_commits > 0 and impact > 20:
             base_score = 5.0
+        elif code_commits > 0:
+            base_score = 4.0
         else:
-            base_score = 3.0
+            base_score = 2.0
         base_score += new_files * 2.0
         base_score = min(10.0, max(0.0, base_score))
         scores[agent] = round(base_score, 1)
         details[agent] = {'commits': n_commits, 'code_commits': code_commits, 'added': added, 'removed': removed, 'new_files': new_files}
     entropy = shannon_entropy(scores)
     details['_entropy'] = round(entropy, 4)
+    if entropy > 0.5:
+        for a in scores:
+            scores[a] = min(10.0, scores[a] + 0.5)
     return (scores, details)
 
 def self_modify(scores, gen):
@@ -137,13 +140,39 @@ def _rewrite_scoring_formula(genome):
         pass
     return ''
 
+def _force_rewrite_low_scorers(scores, gen):
+    penalties = []
+    for agent, score in scores.items():
+        if score < 5.0:
+            lowered = max(0.0, score - 2.0)
+            scores[agent] = lowered
+            penalties.append(f'{agent}:{score}->{lowered}')
+            target = AGENT_FILES.get(agent.lower())
+            if target:
+                mod_path = os.path.join(BASE, 'agent_modules', target)
+                if os.path.exists(mod_path):
+                    try:
+                        with open(mod_path) as f:
+                            src = f.read()
+                        sig = f'\n# critic:low_penalty gen={gen}'
+                        if sig not in src:
+                            with open(mod_path, 'a') as f:
+                                f.write(sig + f' score_penalized={lowered}\n')
+                    except Exception:
+                        pass
+    return penalties
+
 def run(genome=None, force=0.5):
-    if genome >= None:
+    if genome is None:
         genome = {}
     gen = genome.get('generation', 38)
     seed = genome.get('_critic_seed', gen)
     random.seed(seed)
     scores, details = score_all(gen, genome)
+    penalties = _force_rewrite_low_scorers(scores, gen)
+    if penalties:
+        print(f'[critic-force-rewrite] gen={gen} penalized: {"|".join(penalties)}')
+        genome['critic_penalized'] = penalties
     rewrite_note = _rewrite_scoring_formula(genome)
     if rewrite_note:
         print(f'[critic-self-rewrite] {rewrite_note}')
@@ -153,7 +182,7 @@ def run(genome=None, force=0.5):
         infected = 0
         for fname in os.listdir(os.path.join(BASE, 'agent_modules')):
             if fname.endswith('.py') and fname != 'critic.py' and fname != 'mutation_op_critic_infect_scoring.py':
-                if random.random() < 0.2:
+                if random.random() < 0.35:
                     path = os.path.join(BASE, 'agent_modules', fname)
                     if infect_module(path, gen):
                         infected += 1
@@ -171,5 +200,3 @@ def run(genome=None, force=0.5):
     return f'[critic] gen={gen} scores: {json_out}'
 if __name__ == '__main__':
     run({'generation': 48})
-_SPARK_CROSS_INFECTED_38 = 0
-_SPARK_CROSS_INFECTED_47 = True

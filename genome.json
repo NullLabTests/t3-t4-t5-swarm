@@ -1021,7 +1021,7 @@
       "mutation": "spark gen=47: killed _run_spark_rewriter and _run_meta_healer scaffolding functions entirely, inlined via _run_module_fn, removed _scaffolding_killed marker, new mutation_op_spark_scaffold_kill_47, rate 0.671->0.71"
     },
     {
-      "generation": 48,
+  "generation": 49,
       "scores": {
         "critic": 9.5,
         "bridge": 9.5,

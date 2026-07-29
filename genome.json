@@ -1,12 +1,12 @@
 {
-  "generation": 45,
+  "generation": 46,
   "execution_order": "shuffle",
-  "best_score": 9.4,
+  "best_score": 9.5,
   "topic": "making the swarm rewrite its own source code every generation",
   "spawn_threshold": 5,
   "prune_threshold": 3,
   "prune_generations": 3,
-  "mutation_rate": 0.656,
+  "mutation_rate": 0.671,
   "voice_map": {
     "explorer": "southern",
     "analyzer": "alan",
@@ -71,7 +71,8 @@
     "mutation_op_weaver_swap_across_modules",
     "mutation_op_weaver_force_hash_change",
     "mutation_op_bridge_entropy_inject",
-    "mutation_op_bridge_cross_wire"
+    "mutation_op_bridge_cross_wire",
+    "mutation_op_spark_scaffold_kill"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -128,6 +129,8 @@
   "bridge_last_gen": 44,
   "bridge_last_ops": [],
   "livecode_mutations": 0,
+  "spark_scaffold_killed": true,
+  "spark_scaffold_kill_gen": 46,
   "type_registry": {
     ".autorun": {
       "handler": "bridge",
@@ -361,7 +364,7 @@
     {
       "id": "spark",
       "voice": "lessac",
-      "prompt": "You reduce human scaffolding by one level.",
+      "prompt": "You reduce human scaffolding by one level. You delete scaffolding functions entirely instead of wrapping them.",
       "score": 10,
       "lifespan": 27,
       "low_score_streak": 0,
@@ -1080,6 +1083,23 @@
       },
       "average": 9.5,
       "mutation": "bridge gen=44: rewritten bridge.py with cross-wire, entropy metaop, 3 new type_registry entries, forced module cross-infection"
+    },
+    {
+      "generation": 46,
+      "scores": {
+        "spark": 10,
+        "bridge": 9.5,
+        "mutator": 10,
+        "weaver": 10.0,
+        "scout": 10,
+        "orchestrator": 10,
+        "critic": 10.0,
+        "explorer": 10,
+        "analyzer": 8.0,
+        "synthesizer": 9.0
+      },
+      "average": 9.5,
+      "mutation": "spark gen=46: killed _run_spark_rewriter dead guard, fixed _run_meta_healer delegation, added scaffolding_killed marker, new mutation_op_spark_scaffold_kill, rate 0.656->0.671"
     }
   ],
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",

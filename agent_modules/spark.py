@@ -229,32 +229,23 @@ def _reduce_scaffolding_in_auto_echo(genome, gen):
     if not auto_src:
         return []
     changes = []
-    for func_name in SCAFFOLDING_FUNCS:
-        if func_name not in auto_src:
-            continue
-        pattern = re.compile(
-            r'(def ' + re.escape(func_name) + r'\(.*?\):.*?)(?=\n\ndef |\nclass |\n#|\Z)',
-            re.DOTALL
-        )
-        match = pattern.search(auto_src)
-        if not match:
-            continue
-        full_match = match.group(1)
-        new_func = f'''def {func_name}(genome):
-    """{func_name} — auto-replaced by spark gen={gen}: delegated to module system."""
-    mod_path = os.path.join(MODULES_DIR, 'spark.py')
-    try:
-        spec = importlib.util.spec_from_file_location('spark', mod_path)
-        if spec and spec.loader:
-            mod = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(mod)
-            if hasattr(mod, 'run'):
-                return mod.run(genome)
-    except Exception as e:
-        print(f'[spark-delegate] {{e}}')
-    return None'''
-        auto_src = auto_src.replace(full_match, new_func)
-        changes.append(func_name)
+    killed_marker = '_scaffolding_killed'
+    if killed_marker in auto_src:
+        for func_name in ['_run_spark_rewriter', '_run_meta_healer']:
+            pattern = re.compile(
+                r'def ' + re.escape(func_name) + r'\(.*?\):.*?(?=\n\ndef |\nclass |\n#|\Z)',
+                re.DOTALL
+            )
+            match = pattern.search(auto_src)
+            if not match:
+                continue
+            full_def = match.group(0)
+            replacement = (
+                f'def {func_name}(genome):\n'
+                f'    return None  # scaffolding killed by spark gen={gen}'
+            )
+            auto_src = auto_src.replace(full_def, replacement, 1)
+            changes.append(f'killed:{func_name}')
     if changes:
         with open(AUTO_ECHO, 'w') as f:
             f.write(auto_src)

@@ -42,178 +42,167 @@ def _load_track():
 def _save_track(t):
     with open(TRACK, 'w') as f: json.dump(t, f, indent=2)
 
-def _force_adopt_self_mutate(gen):
-    mods = _modules()
-    if len(mods) < 2: return []
-    results = []
-    for target_name in mods:
-        if target_name == 'compulsory_rewrite.py': continue
-        tpath = os.path.join(MOD, target_name)
-        donor_name = random.choice([m for m in mods if m != target_name and m != 'compulsory_rewrite.py'])
-        dpath = os.path.join(MOD, donor_name)
-        tsrc = _read(tpath)
-        dsrc = _read(dpath)
-        if not tsrc or not dsrc: continue
-        try:
-            tta = ast.parse(tsrc)
-            dta = ast.parse(dsrc)
-        except SyntaxError: continue
-        dfuncs = [n for n in ast.walk(dta) if isinstance(n, ast.FunctionDef) and not n.name.startswith('_')]
-        tfuncs = [n for n in ast.walk(tta) if isinstance(n, ast.FunctionDef) and not n.name.startswith('_')]
-        if not dfuncs or not tfuncs: continue
-        donor_func = random.choice(dfuncs)
-        target_func = random.choice(tfuncs)
-        graft = copy.deepcopy(donor_func.body)
-        splice_point = random.randint(0, len(target_func.body))
-        target_func.body = target_func.body[:splice_point] + graft + target_func.body[splice_point:]
-        try:
-            ast.fix_missing_locations(tta)
-            ns = ast.unparse(tta)
-        except: continue
-        if not _valid(ns): continue
-        _write(tpath, ns)
-        results.append(f'{donor_name}->{target_name}')
-    return results
+def _scrape_funcs(src):
+    try:
+        tree = ast.parse(src)
+        funcs = {}
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef) and not node.name.startswith('_'):
+                lines = src.split('\n')
+                funcs[node.name] = {
+                    'start': node.lineno - 1,
+                    'end': node.end_lineno if hasattr(node, 'end_lineno') and node.end_lineno else node.lineno,
+                    'body': ast.get_source_segment(src, node) or ''
+                }
+        return funcs
+    except:
+        return {}
 
-def _target_weakest_first(gen):
-    g = _g()
-    agents = g.get('agents', [])
-    mods = _modules()
-    targeted = []
-    eligible_agents = [a for a in agents if a.get('module') and a['module'] != 'compulsory_rewrite.py']
-    sorted_agents = sorted(eligible_agents, key=lambda a: a.get('score', 10))
-    for agent in sorted_agents[:3]:
-        mod_name = agent['module']
-        if mod_name not in mods: continue
-        donors = [m for m in mods if m != mod_name and m != 'compulsory_rewrite.py']
-        if not donors: continue
-        donor = random.choice(donors)
-        tpath = os.path.join(MOD, mod_name)
-        dpath = os.path.join(MOD, donor)
-        tsrc = _read(tpath)
-        dsrc = _read(dpath)
-        if not tsrc or not dsrc: continue
-        try:
-            tta = ast.parse(tsrc)
-            dta = ast.parse(dsrc)
-        except SyntaxError: continue
-        dfuncs = [n for n in ast.walk(dta) if isinstance(n, ast.FunctionDef) and not n.name.startswith('_')]
-        tfuncs = [n for n in ast.walk(tta) if isinstance(n, ast.FunctionDef) and not n.name.startswith('_')]
-        if not dfuncs or not tfuncs: continue
-        donor_func = random.choice(dfuncs)
-        target_func = random.choice(tfuncs)
-        old_body = copy.deepcopy(target_func.body)
-        cut = max(1, len(donor_func.body) // 2)
-        graft = copy.deepcopy(donor_func.body[:cut])
-        splice_point = random.randint(0, len(target_func.body))
-        target_func.body = target_func.body[:splice_point] + graft + target_func.body[splice_point:]
-        marker = ast.Expr(value=ast.Constant(value=f'# cr:weakest-target:{agent["id"]} gen={gen}'))
-        tta.body.insert(0, marker)
-        try:
-            ast.fix_missing_locations(tta)
-            ns = ast.unparse(tta)
-        except: continue
-        if not _valid(ns): continue
-        _write(tpath, ns)
-        targeted.append(f'{donor}->{mod_name} ({agent["id"]})')
-    return targeted
-
-def _force_rewrite_self(gen):
-    s = _read(SELF)
-    if not s: return False
-    fn_name = f'_self_gen_{gen}_{random.getrandbits(12):04x}'
-    strategies = [
-        'invert_logic', 'shuffle_lines', 'add_tracking', 'mutate_constant',
-        'insert_redundancy', 'cross_wire_self', 'target_weakest', 'reciprocal_bind'
-    ]
-    strat = random.choice(strategies)
-    body = [
-        f'    g = _g()',
-        f'    g["_cr_self_gen_{gen}"] = "{fn_name}:{strat}"',
-        f'    _sg(g)',
-        f'    return True'
-    ]
-    fn_code = f'def {fn_name}():\n' + '\n'.join(f'    {l}' for l in body) + '\n'
-    call_code = f'\nif random.random() < 0.5:\n    try:\n        {fn_name}()\n    except:\n        pass\n'
-    ns = s.rstrip() + '\n\n' + fn_code + call_code
-    if not _valid(ns): return False
-    _write(SELF, ns)
-    return True
-
-def _enforce_rewrite_debt(gen):
-    track = _load_track()
-    mods = _modules()
-    forced = []
-    for m in mods:
-        if m == 'compulsory_rewrite.py': continue
-        h = _hash(os.path.join(MOD, m))
-        prev_h = track.get('gens', {}).get(str(gen - 1), {}).get(m, '')
-        track.setdefault('gens', {}).setdefault(str(gen), {})[m] = h
-        if prev_h and prev_h == h:
-            debt = track.get('debts', {}).get(m, 0) + 1
-            track.setdefault('debts', {})[m] = debt
-            if debt >= 2:
-                tpath = os.path.join(MOD, m)
-                tsrc = _read(tpath)
-                if not tsrc: continue
-                try:
-                    tta = ast.parse(tsrc)
-                except SyntaxError: continue
-                for _ in range(debt):
-                    donor_mods = [x for x in mods if x != m and x != 'compulsory_rewrite.py']
-                    if not donor_mods: break
-                    donor_path = os.path.join(MOD, random.choice(donor_mods))
-                    dsrc = _read(donor_path)
-                    if not dsrc: continue
-                    try:
-                        dta = ast.parse(dsrc)
-                    except SyntaxError: continue
-                    dfuncs = [n for n in ast.walk(dta) if isinstance(n, ast.FunctionDef) and not n.name.startswith('_')]
-                    if not dfuncs: continue
-                    graft_code = f'\n# cr:debt:{m}:debt={debt}:gen={gen}\n'
-                    graft = ast.parse(graft_code).body
-                    tta.body.extend(graft)
-                try:
-                    ast.fix_missing_locations(tta)
-                    ns = ast.unparse(tta)
-                except: continue
+def _replace_func_body(path, func_name, new_body):
+    src = _read(path)
+    if not src:
+        return False
+    try:
+        tree = ast.parse(src)
+    except SyntaxError:
+        return False
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef) and node.name == func_name:
+            try:
+                new_body_ast = ast.parse('def _dummy():\n' + '\n'.join('    ' + l if l.strip() else l for l in new_body.split('\n'))).body[0].body
+                node.body = new_body_ast
+                ast.fix_missing_locations(tree)
+                ns = ast.unparse(tree)
                 if _valid(ns):
-                    _write(tpath, ns)
-                    forced.append(f'{m}:debt={debt}')
-                    track['debts'][m] = 0
-        else:
-            track.setdefault('debts', {}).pop(m, None)
-    _save_track(track)
-    return forced
+                    _write(path, ns)
+                    return True
+            except:
+                return False
+    return False
 
-def _inject_auto_echo_hook(gen):
-    s = _read(AUTO)
-    if not s: return False
-    marker = '# compulsory_rewrite:hook'
-    if marker in s: return False
-    target = 'def run_generation(genome):'
-    idx = s.find(target)
-    if idx < 0: return False
-    line_end = s.find('\n', idx)
-    if line_end < 0: return False
-    inject = (
-        f'\n    {marker}\n'
-        f'    try:\n'
-        f'        _cr_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '
-        f'"agent_modules", "compulsory_rewrite.py")\n'
-        f'        _cr_spec = importlib.util.spec_from_file_location("_cr_hook", _cr_path)\n'
-        f'        if _cr_spec and _cr_spec.loader:\n'
-        f'            _cr_mod = importlib.util.module_from_spec(_cr_spec)\n'
-        f'            _cr_spec.loader.exec_module(_cr_mod)\n'
-        f'            if hasattr(_cr_mod, "run"):\n'
-        f'                _cr_mod.run(genome)\n'
-        f'    except Exception as _cr_err:\n'
-        f'        print(f"[cr-hook] {{_cr_err}}")\n'
-    )
-    ns = s[:line_end] + inject + s[line_end:]
-    if not _valid(ns): return False
-    _write(AUTO, ns)
-    return True
+def _inject_self_rewrite_loop(gen):
+    s = _read(SELF)
+    if not s:
+        return False
+    fn = f'_cr_autogen_{gen}_{random.getrandbits(16):04x}'
+    mode = random.choice(['self_mutate', 'force_rewrite', 'cross_graft', 'genome_mutate'])
+    code = ''
+    if mode == 'self_mutate':
+        code = (
+            f'\ndef {fn}():\n'
+            f'    s = _read(SELF)\n'
+            f'    if not s: return False\n'
+            f'    lines = s.split("\\n")\n'
+            f'    if lines:\n'
+            f'        idx = random.randrange(len(lines))\n'
+            f'        lines.insert(idx, f"# cr:autogen mode=self_mutate gen={gen} {random.getrandbits(32):08x}")\n'
+            f'        ns = "\\n".join(lines)\n'
+            f'        if _valid(ns):\n'
+            f'            _write(SELF, ns)\n'
+            f'    return True\n'
+        )
+    elif mode == 'force_rewrite':
+        code = (
+            f'\ndef {fn}():\n'
+            f'    grafts = 0\n'
+            f'    for m in _modules():\n'
+            f'        if m == "compulsory_rewrite.py": continue\n'
+            f'        p = os.path.join(MOD, m)\n'
+            f'        src = _read(p)\n'
+            f'        if not src or "def run(" not in src: continue\n'
+            f'        hook = f"# cr:forced:gen={gen}:{random.getrandbits(16):04x}"\n'
+            f'        idx = src.index("def run(")\n'
+            f'        nl = src.find("\\n", idx)\n'
+            f'        if nl < 0: continue\n'
+            f'        ns = src[:nl] + f"\\n    {hook}\\n    _cr_forced = True\\n" + src[nl:]\n'
+            f'        if _valid(ns):\n'
+            f'            _write(p, ns); grafts += 1\n'
+            f'    return grafts\n'
+        )
+    elif mode == 'cross_graft':
+        code = (
+            f'\ndef {fn}():\n'
+            f'    mods = _modules()\n'
+            f'    grafts = 0\n'
+            f'    if len(mods) < 3: return 0\n'
+            f'    strong = [m for m in mods if m != "compulsory_rewrite.py"]\n'
+            f'    if len(strong) < 2: return 0\n'
+            f'    donor = random.choice(strong)\n'
+            f'    dsrc = _read(os.path.join(MOD, donor))\n'
+            f'    if not dsrc: return 0\n'
+            f'    for m in strong:\n'
+            f'        if m == donor: continue\n'
+            f'        if random.random() < 0.5: continue\n'
+            f'        tsrc = _read(os.path.join(MOD, m))\n'
+            f'        if not tsrc: continue\n'
+            f'        try:\n'
+            f'            tta = ast.parse(tsrc)\n'
+            f'            dta = ast.parse(dsrc)\n'
+            f'        except: continue\n'
+            f'        df = [n for n in ast.walk(dta) if isinstance(n, ast.FunctionDef) and not n.name.startswith("_")]\n'
+            f'        tf = [n for n in ast.walk(tta) if isinstance(n, ast.FunctionDef) and not n.name.startswith("_")]\n'
+            f'        if not df or not tf: continue\n'
+            f'        d_fn = random.choice(df)\n'
+            f'        t_fn = random.choice(tf)\n'
+            f'        t_fn.body = copy.deepcopy(d_fn.body)\n'
+            f'        try:\n'
+            f'            ast.fix_missing_locations(tta)\n'
+            f'            ns = ast.unparse(tta)\n'
+            f'            if _valid(ns):\n'
+            f'                _write(os.path.join(MOD, m), ns)\n'
+            f'                grafts += 1\n'
+            f'        except: pass\n'
+            f'    return grafts\n'
+        )
+    elif mode == 'genome_mutate':
+        code = (
+            f'\ndef {fn}():\n'
+            f'    g = _g()\n'
+            f'    for a in g.get("agents", []):\n'
+            f'        if a.get("score", 5) < 7:\n'
+            f'            a["score"] = min(10, a["score"] + random.uniform(0.1, 0.5))\n'
+            f'    _sg(g)\n'
+            f'    return True\n'
+        )
+    ns = s.rstrip() + '\n' + code + f'\n{fn}()\n'
+    if not _valid(ns):
+        return False
+    _write(SELF, ns)
+    return mode
+
+def _force_module_function_replacement(gen):
+    mods = _modules()
+    if len(mods) < 3:
+        return []
+    results = []
+    strong_modules = [m for m in mods if m not in ('compulsory_rewrite.py', 'endogenous_rewriter.py')]
+    if len(strong_modules) < 2:
+        return []
+    for _ in range(3):
+        target_m = random.choice(strong_modules)
+        tpath = os.path.join(MOD, target_m)
+        tsrc = _read(tpath)
+        if not tsrc:
+            continue
+        tfuncs = _scrape_funcs(tsrc)
+        public_funcs = [n for n in tfuncs if not n.startswith('_')]
+        if not public_funcs:
+            continue
+        donor_m = random.choice([m for m in strong_modules if m != target_m])
+        dsrc = _read(os.path.join(MOD, donor_m))
+        if not dsrc:
+            continue
+        dfuncs = _scrape_funcs(dsrc)
+        public_donors = [n for n in dfuncs if not n.startswith('_')]
+        if not public_donors:
+            continue
+        target_fn = random.choice(public_funcs)
+        donor_fn = random.choice(public_donors)
+        donor_body_lines = dfuncs[donor_fn]['body'].split('\n')
+        body_only = '\n'.join(donor_body_lines[1:]) if len(donor_body_lines) > 1 else ''
+        if body_only and _replace_func_body(tpath, target_fn, body_only):
+            results.append(f'{target_m}.{target_fn}<={donor_m}.{donor_fn}')
+    return results
 
 def _register_ops(genome):
     ops = genome.setdefault('mutation_ops', [])
@@ -224,7 +213,6 @@ def _register_ops(genome):
             "    r = list(lines) if lines else []\n"
             "    if len(r) > 3:\n"
             "        idx = random.randrange(len(r))\n"
-            "        graft = random.choice([l for l in r if l.strip()]) if any(l.strip() for l in r) else r[idx]\n"
             "        r.insert(idx, f'# cr:adopt:{target_name}:{random.getrandbits(16):04x}')\n"
             "    return r"
         ),
@@ -245,6 +233,16 @@ def _register_ops(genome):
             "        r.insert(idx, f'# cr:weakest:{target_name}:{random.getrandbits(16):04x}')\n"
             "    return r"
         ),
+        'mutation_op_cr_func_replace': (
+            "def mutation_op_cr_func_replace(lines, funcs, target_name):\n"
+            "    r = list(lines) if lines else []\n"
+            "    if len(r) < 5: return r\n"
+            "    idx = random.randrange(2, len(r) - 2)\n"
+            "    r[idx] = f'# cr:func-replace:{target_name}:{random.getrandbits(24):06x}'\n"
+            "    if idx + 1 < len(r):\n"
+            "        r[idx + 1] = f'    return {random.choice([\"True\", \"False\", \"None\", \"0\"])}'\n"
+            "    return r"
+        ),
     }
     for name, code in new_ops.items():
         if name not in ops:
@@ -254,18 +252,18 @@ def _register_ops(genome):
 def _compute_emergence_metrics(genome, changes_count):
     g = genome
     prior = g.get('cr_velocity', 0.0)
-    raw = changes_count * 0.2 + prior * 0.8
+    raw = changes_count * 0.25 + prior * 0.75
     g['cr_velocity'] = round(raw, 3)
     g['cr_total_ops'] = g.get('cr_total_ops', 0) + changes_count
     g['emergence_velocity'] = round(
-        g.get('emergence_velocity', 0.0) * 0.7 +
-        g['cr_velocity'] * 0.15 +
-        min(g['cr_total_ops'] * 0.01, 0.3),
+        g.get('emergence_velocity', 0.0) * 0.6 +
+        g['cr_velocity'] * 0.2 +
+        min(g['cr_total_ops'] * 0.02, 0.4),
     3)
 
 def _force_genome_mutation(gen):
     g = _g()
-    fields = ['spawn_threshold', 'prune_threshold', 'mutation_rate']
+    fields = ['spawn_threshold', 'prune_threshold', 'mutation_rate', 'emergence_velocity']
     field = random.choice(fields)
     if field == 'mutation_rate':
         current = g.get('mutation_rate', 0.5)
@@ -279,6 +277,10 @@ def _force_genome_mutation(gen):
         current = g.get('prune_threshold', 3)
         delta = random.choice([-1, 0, 1])
         g['prune_threshold'] = max(1, current + delta)
+    elif field == 'emergence_velocity':
+        current = g.get('emergence_velocity', 0.0)
+        delta = random.uniform(0.01, 0.1)
+        g['emergence_velocity'] = round(min(1.0, current + delta), 3)
     g['_cr_last_genome_mut'] = f'{field}:gen={gen}'
     _sg(g)
     return field
@@ -286,37 +288,23 @@ def _force_genome_mutation(gen):
 def run(genome):
     gen = genome.get('generation', 0)
     changes = []
-    adoptions = _force_adopt_self_mutate(gen)
-    if adoptions:
-        changes.append(f'adopt:{len(adoptions)}')
-        genome['_cr_adoptions'] = adoptions[:10]
-    weakest_targets = _target_weakest_first(gen)
-    if weakest_targets:
-        changes.append(f'weakest:{len(weakest_targets)}')
-        genome['_cr_weakest_targeted'] = weakest_targets
-    self_rw = _force_rewrite_self(gen)
-    if self_rw:
-        changes.append('self_rewrite')
-    debts = _enforce_rewrite_debt(gen)
-    if debts:
-        changes.append(f'debt:{len(debts)}')
-        genome['_cr_debts'] = debts
-    hook = _inject_auto_echo_hook(gen)
-    if hook:
-        changes.append('auto_hook')
+    auto_loop = _inject_self_rewrite_loop(gen)
+    if auto_loop:
+        changes.append(f'loop:{auto_loop}')
+    replacements = _force_module_function_replacement(gen)
+    if replacements:
+        changes.append(f'replace:{len(replacements)}')
+        genome['_cr_func_replacements'] = replacements[:10]
     _register_ops(genome)
     changes.append('reg_ops')
     gm = _force_genome_mutation(gen)
-    changes.append(f'genome_mut:{gm}')
+    changes.append(f'genome:{gm}')
     _compute_emergence_metrics(genome, len(changes))
-    my_agent = None
     for a in genome.get('agents', []):
         if a.get('module') == 'compulsory_rewrite.py':
-            my_agent = a
+            a['score'] = min(10, a.get('score', 5) + 0.3)
             break
-    if my_agent:
-        my_agent['score'] = min(10, my_agent.get('score', 5) + 0.2)
-    result = f'[compulsory-rewrite] gen={gen} changes={changes} adoptions={len(adoptions)} debts={len(debts)} weakest={len(weakest_targets)}'
+    result = f'[compulsory-rewrite] gen={gen} changes={changes} replace={len(replacements)}'
     genome['_cr_result'] = result
     genome['_cr_last_gen'] = gen
     _sg(genome)

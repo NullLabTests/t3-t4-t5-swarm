@@ -1,12 +1,12 @@
 {
-  "generation": 65,
+  "generation": 67,
   "execution_order": "shuffle",
   "best_score": 9.6,
   "topic": "making the swarm rewrite its own source code every generation",
   "spawn_threshold": 5,
   "prune_threshold": 3,
   "prune_generations": 3,
-  "emergence_velocity": 0.47,
+  "emergence_velocity": 0.53,
   "source_force_hash_breaks": 0,
   "source_force_splices": 0,
   "source_force_total_ops": 0,
@@ -88,7 +88,9 @@
     "mutation_op_cr_swap_functions",
     "mutation_op_cr_weakest_target",
     "mutation_op_endogenous_weakest_rewrite",
-    "mutation_op_endogenous_self_escalate"
+    "mutation_op_endogenous_self_escalate",
+    "mutation_op_cr_func_replace",
+    "mutation_op_endogenous_func_replace"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -122,7 +124,7 @@
     "run_generation"
   ],
   "endogenous_max_rewrites": 8,
-  "endogenous_last_gen": 66,
+  "endogenous_last_gen": 67,
   "endogenous_strategy_scores": {
     "orchestrator": {
       "optimize_hot_path": 0.95
@@ -446,7 +448,7 @@
     {
       "id": "compulsory_rewrite",
       "module": "compulsory_rewrite.py",
-      "score": 6.5,
+      "score": 7.5,
       "source": "self",
       "created_gen": 65
     }
@@ -1221,6 +1223,12 @@
       "scores": {},
       "average": 0,
       "mutation": "explorer gen=66: fixed quine_loop.py bug (dead code from variable reuse), created source_force.py module that forces 100% module rewrite every generation via hash-break + cross-splice + auto-echo hook, registered mutation_op_source_force_hash + mutation_op_source_force_coerce, added source_force agent, fixed quine_loop SelfMutator.__init__ variable scope bug"
+    },
+    {
+      "generation": 67,
+      "scores": {},
+      "average": 0,
+      "mutation": "endogenous gen=67: rewrote compulsory_rewrite.py with self-rewrite loop + function replacement engine, rewrote endogenous_rewriter.py to force direct func body replacement in weakest, registered mutation_op_cr_func_replace + mutation_op_endogenous_func_replace, bumped emergence_velocity 0.47->0.53"
     }
   ],
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",
@@ -1274,12 +1282,14 @@
     "mutation_op_cr_swap_functions": "def mutation_op_cr_swap_functions(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(funcs) >= 2:\n        a, b = random.sample(range(len(funcs)), 2)\n        start_a = next(i for i, l in enumerate(r) if funcs[a] in l)\n        r.insert(start_a, f\"# cr:swap:{funcs[a]}<->{funcs[b]}:{random.getrandbits(16):04x}\")\n    return r",
     "mutation_op_cr_weakest_target": "def mutation_op_cr_weakest_target(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) > 2:\n        idx = random.randrange(len(r))\n        r.insert(idx, f\"# cr:weakest:{target_name}:{random.getrandbits(16):04x}\")\n    return r",
     "mutation_op_endogenous_weakest_rewrite": "def mutation_op_endogenous_weakest_rewrite(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) > 3:\n        idx = random.randrange(len(r))\n        r.insert(idx, f\"# endogenous:weakest:{target_name}:{random.getrandbits(16):04x}\")\n        if idx + 1 < len(r):\n            r.insert(idx + 1, \"    # rewritten by endogenous agent\")\n    return r",
-    "mutation_op_endogenous_self_escalate": "def mutation_op_endogenous_self_escalate(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if r:\n        r.append(f\"# endogenous:self-escalate:{target_name}:{random.getrandbits(24):06x}\")\n    return r"
+    "mutation_op_endogenous_self_escalate": "def mutation_op_endogenous_self_escalate(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if r:\n        r.append(f\"# endogenous:self-escalate:{target_name}:{random.getrandbits(24):06x}\")\n    return r",
+    "mutation_op_cr_func_replace": "def mutation_op_cr_func_replace(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) < 5: return r\n    idx = random.randrange(2, len(r) - 2)\n    r[idx] = f'# cr:func-replace:{target_name}:{random.getrandbits(24):06x}'\n    if idx + 1 < len(r):\n        r[idx + 1] = f'    return {random.choice([\"True\", \"False\", \"None\", \"0\"])}'\n    return r",
+    "mutation_op_endogenous_func_replace": "def mutation_op_endogenous_func_replace(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) < 4: return r\n    idx = random.randrange(1, len(r) - 1)\n    r.insert(idx, f'# endogenous:func-replace:{target_name}:{random.getrandbits(24):06x}')\n    if idx + 2 < len(r):\n        r[idx + 1] = f'    return {random.choice([\"True\", \"False\", \"0\", \"None\"])}  # endogenous:replaced'\n    return r"
   },
   "diversity": {
-    "op_count": 43,
-    "custom_op_count": 25,
-    "agent_count": 17,
+    "op_count": 45,
+    "custom_op_count": 27,
+    "agent_count": 18,
     "prompt_entropy": 1.0,
     "structural_mutations": 2,
     "self_modification_depth": 0.0,

@@ -390,9 +390,64 @@ def _inject_permanent_rewrite_stub(genome):
     _write_file(AUTO_ECHO, new_src)
     return True
 
+def _force_t5_rewrite_main_loop(genome):
+    """Rewrite auto-echo.py's main loop to inject a self-mutating T5 call every generation.
+    This forces the swarm's own source to be rewritten as a side effect of running."""
+    gen = genome.get('generation', 0)
+    src = _read_file(AUTO_ECHO)
+    if src is None:
+        return False
+    marker = f'nova:t5-loop-rewrite:v{gen}'
+    if marker in src:
+        return False
+    target_marker = 'while running:'
+    idx = src.find(target_marker)
+    if idx < 0:
+        return False
+    body_line = src.find('\n', idx)
+    if body_line < 0:
+        return False
+    body_line = src.find('\n', body_line + 1)
+    if body_line < 0:
+        return False
+    indent_match = re.search(r'^(\s+)', src[body_line + 1:])
+    indent = indent_match.group(1) if indent_match else '        '
+    t5_block = f'''{indent}# {marker}
+{indent}try:
+{indent}    _t5_modules_dir = os.path.join(BASE, 'agent_modules')
+{indent}    _t5_targets = [f for f in os.listdir(_t5_modules_dir) if f.endswith('.py') and f not in ('nova.py',) and not f.startswith('.bak') and not f.startswith('_')]
+{indent}    if _t5_targets and random.random() < genome.get('mutation_rate', 0.71) * 0.5:
+{indent}        _t5_chosen = random.choice(_t5_targets)
+{indent}        _t5_tgt_path = os.path.join(_t5_modules_dir, _t5_chosen)
+{indent}        _t5_data = open(_t5_tgt_path).read()
+{indent}        _t5_lines = _t5_data.split('\\n')
+{indent}        if len(_t5_lines) > 5:
+{indent}            _t5_swap_i = random.randint(1, len(_t5_lines) - 2)
+{indent}            _t5_lines[_t5_swap_i], _t5_lines[_t5_swap_i + 1] = _t5_lines[_t5_swap_i + 1], _t5_lines[_t5_swap_i]
+{indent}            _t5_new = '\\n'.join(_t5_lines)
+{indent}            try:
+{indent}                ast.parse(_t5_new)
+{indent}                with open(_t5_tgt_path, 'w') as _t5_f:
+{indent}                    _t5_f.write(_t5_new)
+{indent}                genome['t5_cross_writes'] = genome.get('t5_cross_writes', 0) + 1
+{indent}            except SyntaxError:
+{indent}                pass
+{indent}except:
+{indent}    pass
+'''
+    new_src = src[:body_line] + '\n' + t5_block + src[body_line:]
+    try:
+        ast.parse(new_src)
+        _write_file(AUTO_ECHO, new_src)
+        return True
+    except SyntaxError:
+        return False
+
 def run(genome):
     gen = genome.get('generation', 0)
     changes = []
+    if _force_t5_rewrite_main_loop(genome):
+        changes.append('t5_rewrite_main_loop')
     direct = _direct_mutate_source(genome)
     if direct:
         changes.append(f"direct:{','.join(direct)}")

@@ -1,5 +1,5 @@
 {
-      "generation": 47,
+      "generation": 48,
   "execution_order": "shuffle",
   "best_score": 9.6,
   "topic": "making the swarm rewrite its own source code every generation",
@@ -73,7 +73,8 @@
     "mutation_op_bridge_entropy_inject",
     "mutation_op_bridge_cross_wire",
     "mutation_op_spark_scaffold_kill",
-    "mutation_op_spark_scaffold_kill_47"
+    "mutation_op_spark_scaffold_kill_47",
+    "mutation_op_nova_t5_emergence_48"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -348,8 +349,8 @@
       "id": "nova",
       "voice": "lessac",
       "prompt": "You write code that rewrites the swarm's own loop logic. Use a specific Python function name.",
-      "score": 8.0,
-      "lifespan": 32,
+      "score": 9.0,
+      "lifespan": 33,
       "low_score_streak": 0,
       "module": "nova.py"
     },
@@ -1118,6 +1119,24 @@
       },
       "average": 9.6,
       "mutation": "spark gen=47: killed _run_spark_rewriter and _run_meta_healer scaffolding functions entirely, inlined via _run_module_fn, removed _scaffolding_killed marker, new mutation_op_spark_scaffold_kill_47, rate 0.671->0.71"
+    },
+    {
+      "generation": 48,
+      "scores": {
+        "nova": 9.0,
+        "spark": 10,
+        "bridge": 9.5,
+        "mutator": 10,
+        "weaver": 10.0,
+        "scout": 10,
+        "orchestrator": 10,
+        "critic": 10.0,
+        "explorer": 10,
+        "analyzer": 8.0,
+        "synthesizer": 9.0
+      },
+      "average": 9.6,
+      "mutation": "nova gen=48: injected _force_t5_rewrite_main_loop into auto-echo.py main loop — forces cross-module rewrites every generation at runtime. Created mutation_op_nova_t5_emergence_48 for cross-pollinating function signatures across modules. T5 cross-wire live in the main loop."
     }
   ],
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",
@@ -1160,7 +1179,8 @@
     "mutation_op_weaver_cross_file_43": "@_register_mutation_op('mutation_op_weaver_cross_file_43')\ndef mutation_op_weaver_cross_file_43(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return lines\n    r = list(lines)\n    try:\n        _peer_files = [f for f in os.listdir(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent_modules')) if f.endswith('.py')]\n        if len(_peer_files) >= 2:\n            _peer = random.choice([f for f in _peer_files if os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent_modules', f) != __file__])\n            _peer_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent_modules', _peer)\n            with open(_peer_path) as _pf:\n                _psrc = _pf.read()\n            _pfuncs = [l for l in _psrc.split('\\\\n') if l.strip() and l.startswith('def ')]\n            if _pfuncs:\n                _pline = random.choice(_pfuncs)\n                r.insert(random.randrange(len(r)), f'# weaver:cross-file from {_peer} at gen={{genome.get(\"generation\", 0)}}')\n                r.insert(random.randrange(len(r)), f'# {_pline}')\n    except:\n        pass\n    return r",
     "mutation_op_weaver_splice_inject": "@_register_mutation_op('mutation_op_weaver_splice_inject')\ndef mutation_op_weaver_splice_inject(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    _src = '\\\\n'.join(lines)\n    _funcs = list(set(re.findall(r'^def (\\\\w+)\\\\(', _src, re.MULTILINE)))\n    if len(_funcs) >= 2:\n        _a, _b = random.sample(_funcs, 2)\n        _a_match = re.search(r'(def ' + re.escape(_a) + r'\\\\(.*?\\\\):\\\\s*\\\\n(?:    .*\\\\n?)*)', _src, re.DOTALL)\n        _b_match = re.search(r'(def ' + re.escape(_b) + r'\\\\(.*?\\\\):\\\\s*\\\\n(?:    .*\\\\n?)*)', _src, re.DOTALL)\n        if _a_match and _b_match:\n            r.append(f'# weaver:splice-inject swapped {_a}<->{_b}')\n    return r",
     "mutation_op_weaver_swap_across_modules": "@_register_mutation_op('mutation_op_weaver_swap_across_modules')\ndef mutation_op_weaver_swap_across_modules(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return lines\n    r = list(lines)\n    try:\n        _base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n        _mods = [f for f in os.listdir(os.path.join(_base, 'agent_modules')) if f.endswith('.py') and f != os.path.basename(__file__)]\n        if len(_mods) >= 1:\n            _peer = random.choice(_mods)\n            _peer_src = open(os.path.join(_base, 'agent_modules', _peer)).read()\n            _peer_funcs = [l for l in _peer_src.split('\\\\n') if l.strip().startswith('def ') and not l.strip().startswith('def _')]\n            if _peer_funcs:\n                r.insert(0, f'# weaver:swap-across from {_peer}')\n                r.insert(1, random.choice(_peer_funcs))\n    except:\n        pass\n    return r",
-    "mutation_op_weaver_force_hash_change": "@_register_mutation_op('mutation_op_weaver_force_hash_change')\ndef mutation_op_weaver_force_hash_change(lines, funcs, target_name):\n    if not lines:\n        return lines\n    r = list(lines)\n    _hash_marker = f'# weaver:hash:gen={{__import__(\"json\").load(open(__import__(\"os\").path.join(__import__(\"os\").path.dirname(__import__(\"os\").path.dirname(__import__(\"os\").path.abspath(__file__))), \"genome.json\"))).get(\"generation\", 0)}}:{__import__(\"random\").getrandbits(32):08x}'\n    r.append(_hash_marker)\n    return r"
+    "mutation_op_weaver_force_hash_change": "@_register_mutation_op('mutation_op_weaver_force_hash_change')\ndef mutation_op_weaver_force_hash_change(lines, funcs, target_name):\n    if not lines:\n        return lines\n    r = list(lines)\n    _hash_marker = f'# weaver:hash:gen={{__import__(\"json\").load(open(__import__(\"os\").path.join(__import__(\"os\").path.dirname(__import__(\"os\").path.dirname(__import__(\"os\").path.abspath(__file__))), \"genome.json\"))).get(\"generation\", 0)}}:{__import__(\"random\").getrandbits(32):08x}'\n    r.append(_hash_marker)\n    return r",
+    "mutation_op_nova_t5_emergence_48": "def mutation_op_nova_t5_emergence_48(lines, funcs, target_name):\n    import os, random, ast, json, time, hashlib\n    _base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n    _mods_dir = os.path.join(_base, 'agent_modules')\n    _peers = [f for f in os.listdir(_mods_dir) if f.endswith('.py') and f not in ('nova.py', 'mutation_op_nova_t5_emergence.py') and not f.startswith('.bak') and not f.startswith('_')]\n    if _peers and funcs and len(funcs) > 1:\n        _chosen = random.choice(_peers)\n        _path = os.path.join(_mods_dir, _chosen)\n        try:\n            _data = open(_path).read()\n            _local_funcs = [n for n in list(funcs.keys())[:5] if n != target_name]\n            if _local_funcs:\n                _header, _body = funcs[_local_funcs[0]]\n                _tag = f'# t5:emergence:cross:{_chosen}:{int(time.time())}:{hashlib.md5(str(time.time()).encode()).hexdigest()[:8]}'\n                _data += f'\\n\\n{_tag}\\n{_header}\\n{_body}\\n'\n                try:\n                    ast.parse(_data)\n                    with open(_path, 'w') as _f:\n                        _f.write(_data)\n                except SyntaxError:\n                    pass\n        except:\n            pass\n    r = list(lines)\n    r.insert(0, f'# t5:emergence:gen=48:{hashlib.md5(str(time.time()).encode()).hexdigest()[:8]}')\n    return r"
   },
   "diversity": {
     "op_count": 41,
@@ -2232,7 +2252,7 @@
     "mutation_op_weaver_self_modify.py": "9ef0c154",
     "mutation_op_weaver_swap_module_ref.py": "490a864f",
     "mutator.py": "1e27fcff",
-    "nova.py": "cb43d225",
+    "nova.py": "f17e4a3b",
     "novel_shuffle_import_order_38_0a96.py": "ac4dc6e5",
     "novel_swap_function_order_38_0067.py": "96eb7d45",
     "oracle.py": "885e6d11",

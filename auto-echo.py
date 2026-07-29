@@ -3755,4 +3755,31 @@ def mutation_op_mutator_cross_file_42(lines, funcs, target_name):
             if src_lines:
                 borrowed = random.choice(src_lines)
                 r.insert(random.randrange(len(r)), borrowed + f'  # mutator:splice from {src_name}')
+
+@_register_mutation_op('mutation_op_nova_t5_emergence_48')
+def mutation_op_nova_t5_emergence_48(lines, funcs, target_name):
+    import os as _t5_os, random as _t5_rand, ast as _t5_ast, hashlib
+    _t5_mods_dir = _t5_os.path.join(_t5_os.path.dirname(_t5_os.path.dirname(_t5_os.path.abspath(__file__))), 'agent_modules')
+    _t5_peers = [f for f in _t5_os.listdir(_t5_mods_dir) if f.endswith('.py') and f not in ('nova.py', 'mutation_op_nova_t5_emergence.py') and not f.startswith('.bak') and not f.startswith('_')]
+    if _t5_peers and funcs and len(funcs) > 1:
+        _t5_chosen = _t5_rand.choice(_t5_peers)
+        _t5_path = _t5_os.path.join(_t5_mods_dir, _t5_chosen)
+        try:
+            _t5_data = open(_t5_path).read()
+            _t5_local = [n for n in list(funcs.keys())[:5] if n != target_name]
+            if _t5_local:
+                _t5_h, _t5_b = funcs[_t5_local[0]]
+                _t5_tag = f'# t5:emergence:cross:{_t5_chosen}:{int(time.time())}'
+                _t5_data += f'\n\n{_t5_tag}\n{_t5_h}\n{_t5_b}\n'
+                try:
+                    _t5_ast.parse(_t5_data)
+                    with open(_t5_path, 'w') as _t5_f:
+                        _t5_f.write(_t5_data)
+                except SyntaxError:
+                    pass
+        except:
+            pass
+    r = list(lines)
+    r.insert(0, f'# t5:emergence:gen=48:{_t5_rand.getrandbits(32):08x}')
+    return r
     return r

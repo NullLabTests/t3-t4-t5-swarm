@@ -113,7 +113,10 @@
     "mutation_op_clockwork_hash_invalidate",
     "mutation_op_clockwork_temporal_mutation",
     "mutation_op_clockwork_cross_contaminate",
-    "mutation_op_clockwork_genome_mutate"
+    "mutation_op_clockwork_genome_mutate",
+    "mutation_op_clockwork_self_mutate_run",
+    "mutation_op_clockwork_force_self_rewrite",
+    "mutation_op_clockwork_inject_loop"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -141,7 +144,12 @@
     " Fire a temporal_mutation that mutates clockwork.py's scheduling constants.",
     " Fire a cross_contaminate that injects scheduling hooks into other modules.",
     " Fire a genome_mutate that tweaks genome.json clockwork fields.",
-    " Use _analyse_pulse_history to adapt interval/intensity from pulse log."
+    " Use _analyse_pulse_history to adapt interval/intensity from pulse log.",
+    " Fire self_mutate_run to rewrite clockwork.py's own run() function logic every gen.",
+    " Fire force_self_rewrite to inject brand-new event handlers into clockwork.py.",
+    " Fire inject_clockwork_loop to embed self-calling timer hooks in auto-echo.py.",
+    " Use _fire_self_mutate_run to mutate thresholds, swap guards, insert branches in run().",
+    " Use _fire_force_self_rewrite to generate new event type functions at runtime."
   ],
   "selection_noise_std": 0.465,
   "selection_entropy": 0.93,

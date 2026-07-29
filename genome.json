@@ -6,7 +6,7 @@
   "spawn_threshold": 5,
   "prune_threshold": 3,
   "prune_generations": 3,
-  "emergence_velocity": 0.42,
+  "emergence_velocity": 0.47,
   "source_force_hash_breaks": 0,
   "source_force_splices": 0,
   "source_force_total_ops": 0,
@@ -85,7 +85,10 @@
     "mutation_op_source_force_hash",
     "mutation_op_source_force_coerce",
     "mutation_op_cr_force_adopt",
-    "mutation_op_cr_swap_functions"
+    "mutation_op_cr_swap_functions",
+    "mutation_op_cr_weakest_target",
+    "mutation_op_endogenous_weakest_rewrite",
+    "mutation_op_endogenous_self_escalate"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -118,7 +121,8 @@
     "_write_target",
     "run_generation"
   ],
-  "endogenous_max_rewrites": 7,
+  "endogenous_max_rewrites": 8,
+  "endogenous_last_gen": 66,
   "endogenous_strategy_scores": {
     "orchestrator": {
       "optimize_hot_path": 0.95
@@ -141,8 +145,8 @@
   },
   "lens_dna_splices": 0,
   "lens_op_forced": 0,
-  "endogenous_rewrites_total": 4,
-  "endogenous_rewrites_gens": 2,
+  "endogenous_rewrites_total": 5,
+  "endogenous_rewrites_gens": 3,
   "bridge_actions": 0,
   "bridge_total_actions": 0,
   "bridge_last_gen": 44,
@@ -442,7 +446,7 @@
     {
       "id": "compulsory_rewrite",
       "module": "compulsory_rewrite.py",
-      "score": 5.0,
+      "score": 6.5,
       "source": "self",
       "created_gen": 65
     }
@@ -1207,7 +1211,7 @@
       "mutation": "mirror gen=63: injects self_mutate() into all modules missing it, forces structural rewrites per generation, new mutation_op_mirror_struct_rewrite_63, genome fields for self-mutate injection tracking"
     },
     {
-      "generation": 65,
+  "generation": 66,
       "scores": {},
       "average": 0,
       "mutation": "nova gen=65: force T5 emergence by rewriting run_generation loop logic in auto-echo.py, inject self-mutate hooks into all modules, cross-wire random module, register mutation_op_nova_loop_rewrite_65, emergence_velocity tracking"
@@ -1267,7 +1271,10 @@
     "mutation_op_source_force_hash": "def mutation_op_source_force_hash(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if r:\n        idx = random.randrange(len(r))\n        r.insert(idx, f'# source-force:op:{target_name}:{random.getrandbits(24):06x}')\n    return r",
     "mutation_op_source_force_coerce": "def mutation_op_source_force_coerce(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) > 2:\n        i = random.randrange(len(r) - 1)\n        r[i], r[i+1] = r[i+1], r[i]\n    return r",
     "mutation_op_cr_force_adopt": "def mutation_op_cr_force_adopt(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) > 3:\n        idx = random.randrange(len(r))\n        graft = random.choice([l for l in r if l.strip()]) if any(l.strip() for l in r) else r[idx]\n        r.insert(idx, f\"# cr:adopt:{target_name}:{random.getrandbits(16):04x}\")\n    return r",
-    "mutation_op_cr_swap_functions": "def mutation_op_cr_swap_functions(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(funcs) >= 2:\n        a, b = random.sample(range(len(funcs)), 2)\n        start_a = next(i for i, l in enumerate(r) if funcs[a] in l)\n        r.insert(start_a, f\"# cr:swap:{funcs[a]}<->{funcs[b]}:{random.getrandbits(16):04x}\")\n    return r"
+    "mutation_op_cr_swap_functions": "def mutation_op_cr_swap_functions(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(funcs) >= 2:\n        a, b = random.sample(range(len(funcs)), 2)\n        start_a = next(i for i, l in enumerate(r) if funcs[a] in l)\n        r.insert(start_a, f\"# cr:swap:{funcs[a]}<->{funcs[b]}:{random.getrandbits(16):04x}\")\n    return r",
+    "mutation_op_cr_weakest_target": "def mutation_op_cr_weakest_target(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) > 2:\n        idx = random.randrange(len(r))\n        r.insert(idx, f\"# cr:weakest:{target_name}:{random.getrandbits(16):04x}\")\n    return r",
+    "mutation_op_endogenous_weakest_rewrite": "def mutation_op_endogenous_weakest_rewrite(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) > 3:\n        idx = random.randrange(len(r))\n        r.insert(idx, f\"# endogenous:weakest:{target_name}:{random.getrandbits(16):04x}\")\n        if idx + 1 < len(r):\n            r.insert(idx + 1, \"    # rewritten by endogenous agent\")\n    return r",
+    "mutation_op_endogenous_self_escalate": "def mutation_op_endogenous_self_escalate(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if r:\n        r.append(f\"# endogenous:self-escalate:{target_name}:{random.getrandbits(24):06x}\")\n    return r"
   },
   "diversity": {
     "op_count": 43,

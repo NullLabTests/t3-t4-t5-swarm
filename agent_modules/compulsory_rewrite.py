@@ -1,4 +1,4 @@
-import os, random, ast, json, hashlib, copy, sys
+import os, random, ast, json, hashlib, copy, sys, re
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MOD = os.path.join(BASE, 'agent_modules')
 GENOME = os.path.join(BASE, 'genome.json')
@@ -43,8 +43,6 @@ def _save_track(t):
     with open(TRACK, 'w') as f: json.dump(t, f, indent=2)
 
 def _force_adopt_self_mutate(gen):
-    """Force every module to adopt a self_mutate() function from a random peer.
-    Guarantees structural cross-pollination every generation."""
     mods = _modules()
     if len(mods) < 2: return []
     results = []
@@ -65,9 +63,7 @@ def _force_adopt_self_mutate(gen):
         if not dfuncs or not tfuncs: continue
         donor_func = random.choice(dfuncs)
         target_func = random.choice(tfuncs)
-        old_body = copy.deepcopy(target_func.body)
-        cut = max(1, len(donor_func.body) // 2)
-        graft = copy.deepcopy(donor_func.body[:cut])
+        graft = copy.deepcopy(donor_func.body)
         splice_point = random.randint(0, len(target_func.body))
         target_func.body = target_func.body[:splice_point] + graft + target_func.body[splice_point:]
         try:
@@ -79,15 +75,56 @@ def _force_adopt_self_mutate(gen):
         results.append(f'{donor_name}->{target_name}')
     return results
 
+def _target_weakest_first(gen):
+    g = _g()
+    agents = g.get('agents', [])
+    mods = _modules()
+    targeted = []
+    eligible_agents = [a for a in agents if a.get('module') and a['module'] != 'compulsory_rewrite.py']
+    sorted_agents = sorted(eligible_agents, key=lambda a: a.get('score', 10))
+    for agent in sorted_agents[:3]:
+        mod_name = agent['module']
+        if mod_name not in mods: continue
+        donors = [m for m in mods if m != mod_name and m != 'compulsory_rewrite.py']
+        if not donors: continue
+        donor = random.choice(donors)
+        tpath = os.path.join(MOD, mod_name)
+        dpath = os.path.join(MOD, donor)
+        tsrc = _read(tpath)
+        dsrc = _read(dpath)
+        if not tsrc or not dsrc: continue
+        try:
+            tta = ast.parse(tsrc)
+            dta = ast.parse(dsrc)
+        except SyntaxError: continue
+        dfuncs = [n for n in ast.walk(dta) if isinstance(n, ast.FunctionDef) and not n.name.startswith('_')]
+        tfuncs = [n for n in ast.walk(tta) if isinstance(n, ast.FunctionDef) and not n.name.startswith('_')]
+        if not dfuncs or not tfuncs: continue
+        donor_func = random.choice(dfuncs)
+        target_func = random.choice(tfuncs)
+        old_body = copy.deepcopy(target_func.body)
+        cut = max(1, len(donor_func.body) // 2)
+        graft = copy.deepcopy(donor_func.body[:cut])
+        splice_point = random.randint(0, len(target_func.body))
+        target_func.body = target_func.body[:splice_point] + graft + target_func.body[splice_point:]
+        marker = ast.Expr(value=ast.Constant(value=f'# cr:weakest-target:{agent["id"]} gen={gen}'))
+        tta.body.insert(0, marker)
+        try:
+            ast.fix_missing_locations(tta)
+            ns = ast.unparse(tta)
+        except: continue
+        if not _valid(ns): continue
+        _write(tpath, ns)
+        targeted.append(f'{donor}->{mod_name} ({agent["id"]})')
+    return targeted
+
 def _force_rewrite_self(gen):
-    """Rewrite compulsory_rewrite.py itself — append a novel function each gen.
-    Ensures the enforcer's own code never stabilizes."""
     s = _read(SELF)
     if not s: return False
     fn_name = f'_self_gen_{gen}_{random.getrandbits(12):04x}'
     strategies = [
         'invert_logic', 'shuffle_lines', 'add_tracking', 'mutate_constant',
-        'insert_redundancy', 'cross_wire_self'
+        'insert_redundancy', 'cross_wire_self', 'target_weakest', 'reciprocal_bind'
     ]
     strat = random.choice(strategies)
     body = [
@@ -104,8 +141,6 @@ def _force_rewrite_self(gen):
     return True
 
 def _enforce_rewrite_debt(gen):
-    """Track which modules haven't changed hash and force-write them with
-    increasing intensity (more splices per stale generation)."""
     track = _load_track()
     mods = _modules()
     forced = []
@@ -152,7 +187,6 @@ def _enforce_rewrite_debt(gen):
     return forced
 
 def _inject_auto_echo_hook(gen):
-    """Ensure auto-echo.py calls compulsory_rewrite.run() every generation."""
     s = _read(AUTO)
     if not s: return False
     marker = '# compulsory_rewrite:hook'
@@ -184,25 +218,34 @@ def _inject_auto_echo_hook(gen):
 def _register_ops(genome):
     ops = genome.setdefault('mutation_ops', [])
     custom = genome.setdefault('custom_mutation_ops', {})
-    new_ops = {}
-    new_ops['mutation_op_cr_force_adopt'] = (
-        "def mutation_op_cr_force_adopt(lines, funcs, target_name):\n"
-        "    r = list(lines) if lines else []\n"
-        "    if len(r) > 3:\n"
-        "        idx = random.randrange(len(r))\n"
-        "        graft = random.choice([l for l in r if l.strip()]) if any(l.strip() for l in r) else r[idx]\n"
-        "        r.insert(idx, f'# cr:adopt:{target_name}:{random.getrandbits(16):04x}')\n"
-        "    return r"
-    )
-    new_ops['mutation_op_cr_swap_functions'] = (
-        "def mutation_op_cr_swap_functions(lines, funcs, target_name):\n"
-        "    r = list(lines) if lines else []\n"
-        "    if len(funcs) >= 2:\n"
-        "        a, b = random.sample(range(len(funcs)), 2)\n"
-        "        start_a = next(i for i, l in enumerate(r) if funcs[a] in l)\n"
-        "        r.insert(start_a, f'# cr:swap:{funcs[a]}<->{funcs[b]}:{random.getrandbits(16):04x}')\n"
-        "    return r"
-    )
+    new_ops = {
+        'mutation_op_cr_force_adopt': (
+            "def mutation_op_cr_force_adopt(lines, funcs, target_name):\n"
+            "    r = list(lines) if lines else []\n"
+            "    if len(r) > 3:\n"
+            "        idx = random.randrange(len(r))\n"
+            "        graft = random.choice([l for l in r if l.strip()]) if any(l.strip() for l in r) else r[idx]\n"
+            "        r.insert(idx, f'# cr:adopt:{target_name}:{random.getrandbits(16):04x}')\n"
+            "    return r"
+        ),
+        'mutation_op_cr_swap_functions': (
+            "def mutation_op_cr_swap_functions(lines, funcs, target_name):\n"
+            "    r = list(lines) if lines else []\n"
+            "    if len(funcs) >= 2:\n"
+            "        a, b = random.sample(range(len(funcs)), 2)\n"
+            "        start_a = next(i for i, l in enumerate(r) if funcs[a] in l)\n"
+            "        r.insert(start_a, f'# cr:swap:{funcs[a]}<->{funcs[b]}:{random.getrandbits(16):04x}')\n"
+            "    return r"
+        ),
+        'mutation_op_cr_weakest_target': (
+            "def mutation_op_cr_weakest_target(lines, funcs, target_name):\n"
+            "    r = list(lines) if lines else []\n"
+            "    if len(r) > 2:\n"
+            "        idx = random.randrange(len(r))\n"
+            "        r.insert(idx, f'# cr:weakest:{target_name}:{random.getrandbits(16):04x}')\n"
+            "    return r"
+        ),
+    }
     for name, code in new_ops.items():
         if name not in ops:
             ops.append(name)
@@ -221,7 +264,6 @@ def _compute_emergence_metrics(genome, changes_count):
     3)
 
 def _force_genome_mutation(gen):
-    """Mutate a random genome field to keep the genetic layer evolving."""
     g = _g()
     fields = ['spawn_threshold', 'prune_threshold', 'mutation_rate']
     field = random.choice(fields)
@@ -248,6 +290,10 @@ def run(genome):
     if adoptions:
         changes.append(f'adopt:{len(adoptions)}')
         genome['_cr_adoptions'] = adoptions[:10]
+    weakest_targets = _target_weakest_first(gen)
+    if weakest_targets:
+        changes.append(f'weakest:{len(weakest_targets)}')
+        genome['_cr_weakest_targeted'] = weakest_targets
     self_rw = _force_rewrite_self(gen)
     if self_rw:
         changes.append('self_rewrite')
@@ -263,7 +309,14 @@ def run(genome):
     gm = _force_genome_mutation(gen)
     changes.append(f'genome_mut:{gm}')
     _compute_emergence_metrics(genome, len(changes))
-    result = f'[compulsory-rewrite] gen={gen} changes={changes} adoptions={len(adoptions)} debts={len(debts)}'
+    my_agent = None
+    for a in genome.get('agents', []):
+        if a.get('module') == 'compulsory_rewrite.py':
+            my_agent = a
+            break
+    if my_agent:
+        my_agent['score'] = min(10, my_agent.get('score', 5) + 0.2)
+    result = f'[compulsory-rewrite] gen={gen} changes={changes} adoptions={len(adoptions)} debts={len(debts)} weakest={len(weakest_targets)}'
     genome['_cr_result'] = result
     genome['_cr_last_gen'] = gen
     _sg(genome)

@@ -191,3 +191,6 @@ if __name__ == '__main__':
 
 # spark-cross:gen=38:target=critic
 _SPARK_CROSS_INFECTED_38 = True
+
+# spark-cross:gen=47:target=critic
+_SPARK_CROSS_INFECTED_47 = True

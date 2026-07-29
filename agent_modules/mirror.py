@@ -299,3 +299,6 @@ with open(os.path.join(BASE, "rewrite_manifest.jsonl"), "a") as _wmf:
 
 # spark-cross:gen=38:target=mirror
 _SPARK_CROSS_INFECTED_38 = True
+
+# spark-cross:gen=47:target=mirror
+_SPARK_CROSS_INFECTED_47 = True

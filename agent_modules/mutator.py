@@ -379,3 +379,6 @@ def run(genome):
         genome['mutator_last_changes'] = all_changes
     _save(genome)
     return f'[mutator] gen={gen} changes={len(all_changes)} ops={all_changes[:5]}'
+
+# spark-cross:gen=47:target=mutator
+_SPARK_CROSS_INFECTED_47 = True

@@ -141,3 +141,6 @@ def run(gen):
     except:
         pass
     return {"gen": gen, "mutations": results}
+
+# spark-cross:gen=47:target=nova
+_SPARK_CROSS_INFECTED_47 = True

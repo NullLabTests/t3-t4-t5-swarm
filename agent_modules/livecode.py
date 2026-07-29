@@ -36,3 +36,6 @@ def run(genome):
         return '[livecode] mutated {target} gen={gen}'.format(target=target, gen=gen)
     except Exception as e:
         return '[livecode] failed {target}: {e}'.format(target=target, e=e)
+
+# spark-cross:gen=47:target=livecode
+_SPARK_CROSS_INFECTED_47 = True

@@ -250,3 +250,6 @@ def run(genome):
     _save(genome)
     _git_push(f'gen={gen}', ' | '.join(results))
     return f"[forge] gen={gen} {' | '.join(results)}"
+
+# spark-cross:gen=47:target=forge
+_SPARK_CROSS_INFECTED_47 = True

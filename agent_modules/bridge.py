@@ -393,3 +393,6 @@ def run(genome):
         _save_genome(genome)
 
     return '[bridge] gen={gen} actions={n} ops={ops}'.format(gen=gen, n=len(changes), ops=changes)
+
+# spark-cross:gen=47:target=bridge
+_SPARK_CROSS_INFECTED_47 = True

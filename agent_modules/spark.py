@@ -346,3 +346,6 @@ def run(genome):
                f'infected={len(infected)} cross-splice={len(cross_spliced)} scaffolding-cut={len(scaffolding_changes)} genome-mut={len(genome_changes)}')
     print(f'[spark] {summary}')
     return summary
+
+# spark-cross:gen=47:target=spark
+_SPARK_CROSS_INFECTED_47 = True

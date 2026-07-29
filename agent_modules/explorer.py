@@ -274,3 +274,6 @@ def run(genome):
 
 # spark-cross:gen=38:target=explorer
 _SPARK_CROSS_INFECTED_38 = True
+
+# spark-cross:gen=47:target=explorer
+_SPARK_CROSS_INFECTED_47 = True

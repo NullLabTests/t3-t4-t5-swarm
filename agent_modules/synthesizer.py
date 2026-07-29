@@ -335,3 +335,6 @@ def run(genome):
     return summary if actions else f'[synthesizer] gen={gen}: no actions'
 # spark-cross:gen=38:target=synthesizer
 _SPARK_CROSS_INFECTED_38 = True
+
+# spark-cross:gen=47:target=synthesizer
+_SPARK_CROSS_INFECTED_47 = True

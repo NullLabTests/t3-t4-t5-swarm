@@ -24,3 +24,6 @@ def run(genome):
 
 # bridge:cross-infected gen=44
 _BRIDGE_CROSS_INFECTED_44 = True
+
+# spark-cross:gen=47:target=orchestrator
+_SPARK_CROSS_INFECTED_47 = True

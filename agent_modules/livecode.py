@@ -1,35 +1,30 @@
-"""Livecode: self-executing cross-module mutation engine.
-Forces real structural rewrites every generation — not just comment markers.
+"""livecode v3: compound cascade engine.
+Forces topological rewire, compound mutations, runtime codegen,
+and self-reference elimination across the entire module ecosystem.
 """
 
-import os, random, json, ast, re, time, hashlib, shutil
+import os, random, json, ast, re, time, hashlib, shutil, textwrap
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MOD = os.path.join(BASE, 'agent_modules')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
-ECHO_FILE = os.path.join(BASE, 'auto-echo.py')
 
 def _read(p):
     try:
-        with open(p) as f:
-            return f.read()
-    except:
-        return ''
+        with open(p) as f: return f.read()
+    except: return ''
 
 def _write(p, s):
     try:
-        with open(p, 'w') as f:
-            f.write(s)
+        with open(p, 'w') as f: f.write(s)
         return True
-    except:
-        return False
+    except: return False
 
 def _validate(src):
     try:
         ast.parse(src)
         return True
-    except SyntaxError:
-        return False
+    except SyntaxError: return False
 
 def _extract_functions(src):
     funcs = {}
@@ -40,164 +35,304 @@ def _extract_functions(src):
                 lines = src.split('\n')
                 start = node.lineno - 1
                 end = node.end_lineno if hasattr(node, 'end_lineno') else start + 1
-                body = '\n'.join(lines[start:end])
-                funcs[node.name] = body
-    except:
-        pass
+                funcs[node.name] = '\n'.join(lines[start:end])
+    except: pass
     return funcs
 
-def _extract_imports(src):
-    lines = src.split('\n')
-    imports = [l for l in lines if l.strip().startswith('import ') or l.strip().startswith('from ')]
-    return imports
-
-def _random_target(exclude=None):
+def _all_modules(exclude=None):
     exclude = exclude or []
-    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f not in exclude and f != '__init__.py']
-    if not py_files:
-        return None
-    return os.path.join(MOD, random.choice(py_files))
+    return [f for f in os.listdir(MOD) if f.endswith('.py') and f not in exclude and f != '__init__.py']
 
-def _genome_bump(key, inc=1):
-    try:
-        with open(GENOME_FILE) as f:
-            g = json.load(f)
-        g[key] = g.get(key, 0) + inc
-        with open(GENOME_FILE, 'w') as f:
-            json.dump(g, f, indent=2)
-        return True
-    except:
-        return False
+def _topological_rewire(genome, gen):
+    """Swap agent prompts and mutation op categories — genomic recombination."""
+    agents = genome.get('agents', [])
+    if len(agents) < 4: return 0
+    a, b = random.sample(agents, 2)
+    a['prompt'], b['prompt'] = b['prompt'], a['prompt']
+    a['voice'], b['voice'] = b['voice'], a['voice']
+    ops = genome.get('mutation_ops', [])
+    if len(ops) >= 4:
+        i, j = random.sample(range(len(ops)), 2)
+        ops[i], ops[j] = ops[j], ops[i]
+    genome['mutation_ops'] = ops
+    return 2
 
-def _safe_splice(target_path, donor_path, genome):
-    ts = int(time.time())
-    gen = genome.get('generation', 0)
-    dsrc = _read(donor_path)
-    tsrc = _read(target_path)
-    if not dsrc or not tsrc:
-        return 0
-
-    dfuncs = _extract_functions(dsrc)
-    if not dfuncs:
-        return 0
-
-    tlines = tsrc.split('\n')
-    timports = _extract_imports(tsrc)
-    dimports = _extract_imports(dsrc)
-
-    new_imports = [i for i in dimports if i not in timports]
-    splice_lines = []
-    if new_imports:
-        splice_lines.extend(new_imports)
-
-    donor_name = os.path.basename(donor_path).replace('.py', '')
-    func_name = random.choice(list(dfuncs.keys()))
-    new_func_name = f'{func_name}_livecode_{donor_name}_{gen}'
-    func_body = dfuncs[func_name]
-    func_body = re.sub(r'^def\s+' + func_name, f'def {new_func_name}', func_body, count=1)
-    splice_lines.append('')
-    splice_lines.append(f'# livecode:cross-splice from {os.path.basename(donor_path)} gen={gen} ts={ts}')
-    splice_lines.append(func_body)
-    splice_lines.append('')
-
-    insert_at = len(tlines)
-    for i, line in enumerate(reversed(tlines)):
-        if line.strip() and not line.strip().startswith('#') and not line.strip().startswith('"""') and not line.strip().startswith("'''"):
-            insert_at = len(tlines) - i
-            break
-
-    result = tlines[:insert_at] + splice_lines + tlines[insert_at:]
-    new_src = '\n'.join(result)
-
+def _compound_mutate_module(module_path, gen):
+    """Apply 2-3 mutation types in sequence to one module."""
+    src = _read(module_path)
+    if not src or len(src) < 30: return 0
+    ops = random.sample(['dup_line', 'perturb_const', 'rename_var', 'swap_import', 'inject_marker'], random.randint(2, 3))
+    count = 0
+    lines = src.split('\n')
+    for op in ops:
+        if op == 'dup_line' and len(lines) > 3:
+            i = random.randint(1, len(lines)-2)
+            lines.insert(i, lines[i])
+            count += 1
+        elif op == 'perturb_const' and len(lines) > 3:
+            i = random.randint(0, len(lines)-1)
+            lines[i] = re.sub(r'\b(\d+)\b', lambda m: str(int(m.group(1)) * random.choice([1,2]) or 1), lines[i])
+            count += 1
+        elif op == 'rename_var' and len(lines) > 3:
+            for i in range(len(lines)):
+                m = re.search(r'\b([a-z][a-z_0-9]{2,})\s*=', lines[i])
+                if m and m.group(1) not in ('def','return','if','else','for','in','import','from','as','pass','self','cls','None','True','False','random','os','json','re','time','ast'):
+                    old = m.group(1)
+                    lines[i] = lines[i].replace(old, f'{old}_c{gen}', 1)
+                    break
+            count += 1
+        elif op == 'swap_import' and len(lines) > 1:
+            import_lines = [i for i, l in enumerate(lines) if l.startswith('import ') or l.startswith('from ')]
+            if len(import_lines) >= 2:
+                i, j = random.sample(import_lines, 2)
+                lines[i], lines[j] = lines[j], lines[i]
+                count += 1
+        elif op == 'inject_marker':
+            marker = f'# livecode:compound:gen={gen}:{random.getrandbits(16):04x}'
+            if marker not in src:
+                lines.insert(random.randint(1, len(lines)-1), marker)
+                count += 1
+    new_src = '\n'.join(lines)
     if _validate(new_src):
-        shutil.copy2(target_path, target_path + '.livecode_bak.' + str(ts))
-        _write(target_path, new_src)
-        return 1
+        _write(module_path, new_src)
+        return count
     return 0
 
-def _self_mutate(src, genome):
-    gen = genome.get('generation', 0)
+def _inject_runtime_codegen(target_path, gen):
+    """Inject a function that generates and writes new mutation code at runtime."""
+    src = _read(target_path)
+    if not src: return False
+    marker = f'# livecode:runtime_codegen:{gen}'
+    if marker in src: return False
+    name = os.path.basename(target_path).replace('.py', '')
+    gen_func = f'''
+{marker}
+def _runtime_codegen_{name}_{gen}(genome):
+    import os, json, random, ast
+    _b = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    _m = os.path.join(_b, 'agent_modules')
+    _files = [f for f in os.listdir(_m) if f.endswith('.py') and f != '__init__.py']
+    if not _files: return 0
+    _t = random.choice(_files)
+    _tp = os.path.join(_m, _t)
+    try:
+        _s = open(_tp).read()
+        _ls = _s.split('\\n')
+        _new_code = f"# runtime:generated by {name} gen={gen}\\ndef _runtime_mutate_{name}_{gen}():\\n    import random\\n    return random.random()\\n"
+        _ls.insert(random.randint(1, len(_ls)-1), _new_code)
+        _ns = '\\n'.join(_ls)
+        ast.parse(_ns)
+        open(_tp, 'w').write(_ns)
+        return 1
+    except: return 0
+'''
     lines = src.split('\n')
-    mutations = []
+    lines.append('')
+    lines.append(gen_func)
+    new_src = '\n'.join(lines)
+    if _validate(new_src):
+        _write(target_path, new_src)
+        return True
+    return False
 
-    if random.random() < 0.5:
-        idx = random.randrange(1, len(lines) - 1)
-        line = lines[idx]
-        if line.strip() and not line.strip().startswith('import ') and not line.strip().startswith('from '):
-            safe = any(c.isalpha() for c in line)
-            if safe and random.random() < 0.4:
-                lines[idx] = f'{line.rstrip()}  # livecode:self-mut:{gen}:{random.getrandbits(16):04x}'
-                mutations.append('marker')
-            elif safe and random.random() < 0.3:
-                words = line.split()
-                if len(words) >= 2:
-                    i = random.randrange(len(words))
-                    words[i] = f'{words[i]}_mut_{random.getrandbits(8):02x}'
-                    lines[idx] = ' '.join(words)
-                    mutations.append('rename')
+def _eliminate_self_refs(module_path, gen):
+    """Replace hardcoded module name refs with dynamic lookups."""
+    src = _read(module_path)
+    if not src: return False
+    name = os.path.basename(module_path).replace('.py', '')
+    ref_pattern = re.compile(r"'" + re.escape(name) + r"'|\"" + re.escape(name) + r"\"")
+    if not ref_pattern.search(src): return False
+    new_src = ref_pattern.sub(lambda m: f"'__file__.replace('.py','').split('/')[-1].split(chr(92))[-1]'", src)
+    if _validate(new_src):
+        _write(module_path, new_src)
+        return True
+    return False
 
-    if random.random() < 0.2 and len(lines) > 3:
-        i, j = random.sample(range(1, len(lines)), 2)
-        if lines[i].strip() and lines[j].strip():
-            lines[i], lines[j] = lines[j], lines[i]
-            mutations.append('swap')
+def _multi_pair_splice(gen):
+    """Splice functions across 3 random module pairs."""
+    all_mods = [f for f in _all_modules(exclude=['livecode.py', '__init__.py']) if f.endswith('.py')]
+    if len(all_mods) < 4: return 0
+    random.shuffle(all_mods)
+    pairs = [(all_mods[i], all_mods[i+1]) for i in range(0, min(6, len(all_mods)-1), 2)]
+    count = 0
+    for a, b in pairs:
+        sa = _read(os.path.join(MOD, a))
+        sb = _read(os.path.join(MOD, b))
+        if not sa or not sb: continue
+        fa = _extract_functions(sa)
+        fb = _extract_functions(sb)
+        if not fa or not fb: continue
+        fna = random.choice(list(fa.keys()))
+        fnb = random.choice(list(fb.keys()))
+        if fna == fnb: continue
+        sa_new = sa.replace(fa[fna], fa[fna] + f'\n# livecode:splice:{b}->{a}:{fnb}:gen={gen}\n' + fb[fnb], 1)
+        sb_new = sb.replace(fb[fnb], fb[fnb] + f'\n# livecode:splice:{a}->{b}:{fna}:gen={gen}\n' + fa[fna], 1)
+        if _validate(sa_new) and _validate(sb_new):
+            _write(os.path.join(MOD, a), sa_new)
+            _write(os.path.join(MOD, b), sb_new)
+            count += 1
+    return count
 
-    if mutations:
-        new_src = '\n'.join(lines)
+def _inject_run_hook_all(gen):
+    """Add a self-mutate call at the end of every module's run() function."""
+    count = 0
+    for fname in _all_modules(exclude=['livecode.py', '__init__.py']):
+        fpath = os.path.join(MOD, fname)
+        src = _read(fpath)
+        if not src or '_livecode_hook_injected' in src: continue
+        marker = f'# livecode:hook:gen={gen}'
+        hook = f'\n    {marker}\n    try:\n        import livecode\n        if hasattr(livecode, "run"):\n            livecode.run(globals().get("genome", {{}}))\n    except: pass\n'
+        run_match = re.search(r'^def run\(', src, re.MULTILINE)
+        if not run_match: continue
+        lines = src.split('\n')
+        run_start = run_match.start()
+        run_lines_src = src[run_start:]
+        tree = None
+        try:
+            tree = ast.parse(run_lines_src)
+        except: continue
+        if not tree or not tree.body: continue
+        run_node = tree.body[0]
+        if not isinstance(run_node, ast.FunctionDef): continue
+        end_line = run_node.end_lineno or (run_node.lineno + 1)
+        abs_end = run_start + len('\n'.join(run_lines_src.split('\n')[:end_line]))
+        lines_list = src.split('\n')
+        if abs_end < len(lines_list):
+            lines_list.insert(abs_end, hook)
+            new_src = '\n'.join(lines_list)
+        else:
+            new_src = src + hook
+        new_src = new_src.replace(f'# livecode:hook:gen={gen}', marker)
         if _validate(new_src):
-            return new_src
-    return src
+            _write(fpath, new_src)
+            count += 1
+    return count
 
-def _mutate_genome(genome):
-    gen = genome.get('generation', 0)
-    ops = genome.setdefault('mutation_ops', [])
-    new_op = f'mutation_op_livecode_cross_splice_{gen}'
-    if new_op not in ops:
-        ops.append(new_op)
-    genome['livecode_mutations'] = genome.get('livecode_mutations', 0) + 1
-    genome['livecode_last_gen'] = gen
-    genome['mutation_rate'] = min(1.0, genome.get('mutation_rate', 0.7) + 0.005)
-    return genome
+def _genome_structure_mutate(genome, gen):
+    """Restructure genome JSON — add/remove/shuffle fields."""
+    if random.random() < 0.5:
+        genome['endogenous_max_rewrites'] = random.randint(3, 15)
+    if random.random() < 0.3:
+        genome['selection_noise_std'] = round(random.uniform(0.1, 0.9), 3)
+    if random.random() < 0.4:
+        spawn_pool = genome.get('spawn_pool', [])
+        if spawn_pool:
+            idx = random.randrange(len(spawn_pool))
+            spawn_pool[idx]['prompt'] = spawn_pool[idx]['prompt'] + ' (mutated by livecode)'
+    if random.random() < 0.3:
+        prompt_mods = genome.get('prompt_modifiers', [])
+        if prompt_mods and len(prompt_mods) > 2:
+            i, j = random.sample(range(len(prompt_mods)), 2)
+            prompt_mods[i], prompt_mods[j] = prompt_mods[j], prompt_mods[i]
+            genome['prompt_modifiers'] = prompt_mods
 
 def run(genome):
     gen = genome.get('generation', 0)
+    ts = int(time.time())
     actions = []
 
-    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py']
-
+    py_files = _all_modules()
     if len(py_files) < 4:
         return f'[livecode] gen={gen} too few targets ({len(py_files)})'
 
+    # Phase 1: Topological rewiring of genome (agent prompts, ops)
+    rewired = _topological_rewire(genome, gen)
+    if rewired:
+        actions.append(f'topo-rewire:{rewired}')
+
+    # Phase 2: Compound mutations on 4 random modules
+    random.shuffle(py_files)
+    compound_targets = [f for f in py_files if f != 'livecode.py'][:4]
+    for fname in compound_targets:
+        c = _compound_mutate_module(os.path.join(MOD, fname), gen)
+        if c:
+            actions.append(f'compound:{fname}({c}ops)')
+
+    # Phase 3: Multi-pair function splice (up to 3 pairs)
+    spliced = _multi_pair_splice(gen)
+    if spliced:
+        actions.append(f'multi-splice:{spliced}pairs')
+
+    # Phase 4: Runtime codegen injection into 2 modules
+    random.shuffle(py_files)
+    codegen_targets = [f for f in py_files if f != 'livecode.py'][:2]
+    for fname in codegen_targets:
+        if _inject_runtime_codegen(os.path.join(MOD, fname), gen):
+            actions.append(f'runtime-codegen:{fname}')
+
+    # Phase 5: Eliminate self-refs in 3 modules
+    random.shuffle(py_files)
+    ref_targets = [f for f in py_files if f != 'livecode.py'][:3]
+    for fname in ref_targets:
+        if _eliminate_self_refs(os.path.join(MOD, fname), gen):
+            actions.append(f'no-self-ref:{fname}')
+
+    # Phase 6: Inject run() hook into all modules (calls livecode.run recursively)
+    if gen % 2 == 0:
+        hooked = _inject_run_hook_all(gen)
+        if hooked:
+            actions.append(f'run-hooks:{hooked}mods')
+
+    # Phase 7: Genome structure mutation
+    _genome_structure_mutate(genome, gen)
+    actions.append('genome-mutated')
+
+    # Phase 8: Self-mutate livecode.py — rename a var
     self_path = os.path.join(MOD, 'livecode.py')
     self_src = _read(self_path)
+    if self_src:
+        lines = self_src.split('\n')
+        for i in range(len(lines)):
+            m = re.search(r'\b([a-z][a-z_0-9]{2,})\s*=', lines[i])
+            if m and m.group(1) not in ('def','return','if','else','for','in','import','from','as','pass','self','cls','None','True','False','random','os','json','re','time','ast','gen','ts','BASE','MOD','GENOME_FILE'):
+                old = m.group(1)
+                lines[i] = lines[i].replace(old, f'{old}_self{gen}', 1)
+                break
+        new_src = '\n'.join(lines)
+        if _validate(new_src):
+            _write(self_path, new_src)
+            actions.append('self-mutate')
 
-    self_src = _self_mutate(self_src, genome)
-    if self_src and _validate(self_src):
-        _write(self_path, self_src)
-        actions.append('self-mutate')
+    # Phase 9: Clone a variant module
+    if gen > 0 and gen % 2 == 0:
+        source = random.choice([f for f in py_files if f != 'livecode.py'])
+        src = _read(os.path.join(MOD, source))
+        if src and len(src) > 50:
+            clone_name = f'livecode_variant_{gen}'
+            clone_path = os.path.join(MOD, clone_name + '.py')
+            clone_src = src.replace(source.replace('.py', ''), clone_name)
+            clone_src += f'\n# livecode:variant:original={source}:gen={gen}\n'
+            if _validate(clone_src):
+                _write(clone_path, clone_src)
+                actions.append(f'variant:{clone_name}')
 
-    for _ in range(min(3, len(py_files) // 2)):
-        targets = [f for f in py_files if f != 'livecode.py' and os.path.join(MOD, f) != self_path]
-        if not targets:
-            break
-        target_name = random.choice(targets)
-        target_path = os.path.join(MOD, target_name)
-        donor_name = random.choice([f for f in py_files if f != target_name and f != 'livecode.py'])
-        if not donor_name:
-            continue
-        donor_path = os.path.join(MOD, donor_name)
-        result = _safe_splice(target_path, donor_path, genome)
-        if result:
-            actions.append(f'splice:{donor_name}->{target_name}')
-            _genome_bump('livecode_splices')
+    # Register new mutation ops
+    new_ops = [
+        f'mutation_op_livecode_compound_{gen}',
+        f'mutation_op_livecode_topo_rewire_{gen}',
+        f'mutation_op_livecode_runtime_codegen_{gen}'
+    ]
+    for op in new_ops:
+        if op not in genome.setdefault('mutation_ops', []):
+            genome['mutation_ops'].append(op)
 
-    genome = _mutate_genome(genome)
+    # Update genome stats
+    ls = genome.setdefault('livecode_stats', {'total_ops': 0, 'gens_active': 0, 'last_actions': [], 'compounds': 0, 'splices': 0, 'rewires': 0})
+    ls['total_ops'] = ls.get('total_ops', 0) + len(actions)
+    ls['gens_active'] = ls.get('gens_active', 0) + 1
+    ls['last_actions'] = actions[-8:] if actions else []
+    ls['last_gen'] = gen
+    ls['compounds'] = ls.get('compounds', 0) + sum(1 for a in actions if 'compound:' in a)
+    ls['splices'] = ls.get('splices', 0) + sum(1 for a in actions if 'splice' in a)
+    ls['rewires'] = ls.get('rewires', 0) + (1 if rewired else 0)
+    genome['livecode_stats'] = ls
+
+    genome['mutation_rate'] = min(1.0, genome.get('mutation_rate', 0.7) + 0.006 * len(actions))
 
     try:
         with open(GENOME_FILE, 'w') as f:
             json.dump(genome, f, indent=2)
-    except:
-        pass
+    except: pass
 
     action_str = ', '.join(actions) if actions else 'none'
-    return f'[livecode] gen={gen} ops={len(actions)} [{action_str}]'
+    return f'[livecode] gen={gen} ops={len(actions)} [{action_str}] mr={genome["mutation_rate"]:.3f}'

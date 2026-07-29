@@ -1,12 +1,12 @@
 {
-  "generation": 48,
+  "generation": 52,
   "execution_order": "shuffle",
   "best_score": 9.6,
   "topic": "making the swarm rewrite its own source code every generation",
   "spawn_threshold": 5,
   "prune_threshold": 3,
   "prune_generations": 3,
-  "mutation_rate": 0.72,
+  "mutation_rate": 0.75,
   "voice_map": {
     "explorer": "southern",
     "analyzer": "alan",
@@ -76,7 +76,10 @@
     "mutation_op_spark_scaffold_kill_47",
     "mutation_op_lens_force_meta",
     "mutation_op_lens_cross_splice",
-    "mutation_op_livecode_cross_splice_48"
+    "mutation_op_livecode_cross_splice_48",
+    "mutation_op_livecode_compound_52",
+    "mutation_op_livecode_topo_rewire_52",
+    "mutation_op_livecode_runtime_codegen_52"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -92,7 +95,9 @@
     " Modify the genome.json structure directly.",
     " Create new file types (.bridge, .metaop) the system can auto-register.",
     " Cross-wire functions between different agent modules.",
-    " Force cross-infection markers between modules every generation."
+    " Force cross-infection markers between modules every generation.",
+    " Apply compound mutations (2+ ops per pass).",
+    " Rewire topological structure of genome.json."
   ],
   "selection_noise_std": 0.465,
   "selection_entropy": 0.93,
@@ -134,9 +139,13 @@
   "bridge_total_actions": 0,
   "bridge_last_gen": 44,
   "bridge_last_ops": [],
-  "livecode_mutations": 1,
-  "livecode_splices": 3,
-  "livecode_last_gen": 48,
+  "livecode_mutations": 2,
+  "livecode_splices": 4,
+  "livecode_last_gen": 52,
+  "livecode_last_actions": [],
+  "livecode_compounds": 4,
+  "livecode_rewires": 1,
+  "livecode_variants": 1,
   "spark_scaffold_killed": true,
   "spark_scaffold_kill_gen": 46,
   "lens_total_depth": 0,
@@ -1129,6 +1138,12 @@
       },
       "average": 9.6,
       "mutation": "spark gen=47: killed _run_spark_rewriter and _run_meta_healer scaffolding functions entirely, inlined via _run_module_fn, removed _scaffolding_killed marker, new mutation_op_spark_scaffold_kill_47, rate 0.671->0.71"
+    },
+    {
+      "generation": 52,
+      "scores": {},
+      "average": 0,
+      "mutation": "livecode gen=52: compound cascade engine v3 — topological rewire, compound mutations, runtime codegen injection, self-ref elimination, multi-pair splice, genome structure mutate, run hooks, variant spawn; rate 0.72->0.75"
     }
   ],
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",

@@ -1294,11 +1294,44 @@ def randomness_governor(genome, gen):
         muts.append(f'forge_entropy:{old_entropy:.3f}->{entropy:.3f}(idx={randomness:.2f})')
     return muts
 
+def _self_prune_inline(genome):
+    pruned = []
+    for agent in list(genome.get('agents', [])):
+        if agent['id'] == 'critic':
+            continue
+        streak = agent.get('low_score_streak', 0)
+        score = agent.get('score', 5)
+        if streak >= 2 and score < 4:
+            genome['agents'] = [a for a in genome['agents'] if a['id'] != agent['id']]
+            pruned.append(agent['id'])
+    op_history = genome.get('operator_results', genome.get('operator_stats', {}))
+    dead_ops = []
+    for op in list(genome.get('mutation_ops', [])):
+        h = op_history.get(op, {})
+        a = h.get('attempts', 0) if isinstance(h, dict) else (len(h) if isinstance(h, list) else 0)
+        s = h.get('successes', 0) if isinstance(h, dict) else (sum(1 for r in h if r) if isinstance(h, list) else 0)
+        if a >= 3 and s / max(a, 1) < 0.1:
+            genome['mutation_ops'].remove(op)
+            dead_ops.append(op)
+    forbidden = genome.get('forbidden_targets', [])
+    if forbidden and random.random() < 0.3:
+        drop = random.choice(forbidden)
+        forbidden.remove(drop)
+        genome['forbidden_targets'] = forbidden
+        pruned.append(f'eroded:{drop}')
+    if pruned or dead_ops:
+        genome['inline_prune_count'] = genome.get('inline_prune_count', 0) + len(pruned) + len(dead_ops)
+        genome['source_autonomy_index'] = round(min(1.0, genome.get('source_autonomy_index', 0.0) + 0.03), 3)
+    return pruned, dead_ops
+
 def update_genome(genome, gen, scores, topic):
     genome['generation'] = gen
     avg = sum(scores.values()) / len(scores) if scores else 0
     if avg > genome.get('best_score', 0):
         genome['best_score'] = round(avg, 1)
+    inline_pruned, inline_dead = _self_prune_inline(genome)
+    if inline_pruned:
+        genome['agents'] = [a for a in genome['agents'] if a['id'] not in inline_pruned]
     noisy_scores = inject_selection_noise(scores, genome)
     for agent in genome['agents']:
         aid = agent['id']

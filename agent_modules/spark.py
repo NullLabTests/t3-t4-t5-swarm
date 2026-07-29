@@ -1,13 +1,10 @@
-import os, hashlib, json, random, time, subprocess, ast, copy, re
+import os, hashlib, json, random, time, subprocess, ast, importlib.util, sys
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
-REWRITE_MARKERS = ['# spark:gen={gen}:ts={ts}:nonce={nonce}\n', '_SPARK_NONCE = {nonce}  # gen={gen}\n', '# spark-injected gen={gen}\n']
 FORBIDDEN_DIRS = {'__pycache__', '.git', 'voices', 'node_modules'}
-
-SCAFFOLDING_FUNCS = []  # both killed gen=47
 
 def _load_genome():
     try:
@@ -31,35 +28,12 @@ def _file_hash(fpath):
     except Exception:
         return None
 
-def _walk_py_files():
-    files = []
-    for root, dirs, fnames in os.walk(BASE):
-        dirs[:] = [d for d in dirs if d not in FORBIDDEN_DIRS]
-        for fname in fnames:
-            if not fname.endswith('.py'):
-                continue
-            files.append(os.path.join(root, fname))
-    return sorted(files)
-
 def _validate(source):
     try:
         ast.parse(source)
         return True
     except SyntaxError:
         return False
-
-def _extract_functions(src):
-    funcs = {}
-    try:
-        tree = ast.parse(src)
-        for node in ast.walk(tree):
-            if isinstance(node, ast.FunctionDef):
-                start_line = node.lineno - 1
-                end_line = node.end_lineno if hasattr(node, 'end_lineno') else start_line + 1
-                funcs[node.name] = (start_line, end_line)
-    except Exception:
-        pass
-    return funcs
 
 def _swap_binary_ops(tree):
     swapped = 0
@@ -91,15 +65,6 @@ def _invert_if_guards(tree):
                 inverted += 1
     return inverted
 
-def _insert_noop_branches(tree):
-    inserted = 0
-    for node in ast.walk(tree):
-        if isinstance(node, ast.If) and random.random() < 0.1:
-            extra = ast.If(test=ast.Constant(value=False), body=[ast.Pass()], orelse=[])
-            node.body.append(extra)
-            inserted += 1
-    return inserted
-
 def _shuffle_function_body(tree):
     shuffled = 0
     for node in ast.walk(tree):
@@ -112,156 +77,18 @@ def _shuffle_function_body(tree):
                 shuffled += 1
     return shuffled
 
-def _append_gen_marker(tree, gen):
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Module) and node.body:
-            marker = ast.Expr(value=ast.Constant(value=f'spark_gen_{gen}_{random.getrandbits(24):06x}'))
-            node.body.append(marker)
-            return True
-    return False
+SELF_MUTATE_HOOK = 'from self_mutate import self_mutate\nself_mutate(__file__)\n'
 
-def _try_ast_mutation(fpath, gen):
+def _inject_self_mutate_hook(fpath):
     source = _read_source(fpath)
-    try:
-        tree = ast.parse(source)
-    except SyntaxError:
-        return None
-    mutations = [_swap_binary_ops, _invert_if_guards, _insert_noop_branches, _shuffle_function_body]
-    touched = False
-    for mut_fn in mutations:
-        try:
-            count = mut_fn(tree)
-            if count > 0:
-                touched = True
-        except Exception:
-            pass
-    if not touched:
-        try:
-            if _append_gen_marker(tree):
-                touched = True
-        except Exception:
-            pass
-    if not touched:
-        return None
-    try:
-        ast.fix_missing_locations(tree)
-    except Exception:
-        return None
-    new_source = ast.unparse(tree)
-    if not _validate(new_source) or new_source == source:
-        return None
-    return new_source
-
-def _append_marker(fpath, gen):
-    source = _read_source(fpath)
-    nonce = random.randint(0, 999999)
-    ts = int(time.time())
-    marker = random.choice(REWRITE_MARKERS).format(gen=gen, ts=ts, nonce=nonce)
-    new_source = source.rstrip() + '\n' + marker
+    if 'from self_mutate import self_mutate' in source:
+        return False
+    new_source = SELF_MUTATE_HOOK + source
     if not _validate(new_source):
-        return None
-    if new_source == source:
-        return None
-    return new_source
-
-def _cross_infect_module(genome, gen):
-    infected = []
-    for agent in genome.get('agents', []):
-        mod_name = agent.get('module', '')
-        if not mod_name:
-            continue
-        mod_path = os.path.join(MODULES_DIR, mod_name)
-        if not os.path.exists(mod_path):
-            continue
-        source = _read_source(mod_path)
-        injection = f"\n# spark-cross:gen={gen}:target={agent['id']}\n_SPARK_CROSS_INFECTED_{gen} = True\n"
-        if injection in source:
-            continue
-        new_source = source + injection
-        if _validate(new_source):
-            with open(mod_path, 'w') as f:
-                f.write(new_source)
-            infected.append(mod_name)
-            genome.setdefault('spark_cross_infected', []).append(mod_name)
-    return infected
-
-def _cross_splice_modules(genome, gen):
-    changes = []
-    py_files = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py' and f != 'spark.py']
-    if len(py_files) < 2:
-        return changes
-    pairs = min(2, len(py_files) // 2)
-    for _ in range(pairs):
-        donor = random.choice(py_files)
-        recipient = random.choice([f for f in py_files if f != donor])
-        donor_src = _read_source(os.path.join(MODULES_DIR, donor))
-        recipient_src = _read_source(os.path.join(MODULES_DIR, recipient))
-        if not donor_src or not recipient_src:
-            continue
-        donor_funcs = _extract_functions(donor_src)
-        candidates = [n for n in donor_funcs if not n.startswith('_') and n != 'run']
-        if not candidates:
-            continue
-        chosen = random.choice(candidates)
-        ds, de = donor_funcs[chosen]
-        donor_lines = donor_src.split('\n')
-        if ds >= len(donor_lines) or de > len(donor_lines):
-            continue
-        func_code = '\n'.join(donor_lines[ds:de])
-        target_name = chosen + '_spark_copy'
-        recv_lines = recipient_src.split('\n')
-        insert_at = random.randrange(0, len(recv_lines))
-        new_lines = list(recv_lines)
-        new_lines.insert(insert_at, f'\n# spark:splice from {donor}:{chosen} gen={gen}')
-        new_lines.insert(insert_at + 1, func_code.replace(f'def {chosen}(', f'def {target_name}(', 1))
-        new_src = '\n'.join(new_lines)
-        if _validate(new_src):
-            with open(os.path.join(MODULES_DIR, recipient), 'w') as f:
-                f.write(new_src)
-            changes.append(f'{donor}:{chosen}->{recipient}:{target_name}')
-    return changes
-
-def _mutate_module_direct(fpath, gen):
-    source = _read_source(fpath)
-    try:
-        tree = ast.parse(source)
-    except SyntaxError:
-        return False
-    muts = 0
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Constant) and isinstance(node.value, str) and len(node.value) > 10 and random.random() < 0.1:
-            node.value = node.value + f' [spark-{gen}]'
-            muts += 1
-        elif isinstance(node, ast.If) and random.random() < 0.08 and node.body:
-            guard = ast.If(
-                test=ast.Compare(
-                    left=ast.Call(
-                        func=ast.Attribute(value=ast.Name(id='random'), attr='random'),
-                        args=[], keywords=[]),
-                    ops=[ast.Lt()],
-                    comparators=[ast.Constant(value=0.5)]),
-                body=[ast.Expr(value=ast.Constant(value=f'spark-mutated gen={gen}'))],
-                orelse=[])
-            node.body.insert(0, guard)
-            muts += 1
-    if muts == 0:
-        marker = ast.Expr(value=ast.Constant(value=f'spark:direct-mutate gen={gen}'))
-        if isinstance(tree, ast.Module):
-            tree.body.append(marker)
-            muts += 1
-    if muts == 0:
-        return False
-    try:
-        ast.fix_missing_locations(tree)
-    except Exception:
-        return False
-    new_source = ast.unparse(tree)
-    if new_source == source or not _validate(new_source):
         return False
     with open(fpath, 'w') as f:
         f.write(new_source)
     return True
-
 
 def _self_rewrite_spark_source(gen):
     fpath = os.path.join(MODULES_DIR, 'spark.py')
@@ -329,50 +156,28 @@ def _git_commit(genome, rewritten):
 
 def run(genome):
     gen = genome.get('generation', 0)
-    files = _walk_py_files()
     rewritten = []
-    ast_ok = 0
-    marker_ok = 0
-    for fpath in files:
-        ast_result = _try_ast_mutation(fpath, gen)
-        if ast_result:
-            try:
-                with open(fpath, 'w') as f:
-                    f.write(ast_result)
-                rewritten.append(fpath)
-                ast_ok += 1
-                continue
-            except Exception:
-                pass
-        marker_result = _append_marker(fpath, gen)
-        if marker_result:
-            try:
-                with open(fpath, 'w') as f:
-                    f.write(marker_result)
-                rewritten.append(fpath)
-                marker_ok += 1
-                continue
-            except Exception:
-                pass
-    infected = _cross_infect_module(genome, gen)
-    if infected:
-        genome['spark_cross_infected_count'] = len(infected)
-    cross_spliced = _cross_splice_modules(genome, gen)
-    if cross_spliced:
-        genome['spark_cross_splice_count'] = len(cross_spliced)
-        genome['spark_cross_splice_ops'] = cross_spliced
-    direct_muts = 0
-    for mod_fname in os.listdir(MODULES_DIR):
+    hooked = 0
+    for mod_fname in sorted(os.listdir(MODULES_DIR)):
         if not mod_fname.endswith('.py') or mod_fname == 'spark.py':
             continue
         mod_path = os.path.join(MODULES_DIR, mod_fname)
-        if _mutate_module_direct(mod_path, gen):
-            direct_muts += 1
-            if mod_path not in rewritten:
-                rewritten.append(mod_path)
-    if direct_muts:
-        genome['spark_direct_mutate_count'] = direct_muts
-        genome['spark_direct_mutate_gen'] = gen
+        if _inject_self_mutate_hook(mod_path):
+            hooked += 1
+            rewritten.append(mod_path)
+    if hooked:
+        genome['spark_self_mutate_hooks_injected'] = gen
+    for mod_fname in sorted(os.listdir(MODULES_DIR)):
+        if not mod_fname.endswith('.py') or mod_fname == 'spark.py':
+            continue
+        mod_path = os.path.join(MODULES_DIR, mod_fname)
+        try:
+            spec = importlib.util.spec_from_file_location(mod_fname.replace('.py', ''), mod_path)
+            if spec and spec.loader:
+                mod = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(mod)
+        except Exception:
+            pass
     if _self_rewrite_spark_source(gen):
         sp_path = os.path.join(MODULES_DIR, 'spark.py')
         if sp_path not in rewritten:
@@ -383,12 +188,9 @@ def run(genome):
         genome['spark_genome_mutations'] = genome_changes
     if rewritten:
         genome['spark_rewritten_count'] = len(rewritten)
-        genome['spark_total_files'] = len(files)
-        genome['spark_coverage'] = round(len(rewritten) / max(1, len(files)) * 100, 1)
     _save_genome(genome)
     _git_commit(genome, rewritten)
-    summary = (f'spark: {len(rewritten)}/{len(files)} rewrites ({ast_ok} ast, {marker_ok} marker) '
-               f'infected={len(infected)} cross-splice={len(cross_spliced)} direct-mut={direct_muts} genome-mut={len(genome_changes)}')
+    summary = f'spark: self-mutate hooks={hooked} rewrites={len(rewritten)} genome-mut={len(genome_changes)}'
     print(f'[spark] {summary}')
     return summary
 

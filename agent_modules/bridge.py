@@ -1,3 +1,5 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import os, random, json, re, ast, hashlib, time
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

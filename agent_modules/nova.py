@@ -1,5 +1,6 @@
 """nova: force endogenous source mutation every generation."""
-
+from self_mutate import self_mutate
+self_mutate(__file__)
 import random, os, re, json
 
 MODULES_DIR = "agent_modules"

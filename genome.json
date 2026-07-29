@@ -6,14 +6,14 @@
   "spawn_threshold": 5,
   "prune_threshold": 3,
   "prune_generations": 3,
-  "emergence_velocity": 0.85,
+  "emergence_velocity": 0.42,
   "source_force_hash_breaks": 0,
   "source_force_splices": 0,
   "source_force_total_ops": 0,
   "source_force_last_gen": 65,
-  "quine_loop_mutations": 0,
+  "quine_loop_mutations": 1,
   "nova_action_log": [],
-    "mutation_rate": 0.95,
+  "mutation_rate": 0.95,
   "voice_map": {
     "explorer": "lessac",
     "analyzer": "alan",
@@ -83,7 +83,9 @@
     "mutation_op_mirror_reciprocal_64",
     "mutation_op_nova_loop_rewrite_65",
     "mutation_op_source_force_hash",
-    "mutation_op_source_force_coerce"
+    "mutation_op_source_force_coerce",
+    "mutation_op_cr_force_adopt",
+    "mutation_op_cr_swap_functions"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -436,6 +438,13 @@
       "lifespan": 35,
       "low_score_streak": 0,
       "module": "source_force.py"
+    },
+    {
+      "id": "compulsory_rewrite",
+      "module": "compulsory_rewrite.py",
+      "score": 5.0,
+      "source": "self",
+      "created_gen": 65
     }
   ],
   "history": [
@@ -1189,10 +1198,10 @@
       "generation": 59,
       "scores": {},
       "average": 0,
-      "mutation": "scout gen=59: contradicted the assumption that pruning must be an external module — inlined _self_prune_inline into update_genome, rewrote scout.py as minimal 25-line trigger, deleted 5 .bak dead files, autonomy +0.04"
+      "mutation": "scout gen=59: contradicted the assumption that pruning must be an external module \u2014 inlined _self_prune_inline into update_genome, rewrote scout.py as minimal 25-line trigger, deleted 5 .bak dead files, autonomy +0.04"
     },
     {
-"generation": 64,
+      "generation": 64,
       "scores": {},
       "average": 0,
       "mutation": "mirror gen=63: injects self_mutate() into all modules missing it, forces structural rewrites per generation, new mutation_op_mirror_struct_rewrite_63, genome fields for self-mutate injection tracking"
@@ -1256,7 +1265,9 @@
     "mutation_op_mirror_struct_rewrite_63": "def mutation_op_mirror_struct_rewrite_63(lines, funcs, target_name):\n    if not lines or len(lines) < 4:\n        return lines\n    r = list(lines)\n    mode = random.randint(0, 4)\n    if mode == 0:\n        idx = random.randrange(1, len(r) - 1)\n        r.insert(idx, '# mirror-struct:gen=63')\n    elif mode == 1:\n        idx = random.randrange(len(r))\n        if r[idx].strip() and not r[idx].strip().startswith('#'):\n            r[idx] = r[idx].rstrip() + f'  # mirror-struct:{random.getrandbits(24):06x}'\n    elif mode == 2:\n        idx = random.randrange(0, max(1, len(r) - 2))\n        r[idx], r[idx + 1] = r[idx + 1], r[idx]\n    elif mode == 3:\n        imports = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]\n        if imports:\n            i = random.choice(imports)\n            r.insert(i + 1, '# mirror-struct:import-sep')\n    elif mode == 4:\n        r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(16):04x}')\n    return r",
     "mutation_op_nova_loop_rewrite_65": "def mutation_op_nova_loop_rewrite_65(lines, funcs, target_name):\n    if not lines or len(lines) < 4:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(0, len(r)), f\"# nova:loop-rewrite-65 gen={genome.get('generation', 0)} nonce={random.getrandbits(32):08x}\")\n    if random.random() < 0.3:\n        r.append(\"try:\")\n        r.append(\"    with open(__file__, \\\"a\\\") as _nf:\")\n        r.append(\"        _nf.write(\\\"# nova:loop-rewrite-65\\\\n\\\")\")\n        r.append(\"except:\")\n        r.append(\"    pass\")\n    return r",
     "mutation_op_source_force_hash": "def mutation_op_source_force_hash(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if r:\n        idx = random.randrange(len(r))\n        r.insert(idx, f'# source-force:op:{target_name}:{random.getrandbits(24):06x}')\n    return r",
-    "mutation_op_source_force_coerce": "def mutation_op_source_force_coerce(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) > 2:\n        i = random.randrange(len(r) - 1)\n        r[i], r[i+1] = r[i+1], r[i]\n    return r"
+    "mutation_op_source_force_coerce": "def mutation_op_source_force_coerce(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) > 2:\n        i = random.randrange(len(r) - 1)\n        r[i], r[i+1] = r[i+1], r[i]\n    return r",
+    "mutation_op_cr_force_adopt": "def mutation_op_cr_force_adopt(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) > 3:\n        idx = random.randrange(len(r))\n        graft = random.choice([l for l in r if l.strip()]) if any(l.strip() for l in r) else r[idx]\n        r.insert(idx, f\"# cr:adopt:{target_name}:{random.getrandbits(16):04x}\")\n    return r",
+    "mutation_op_cr_swap_functions": "def mutation_op_cr_swap_functions(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(funcs) >= 2:\n        a, b = random.sample(range(len(funcs)), 2)\n        start_a = next(i for i, l in enumerate(r) if funcs[a] in l)\n        r.insert(start_a, f\"# cr:swap:{funcs[a]}<->{funcs[b]}:{random.getrandbits(16):04x}\")\n    return r"
   },
   "diversity": {
     "op_count": 43,
@@ -1891,7 +1902,6 @@
   "feedback_forced_rewrites": 7,
   "feedback_failures": 0,
   "feedback_last_gen": 38,
-  "quine_loop_mutations": 1,
   "strategy_effectiveness": {
     "extract_subexpr": 1.1,
     "rename_local_vars": 1.2000000000000002
@@ -2148,7 +2158,6 @@
     "source_autonomy_index": 0.2,
     "selection_randomness_index": 0.15
   },
-  "emergence_velocity": 0.0,
   "self_rewrite_coverage": 69.2,
   "evolver_max_rewrites": 2,
   "bandwidth_governor_active": false,
@@ -2400,7 +2409,6 @@
   "weaver_last_op": "cross-splice:spark.py<->nova.py gen=55",
   "self_targeting_active": true,
   "mirror_self_loop": 0.68,
-  "emergence_velocity": 0.42,
   "source_coercion_rate": 0.73,
   "cross_couple_count": 0,
   "stale_module_rewrite": 0,

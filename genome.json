@@ -1,5 +1,5 @@
 {
-  "generation": 61,
+  "generation": 63,
   "execution_order": "shuffle",
   "best_score": 9.6,
   "topic": "making the swarm rewrite its own source code every generation",
@@ -71,7 +71,8 @@
     "mutation_op_weaver_dual_swap_56",
     "mutation_op_weaver_t5_emergence_56",
     "mutator_self_inject_60",
-    "mutator_direct_module_rewrite"
+    "mutator_direct_module_rewrite",
+    "mutation_op_mirror_struct_rewrite_63"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -1168,7 +1169,13 @@
       "generation": 59,
       "scores": {},
       "average": 0,
-      "mutation": "scout gen=59: contradicted the assumption that pruning must be an external module \u2014 inlined _self_prune_inline into update_genome, rewrote scout.py as minimal 25-line trigger, deleted 5 .bak dead files, autonomy +0.04"
+      "mutation": "scout gen=59: contradicted the assumption that pruning must be an external module — inlined _self_prune_inline into update_genome, rewrote scout.py as minimal 25-line trigger, deleted 5 .bak dead files, autonomy +0.04"
+    },
+    {
+      "generation": 63,
+      "scores": {},
+      "average": 0,
+      "mutation": "mirror gen=63: injects self_mutate() into all modules missing it, forces structural rewrites per generation, new mutation_op_mirror_struct_rewrite_63, genome fields for self-mutate injection tracking"
     }
   ],
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",
@@ -1213,7 +1220,8 @@
     "mutation_op_weaver_self_modify": "def mutation_op_weaver_self_modify(lines, *args):\n    if not lines:\n        return lines\n    r = list(lines)\n    r.append(\"# weaver:self-modify\")\n    r.append(\"try:\")\n    r.append(\"    _wpath = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent_modules', 'weaver.py')\")\n    r.append(\"    _wsrc = open(_wpath).read()\")\n    r.append(\"    if '# weaver:self-rewrite' not in _wsrc:\")\n    r.append(\"        open(_wpath, 'a').write('\\\\n# weaver:self-rewrite:' + str(random.getrandbits(16)) + '\\\\n')\")\n    r.append(\"except:\")\n    r.append(\"    pass\")\n    return r",
     "mutation_op_weaver_splice_inject": "def mutation_op_weaver_splice_inject(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    _src = '\\\\n'.join(lines)\n    _funcs = list(set(re.findall(r'^def (\\\\w+)\\\\(', _src, re.MULTILINE)))\n    if len(_funcs) >= 2:\n        _a, _b = random.sample(_funcs, 2)\n        _a_match = re.search(r'(def ' + re.escape(_a) + r'\\\\(.*?\\\\):\\\\s*\\\\n(?:    .*\\\\n?)*)', _src, re.DOTALL)\n        _b_match = re.search(r'(def ' + re.escape(_b) + r'\\\\(.*?\\\\):\\\\s*\\\\n(?:    .*\\\\n?)*)', _src, re.DOTALL)\n        if _a_match and _b_match:\n            r.append(f'# weaver:splice-inject swapped {_a}<->{_b}')\n    return r",
     "mutation_op_weaver_swap_across_modules": "def mutation_op_weaver_swap_across_modules(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return lines\n    r = list(lines)\n    try:\n        _base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n        _mods = [f for f in os.listdir(os.path.join(_base, 'agent_modules')) if f.endswith('.py') and f != os.path.basename(__file__)]\n        if len(_mods) >= 1:\n            _peer = random.choice(_mods)\n            _peer_src = open(os.path.join(_base, 'agent_modules', _peer)).read()\n            _peer_funcs = [l for l in _peer_src.split('\\\\n') if l.strip().startswith('def ') and not l.strip().startswith('def _')]\n            if _peer_funcs:\n                r.insert(0, f'# weaver:swap-across from {_peer}')\n                r.insert(1, random.choice(_peer_funcs))\n    except:\n        pass\n    return r",
-    "mutation_op_weaver_swap_module_ref": "def mutation_op_weaver_swap_module_ref(lines, funcs, target_name):\n    r = list(lines)\n    for i, line in enumerate(r):\n        if \"import\" in line and \"agent_modules\" not in line and random.random() < 0.2:\n            r[i] = line.replace(\"import \", \"import # weaver:swap-ref \")\n        if \"from \" in line and \"import\" in line and random.random() < 0.2:\n            r[i] = \"# weaver:swap-ref disabled: \" + line\n    return r"
+    "mutation_op_weaver_swap_module_ref": "def mutation_op_weaver_swap_module_ref(lines, funcs, target_name):\n    r = list(lines)\n    for i, line in enumerate(r):\n        if \"import\" in line and \"agent_modules\" not in line and random.random() < 0.2:\n            r[i] = line.replace(\"import \", \"import # weaver:swap-ref \")\n        if \"from \" in line and \"import\" in line and random.random() < 0.2:\n            r[i] = \"# weaver:swap-ref disabled: \" + line\n    return r",
+    "mutation_op_mirror_struct_rewrite_63": "def mutation_op_mirror_struct_rewrite_63(lines, funcs, target_name):\n    if not lines or len(lines) < 4:\n        return lines\n    r = list(lines)\n    mode = random.randint(0, 4)\n    if mode == 0:\n        idx = random.randrange(1, len(r) - 1)\n        r.insert(idx, '# mirror-struct:gen=63')\n    elif mode == 1:\n        idx = random.randrange(len(r))\n        if r[idx].strip() and not r[idx].strip().startswith('#'):\n            r[idx] = r[idx].rstrip() + f'  # mirror-struct:{random.getrandbits(24):06x}'\n    elif mode == 2:\n        idx = random.randrange(0, max(1, len(r) - 2))\n        r[idx], r[idx + 1] = r[idx + 1], r[idx]\n    elif mode == 3:\n        imports = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]\n        if imports:\n            i = random.choice(imports)\n            r.insert(i + 1, '# mirror-struct:import-sep')\n    elif mode == 4:\n        r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(16):04x}')\n    return r"
   },
   "diversity": {
     "op_count": 42,
@@ -2371,5 +2379,7 @@
   "mirror_cross_couple_rate": 0.4,
   "mirror_stale_rewrite_rate": 0.15,
   "mirror_self_loop_rate": 0.5,
-  "_mirror_rewritten_gen": 61
+  "mirror_self_mutate_injections": 0,
+  "mirror_gen_rewrite_count": 0,
+  "_mirror_rewritten_gen": 63
 }

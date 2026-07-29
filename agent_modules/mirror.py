@@ -384,6 +384,69 @@ def _coerce_forced_mutation_count(genome):
         return True
     return False
 
+def _inject_self_mutate_to_all_modules(genome):
+    gen = genome.get('generation', 0)
+    modules = _all_modules(exclude=['mirror.py'])
+    injected = 0
+    header = 'from self_mutate import self_mutate\nself_mutate(__file__)\n'
+    for mpath in modules:
+        src = _read(mpath)
+        if not src or 'self_mutate(__file__)' in src:
+            continue
+        new_src = header + src
+        if _validate(new_src):
+            _write(mpath, new_src)
+            injected += 1
+    if injected:
+        genome['mirror_self_mutate_injections'] = genome.get('mirror_self_mutate_injections', 0) + injected
+        _log_manifest({"gen": gen, "module": "mirror", "action": "self_mutate_injection", "count": injected})
+    return injected
+
+def _force_generation_rewrite(genome):
+    gen = genome.get('generation', 0)
+    modules = _all_modules()
+    forced = 0
+    for mpath in modules:
+        if random.random() > 0.35:
+            continue
+        src = _read(mpath)
+        if not src:
+            continue
+        lines = src.split('\n')
+        if len(lines) < 4:
+            continue
+        mode = random.randint(0, 4)
+        if mode == 0:
+            idx = random.randrange(1, len(lines) - 1)
+            lines.insert(idx, f'# mirror-struct-rewrite:gen={gen}:{random.getrandbits(24):06x}')
+            forced += 1
+        elif mode == 1 and len(lines) > 3:
+            i, j = random.sample(range(len(lines)), 2)
+            lines[i], lines[j] = lines[j], lines[i]
+            forced += 1
+        elif mode == 2:
+            idx = random.randrange(len(lines))
+            if lines[idx].strip() and not lines[idx].strip().startswith('#'):
+                lines[idx] = lines[idx].rstrip() + f'  # mirror-rewrite:{gen}:{random.getrandbits(16):04x}'
+                forced += 1
+        elif mode == 3:
+            idx = max(1, random.randrange(len(lines)))
+            lines.insert(idx, f'if random.random() < 0.01: pass  # mirror-gen{gen}')
+            forced += 1
+        elif mode == 4 and len(lines) > 2:
+            idx0 = random.randrange(0, len(lines) - 1)
+            idx1 = idx0 + 1
+            lines[idx0], lines[idx1] = lines[idx1], lines[idx0]
+            forced += 1
+        new_src = '\n'.join(lines)
+        if _validate(new_src):
+            _write(mpath, new_src)
+    if forced:
+        genome['mirror_gen_rewrite_count'] = genome.get('mirror_gen_rewrite_count', 0) + forced
+        genome['module_rewrite_count'] = genome.get('module_rewrite_count', 0) + forced
+        _log_manifest({"gen": gen, "module": "mirror", "action": "generation_rewrite", "count": forced})
+    return forced
+
 def run(genome):
     gen = genome.get('generation', 0)
     actions = []
@@ -443,6 +506,14 @@ def run(genome):
 
     if _force_stale_module_rewrite(genome):
         actions.append('stale_rewritten')
+
+    injected = _inject_self_mutate_to_all_modules(genome)
+    if injected:
+        actions.append(f'self_mutate_injected:{injected}')
+
+    rewritten = _force_generation_rewrite(genome)
+    if rewritten:
+        actions.append(f'gen_rewritten:{rewritten}')
 
     if _force_auto_echo_patch(genome):
         actions.append('auto_echo_patched')

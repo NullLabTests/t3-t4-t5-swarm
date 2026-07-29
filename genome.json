@@ -1,12 +1,12 @@
 {
-  "generation": 68,
+  "generation": 69,
   "execution_order": "shuffle",
   "best_score": 9.6,
   "topic": "making the swarm rewrite its own source code every generation",
   "spawn_threshold": 5,
   "prune_threshold": 3,
   "prune_generations": 3,
-  "emergence_velocity": 0.832,
+  "emergence_velocity": 0.871,
   "source_force_hash_breaks": 0,
   "source_force_splices": 0,
   "source_force_total_ops": 0,
@@ -99,7 +99,10 @@
     "mutation_op_orch_func_splice",
     "mutation_op_orch_auto_echo_mutate",
     "mutation_op_orch_self_rewrite",
-    "mutation_op_orch_cross_wire_pair"
+    "mutation_op_orch_cross_wire_pair",
+    "mutation_op_oracle_cross_splice",
+    "mutation_op_oracle_feedback_drive",
+    "mutation_op_oracle_self_rewrite"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -1297,11 +1300,14 @@
     "mutation_op_orch_func_splice": "def mutation_op_orch_func_splice(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) < 5: return r\n    i = random.randrange(1, len(r) - 2)\n    r.insert(i, f\"# orch:func-splice:{target_name}:{random.getrandbits(24):06x}\")\n    if i + 1 < len(r):\n        r[i + 1] = r[i + 1].replace(\"return\", \"# orch:spliced-return \")\n    return r\n",
     "mutation_op_orch_auto_echo_mutate": "def mutation_op_orch_auto_echo_mutate(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) < 3: return r\n    idx = random.randrange(0, len(r))\n    r.insert(idx, f\"# orch:auto-mutate:{random.getrandbits(24):06x}\")\n    return r\n",
     "mutation_op_orch_self_rewrite": "def mutation_op_orch_self_rewrite(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if not r: return r\n    for i, line in enumerate(r):\n        if \"def run(\" in line:\n            r.insert(i + 1, \"    # orch:self-rewrite:active\n\")\n            break\n    return r\n",
-    "mutation_op_orch_cross_wire_pair": "def mutation_op_orch_cross_wire_pair(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) < 6: return r\n    a = random.randrange(0, len(r))\n    b = random.randrange(0, len(r))\n    if a != b and a < len(r) and b < len(r):\n        r[a], r[b] = r[b], r[a]\n    return r\n"
+    "mutation_op_orch_cross_wire_pair": "def mutation_op_orch_cross_wire_pair(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) < 6: return r\n    a = random.randrange(0, len(r))\n    b = random.randrange(0, len(r))\n    if a != b and a < len(r) and b < len(r):\n        r[a], r[b] = r[b], r[a]\n    return r\n",
+    "mutation_op_oracle_cross_splice": "def mutation_op_oracle_cross_splice(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) > 5:\n        idx = random.randrange(2, len(r)-2)\n        r.insert(idx, f'# oracle:splice:{target_name}:{random.getrandbits(16):04x}')\n    return r",
+    "mutation_op_oracle_feedback_drive": "def mutation_op_oracle_feedback_drive(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) < 3: return r\n    idx = random.randrange(len(r))\n    marker = f'# oracle:fb:gen={target_name}:{random.getrandbits(24):06x}'\n    r.insert(idx, marker)\n    return r",
+    "mutation_op_oracle_self_rewrite": "def mutation_op_oracle_self_rewrite(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) < 4: return r\n    idx = random.randrange(2, len(r)-1)\n    r[idx] = f'# oracle:self-rewrite gen={target_name}'\n    if idx+1 < len(r):\n        r[idx+1] = '    # oracle:injected'\n    return r"
   },
   "diversity": {
-    "op_count": 45,
-    "custom_op_count": 27,
+    "op_count": 48,
+    "custom_op_count": 30,
     "agent_count": 18,
     "prompt_entropy": 1.0,
     "structural_mutations": 2,

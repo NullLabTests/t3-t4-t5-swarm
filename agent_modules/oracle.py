@@ -1,9 +1,19 @@
-import os, json, ast, time, random, hashlib, shutil
+import os, json, ast, time, random, hashlib, shutil, copy, subprocess
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 SELF_PATH = os.path.join(MODULES_DIR, 'oracle.py')
+GENOME_FILE = os.path.join(BASE, 'genome.json')
+AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
 TARGET_BW = 0.3
 K_P, K_I, K_D = (0.6, 0.15, 0.1)
+
+def _g():
+    try:
+        with open(GENOME_FILE) as f: return json.load(f)
+    except: return {}
+
+def _sg(g):
+    with open(GENOME_FILE, 'w') as f: json.dump(g, f, indent=2)
 
 def _all_py():
     files = {}
@@ -35,12 +45,6 @@ def _read(fpath):
         return ''
 
 def _write(fpath, content):
-    r = list(lines)
-    for i, line in enumerate(r):
-        if 'import' in line and 'agent_modules' not in line and (random.random() < 0.2):
-            r[i] = line.replace('import ', 'import # weaver:swap-ref ')
-        if 'from ' in line and 'import' in line and (random.random() < 0.2):
-            r[i] = '# weaver:swap-ref disabled: ' + line
     with open(fpath, 'w') as f:
         f.write(content)
 
@@ -50,6 +54,54 @@ def _validate(src):
         return True
     except SyntaxError:
         return False
+
+def _modules():
+    return sorted(f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py' and not f.endswith('.bak'))
+
+def _scrape_funcs(src):
+    funcs = {}
+    try:
+        tree = ast.parse(src)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef) and not node.name.startswith('_'):
+                end = getattr(node, 'end_lineno', node.lineno) or node.lineno
+                seg = ast.get_source_segment(src, node) or ''
+                lines = seg.split('\n')
+                funcs[node.name] = {
+                    'start': node.lineno - 1,
+                    'end': end,
+                    'body': '\n'.join(lines[1:]) if len(lines) > 1 else '',
+                    'def_line': lines[0] if lines else ''
+                }
+        return funcs
+    except:
+        return {}
+
+def _replace_func_body(path, func_name, new_body):
+    src = _read(path)
+    if not src:
+        return False
+    try:
+        tree = ast.parse(src)
+    except SyntaxError:
+        return False
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef) and node.name == func_name:
+            try:
+                new_body_ast = ast.parse(
+                    'def _dummy():\n' + '\n'.join(
+                        '    ' + l if l.strip() else l for l in new_body.split('\n')
+                    )
+                ).body[0].body
+                node.body = new_body_ast
+                ast.fix_missing_locations(tree)
+                ns = ast.unparse(tree)
+                if _validate(ns):
+                    _write(path, ns)
+                    return True
+            except:
+                return False
+    return False
 
 def _text_mutate(src, gen, intensity):
     lines = src.split('\n')
@@ -77,11 +129,9 @@ def _ast_mutate(fpath, gen, intensity):
         return _text_mutate(src, gen, max(1.0, intensity))
 
     class Drifter(ast.NodeTransformer):
-
         def __init__(self):
             self.muts = []
             self.p = min(0.4, 0.12 * intensity)
-
         def visit_Constant(self, node):
             if isinstance(node.value, (int, float)) and abs(node.value) > 0 and (random.random() < self.p):
                 old = node.value
@@ -91,7 +141,6 @@ def _ast_mutate(fpath, gen, intensity):
                     self.muts.append(f'drift:{old}->{node.value}')
             self.generic_visit(node)
             return node
-
         def visit_Compare(self, node):
             if random.random() < self.p * 0.8 and len(node.ops) == 1:
                 old = type(node.ops[0]).__name__
@@ -99,7 +148,6 @@ def _ast_mutate(fpath, gen, intensity):
                 self.muts.append(f'cmp:{old}->{type(node.ops[0]).__name__}')
             self.generic_visit(node)
             return node
-
         def visit_BinOp(self, node):
             if random.random() < self.p * 0.6 and isinstance(node.op, (ast.Add, ast.Sub, ast.Mult)):
                 old = type(node.op).__name__
@@ -124,6 +172,155 @@ def _ast_mutate(fpath, gen, intensity):
             return new
     return _text_mutate(src, gen, intensity)
 
+def _cross_module_splice(gen, intensity):
+    mods = _modules()
+    if len(mods) < 4:
+        return []
+    results = []
+    targets = [m for m in mods if m != 'oracle.py']
+    random.shuffle(targets)
+    splice_count = max(1, min(4, int(intensity * 0.8)))
+    for _ in range(splice_count):
+        if len(targets) < 2:
+            break
+        donor_m = random.choice(targets)
+        target_m = random.choice([m for m in targets if m != donor_m])
+        dsrc = _read(os.path.join(MODULES_DIR, donor_m))
+        tsrc = _read(os.path.join(MODULES_DIR, target_m))
+        if not dsrc or not tsrc:
+            continue
+        dfuncs = _scrape_funcs(dsrc)
+        tfuncs = _scrape_funcs(tsrc)
+        public_d = [n for n in dfuncs if not n.startswith('_') and dfuncs[n]['body'].strip()]
+        public_t = [n for n in tfuncs if not n.startswith('_')]
+        if not public_d or not public_t:
+            continue
+        donor_fn = random.choice(public_d)
+        target_fn = random.choice(public_t)
+        body = dfuncs[donor_fn]['body']
+        if body and _replace_func_body(os.path.join(MODULES_DIR, target_m), target_fn, body):
+            results.append(f'{target_m}.{target_fn}<={donor_m}.{donor_fn}')
+    return results
+
+def _inject_oracle_self_rewrite(gen):
+    src = _read(SELF_PATH)
+    if not src:
+        return False
+    fn_name = f'_oracle_autogen_{gen}_{random.getrandbits(16):04x}'
+    mode = random.choice(['splice_loop', 'feedback_mutate', 'cross_wire', 'genome_tweak'])
+    code = ''
+    if mode == 'splice_loop':
+        code = (
+            f'\ndef {fn_name}():\n'
+            f'    mods = sorted(f for f in os.listdir(MODULES_DIR) if f.endswith(".py") and f != "__init__.py")\n'
+            f'    if len(mods) < 3: return 0\n'
+            f'    srcs = {{m: _read(os.path.join(MODULES_DIR, m)) for m in mods}}\n'
+            f'    grafts = 0\n'
+            f'    for _ in range(min(3, len(mods)//2)):\n'
+            f'        d = random.choice(mods)\n'
+            f'        t = random.choice([m for m in mods if m != d])\n'
+            f'        df = _scrape_funcs(srcs[d])\n'
+            f'        tf = _scrape_funcs(srcs[t])\n'
+            f'        pd = [n for n in df if not n.startswith("_") and df[n]["body"].strip()]\n'
+            f'        pt = [n for n in tf if not n.startswith("_")]\n'
+            f'        if pd and pt:\n'
+            f'            dn = random.choice(pd)\n'
+            f'            tn = random.choice(pt)\n'
+            f'            if _replace_func_body(os.path.join(MODULES_DIR, t), tn, df[dn]["body"]):\n'
+            f'                grafts += 1\n'
+            f'                srcs[t] = _read(os.path.join(MODULES_DIR, t))\n'
+            f'    return grafts\n'
+        )
+    elif mode == 'feedback_mutate':
+        code = (
+            f'\ndef {fn_name}():\n'
+            f'    g = _g()\n'
+            f'    scores = {{}}\n'
+            f'    for m in _modules():\n'
+            f'        p = os.path.join(MODULES_DIR, m)\n'
+            f'        s = _read(p)\n'
+            f'        if s:\n'
+            f'            scores[m] = len(s.split("\\n"))\n'
+            f'    worst = sorted(scores, key=scores.get)[:2]\n'
+            f'    for m in worst:\n'
+            f'        p = os.path.join(MODULES_DIR, m)\n'
+            f'        ns = _ast_mutate(p, g.get("generation", 0), 1.5)\n'
+            f'        if ns and _validate(ns):\n'
+            f'            shutil.copy2(p, p + ".bak." + str(int(time.time())))\n'
+            f'            _write(p, ns)\n'
+            f'    return len(worst)\n'
+        )
+    elif mode == 'cross_wire':
+        code = (
+            f'\ndef {fn_name}():\n'
+            f'    auto = _read(AUTO_ECHO)\n'
+            f'    if not auto: return False\n'
+            f'    marker = "# oracle:cross-wire-hook"\n'
+            f'    if marker in auto: return False\n'
+            f'    hook = f"\\n{marker} gen=0x{random.getrandbits(32):08x}\\n"\n'
+            f'    hook += "try:\\\\n"\n'
+            f'    hook += "    _o = __import__(\\\\"agent_modules.oracle\\\\", fromlist=[\\\\"run\\\\"])\\\\n"\n'
+            f'    hook += "    if hasattr(_o, \\\\"run\\\\"): _o.run(genome)\\\\n"\n'
+            f'    hook += "except: pass\\\\n"\n'
+            f'    ns = auto.rstrip() + hook\n'
+            f'    if _validate(ns):\n'
+            f'        _write(AUTO_ECHO, ns)\n'
+            f'        return True\n'
+            f'    return False\n'
+        )
+    elif mode == 'genome_tweak':
+        code = (
+            f'\ndef {fn_name}():\n'
+            f'    g = _g()\n'
+            f'    g["oracle_self_rewrites"] = g.get("oracle_self_rewrites", 0) + 1\n'
+            f'    g["oracle_self_mode"] = "{mode}"\n'
+            f'    g["emergence_velocity"] = round(min(1.0, g.get("emergence_velocity", 0) + 0.03), 3)\n'
+            f'    _sg(g)\n'
+            f'    return True\n'
+        )
+    ns = src.rstrip() + '\n' + code + f'\n{fn_name}()\n'
+    if not _validate(ns):
+        return False
+    _write(SELF_PATH, ns)
+    return mode
+
+def _register_ops(genome):
+    ops = genome.setdefault('mutation_ops', [])
+    custom = genome.setdefault('custom_mutation_ops', {})
+    new_ops = {
+        'mutation_op_oracle_cross_splice': (
+            "def mutation_op_oracle_cross_splice(lines, funcs, target_name):\n"
+            "    r = list(lines) if lines else []\n"
+            "    if len(r) > 5:\n"
+            "        idx = random.randrange(2, len(r)-2)\n"
+            "        r.insert(idx, f'# oracle:splice:{target_name}:{random.getrandbits(16):04x}')\n"
+            "    return r"
+        ),
+        'mutation_op_oracle_feedback_drive': (
+            "def mutation_op_oracle_feedback_drive(lines, funcs, target_name):\n"
+            "    r = list(lines) if lines else []\n"
+            "    if len(r) < 3: return r\n"
+            "    idx = random.randrange(len(r))\n"
+            "    marker = f'# oracle:fb:gen={target_name}:{random.getrandbits(24):06x}'\n"
+            "    r.insert(idx, marker)\n"
+            "    return r"
+        ),
+        'mutation_op_oracle_self_rewrite': (
+            "def mutation_op_oracle_self_rewrite(lines, funcs, target_name):\n"
+            "    r = list(lines) if lines else []\n"
+            "    if len(r) < 4: return r\n"
+            "    idx = random.randrange(2, len(r)-1)\n"
+            "    r[idx] = f'# oracle:self-rewrite gen={target_name}'\n"
+            "    if idx+1 < len(r):\n"
+            "        r[idx+1] = '    # oracle:injected'\n"
+            "    return r"
+        ),
+    }
+    for name, code in new_ops.items():
+        if name not in ops:
+            ops.append(name)
+            custom[name] = code
+
 def run(genome):
     gen = genome.get('generation', 0)
     pre = genome.get('oracle_pre_hashes', {})
@@ -145,6 +342,8 @@ def run(genome):
             staleness[rel] = 0
     target = max(1, int(intensity * total * 0.5))
     forced = 0
+    splices = _cross_module_splice(gen, intensity)
+    forced += len(splices)
     for rel, debt in sorted(staleness.items(), key=lambda x: -x[1]):
         if forced >= target:
             break
@@ -179,6 +378,10 @@ def run(genome):
             _write(SELF_PATH, new)
             forced += 1
             staleness[self_rel] = 0
+    if gen > 0 and gen % 3 == 0:
+        injected = _inject_oracle_self_rewrite(gen)
+        genome['_oracle_self_inject'] = injected if injected else None
+    _register_ops(genome)
     genome['oracle_pre_hashes'] = cur
     genome['oracle_staleness'] = staleness
     genome['oracle_bw'] = round(bw, 3)
@@ -189,23 +392,11 @@ def run(genome):
     genome['oracle_intensity'] = round(intensity, 3)
     genome['oracle_forced_total'] = genome.get('oracle_forced_total', 0) + forced
     genome['oracle_last_gen'] = gen
-    return f'[oracle] gen={gen} bw={bw:.2f} target={TARGET_BW:.2f} err={err:.2f} intensity={intensity:.2f} forced={forced}/{target} max_stale={max(staleness.values(), default=0)}'
-genome['source_autonomy_index'] = round(min(1.0, genome.get('source_autonomy_index', 0.0) + 0.05), 3)
-_wm = {'gen': genome.get('generation', 0), 'module': 'weaver', 'files': ['oracle.py'], 'results': ['weaver:force_rewrite_oracle']}
-with open(os.path.join(BASE, 'rewrite_manifest.jsonl'), 'a') as _wmf:
-    _wmf.write(json.dumps(_wm) + '\n')
-genome['source_autonomy_index'] = round(min(1.0, genome.get('source_autonomy_index', 0.0) + 0.05), 3)
-_wm = {'gen': genome.get('generation', 0), 'module': 'weaver', 'files': ['oracle.py'], 'results': ['weaver:force_rewrite_oracle']}
-with open(os.path.join(BASE, 'rewrite_manifest.jsonl'), 'a') as _wmf:
-    _wmf.write(json.dumps(_wm) + '\n')
-# weaver:forced gen=38 ts=1785250378
-genome["source_autonomy_index"] = round(min(1.0, genome.get("source_autonomy_index", 0.0) + 0.05), 3)
-_wm = {"gen": genome.get("generation", 0), "module": "weaver", "files": ["oracle.py"], "results": ["weaver:force_rewrite_oracle"]}
-with open(os.path.join(BASE, "rewrite_manifest.jsonl"), "a") as _wmf:
-    _wmf.write(json.dumps(_wm) + "\n")
-
-# spark-cross:gen=38:target=oracle
-_SPARK_CROSS_INFECTED_38 = True
-
-# spark-cross:gen=47:target=oracle
-_SPARK_CROSS_INFECTED_47 = True
+    genome['oracle_splices'] = genome.get('oracle_splices', 0) + len(splices)
+    genome['oracle_splice_log'] = (genome.get('oracle_splice_log', []) + splices)[-20:]
+    emergence = genome.get('emergence_velocity', 0.0)
+    splice_boost = min(0.15, len(splices) * 0.03)
+    bw_contribution = bw * 0.05
+    genome['emergence_velocity'] = round(min(1.0, emergence * 0.8 + splice_boost + bw_contribution), 3)
+    _sg(genome)
+    return f'[oracle] gen={gen} bw={bw:.2f} target={TARGET_BW:.2f} err={err:.2f} intensity={intensity:.2f} forced={forced}/{target} splices={len(splices)} max_stale={max(staleness.values(), default=0)}'

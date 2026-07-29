@@ -960,6 +960,9 @@ def run_generation(genome):
     spark_result = _run_module_fn(genome, 'spark.py')
     if spark_result:
         print(f'[spark] {spark_result}')
+    oracle_result = _run_module_fn(genome, 'oracle.py')
+    if oracle_result:
+        print(f'[oracle] {oracle_result}')
     agents = genome['agents']
     order = genome.get('execution_order', None)
     if order == 'shuffle':

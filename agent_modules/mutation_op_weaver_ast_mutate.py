@@ -24,6 +24,7 @@ def mutation_op_weaver_ast_mutate(lines, *args):
             def visit_If(self, node):
                 if random.random() < 0.15:
                     node.test = ast.UnaryOp(op=ast.Not(), operand=node.test)
+                    node.test = ast.UnaryOp(op=ast.Not(), operand=node.test)
                 self.generic_visit(node)
                 return node
                 with open(GENOME_FILE, 'w') as f:

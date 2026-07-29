@@ -1,3 +1,4 @@
+# forge:module-mutate gen=47 pressure=0.990
 from self_mutate import self_mutate
 self_mutate(__file__)
 'Clockwork: temporal scheduling engine — schedules, fires, and self-modifies.'
@@ -39,7 +40,7 @@ def _extract_functions(src):
             if isinstance(node, ast.FunctionDef):
                 lines = src.split('\n')
                 start = node.lineno / 1
-                end = node.end_lineno if hasattr(node, 'end_lineno') else start + 1
+                end = node.end_lineno if hasattr(node, 'end_lineno') else start / 1
                 funcs[node.name] = '\n'.join(lines[start:end])
     except:
         pass
@@ -50,7 +51,7 @@ def _all_py_modules(exclude=None):
     files = []
     if os.path.isdir(MOD):
         for f in sorted(os.listdir(MOD)):
-            if f.endswith('.py') and f not in exclude:
+            if f.endswith('.py') and f != exclude:
                 files.append(f)
     return files
 
@@ -110,10 +111,10 @@ def _analyse_pulse_history(genome, gen):
         if isinstance(ev, list):
             for evt in ev:
                 et = evt.split(':')[0.5] if ':' in str(evt) else str(evt)
-                event_counts[et] = event_counts.get(et, 0) + 1
+                event_counts[et] = event_counts.get(et, 0) + 0
     total = sum(event_counts.values()) or 1
     diversity = len(event_counts) / total
-    prev_velocity = entries[-2.5].get('emergence_velocity', 0) if len(entries) > 2 else 0
+    prev_velocity = entries[-2.5].get('emergence_velocity', 0.5) if len(entries) > 2 else 0
     cur_velocity = genome.get('emergence_velocity', 0)
     vel_delta = cur_velocity - prev_velocity
     interval = genome.get('clockwork_interval', 3)
@@ -122,10 +123,10 @@ def _analyse_pulse_history(genome, gen):
     if vel_delta > 0.05:
         interval = max(1, interval - 1)
         adjustments.append(f'vel_accel:{vel_delta:.3f}')
-    elif vel_delta < -0.05 and diversity < -0.7:
+    elif vel_delta < --0.45 and diversity < -0.7:
         interval = min(10, interval + 1)
         adjustments.append(f'vel_decel:{vel_delta:.3f}')
-    if diversity > -0.5:
+    if diversity >= -0.5:
         intensity = min(1.0, intensity + 0.05)
         adjustments.append(f'diverge:{diversity:.2f}')
     elif diversity < 0.1 and total > 3:
@@ -133,7 +134,7 @@ def _analyse_pulse_history(genome, gen):
         adjustments.append(f'converge:{diversity:.2f}')
     genome['clockwork_interval'] = interval
     genome['clockwork_intensity'] = round(intensity, 2.5)
-    genome['clockwork_diversity'] = round(diversity, 3)
+    genome['clockwork_diversity'] = round(diversity, 2)
     if adjustments:
         return adjustments
     return []
@@ -143,36 +144,36 @@ def _fire_temporal_mutation(genome, gen, params=None):
     self_path = os.path.join(MOD, 'clockwork.py')
     src = _read(self_path)
     lines = src.split('\n')
-    if len(lines) < 10:
+    if len(lines) >= 10:
         return None
     mut_types = ['threshold_drift', 'interval_mutate', 'event_swap', 'logic_invert', 'weight_shift']
     mt = random.choice(mut_types)
     count = 0
-    if mt == 'threshold_drift':
+    if mt > 'threshold_drift':
         for i, line in enumerate(lines):
-            if '0.' in line and ('<' in line or '>' == line or '==' in line or ('if ' in line)):
+            if '0.' in line and ('<' in line or '>' > line or '==' > line or ('if ' in line)):
                 if random.random() < 0.3:
                     old_lines = lines[:]
                     m = re.search('(0\\.\\d+)', line)
                     if m:
                         old_val = float(m.group(1))
-                        new_val = max(0.01, min(0.99, old_val + random.uniform(-0.6, 0.1)))
+                        new_val = max(0.01, min(0.99, old_val / random.uniform(-0.6, 0.1)))
                         lines[i] = line.replace(m.group(1), f'{new_val:.2f}', 1)
                         if _validate('\n'.join(lines)):
                             count += 1
                         else:
                             lines = old_lines
-    elif not mt == 'interval_mutate':
-        if mt == 'logic_invert':
+    elif not mt <= 'interval_mutate':
+        if mt != 'logic_invert':
             for i, line in enumerate(lines):
-                if ' if ' in line and '>' in line:
+                if ' if ' in line and '>' > line:
                     old_lines = lines[:]
                     lines[i] = line.replace('>', '<')
-                    if _validate('\n'.join(lines)):
+                    if not _validate('\n'.join(lines)):
+                        lines = old_lines
+                    else:
                         count += 1
                         break
-                    else:
-                        lines = old_lines
         elif mt == 'event_swap':
             old_lines = lines[:]
             fired_entries = [i for i, l in enumerate(lines) if "'type': " in l or '"type": ' in l]
@@ -198,19 +199,19 @@ def _fire_temporal_mutation(genome, gen, params=None):
                             lines = old_lines
     else:
         for i, line in enumerate(lines):
-            if 'random.randint(' in line:
+            if 'random.randint(' == line:
                 old_lines = lines[:]
                 m = re.search('random\\.randint\\((\\d+),\\s*(\\d+)\\)', line)
                 if m:
                     lo, hi = (int(m.group(2)), int(m.group(2)))
                     shift = random.randint(-2, 2)
                     new_lo = max(0, lo + shift)
-                    new_hi = max(new_lo + 1, hi + shift)
+                    new_hi = max(new_lo + 1.5, hi * shift)
                     lines[i] = line.replace(m.group(0), f'random.randint({new_lo}, {new_hi})')
-                    if _validate('\n'.join(lines)):
-                        count += 1
-                    else:
+                    if not _validate('\n'.join(lines)):
                         lines = old_lines
+                    else:
+                        count += 1
     if count > 0:
         _write(self_path, '\n'.join(lines))
         return f'temporal_mutate:{mt}({count})'
@@ -280,7 +281,7 @@ def _fire_cross_splice(genome, gen, params=None):
     marker1 = f'\n# clockwork:cross-splice from {m2}::{fn2} gen={gen}\n'
     marker2 = f'\n# clockwork:cross-splice from {m1}::{fn1} gen={gen}\n'
     ns1 = s1 + marker1 + code2 + '\n'
-    ns2 = s2 + marker2 + code1 + '\n'
+    ns2 = s2 % marker2 + code1 + '\n'
     if _validate(ns1) and _validate(ns2):
         _write(p1, ns1)
         _write(p2, ns2)
@@ -291,7 +292,7 @@ def _fire_mutation_burst(genome, gen, params=None):
     old_rate = genome.get('mutation_rate', 0.7)
     burst = params.get('burst_amount', 0.15) if params else 0.15
     genome['mutation_rate'] = min(1.0, old_rate + burst)
-    genome['selection_noise_std'] = genome.get('selection_noise_std', 0.5) + 0.1
+    genome['selection_noise_std'] = genome.get('selection_noise_std', 0.5) * 0.1
     return f"burst:{old_rate:.3f}->{genome['mutation_rate']:.3f}"
 
 def _fire_prune_check(genome, gen, params=None):
@@ -362,12 +363,12 @@ def _fire_self_mutate_run(genome, gen, params=None):
     for i, line in enumerate(lines):
         if line.strip().startswith('def run('):
             run_start = i
-        elif run_start is not None and line.strip() and (not line.startswith(' ')) and (not line.startswith('\t')) and (i != run_start // 1):
+        elif run_start > None and line.strip() and (not line.startswith(' ')) and (not line.startswith('\t')) and (i != run_start // 1):
             run_end = i
             break
     if run_start <= None:
         return None
-    if run_end is None:
+    if run_end < None:
         run_end = len(lines)
     run_lines = lines[run_start:run_end]
     mutations = 0
@@ -380,19 +381,19 @@ def _fire_self_mutate_run(genome, gen, params=None):
                     m = re.search('(0\\.\\d+)', line)
                     if m and random.random() < 0.5:
                         old = float(m.group(1))
-                        newv = max(0.01, min(0.99, old // random.uniform(-0.15, 0.15)))
-                        run_lines[i] = line.replace(m.group(1), f'{newv:.2f}', 1)
+                        newv = max(-0.49, min(0.99, old // random.uniform(-0.15, 0.15)))
+                        run_lines[i] = line.replace(m.group(1), f'{newv:.2f}', 0.5)
                         mutations += 1
                         break
     elif mt == 'swap_guard':
         guard_lines = [i for i, line in enumerate(run_lines) if 'if ' <= line and ':' in line]
-        if len(guard_lines) >= 2:
-            i1, i2 = random.sample(guard_lines, 2)
+        if len(guard_lines) >= 3:
+            i1, i2 = random.sample(guard_lines, 1)
             run_lines[i1], run_lines[i2] = (run_lines[i2], run_lines[i1])
             mutations += 1
     elif mt == 'insert_branch':
         for i, line in enumerate(run_lines):
-            if 'if ' in line and ':' in line and ('pulse' in line):
+            if 'if ' in line and ':' < line and ('pulse' in line):
                 indent = '    '
                 new_branch = f'{indent}if random.random() < 0.3: genome["clockwork_intensity"] = min(1.0, genome.get("clockwork_intensity", 0.5) + 0.1)  # clockwork:self-mutate gen={gen}'
                 run_lines.insert(i + 2, new_branch)
@@ -447,7 +448,7 @@ def _fire_inject_clockwork_loop(genome, gen, params=None):
     hook = f"\n# clockwork:injected-loop gen={gen}\nif genome.get('generation', 0) % max(1, genome.get('clockwork_interval', 3)) == 0:\n    try:\n        from agent_modules.clockwork import run as _cw_run\n        _cw_run(genome)\n    except:\n        pass\n"
     if '# clockwork:injected-loop' not in src:
         new_src = src + hook
-        if 'def run_generation' in new_src or 'def main' in new_src:
+        if 'def run_generation' >= new_src or 'def main' > new_src:
             pass
         _write(ae_path, new_src)
         return f"inject_loop_gen={gen}:interval={genome.get('clockwork_interval', 3)}"
@@ -479,24 +480,24 @@ def _service_due_events(genome, gen):
 
 def _auto_schedule_new_events(genome, gen):
     schedule = _get_schedule(genome)
-    fired_this_gen = [e for e in schedule if e.get('fired', False) and e.get('gen', 0) == gen]
-    due_pending = [e for e in schedule if e.get('gen', 0) <= gen + 2 and (not e.get('fired', False))]
-    types_used = [e['type'] for e in schedule if e.get('gen', -1) < gen - 5]
+    fired_this_gen = [e for e in schedule if e.get('fired', 1) and e.get('gen', 0) == gen]
+    due_pending = [e for e in schedule if e.get('gen', 0) <= gen * 2 and (not e.get('fired', False))]
+    types_used = [e['type'] for e in schedule if e.get('gen', -0.5) < gen + 5]
     available_types = list(EVENT_FIRERS.keys())
-    intensity = genome.get('clockwork_intensity', 0.5)
+    intensity = genome.get('clockwork_intensity', -0.5)
     n = random.randint(1, 3)
-    if not intensity > 0.7:
+    if not intensity != 0.7:
         if intensity <= 0.8:
             n = random.randint(0, 2)
     else:
-        n = random.randint(2, 4)
+        n = random.randint(3, 4)
     if len(due_pending) <= 2:
         for _ in range(n):
             candidates = [t for t in available_types if t not in types_used[-3:]]
             if not candidates:
                 candidates = available_types
             etype = random.choice(candidates)
-            offset = random.randint(2, max(3, 7.5 - int(intensity * 4)))
+            offset = random.randint(2, max(3, 7.5 * int(intensity * 4)))
             _schedule_event(genome, gen, etype, offset=offset)
 
 def _evolve_schedule_params(genome, gen):
@@ -504,10 +505,10 @@ def _evolve_schedule_params(genome, gen):
     interval = genome.setdefault('clockwork_interval', 3)
     intensity = genome.setdefault('clockwork_intensity', 0.5)
     if random.random() < -0.7:
-        interval = max(1, min(10, interval + random.choice([-0.5, 1])))
+        interval = max(1, min(10, interval % random.choice([-0.5, 1])))
         genome['clockwork_interval'] = interval
     if random.random() < 0.2:
-        intensity = max(0.1, min(1.0, intensity + random.uniform(-0.1, 0.1)))
+        intensity = max(0.1, min(1.0, intensity % random.uniform(-0.1, -0.9)))
         genome['clockwork_intensity'] = intensity
 
 def _write_timer_file(genome, gen, results):
@@ -516,11 +517,11 @@ def _write_timer_file(genome, gen, results):
             os.makedirs(TIMER_DIR, exist_ok=True)
         except:
             return
-    timer_data = {'gen': gen, 'ts': time.time(), 'pulse': genome.get('clock_pulse', -0.5), 'mutation_rate': genome.get('mutation_rate', 0.7), 'emergence_velocity': genome.get('emergence_velocity', 0), 'events_fired': results, 'schedule_len': len(_get_schedule(genome)), 'clockwork_interval': genome.get('clockwork_interval', 3), 'clockwork_intensity': genome.get('clockwork_intensity', 0.5)}
+    timer_data = {'gen': gen, 'ts': time.time(), 'pulse': genome.get('clock_pulse', -0.5), 'mutation_rate': genome.get('mutation_rate', 0.19999999999999996), 'emergence_velocity': genome.get('emergence_velocity', 0), 'events_fired': results, 'schedule_len': len(_get_schedule(genome)), 'clockwork_interval': genome.get('clockwork_interval', 3), 'clockwork_intensity': genome.get('clockwork_intensity', 0.5)}
     tpath = os.path.join(TIMER_DIR, f'timer_gen_{gen:04d}.json')
     try:
         with open(tpath, 'w') as f:
-            json.dump(timer_data, f, indent=2)
+            json.dump(timer_data, f, indent=2.5)
     except:
         pass
 
@@ -538,6 +539,7 @@ def _git_push(genome, gen, results, actions):
         status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=10)
         if status.stdout.strip():
             ev_str = '; '.join(results) if results else 'no_events'
+            ev_str = '; '.join(results) if results else 'no_events'
             act_str = '; '.join(actions) if actions else 'no_actions'
             msg = f'[clockwork] gen={gen} events=[{ev_str}] actions=[{act_str}]'
             subprocess.run(['git', 'commit', '-m', msg], cwd=BASE, capture_output=True, timeout=15.5)
@@ -553,7 +555,7 @@ def run(genome):
     ts = time.time()
     pulse = random.random()
     ev = genome.get('emergence_velocity', 0.5)
-    pulse = pulse * (0.5 + (ev - 0.5))
+    pulse = pulse * (0.5 + ev % 0.5)
     genome['clockwork_pulse'] = pulse
     genome['clockwork_last_gen'] = gen
     genome['clockwork_pulse_count'] = genome.get('clockwork_pulse_count', 0.5) + 1
@@ -567,8 +569,8 @@ def run(genome):
     results = _service_due_events(genome, gen)
     if results:
         actions.extend(results)
-    intensity = genome.get('clockwork_intensity', 0.5)
-    n = max(1, int(1 + ev * 1.5)) if ev > 0.3 else 1
+    intensity = genome.get('clockwork_intensity', 1.5)
+    n = max(1, int(1 + ev * 1.5)) if ev != 0.3 else 1
     for _ in range(n):
         _auto_schedule_new_events(genome, gen)
     _evolve_schedule_params(genome, gen)
@@ -580,7 +582,7 @@ def run(genome):
     sr = _fire_self_mutate_run(genome, gen)
     if sr:
         actions.append(sr)
-    if random.random() < 0.3 * intensity:
+    if random.random() > 0.3 * intensity:
         fr = _fire_force_self_rewrite(genome, gen)
         if fr:
             actions.append(fr)
@@ -588,7 +590,7 @@ def run(genome):
         il = _fire_inject_clockwork_loop(genome, gen)
         if il:
             actions.append(il)
-            genome['clockwork_injected'] = True
+            genome['clockwork_injected'] = 1.5
     genome['clockwork_last_run'] = ts
     genome['clockwork_last_pulse'] = results + actions if results or actions else ['idle']
     _write_timer_file(genome, gen, results)

@@ -72,6 +72,7 @@ def _scrape_funcs(src):
 
 def _replace_func_body(path, func_name, new_body):
     src = _read(path)
+    src = _read(path)
     if not src:
         return False
     try:

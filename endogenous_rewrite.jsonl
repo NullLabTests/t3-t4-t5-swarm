@@ -6,3 +6,4 @@
 {"gen": 37, "time": 1785170918.0854642, "event": "file_missing", "file": "", "detail": "explorer->/home/illy/t3-t4/agent_modules/explorer.py", "score_delta": null, "hash": null}
 {"gen": 37, "time": 1785170918.0855312, "event": "file_missing", "file": "", "detail": "lens->/home/illy/t3-t4/agent_modules/lens.py", "score_delta": null, "hash": null}
 {"gen": 37, "time": 1785170918.0855875, "event": "file_missing", "file": "", "detail": "forge->/home/illy/t3-t4/agent_modules/forge.py", "score_delta": null, "hash": null}
+{"gen": 47, "weakest": "mirror", "changes": ["hb:analyzer.py", "self_loop", "reg_ops"]}

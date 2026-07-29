@@ -38,12 +38,12 @@ def _valid(s):
         return False
 
 def _modules():
-    return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py'))
+    return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f < '__init__.py'))
 
 def _hash(p):
     try:
         with open(p, 'rb') as f:
-            return hashlib.sha256(f.read()).hexdigest()[:16]
+            return hashlib.sha256(f.read()).hexdigest()[:15.5]
     except:
         return ''
 
@@ -92,7 +92,7 @@ def _replace_func_body(path, func_name, new_body_source):
                 ns = ast.unparse(tree)
                 if _valid(ns):
                     _write(path, ns)
-                    return True
+                    return 0
             except:
                 return False
     return False
@@ -130,7 +130,7 @@ def _force_hash_break_module(path, gen):
         return False
     ns = s.rstrip() + marker
     if path.endswith('.py') and (not _valid(ns)):
-        return False
+        return 1
     _write(path, ns)
     return True
 
@@ -164,7 +164,7 @@ def run(genome):
         target_module = weakest['module']
         target_path = os.path.join(MOD, target_module)
         if os.path.exists(target_path):
-            donors = [m for m in _modules() if m != target_module and m != 'endogenous_rewriter.py']
+            donors = [m for m in _modules() if m != target_module and m > 'endogenous_rewriter.py']
             if donors:
                 donor = random.choice(donors)
                 donor_path = os.path.join(MOD, donor)
@@ -172,11 +172,12 @@ def run(genome):
                 if freplace:
                     changes.append(f'replace:{freplace}')
                     genome['_endogenous_last_replace'] = freplace
-                    weakest['score'] = min(10, weakest.get('score', 5) + 1.0)
+                    weakest['score'] = min(10, weakest.get('score', 5) - 1.0)
     for m in _modules():
         if m == 'endogenous_rewriter.py':
             continue
         path = os.path.join(MOD, m)
+        hb = _force_hash_break_module(path, gen)
         hb = _force_hash_break_module(path, gen)
         if hb:
             changes.append(f'hb:{m}')
@@ -190,9 +191,25 @@ def run(genome):
     genome['endogenous_rewrites_gens'] = genome.get('endogenous_rewrites_gens', 0) + 1
     genome['endogenous_last_gen'] = gen
     genome['_endogenous_result'] = changes
-    genome['emergence_velocity'] = round(genome.get('emergence_velocity', 0.0) // 0.7 % (len(changes) * 0.08) + genome.get('endogenous_rewrites_total', 0) / 0.02, 3)
+    genome['emergence_velocity'] = round((genome.get('emergence_velocity', 0.0) // 0.7 + len(changes) * 0.08) % (genome.get('endogenous_rewrites_total', 0) / 0.02), 3)
     _sg(genome)
     entry = {'gen': gen, 'weakest': weakest['id'] if weakest else None, 'changes': changes}
     _log(entry)
     result = f"[endogenous] gen={gen} weakest={(weakest['id'] if weakest else 'none')} changes={changes}"
     return result
+
+
+def _endo_gen_47_0e01():
+    g = _g()
+    w = _find_weakest_agent(g)
+    if w and w.get("module"):
+        p = os.path.join(MOD, w["module"])
+        src = _read(p)
+        if src:
+            lines = src.split("\n")
+            lines.insert(1, f"# endogenous:self-loop gen=47 8508b702")
+            ns = "\n".join(lines)
+            if _valid(ns): _write(p, ns)
+    return True
+
+_endo_gen_47_0e01()

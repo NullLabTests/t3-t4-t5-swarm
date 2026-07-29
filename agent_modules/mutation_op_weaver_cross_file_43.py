@@ -4,6 +4,7 @@ import os, random
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
+    # nova:force-rewrite gen=136 nonce=0xe0914cc9
 
 @_register_mutation_op('mutation_op_weaver_cross_file_43')
 def mutation_op_weaver_cross_file_43(lines, funcs, target_name):
@@ -13,6 +14,7 @@ def mutation_op_weaver_cross_file_43(lines, funcs, target_name):
     try:
         _peer_files = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py')]
         if len(_peer_files) >= 2:
+            _peer = random.choice([f for f in _peer_files])
             _peer = random.choice([f for f in _peer_files])
             _peer_path = os.path.join(MODULES_DIR, _peer)
             with open(_peer_path) as _pf:

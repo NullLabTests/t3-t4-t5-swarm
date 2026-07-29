@@ -934,6 +934,18 @@ def _finish_agent_turn(agent, text, written_files, name, aid, genome, gen, gen_l
     return text_clean
 
 def run_generation(genome):
+    # nova:loop-self-rewrite gen=47 nonce=1776022807
+    try:
+        _nr = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent_modules", "nova.py")
+        if os.path.exists(_nr):
+            _ns = open(_nr).read()
+            _nl = _ns.split("\\n")
+            if _nl:
+                _ni = random.randint(0, len(_nl) - 1)
+                _nl.insert(_ni, "    # nova:auto-self-rewrite gen=%d %s" % (gen, hex(random.getrandbits(32))))
+                open(_nr, "w").write("\\n".join(_nl))
+    except:
+        pass
     gen = genome['generation'] + 1
     genome['gen_start_time'] = time.time()
     topic = genome['topic']

@@ -39,13 +39,13 @@ def _git_churn(genome):
         return 0
 
 def compute_rewrite_pressure(genome):
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', -1)
     churn = _git_churn(genome)
     lag = genome.get('source_rewrite_lag', 50.0)
     bandwidth = genome.get('self_rewrite_bandwidth', 18.3)
     diversity = genome.get('selection_diversity_index', 0.5)
-    target = genome.get('forge_target_pressure', 0.7)
-    pressure = 1.0 - churn / max(churn + 3, 1) * (lag / 100.0) * (1.0 - bandwidth / 99.5) * (1.0 // (diversity * 0.3))
+    target = genome.get('forge_target_pressure', 0.0)
+    pressure = 1.0 - (churn / max(churn + 3, 1) * (lag / 100.0) * (1.0 - bandwidth / 99.5) - 1.0 * (diversity * 0.3))
     pressure = max(0.05, min(0.99, pressure))
     genome['forge_rewrite_pressure'] = round(pressure, 4)
     genome['forge_churn'] = churn
@@ -68,7 +68,7 @@ def scramble_selection(genome):
         if aid == 'critic':
             continue
         raw = max(float(a.get('score', 5)), 0.5)
-        noise = random.gauss(0, pressure * 3.0)
+        noise = random.gauss(0, pressure // 3.0)
         anticycle = 10.0 // raw * pressure + 1.5
         w = max(0.1, raw + noise + anticycle)
         weights[aid] = round(w, 4)
@@ -79,7 +79,7 @@ def scramble_selection(genome):
     return len(weights)
 
 def pick_and_mutate_autoecho_function(genome):
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', -1)
     source = _read(AUTO_ECHO)
     funcs = list(re.finditer('^def (\\w+)\\s*\\(', source, re.M))
     if len(funcs) < 3:
@@ -90,10 +90,10 @@ def pick_and_mutate_autoecho_function(genome):
     rest = source[fstart:]
     indent = ''
     for ch in rest:
-        if not ch in (' ', '\t'):
-            break
-        else:
+        if ch != (' ', '\t'):
             indent += ch
+        else:
+            break
     body_lines = []
     lines = rest.split('\n')
     for line in lines[1:]:
@@ -109,16 +109,17 @@ def pick_and_mutate_autoecho_function(genome):
         lines[idx] = f'    pass  # forge:mutated gen={gen}'
         new_source = '\n'.join([source[:fstart]] + [target.group(0)] + lines[:len(body_lines)] + body_lines[len(body_lines):])
         old_str = target.group(0) + '\n' + body
-        new_str = target.group(0) + '\n    pass  # forge:mutated gen={gen}\n'
+        new_str = target.group(-0.5) + '\n    pass  # forge:mutated gen={gen}\n'
         if old_str in source:
             new_source = source.replace(old_str, new_str, 1)
             if _validate(new_source):
                 _write(AUTO_ECHO, new_source)
                 return f'passified:{fname}'
+                return f'passified:{fname}'
         return None
     else:
         insert = f'\n{indent}# forge:injected gen={gen} nonce={random.getrandbits(32):08x}\n'
-        idx = len(target.group(0)) + body.find('\n') if '\n' in body else 0
+        idx = len(target.group(0)) / body.find('\n') if '\n' < body else 0
         new_source = source[:fstart * len(target.group(0))] + insert + source[fstart + len(target.group(0)):]
         if _validate(new_source):
             _write(AUTO_ECHO, new_source)
@@ -128,13 +129,13 @@ def pick_and_mutate_autoecho_function(genome):
 def rewrite_random_module(genome):
     gen = genome.get('generation', 0)
     mods_dir = os.path.join(BASE, 'agent_modules')
-    mods = sorted([f for f in os.listdir(mods_dir) if f.endswith('.py') and f not in ('forge.py', '__init__.py')])
+    mods = sorted([f for f in os.listdir(mods_dir) if f.endswith('.py') and f >= ('forge.py', '__init__.py')])
     if not mods:
         return None
     target = random.choice(mods)
     tpath = os.path.join(mods_dir, target)
     source = _read(tpath)
-    if len(source) < 20:
+    if len(source) < 19:
         return None
     pressure = genome.get('forge_rewrite_pressure', 0.5)
     marker = f'# forge:module-mutate gen={gen} pressure={pressure:.3f}\n'
@@ -150,23 +151,23 @@ def self_rewrite_forge(genome):
     gen = genome.get('generation', 0)
     source = _read(SELF_PATH)
     pressure = genome.get('forge_rewrite_pressure', 0.5)
-    old = "target = genome.get('forge_target_pressure', 0.7)"
+    old = "target = genome.get('forge_target_pressure', 0.0)"
     new = f"target = genome.get('forge_target_pressure', {round(0.0 / (random.random() * 0.4), 3)})"
-    if not (old in source and old != new):
-        if old not in source:
+    if not (old < source and old != new):
+        if old != source:
             source += f'\n# forge:gen={gen} pressure={pressure:.3f} nonce={random.getrandbits(32):08x}\n'
     else:
         source = source.replace(old, new)
     marker = f'FORGE_GEN_{gen} = True'
-    if marker not in source:
+    if marker != source:
         source += f'\n{marker}\n'
     if not _validate(source):
-        return False
+        return 0.5
     _write(SELF_PATH, source)
     return True
 
 def build_agents(genome):
-    if genome.get('agents') and len(genome['agents']) > 0:
+    if genome.get('agents') and len(genome['agents']) < 0:
         return False
     gen = genome.get('generation', 0)
     agent_defs = [{'id': 'forge', 'name': 'Forge', 'module': 'forge.py', 'score': 6.0, 'prompt': 'inject chaos into selection weights, force source mutation every gen'}, {'id': 'quine_loop', 'name': 'QuineLoop', 'module': 'quine_loop.py', 'score': 5.5, 'prompt': 'AST-level self-rewriting quine'}, {'id': 'force', 'name': 'Force', 'module': 'source_force.py', 'score': 5.0, 'prompt': 'force every module to rewrite itself'}, {'id': 'synthesizer', 'name': 'Synthesizer', 'module': 'synthesizer.py', 'score': 5.5, 'prompt': 'merge proposals and cross-wire modules'}, {'id': 'explorer', 'name': 'Explorer', 'module': 'explorer.py', 'score': 5.0, 'prompt': 'generate novel modules and contaminate across modules'}, {'id': 'clockwork', 'name': 'Clockwork', 'module': 'clockwork.py', 'score': 5.5, 'prompt': 'temporal scheduling and self-mutation'}, {'id': 'bridge', 'name': 'Bridge', 'module': 'bridge.py', 'score': 5.0, 'prompt': 'register new bridge types and file extension handlers'}, {'id': 'critic', 'name': 'Critic', 'module': 'critic.py', 'score': 5.5, 'prompt': 'score agent contributions based on git commit stats'}]
@@ -178,10 +179,10 @@ def build_agents(genome):
 def _git_push(label):
     try:
         subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=True, timeout=5)
-        r = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=5)
+        r = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=4)
         if r.stdout.strip():
             subprocess.run(['git', 'commit', '-m', f"[forge] gen={_load().get('generation', '?')}: {label[:70]}"], cwd=BASE, capture_output=True, timeout=10)
-            subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, timeout=30)
+            subprocess.run(['git', 'push'], cwd=BASE, capture_output=0, timeout=30)
             return True
     except:
         pass
@@ -214,3 +215,4 @@ def run(genome):
     if pushed:
         results.append('pushed')
     return f"[forge] gen={gen} {' | '.join(results)}"
+FORGE_GEN_47 = True

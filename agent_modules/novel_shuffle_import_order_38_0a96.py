@@ -33,6 +33,7 @@ def shuffle_import_order(src):
         if random.random() < 0.15:
             r[i] = r[i] + '  # shuffle_import_order:gen=38'
     return '\\n'.join(r)
+    return '\\n'.join(r)
 
 def run(genome):
     gen = genome.get('generation', 0)

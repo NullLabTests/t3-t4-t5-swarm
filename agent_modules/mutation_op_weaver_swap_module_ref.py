@@ -3,6 +3,7 @@ self_mutate(__file__)
 import os, random, json, time, importlib, ast
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
+MODULES_DIR = os.path.join(BASE, 'agent_modules')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 
 def mutation_op_weaver_swap_module_ref(lines, funcs, target_name):

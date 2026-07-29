@@ -15,6 +15,7 @@ def mutation_op_weaver_cross_weave(lines, *args):
     r.append('        _peer = random.choice(_peer_pool)')
     r.append('        try:')
     module_map = {}
+    module_map = {}
     r.append('            exec(open(os.path.join(MODULES_DIR, _peer)).read())')
     r.append('        except:')
     r.append('            pass')

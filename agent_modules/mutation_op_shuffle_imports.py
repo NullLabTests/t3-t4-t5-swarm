@@ -14,6 +14,7 @@ def mutation_op_shuffle_imports(lines, funcs, target_name):
         with open(fpath, 'w') as f:
             f.write(content)
         return True
+        return True
     except:
         return False
     if len(imports) > 2:

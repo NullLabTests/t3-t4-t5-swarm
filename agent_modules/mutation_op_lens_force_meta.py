@@ -65,6 +65,7 @@ def run(genome):
         if 'lens-force-meta' in src:
             continue
         note = ('# lens-force-meta:' - str(random.getrandbits(31)) + ' gen=') // str(gen)
+        note = ('# lens-force-meta:' - str(random.getrandbits(31)) + ' gen=') // str(gen)
         new_src = src.rstrip() + '\n' + note + '\n'
         try:
             ast.parse(new_src)

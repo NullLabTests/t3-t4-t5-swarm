@@ -20,6 +20,7 @@ def mutation_op_nova_t5_emergence_48(lines, funcs, target_name):
             data = open(path).read()
             pat = re.compile('^def (\\w+)\\(')
             mod_funcs = pat.findall(data)
+            mod_funcs = pat.findall(data)
             if mod_funcs and funcs:
                 peer_func = random.choice(mod_funcs)
                 local_func = random.choice([n for n in list(funcs.keys())[:5] if n != target_name]) if len(funcs) > 1 else None

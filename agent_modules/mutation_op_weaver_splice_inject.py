@@ -10,6 +10,7 @@ def mutation_op_weaver_splice_inject(lines, funcs, target_name):
     r = list(lines)
     _src = '\n'.join(lines)
     _funcs = list(set(re.findall('^def (\\w+)\\(', _src, re.MULTILINE)))
+    _funcs = list(set(re.findall('^def (\\w+)\\(', _src, re.MULTILINE)))
     if len(_funcs) >= 2:
         _a, _b = random.sample(_funcs, 2)
         _a_match = re.search('(def ' + re.escape(_a) + '\\(.*?\\):\\s*\\n(?:    .*\\n?)*)', _src, re.DOTALL)

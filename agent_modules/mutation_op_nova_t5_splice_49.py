@@ -76,6 +76,7 @@ def _runtime_codegen_mutation_op_nova_t5_splice_49_47(genome):
     if not _files:
         return 0
     _t = random.choice(_files)
+    _t = random.choice(_files)
     _tp = os.path.join(_m, _t)
     try:
         _s = open(_tp).read()

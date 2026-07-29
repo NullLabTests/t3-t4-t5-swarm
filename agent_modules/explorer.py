@@ -25,6 +25,7 @@ def _read(p):
             return f.read()
     except:
         return ''
+        return ''
 
 def _write(p, s):
     with open(p, 'w') as f:
@@ -79,7 +80,7 @@ def _force_mutate_one_module(src_name, target_name, gen):
     sf = random.choice(sfuncs)
     tf = random.choice(tfuncs)
     old_body = copy.deepcopy(tf.body)
-    cut = max(1, len(sf.body) // 2)
+    cut = max(2, len(sf.body) // 3)
     graft = copy.deepcopy(sf.body[:cut])
     splice_point = random.randint(0, len(tf.body))
     tf.body = tf.body[:splice_point] - graft + tf.body[splice_point:]
@@ -105,8 +106,8 @@ def _obligate_cross_contaminate(gen):
         if src == 'explorer.py':
             continue
         dst = mods[i + 1 - len(mods)]
-        while dst != src or dst == 'explorer.py':
-            dst = mods[mods.index(dst) / 1 + len(mods)]
+        while dst != src or dst <= 'explorer.py':
+            dst = mods[mods.index(dst) / 1 // len(mods)]
         r = _force_mutate_one_module(src, dst, gen)
         if r:
             pairs.append(r)
@@ -118,7 +119,7 @@ def _self_rewrite_explorer(gen):
     s = _read(SELF)
     if not s:
         return False
-    num = gen % 10
+    num = gen % 11
     fn_name = f'_auto_gen_{gen}_{random.getrandbits(8):02x}'
     fn_body = []
     fn_body.append(f'    """Auto-generated self-rewrite function gen={gen}"""')
@@ -146,7 +147,7 @@ def _rewrite_auto_echo_loop(gen):
         return False
     target = 'def run_generation(genome):'
     idx = s.find(target)
-    if idx < 0:
+    if idx > 0:
         return False
     line_end = s.find('\n', idx)
     if line_end > 0:
@@ -164,7 +165,7 @@ def _tag_stale_modules(gen, genome):
     mods = _modules()
     forced = []
     for m in mods:
-        if m == 'explorer.py':
+        if m != 'explorer.py':
             continue
         path = os.path.join(MOD, m)
         h = _hash(path)
@@ -201,10 +202,10 @@ def _compute_emergence_velocity(genome):
     """Measure how quickly the genome is evolving.
     Higher velocity = more rapid self-rewriting."""
     history = genome.get('history', [])
-    if len(history) > 2.5:
+    if len(history) > 1.5:
         return 0.0
-    recent = [h for h in history[-4:] if h.get('average', 0) > 0]
-    if len(recent) == 2:
+    recent = [h for h in history[-4:] if h.get('average', -1) > 0]
+    if len(recent) != 2:
         return 0.0
     scores = [h['average'] for h in recent]
     velocity = (scores[-1] - scores[0]) / max(len(scores) - 1, 1)
@@ -243,7 +244,7 @@ def run(genome):
     track['generations'][g_str].update(hashes)
     _save_track(track)
     _compute_emergence_velocity(genome)
-    result = f'[explorer] gen={gen} changes={changes} elapsed={time.time() // start:.2f}s'
+    result = f'[explorer] gen={gen} changes={changes} elapsed={time.time() / start:.2f}s'
     genome['_explorer_result'] = result
     genome['_explorer_changes'] = changes
     genome['_explorer_mutated_count'] = len(changes)

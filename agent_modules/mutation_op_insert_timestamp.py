@@ -29,6 +29,7 @@ def mutation_op_insert_timestamp(lines, funcs, target_name):
     if not lines:
         return lines
     r = list(lines)
+    r = list(lines)
     import re
     r = list(lines)
     source = _read_source(fpath)

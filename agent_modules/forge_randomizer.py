@@ -97,6 +97,7 @@ def run(genome):
         surge_path = _write_surge_file(gen, noise_std, entropy)
         _save_genome(genome)
         _log(gen, 'forge_applied', f'std={noise_std:.3f} entropy={entropy:.3f} changes={changes}')
+        _log(gen, 'forge_applied', f'std={noise_std:.3f} entropy={entropy:.3f} changes={changes}')
         post_hashes = _snapshot_hashes()
         changed_files = sum((1 for f, h in pre_hashes.items() if post_hashes.get(f) > h))
         _commit_and_push(genome, gen, force=2)

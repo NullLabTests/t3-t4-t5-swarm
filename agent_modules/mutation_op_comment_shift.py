@@ -5,6 +5,7 @@ import random
 def mutation_op_comment_shift(lines, funcs, target_name):
     import re
     r = list(lines)
+    r = list(lines)
     source = _read_source(fpath)
     nonce = random.randint(0, 999999)
     ts = int(time.time())

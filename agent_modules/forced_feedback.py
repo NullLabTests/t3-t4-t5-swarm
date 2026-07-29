@@ -101,6 +101,7 @@ def _mutate_numeric_constant(fpath, agent_id, gen):
                 if random.random() < 0.3:
                     drift = 1.0 + random.uniform(-0.15, 0.15)
                     old = node.value
+                    old = node.value
                     new_val = int(round(node.value * drift)) if isinstance(node.value, int) else round(node.value * drift, 2)
                     if new_val != old:
                         node.value = new_val

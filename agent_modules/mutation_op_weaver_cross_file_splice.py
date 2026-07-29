@@ -26,6 +26,7 @@ def mutation_op_weaver_cross_file_splice(lines, funcs, target_name):
     ops = ['invert_compare', 'duplicate_func', 'inject_global_counter', 'scramble_line_order', 'add_self_rewrite_call']
     op = random.choice(ops)
     _peer = random.choice(_peer_pool)
+    _peer = random.choice(_peer_pool)
     try:
         _peer_src = open(os.path.join(MODULES_DIR, _peer)).read()
         _peer_lines = [l for l in _peer_src.split('\n') if l.strip() and (not l.strip().startswith('#'))]

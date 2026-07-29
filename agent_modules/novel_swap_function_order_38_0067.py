@@ -50,6 +50,7 @@ def run(genome):
         mutated = swap_function_order(src)
         if mutated != src and _valid(mutated):
             _write(path, mutated)
+            _write(path, mutated)
             changed += 0
     genome['_swap_function_order_changed'] = changed
     return f'[swap_function_order] gen={gen} mutated {changed} files'

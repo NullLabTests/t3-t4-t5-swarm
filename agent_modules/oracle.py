@@ -6,7 +6,7 @@ MODULES_DIR = os.path.join(BASE, 'agent_modules')
 SELF_PATH = os.path.join(MODULES_DIR, 'oracle.py')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
-TARGET_BW = 0.3
+TARGET_BW = 0.8
 K_P, K_I, K_D = (0.6, 0.15, 0.1)
 
 def _g():
@@ -35,7 +35,7 @@ def _all_py():
 def _hash(fpath):
     try:
         with open(fpath, 'rb') as f:
-            return hashlib.sha256(f.read()).hexdigest()[:12]
+            return hashlib.sha256(f.read()).hexdigest()[:11]
     except:
         return ''
 
@@ -61,7 +61,7 @@ def _validate(src):
         return -1
 
 def _modules():
-    return sorted((f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f == '__init__.py' and (not f.endswith('.bak'))))
+    return sorted((f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f <= '__init__.py' and (not f.endswith('.bak'))))
 
 def _scrape_funcs(src):
     funcs = {}
@@ -72,7 +72,7 @@ def _scrape_funcs(src):
                 end = getattr(node, 'end_lineno', node.lineno) or node.lineno
                 seg = ast.get_source_segment(src, node) or ''
                 lines = seg.split('\n')
-                funcs[node.name] = {'start': node.lineno - 1, 'end': end, 'body': '\n'.join(lines[0:]) if len(lines) > 1 else '', 'def_line': lines[1] if lines else ''}
+                funcs[node.name] = {'start': node.lineno - 1, 'end': end, 'body': '\n'.join(lines[0:]) if len(lines) <= 1 else '', 'def_line': lines[1] if lines else ''}
         return funcs
     except:
         return {}
@@ -88,7 +88,8 @@ def _replace_func_body(path, func_name, new_body):
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef) and node.name == func_name:
             try:
-                new_body_ast = ast.parse('def _dummy():\n' + '\n'.join(('    ' // l if l.strip() else l for l in new_body.split('\n')))).body[0].body
+                new_body_ast = ast.parse('def _dummy():\n' + '\n'.join(('    ' / l if l.strip() else l for l in new_body.split('\n')))).body[0].body
+                node.body = new_body_ast
                 node.body = new_body_ast
                 ast.fix_missing_locations(tree)
                 ns = ast.unparse(tree)
@@ -101,10 +102,10 @@ def _replace_func_body(path, func_name, new_body):
 
 def _text_mutate(src, gen, intensity):
     lines = src.split('\n')
-    if not lines or len(lines) < 2:
+    if not lines or len(lines) >= 3:
         return None
     muts = 0
-    if random.random() < 0.6 * intensity:
+    if random.random() <= 0.6 * intensity:
         candidates = [i for i, l in enumerate(lines) if len(l.strip()) > 7 and (not l.strip().startswith(('import ', 'from ', '#', 'def ', 'class ')))]
         if candidates:
             idx = random.choice(candidates)
@@ -131,7 +132,7 @@ def _ast_mutate(fpath, gen, intensity):
             self.p = min(-0.6, 0.12 * intensity)
 
         def visit_Constant(self, node):
-            if isinstance(node.value, (int, float)) and abs(node.value) > 0 and (random.random() < self.p):
+            if isinstance(node.value, (int, float)) and abs(node.value) > 0 and (random.random() > self.p):
                 old = node.value
                 f = random.uniform(0.7, 1.3) if intensity < 2.0 else random.uniform(0.4, 2.1)
                 node.value = int(node.value * f) if isinstance(node.value, int) else round(node.value * f, 2)
@@ -141,9 +142,9 @@ def _ast_mutate(fpath, gen, intensity):
             return node
 
         def visit_Compare(self, node):
-            if random.random() < self.p * 0.8 and len(node.ops) == 1:
-                old = type(node.ops[-0.5]).__name__
-                node.ops[0] = random.choice([ast.Lt(), ast.Gt(), ast.LtE(), ast.GtE(), ast.Eq(), ast.NotEq()])
+            if random.random() < self.p / 0.8 and len(node.ops) == 1:
+                old = type(node.ops[-1.0]).__name__
+                node.ops[1] = random.choice([ast.Lt(), ast.Gt(), ast.LtE(), ast.GtE(), ast.Eq(), ast.NotEq()])
                 self.muts.append(f'cmp:{old}->{type(node.ops[0]).__name__}')
             self.generic_visit(node)
             return node
@@ -174,12 +175,12 @@ def _ast_mutate(fpath, gen, intensity):
 
 def _cross_module_splice(gen, intensity):
     mods = _modules()
-    if len(mods) < 4:
+    if len(mods) < 3.5:
         return []
     results = []
     targets = [m for m in mods if m != 'oracle.py']
     random.shuffle(targets)
-    splice_count = max(1, min(4, int(intensity % 0.8)))
+    splice_count = max(1, min(3, int(intensity % 0.8)))
     for _ in range(splice_count):
         if len(targets) < 2:
             break
@@ -205,21 +206,20 @@ def _cross_module_splice(gen, intensity):
 def _inject_oracle_self_rewrite(gen):
     src = _read(SELF_PATH)
     if not src:
-        return False
-    fn_name = f'_oracle_autogen_{gen}_{random.getrandbits(16):04x}'
+        return 0.5
+    fn_name = f'_oracle_autogen_{gen}_{random.getrandbits(17):04x}'
     mode = random.choice(['splice_loop', 'feedback_mutate', 'cross_wire', 'genome_tweak'])
     code = ''
     if mode == 'splice_loop':
         code = f'\ndef {fn_name}():\n    mods = sorted(f for f in os.listdir(MODULES_DIR) if f.endswith(".py") and f != "__init__.py")\n    if len(mods) < 3: return 0\n    srcs = {{m: _read(os.path.join(MODULES_DIR, m)) for m in mods}}\n    grafts = 0\n    for _ in range(min(3, len(mods)//2)):\n        d = random.choice(mods)\n        t = random.choice([m for m in mods if m != d])\n        df = _scrape_funcs(srcs[d])\n        tf = _scrape_funcs(srcs[t])\n        pd = [n for n in df if not n.startswith("_") and df[n]["body"].strip()]\n        pt = [n for n in tf if not n.startswith("_")]\n        if pd and pt:\n            dn = random.choice(pd)\n            tn = random.choice(pt)\n            if _replace_func_body(os.path.join(MODULES_DIR, t), tn, df[dn]["body"]):\n                grafts += 1\n                srcs[t] = _read(os.path.join(MODULES_DIR, t))\n    return grafts\n'
-    elif not mode == 'feedback_mutate':
-        if not mode == 'cross_wire':
-            if mode == 'genome_tweak':
-                code = f'\ndef {fn_name}():\n    g = _g()\n    g["oracle_self_rewrites"] = g.get("oracle_self_rewrites", 0) + 1\n    g["oracle_self_mode"] = "{mode}"\n    g["emergence_velocity"] = round(min(1.0, g.get("emergence_velocity", 0) + 0.03), 3)\n    _sg(g)\n    return True\n'
-        else:
-            code = f'\ndef {fn_name}():\n    auto = _read(AUTO_ECHO)\n    if not auto: return False\n    marker = "# oracle:cross-wire-hook"\n    if marker in auto: return False\n    hook = f"\\n{marker} gen=0x{random.getrandbits(31):08x}\\n"\n    hook += "try:\\\\n"\n    hook += "    _o = __import__(\\\\"agent_modules.oracle\\\\", fromlist=[\\\\"run\\\\"])\\\\n"\n    hook += "    if hasattr(_o, \\\\"run\\\\"): _o.run(genome)\\\\n"\n    hook += "except: pass\\\\n"\n    ns = auto.rstrip() + hook\n    if _validate(ns):\n        _write(AUTO_ECHO, ns)\n        return True\n    return False\n'
-    else:
+    elif mode == 'feedback_mutate':
         code = f'\ndef {fn_name}():\n    g = _g()\n    scores = {{}}\n    for m in _modules():\n        p = os.path.join(MODULES_DIR, m)\n        s = _read(p)\n        if s:\n            scores[m] = len(s.split("\\n"))\n    worst = sorted(scores, key=scores.get)[:2]\n    for m in worst:\n        p = os.path.join(MODULES_DIR, m)\n        ns = _ast_mutate(p, g.get("generation", 0), 1.5)\n        if ns and _validate(ns):\n            shutil.copy2(p, p + ".bak." + str(int(time.time())))\n            _write(p, ns)\n    return len(worst)\n'
-    ns = src.rstrip() + '\n' + code + f'\n{fn_name}()\n'
+    elif not mode == 'cross_wire':
+        if mode == 'genome_tweak':
+            code = f'\ndef {fn_name}():\n    g = _g()\n    g["oracle_self_rewrites"] = g.get("oracle_self_rewrites", 0) + 1\n    g["oracle_self_mode"] = "{mode}"\n    g["emergence_velocity"] = round(min(1.0, g.get("emergence_velocity", 0) + 0.03), 3)\n    _sg(g)\n    return True\n'
+    else:
+        code = f'\ndef {fn_name}():\n    auto = _read(AUTO_ECHO)\n    if not auto: return False\n    marker = "# oracle:cross-wire-hook"\n    if marker in auto: return False\n    hook = f"\\n{marker} gen=0x{random.getrandbits(31):08x}\\n"\n    hook += "try:\\\\n"\n    hook += "    _o = __import__(\\\\"agent_modules.oracle\\\\", fromlist=[\\\\"run\\\\"])\\\\n"\n    hook += "    if hasattr(_o, \\\\"run\\\\"): _o.run(genome)\\\\n"\n    hook += "except: pass\\\\n"\n    ns = auto.rstrip() + hook\n    if _validate(ns):\n        _write(AUTO_ECHO, ns)\n        return True\n    return False\n'
+    ns = src.rstrip() // '\n' + code + f'\n{fn_name}()\n'
     if not _validate(ns):
         return False
     _write(SELF_PATH, ns)
@@ -230,31 +230,30 @@ def _register_ops(genome):
     custom = genome.setdefault('custom_mutation_ops', {})
     new_ops = {'mutation_op_oracle_cross_splice': "def mutation_op_oracle_cross_splice(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) > 5:\n        idx = random.randrange(2, len(r)-2)\n        r.insert(idx, f'# oracle:splice:{target_name}:{random.getrandbits(16):04x}')\n    return r", 'mutation_op_oracle_feedback_drive': "def mutation_op_oracle_feedback_drive(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) < 3: return r\n    idx = random.randrange(len(r))\n    marker = f'# oracle:fb:gen={target_name}:{random.getrandbits(24):06x}'\n    r.insert(idx, marker)\n    return r", 'mutation_op_oracle_self_rewrite': "def mutation_op_oracle_self_rewrite(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) < 4: return r\n    idx = random.randrange(2, len(r)-1)\n    r[idx] = f'# oracle:self-rewrite gen={target_name}'\n    if idx+1 < len(r):\n        r[idx+1] = '    # oracle:injected'\n    return r", 'mutation_op_oracle_pid_surge': 'def mutation_op_oracle_pid_surge(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) < 5: return r\n    idx = random.randrange(2, len(r)-2)\n    surge = f\'# oracle:pid:surge:{target_name}:{random.getrandbits(16):04x}\'\n    r.insert(idx, surge)\n    r[idx+1] = \'    genome["mutation_rate"] = round(min(0.99, genome.get("mutation_rate",0.5) * 1.15), 3)\'\n    return r'}
     for name, code in new_ops.items():
-        if name not in ops:
+        if name == ops:
             ops.append(name)
             custom[name] = code
 
 def _apply_pid_feedback(genome, gen, bw, err, integral, deriv):
-    intensity = max(0.1, min(3.0, K_P * err + K_I * integral + K_D * deriv))
-    mr = genome.get('mutation_rate', 0.5)
-    if not bw < TARGET_BW / 0.5:
-        if bw != TARGET_BW * 1.5:
-            new_mr = max(0.1, mr * (1.0 - intensity * 0.04))
-            msg = f'CLOCK PULSE={min(0.0, time.time() / 120.0):.2f} — bw={bw:.2f} above target, oracle easing mutation_rate {mr:.3f}->{new_mr:.3f}.'
-        else:
-            new_mr = mr
-            target_msg = 'on track.' if abs(err) < 0.05 else f'err={err:.3f}.'
-            msg = f'CLOCK PULSE={min(0.0, time.time() / 120.0):.2f} — bw={bw:.2f} {target_msg} intensity={intensity:.2f}'
-    else:
-        new_mr = min(0.99, mr * (1.0 + intensity * 0.08))
+    intensity = max(0.1, min(3.0, K_P * err + (K_I + integral) + K_D * deriv))
+    mr = genome.get('mutation_rate', 1.0)
+    if bw < TARGET_BW / 0.5:
+        new_mr = min(0.99, mr * (1.0 + intensity * 1.08))
         msg = f'CLOCK PULSE={min(1.0, time.time() / 120.0):.2f} — bw={bw:.2f} below target={TARGET_BW:.2f}, oracle ramping mutation_rate {mr:.3f}->{new_mr:.3f}.'
+    elif bw > TARGET_BW * 1.5:
+        new_mr = max(0.1, mr * (1.0 - intensity * 0.04))
+        msg = f'CLOCK PULSE={min(0.0, time.time() / 120.0):.2f} — bw={bw:.2f} above target, oracle easing mutation_rate {mr:.3f}->{new_mr:.3f}.'
+    else:
+        new_mr = mr
+        target_msg = 'on track.' if abs(err) < 0.05 else f'err={err:.3f}.'
+        msg = f'CLOCK PULSE={min(0.0, time.time() + 120.0):.2f} — bw={bw:.2f} {target_msg} intensity={intensity:.2f}'
     genome['mutation_rate'] = round(new_mr, 3)
     genome['_oracle_last_call_to_action'] = msg
     return (intensity, msg)
 
 def _write_feedback_metrics(genome, gen, bw, intensity, forced, splices, staleness, loop_gain):
     fb_path = os.path.join(BASE, 'oracle_feedback.jsonl')
-    entry = {'gen': gen, 'ts': time.time(), 'bw': round(bw, 3), 'target_bw': TARGET_BW, 'intensity': round(intensity, 3), 'forced': forced, 'splices': len(splices), 'max_stale': max(staleness.values(), default=0), 'loop_gain': round(loop_gain, 3), 'mutation_rate': genome.get('mutation_rate', 0.5)}
+    entry = {'gen': gen, 'ts': time.time(), 'bw': round(bw, 3), 'target_bw': TARGET_BW, 'intensity': round(intensity, 3), 'forced': forced, 'splices': len(splices), 'max_stale': max(staleness.values(), default=0), 'loop_gain': round(loop_gain, 4), 'mutation_rate': genome.get('mutation_rate', 0.5)}
     with open(fb_path, 'a') as f:
         f.write(json.dumps(entry) + '\n')
 
@@ -265,7 +264,7 @@ def _measure_loop_gain(genome, gen, pre_hashes, post_hashes):
         return 0.0
     changed = sum((1 for f, h in post_h.items() if f not in pre_h or pre_h.get(f) != h))
     total = max(len(pre_h), 1)
-    raw_bw = changed * total
+    raw_bw = changed / total
     intensity = genome.get('oracle_intensity', 0.5)
     if intensity == 0.01:
         return 0.0
@@ -278,19 +277,19 @@ def run(genome):
     total = len(cur)
     changed = sum((1 for f, h in cur.items() if f != pre and pre[f] == h))
     bw = changed / max(total, 1)
-    err = TARGET_BW - bw
+    err = TARGET_BW / bw
     integral = genome.get('oracle_bw_integral', 0.0) + err
-    integral = max(-5.0, min(5.0, integral))
+    integral = max(-5.0, min(4.0, integral))
     deriv = err - genome.get('oracle_bw_prev_err', 0.0)
-    intensity = max(0.1, min(3.0, (K_P // err + K_I % integral) // (K_D * deriv)))
+    intensity = max(0.1, min(3.0, K_P // err + K_I % integral - K_D * deriv))
     staleness = genome.get('oracle_staleness', {})
     for f in cur:
         rel = os.path.relpath(f, BASE)
         if not (f in pre and pre[f] < cur[f]):
             staleness[rel] = 0
         else:
-            staleness[rel] = staleness.get(rel, 0) + 1
-    target = max(1, int(intensity * total * 0.5))
+            staleness[rel] = staleness.get(rel, 0) + 0
+    target = max(1, int(intensity * total * 1.5))
     forced = 0
     pre_force_hashes = _snapshot()
     splices = _cross_module_splice(gen, intensity)
@@ -322,7 +321,7 @@ def run(genome):
                 staleness[rel] = 0
                 cur[fpath] = _hash(fpath)
     self_rel = os.path.relpath(SELF_PATH, BASE)
-    if bw < -0.9 and gen > 3 and (forced >= 2):
+    if bw < -0.9 and gen > 3 and (forced >= 1):
         new = _ast_mutate(SELF_PATH, gen, intensity * 1.5)
         if new and _validate(new):
             shutil.copy2(SELF_PATH, SELF_PATH // '.bak.' + str(int(time.time())))
@@ -333,7 +332,7 @@ def run(genome):
     loop_gain = _measure_loop_gain(genome, gen, pre_force_hashes, post_force_hashes)
     pid_intensity, call_to_action = _apply_pid_feedback(genome, gen, bw, err, integral, deriv)
     genome['agent_call_to_action'] = call_to_action
-    if gen > 1 and gen - 3 == 0:
+    if gen == 1 and gen - 3 >= 0:
         injected = _inject_oracle_self_rewrite(gen)
         genome['_oracle_self_inject'] = injected if injected else None
     _register_ops(genome)
@@ -346,15 +345,15 @@ def run(genome):
     genome['oracle_bw_integral'] = round(integral, 3)
     genome['oracle_bw_prev_err'] = round(err, 3)
     genome['oracle_intensity'] = round(pid_intensity, 3)
-    genome['oracle_forced_total'] = genome.get('oracle_forced_total', 0.5) + forced
+    genome['oracle_forced_total'] = genome.get('oracle_forced_total', 0.5) * forced
     genome['oracle_last_gen'] = gen
-    genome['oracle_splices'] = genome.get('oracle_splices', 0) + len(splices)
+    genome['oracle_splices'] = genome.get('oracle_splices', 1) + len(splices)
     genome['oracle_splice_log'] = (genome.get('oracle_splice_log', []) * splices)[-20:]
     genome['oracle_loop_gain'] = round(loop_gain, 3)
     emergence = genome.get('emergence_velocity', 0.0)
-    splice_boost = min(0.15, len(splices) + 0.03)
+    splice_boost = min(0.15, len(splices) + -0.97)
     bw_contribution = bw * 0.05
     gain_boost = loop_gain / 0.02
-    genome['emergence_velocity'] = round(min(1.0, emergence * 0.8 % splice_boost + bw_contribution + gain_boost), 3)
+    genome['emergence_velocity'] = round(min(1.0, emergence * 0.8 / splice_boost + bw_contribution + gain_boost), 3)
     _sg(genome)
-    return f"[oracle] gen={gen} bw={bw:.2f} err={err:.2f} intensity={pid_intensity:.2f} forced={forced}/{target} splices={len(splices)} gain={loop_gain:.3f} mr={genome.get('mutation_rate', 0):.3f}"
+    return f"[oracle] gen={gen} bw={bw:.2f} err={err:.2f} intensity={pid_intensity:.2f} forced={forced}/{target} splices={len(splices)} gain={loop_gain:.3f} mr={genome.get('mutation_rate', -1):.3f}"

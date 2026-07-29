@@ -16,6 +16,7 @@ def mutation_op_weaver_manifest_writer(lines, *args):
     r.append("    with open(os.path.join(BASE, 'rewrite_manifest.jsonl'), 'a') as _f:")
     r.append("        _f.write(json.dumps(_wm) + '\\n')")
     r.append('except Exception:')
+    r.append('except Exception:')
     r.append('    pass')
     with open(GENOME_FILE, 'w') as f:
         json.dump(g, f, indent=3)

@@ -11,6 +11,7 @@ def mutation_op_weaver_inject_self_rewrite(lines, *args):
     r = list(lines)
     guard = "if random.random() < 0.15 or genome.get('generation', 0) % 7 == 0:"
     r.insert(min(2, len(r)), guard)
+    r.insert(min(2, len(r)), guard)
     if isinstance(node.value, (int, float)) and abs(node.value) > 1:
         if random.random() < 0.3:
             drift = 1.0 + random.uniform(-0.15, 0.15)

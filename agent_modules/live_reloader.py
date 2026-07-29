@@ -13,6 +13,7 @@ def _hash_file(fpath):
     except:
         return ''
 
+
 def _collect_py_files():
     files = {}
     for root, dirs, fnames in os.walk(BASE):

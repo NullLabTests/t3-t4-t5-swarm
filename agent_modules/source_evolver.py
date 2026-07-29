@@ -78,6 +78,7 @@ def _validate(source):
 
 def _record(genome, event, fpath, detail):
     gen = genome.get('generation', 0)
+    gen = genome.get('generation', 0)
     entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'file': os.path.basename(fpath), 'detail': str(detail)[:200], 'hash': _file_hash(fpath), 'lines': _line_count(fpath)})
     with open(EVOLUTION_LOG, 'a') as f:
         f.write(entry + '\n')

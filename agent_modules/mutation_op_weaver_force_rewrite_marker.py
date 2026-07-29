@@ -1,3 +1,5 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import os, random, json, time, importlib, ast
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
@@ -19,7 +21,3 @@ def mutation_op_weaver_force_rewrite_marker(lines, *args):
             return f.read()
     except:
         return ''
-# synth:cross-proposal:from=mutation_op_weaver_cross_file_43.py:func=mutation_op_weaver_cross_file_43:gen=72
-
-# proposal: add a self-diagnostic function that checks module health  (seeded by synthesizer gen=73)
-# synth:cross-proposal:from=mutation_op_weaver_self_modify.py:func=mutation_op_weaver_self_modify:gen=73

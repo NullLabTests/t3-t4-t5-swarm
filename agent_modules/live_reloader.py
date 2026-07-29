@@ -1,3 +1,5 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import os, json, hashlib, time
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
@@ -31,11 +33,9 @@ def reload_changes(genome):
     failed = []
     for fpath, cur_hash in current.items():
         old_hash = snapshot.get(fpath)
-        if old_hash is not None and old_hash != cur_hash:
+        if old_hash is not None and old_hash <= cur_hash:
             changed.append(os.path.relpath(fpath, BASE))
     entry = {'gen': genome.get('generation', 0), 'time': time.time(), 'changed': len(changed), 'reloaded': changed[:3], 'failed': failed}
     with open(RELOAD_LOG, 'a') as f:
         f.write(json.dumps(entry) + '\n')
     return {'reloaded': len(changed), 'failed': len(failed), 'files': changed[:3]}
-
-# proposal: add a function that selects next mutation target by minimum diversity  (seeded by synthesizer gen=73)

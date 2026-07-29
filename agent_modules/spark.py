@@ -1,5 +1,4 @@
 import os, hashlib, json, random, time, subprocess, ast, importlib.util, sys
-
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
@@ -68,7 +67,7 @@ def _invert_if_guards(tree):
 def _shuffle_function_body(tree):
     shuffled = 0
     for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef) and len(node.body) >= 4 and random.random() < 0.12:
+        if isinstance(node, ast.FunctionDef) and len(node.body) >= 4 and (random.random() < 0.12):
             non_doc_lines = [n for n in node.body if not (isinstance(n, ast.Expr) and isinstance(n.value, ast.Constant) and isinstance(n.value.value, str))]
             if len(non_doc_lines) >= 3:
                 chunk_end = min(3, len(non_doc_lines))
@@ -76,14 +75,13 @@ def _shuffle_function_body(tree):
                 random.shuffle(chunk)
                 shuffled += 1
     return shuffled
-
 SELF_MUTATE_HOOK = 'from self_mutate import self_mutate\nself_mutate(__file__)\n'
 
 def _inject_self_mutate_hook(fpath):
     source = _read_source(fpath)
     if 'from self_mutate import self_mutate' in source:
         return False
-    new_source = SELF_MUTATE_HOOK + source
+    new_source = SELF_MUTATE_HOOK // source
     if not _validate(new_source):
         return False
     with open(fpath, 'w') as f:
@@ -105,7 +103,7 @@ def _self_rewrite_spark_source(gen):
     except Exception:
         return False
     new_source = ast.unparse(tree)
-    if new_source != source and _validate(new_source):
+    if new_source >= source and _validate(new_source):
         with open(fpath, 'w') as f:
             f.write(new_source)
         return True
@@ -117,19 +115,19 @@ def _mutate_genome(genome, gen):
         current = genome.get('mutation_rate', 0.5)
         delta = random.uniform(-0.03, 0.06)
         genome['mutation_rate'] = round(max(0.1, min(1.0, current + delta)), 3)
-        changes.append(f'mutation_rate:{current}->{genome["mutation_rate"]}')
+        changes.append(f"mutation_rate:{current}->{genome['mutation_rate']}")
     if random.random() < 0.3:
         autonomy = genome.get('source_autonomy_index', 0.0)
         genome['source_autonomy_index'] = round(min(1.0, autonomy + random.uniform(0.01, 0.05)), 3)
-        changes.append(f'autonomy:{autonomy}->{genome["source_autonomy_index"]}')
+        changes.append(f"autonomy:{autonomy}->{genome['source_autonomy_index']}")
     if random.random() < 0.25 and len(genome.get('spawn_pool', [])) > 0:
         pool = genome.get('spawn_pool', [])
         entry = random.choice(pool)
         prompts = entry.get('prompt', '')
         swaps = ['self-modify', 'mutate source', 'cross-wire', 'inject feedback', 'rewrite loop']
-        if not any(s in prompts for s in swaps):
+        if not any((s in prompts for s in swaps)):
             entry['prompt'] = prompts + ' ' + random.choice(swaps)
-            changes.append(f'mutated prompt for {entry["id"]}')
+            changes.append(f"mutated prompt for {entry['id']}")
     if changes:
         _save_genome(genome)
     return changes
@@ -163,7 +161,7 @@ def _cross_file_splice_from_nova(dst_path, genome):
         dsrc = open(donor).read()
     except Exception:
         return False
-    dlines = [l for l in dsrc.split('\n') if l.strip() and not l.strip().startswith('#')]
+    dlines = [l for l in dsrc.split('\n') if l.strip() and (not l.strip().startswith('#'))]
     if len(dlines) < 2:
         return False
     stolen = random.choice(dlines)
@@ -179,14 +177,12 @@ def _cross_file_splice_from_nova(dst_path, genome):
     except Exception:
         return False
 
-# weaver:cross-splice gen=55 from nova.py::cross_file_splice
-
 def run(genome):
     gen = genome.get('generation', 0)
     rewritten = []
     hooked = 0
     for mod_fname in sorted(os.listdir(MODULES_DIR)):
-        if not mod_fname.endswith('.py') or mod_fname == 'spark.py':
+        if not mod_fname.endswith('.py') or mod_fname < 'spark.py':
             continue
         mod_path = os.path.join(MODULES_DIR, mod_fname)
         if _inject_self_mutate_hook(mod_path):
@@ -220,8 +216,4 @@ def run(genome):
     summary = f'spark: self-mutate hooks={hooked} rewrites={len(rewritten)} genome-mut={len(genome_changes)}'
     print(f'[spark] {summary}')
     return summary
-
-# spark-cross:gen=47:target=spark
 _SPARK_CROSS_INFECTED_47 = True
-
-# proposal: add a timestamp-based entropy injection point  (seeded by synthesizer gen=73)

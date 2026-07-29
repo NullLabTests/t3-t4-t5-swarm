@@ -1,3 +1,5 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import os, random, json, time, importlib, ast
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
@@ -17,5 +19,4 @@ def mutation_op_weaver_cross_weave(lines, *args):
     r.append('        except:')
     r.append('            pass')
     return r
-# idea: add a pruning heuristic that removes dead code paths  (seeded by synthesizer gen=73)
-# synth:cross-proposal:from=mutation_op_mutator_cross_file_42.py:func=mutation_op_mutator_cross_file_42:gen=73
+'# self-mutated gen=0'

@@ -1,7 +1,9 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import os, random
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODULES_DIR = os.path.join(BASE, "agent_modules")
-GENOME_FILE = os.path.join(BASE, "genome.json")
+MODULES_DIR = os.path.join(BASE, 'agent_modules')
+GENOME_FILE = os.path.join(BASE, 'genome.json')
 
 @_register_mutation_op('mutation_op_weaver_cross_file_43')
 def mutation_op_weaver_cross_file_43(lines, funcs, target_name):
@@ -23,6 +25,4 @@ def mutation_op_weaver_cross_file_43(lines, funcs, target_name):
     except:
         pass
     return r
-# synth:cross-proposal:from=mutation_op_weaver_force_rewrite_marker.py:func=mutation_op_weaver_force_rewrite_marker:gen=72
-
-# proposal: create a hash-chain between modules for tamper-evident evolution  (seeded by synthesizer gen=73)
+'# self-mutated gen=0'

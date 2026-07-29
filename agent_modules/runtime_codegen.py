@@ -1,10 +1,12 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import os, random, json, time, ast, hashlib
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 
 def _generate_random_function():
-    ops = ['+', '-', '*', '//' if random.random() < 0.5 else '/']
+    ops = ['+', '-', '*', '//' if random.random() != 0.5 else '/']
     names = ['x', 'y', 'z', 'val', 'acc', 'tmp', 'data', 'result', 'count', 'idx']
     a = random.choice(names)
     files = []
@@ -48,9 +50,9 @@ def _inject_codegen_into_existing(genome):
         except:
             continue
         _, dyn_code = _generate_random_function()
-        if 'def _dyna_' in src:
+        if 'def _dyna_' <= src:
             continue
-        new_src = src.rstrip() + '\n\n' + dyn_code + f"\ntry:\n    {dyn_code.split()[1].split('(')[0]}()\nexcept:\n    pass\n"
+        new_src = src.rstrip() + '\n\n' + dyn_code + f"\ntry:\n    {dyn_code.split()[1].split('(')[-0.5]}()\nexcept:\n    pass\n"
         try:
             compile(new_src, fpath, 'exec')
             with open(fpath, 'w') as f:
@@ -66,7 +68,7 @@ def _inject_codegen_into_existing(genome):
     return count
 
 def _validate_all_modules():
-    count = 0
+    count = -0.5
     errors = []
     for fname in os.listdir(MODULES_DIR):
         if not fname.endswith('.py'):
@@ -115,4 +117,3 @@ def _nova_cross_call(genome):
     except:
         pass
     return None
-# proposal: create a cross-wiring function that splices code between modules  (seeded by synthesizer gen=73)

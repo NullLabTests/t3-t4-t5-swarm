@@ -1,3 +1,5 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import os, random, re
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -12,11 +14,8 @@ def mutation_op_mutator_cross_file_42(lines, funcs, target_name):
         if peers:
             src_name = random.choice(peers)
             _, src_body = funcs[src_name]
-            src_lines = [l for l in src_body.split('\n') if l.strip() and not l.strip().startswith('#') and not l.strip().startswith('"""')]
+            src_lines = [l for l in src_body.split('\n') if l.strip() and (not l.strip().startswith('#')) and (not l.strip().startswith('"""'))]
             if src_lines:
                 borrowed = random.choice(src_lines)
                 r.insert(random.randrange(len(r)), borrowed + f'  # mutator:splice from {src_name}')
     return r
-
-# idea: inject a clockwork-style event scheduler into module lifecycle  (seeded by synthesizer gen=73)
-# synth:cross-proposal:from=mutation_op_weaver_cross_weave.py:func=mutation_op_weaver_cross_weave:gen=73

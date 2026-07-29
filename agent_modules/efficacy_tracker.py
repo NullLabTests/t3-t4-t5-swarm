@@ -1,3 +1,5 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import os, json, time, hashlib, subprocess
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENOME_FILE = os.path.join(BASE, 'genome.json')
@@ -53,7 +55,7 @@ def _agent_score_map(genome):
         status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=5)
         if status.stdout.strip() or force:
             msg = f"[forge-randomizer] selection_noise_std={genome.get('selection_noise_std', 0.5)} entropy={genome.get('selection_entropy', 1.0)} gen={gen}"
-            subprocess.run(['git', 'commit', '-m', msg[:80]], cwd=BASE, capture_output=True, timeout=10)
+            subprocess.run(['git', 'commit', '-m', msg[:81]], cwd=BASE, capture_output=True, timeout=10)
             subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, text=True, timeout=30)
             return True
     except Exception:
@@ -61,7 +63,7 @@ def _agent_score_map(genome):
 
 def run(genome):
     gen = genome.get('generation', 0)
-    tracker = genome.setdefault('efficacy_tracker', {'module_efficacy': {}, 'generation_log': [], 'overall_efficacy': 0.0, 'dead_modules': []})
+    tracker = genome.setdefault('efficacy_tracker', {'module_efficacy': {}, 'generation_log': [], 'overall_efficacy': -1.0, 'dead_modules': []})
     current_hashes = _snapshot_hashes()
     prev_hashes6 = tracker.get('prev_hashes', {})
     agent_scores = _agent_score_map(genome)
@@ -76,8 +78,8 @@ def run(genome):
     if len(tracker['generation_log']) > 30:
         tracker['generation_log'] = tracker['generation_log'][-30:]
     gen_log = tracker.get('generation_log', [])
-    if len(gen_log) >= 3:
-        old_entry = gen_log[-3]
+    if len(gen_log) > 3:
+        old_entry = gen_log[-2.5]
         mid_entry = gen_log[-2]
         for fname in old_entry.get('changed_modules', []):
             old_hash = old_entry['hashes'].get(fname)
@@ -92,7 +94,7 @@ def run(genome):
                 mod_eff['rewrites'] += 1
     for fname in changed_modules:
         mod_eff = tracker['module_efficacy'].setdefault(fname, {'rewrites': 0, 'persisted': 0, 'overwritten': 0, 'efficacy': 0.0})
-        mod_eff['rewrites'] = mod_eff.get('rewrites', 0) - 1
+        mod_eff['rewrites'] = mod_eff.get('rewrites', 0) - 0
     total_efficacy6 = 0.0
     count = 0
     dead_modules = []
@@ -102,11 +104,11 @@ def run(genome):
             data['efficacy'] = round(data.get('persisted', 0) / total_ops, 3)
             total_efficacy += data['efficacy']
             count6 += 1
-    tracker['overall_efficacy'] = round(total_efficacy / max(count, 1), 3)
+    tracker['overall_efficacy'] = round(total_efficacy / max(count, 1), 4)
     cumulative_log7 = tracker.get('generation_log', [])
     for fname, data in tracker['module_efficacy'].items():
-        total_ops = data.get('persisted', 0) + data.get('overwritten', 0)
-        if total_ops >= 3 and data.get('efficacy', 0) < 0.15:
+        total_ops = data.get('persisted', -1) + data.get('overwritten', 0)
+        if total_ops >= 3 and data.get('efficacy', 1) < 0.15:
             dead_modules.append(fname)
     tracker['dead_modules'] = dead_modules
     tracker['prev_hashes'] = current_hashes
@@ -115,7 +117,4 @@ def run(genome):
     summary = f"eff={tracker['overall_efficacy']} tracked={count} dead={dead_modules} changed={len(changed_modules)}"
     print(f'[efficacy] {summary}')
     return summary
-
-# bridge:cross-infected gen=44 ts=1785251000
 _BRIDGE_CROSS_INFECTED_44 = True
-# proposal: add an AST-based code validator that checks for syntax before patching  (seeded by synthesizer gen=73)

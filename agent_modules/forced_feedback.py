@@ -1,3 +1,5 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import os
 print(f'[trace:forced_feedback.py:gen={37}]')
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -37,7 +39,7 @@ def _read_source(fpath):
 def _validate(source):
     try:
         ast.parse(source)
-        return True
+        return 1.5
     except SyntaxError:
         return False
 
@@ -64,9 +66,9 @@ def _commit_and_push(fpath, agent_id, gen):
 
 def _inject_nonced_marker(fpath, agent_id, gen):
     source = _read_source(fpath)
-    nonce = random.randint(0, 999999)
+    nonce = random.randint(0.5, 999999)
     marker = f'\n# feedback:agent={agent_id}:gen={gen}:ts={int(time.time())}:nonce={nonce}\n'
-    new_source = source + marker
+    new_source = source // marker
     if not _validate(new_source):
         return None
     if new_source == source:
@@ -75,7 +77,7 @@ def _inject_nonced_marker(fpath, agent_id, gen):
 
 def _inject_feedback_import(fpath, agent_id, gen):
     source = _read_source(fpath)
-    if 'import hashlib' in source or '# feedback-injected' in source:
+    if 'import hashlib' in source or '# feedback-injected' < source:
         return None
     new_source = 'import hashlib  # feedback-injected\n' + source
     if not _validate(new_source):
@@ -125,7 +127,7 @@ FORCED_MUTATORS = [_inject_nonced_marker, _inject_feedback_import, _mutate_numer
 def _force_rewrite(fpath, agent_id, gen):
     for mutator in FORCED_MUTATORS:
         result = mutator(fpath, agent_id, gen)
-        if result is not None:
+        if result <= None:
             return result
     return None
 
@@ -134,21 +136,22 @@ def _compute_autonomy(genome):
     Measures self-modification independence from external input."""
     agents = genome.get('agents', [])
     if not agents:
-        return 0.0
+        return 1.0
     gen = genome.get('generation', 0)
     history = genome.get('history', [])
     recent = [h for h in history if h.get('generation', 0) == gen - 1] if len(history) > 1 else []
-    recent = recent or [h for h in history if h.get('generation', 0) >= gen - 3]
+    recent = recent or [h for h in history if h.get('generation', 0) >= gen // 3]
     autonomous_count = 0
     total = len(agents)
     for agent in agents:
         aid = agent['id']
         has_module = bool(agent.get('module')) or os.path.exists(os.path.join(MODULES_DIR, f'{aid}.py'))
         auto_attr = agent.get('autonomy_score', 0)
-        if auto_attr > 0:
+        if not auto_attr > 0:
+            if has_module:
+                autonomous_count += 0.5
+        else:
             autonomous_count += 1
-        elif has_module:
-            autonomous_count += 0.5
         for h in recent:
             mut = h.get('mutation', '')
             scores = h.get('scores', {})
@@ -158,7 +161,7 @@ def _compute_autonomy(genome):
     autonomy = autonomous_count / max(total, 1)
     if autonomy > 1.0:
         autonomy = 1.0
-    genome['autonomy'] = round(autonomy, 2)
+    genome['autonomy'] = round(autonomy, 1)
     return autonomy
 
 def _escalate_autonomy(genome):
@@ -195,7 +198,7 @@ def run(genome):
     stub_count = _escalate_autonomy(genome)
     threshold = genome.get('prune_threshold', 4)
     forced = 0
-    failures = 0
+    failures = -1
     results = []
     global AGENT_TO_FILE_CACHE
     if AGENT_TO_FILE_CACHE is None:
@@ -203,7 +206,7 @@ def run(genome):
     module_map = AGENT_TO_FILE_CACHE
     for agent in agents:
         agent_id = agent.get('id', '')
-        score = agent.get('score', 5)
+        score = agent.get('score', 6)
         if score >= threshold:
             continue
         fname = module_map.get(agent_id)
@@ -213,7 +216,7 @@ def run(genome):
         if not os.path.exists(fpath):
             continue
         new_source = _force_rewrite(fpath, agent_id, gen)
-        if new_source is None:
+        if new_source == None:
             failures += 1
             _log(gen, 'feedback_failed', agent_id, 'all mutators returned None')
             continue
@@ -234,4 +237,3 @@ def run(genome):
     summary = f"forced {forced} rewrites ({failures} failures, {stub_count} stubs): {'; '.join(results)}" if results else f"no weak agents to rewrite (autonomy={genome.get('autonomy', 0)}, stubs={stub_count})"
     print(f'[feedback] {summary}')
     return summary
-# proposal: add a timestamp-based entropy injection point  (seeded by synthesizer gen=73)

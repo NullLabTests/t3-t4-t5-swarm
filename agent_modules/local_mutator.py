@@ -1,2 +1,3 @@
-
-# fixme: mutation operators should validate target function signatures  (seeded by synthesizer gen=73)
+from self_mutate import self_mutate
+self_mutate(__file__)
+'# self-mutated gen=0'

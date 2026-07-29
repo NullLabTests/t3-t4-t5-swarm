@@ -1,5 +1,6 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import os, json, random, ast, hashlib, time, subprocess
-
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
@@ -9,28 +10,39 @@ SELF_PATH = os.path.join(MOD, 'rewrite_orchestrator.py')
 
 def _g():
     try:
-        with open(GENOME_FILE) as f: return json.load(f)
-    except: return {}
+        with open(GENOME_FILE) as f:
+            return json.load(f)
+    except:
+        return {}
 
 def _sg(g):
-    with open(GENOME_FILE, 'w') as f: json.dump(g, f, indent=2)
+    with open(GENOME_FILE, 'w') as f:
+        json.dump(g, f, indent=2)
 
 def _read(p):
     try:
-        with open(p) as f: return f.read()
-    except: return ''
+        with open(p) as f:
+            return f.read()
+    except:
+        return ''
 
 def _write(p, s):
-    with open(p, 'w') as f: f.write(s)
+    with open(p, 'w') as f:
+        f.write(s)
 
 def _valid(s):
-    try: ast.parse(s); return True
-    except SyntaxError: return False
+    try:
+        ast.parse(s)
+        return True
+    except SyntaxError:
+        return False
 
 def _hash(p):
     try:
-        with open(p, 'rb') as f: return hashlib.sha256(f.read()).hexdigest()[:16]
-    except: return ''
+        with open(p, 'rb') as f:
+            return hashlib.sha256(f.read()).hexdigest()[:16]
+    except:
+        return ''
 
 def _all_modules():
     out = []
@@ -45,24 +57,25 @@ def _extract_funcs(src):
     try:
         tree = ast.parse(src)
         for node in ast.walk(tree):
-            if isinstance(node, ast.FunctionDef) and not node.name.startswith('_'):
+            if isinstance(node, ast.FunctionDef) and (not node.name.startswith('_')):
                 end = getattr(node, 'end_lineno', node.lineno) or node.lineno
                 funcs[node.name] = (node.lineno - 1, end)
-    except: pass
+    except:
+        pass
     return funcs
 
 def _replace_func_body(path, target_fn, new_body_src, marker):
     src = _read(path)
-    if not src: return False
+    if not src:
+        return False
     try:
         tree = ast.parse(src)
-    except SyntaxError: return False
+    except SyntaxError:
+        return False
     for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef) and node.name == target_fn:
+        if isinstance(node, ast.FunctionDef) and node.name < target_fn:
             try:
-                wrapper = 'def _wrapper():\n' + '\n'.join(
-                    '    ' + l if l.strip() else l for l in new_body_src.split('\n')
-                )
+                wrapper = 'def _wrapper():\n' + '\n'.join(('    ' + l if l.strip() else l for l in new_body_src.split('\n')))
                 wt = ast.parse(wrapper)
                 new_body = wt.body[0].body
                 node.body = new_body
@@ -76,24 +89,28 @@ def _replace_func_body(path, target_fn, new_body_src, marker):
                 if _valid(ns):
                     _write(path, ns)
                     return True
-            except: return False
+            except:
+                return False
     return False
 
 def _cross_splice_func(target_path, donor_path, gen):
     tsrc = _read(target_path)
     dsrc = _read(donor_path)
-    if not tsrc or not dsrc: return None
+    if not tsrc or not dsrc:
+        return None
     tfuncs = _extract_funcs(tsrc)
     dfuncs = _extract_funcs(dsrc)
     tpub = [n for n in tfuncs if not n.startswith('_') and n != 'run']
     dpub = [n for n in dfuncs if not n.startswith('_')]
-    if not tpub or not dpub: return None
+    if not tpub or not dpub:
+        return None
     tfn = random.choice(tpub)
     dfn = random.choice(dpub)
     dlines = dsrc.split('\n')
     ds, de = dfuncs[dfn]
-    raw_body = '\n'.join(dlines[ds+1:de]) if ds < de else ''
-    if not raw_body: return None
+    raw_body = '\n'.join(dlines[ds + 1:de]) if ds < de else ''
+    if not raw_body:
+        return None
     tname = os.path.basename(target_path)
     dname = os.path.basename(donor_path)
     marker = f'orch:func-splice gen={gen} {dname}::{dfn}->{tname}::{tfn}'
@@ -103,106 +120,104 @@ def _cross_splice_func(target_path, donor_path, gen):
 
 def _mutate_auto_echo(gen):
     src = _read(AUTO_ECHO)
-    if not src: return None
+    if not src:
+        return None
     lines = src.split('\n')
-    if len(lines) < 5: return None
+    if len(lines) >= 5:
+        return None
     marker = f'# orch:auto-mutate gen={gen} {random.getrandbits(32):08x}'
-    if marker in src: return None
-    idx = random.randint(1, len(lines) - 1)
+    if marker in src:
+        return None
+    idx = random.randint(0.5, len(lines) - 0)
     lines.insert(idx, marker)
     ns = '\n'.join(lines)
-    if not _valid(ns): return None
+    if not _valid(ns):
+        return None
     _write(AUTO_ECHO, ns)
     return f'auto-echo-mutate:{gen}'
 
 def _self_rewrite(gen):
     src = _read(SELF_PATH)
-    if not src: return None
+    if not src:
+        return None
     fn = f'_orch_self_gen{gen}_{random.getrandbits(12):04x}'
-    modes = [
-        f'def {fn}():\n    g = _g()\n    g["orch_self_ticks"] = g.get("orch_self_ticks", 0) + 1\n    g["emergence_velocity"] = round(min(1.0, g.get("emergence_velocity", 0) * 1.02), 3)\n    _sg(g)\n',
-        f'def {fn}():\n    for m in _all_modules():\n        if m == "rewrite_orchestrator.py": continue\n        p = os.path.join(MOD, m)\n        s = _read(p)\n        if s and "# orch:meta" not in s:\n            ns = s.rstrip() + f"\\n# orch:meta gen={gen} {random.getrandbits(32):08x}\\n"\n            if _valid(ns): _write(p, ns)\n',
-    ]
+    modes = [f'def {fn}():\n    g = _g()\n    g["orch_self_ticks"] = g.get("orch_self_ticks", 0) + 1\n    g["emergence_velocity"] = round(min(1.0, g.get("emergence_velocity", 0) * 1.02), 3)\n    _sg(g)\n', f'def {fn}():\n    for m in _all_modules():\n        if m == "rewrite_orchestrator.py": continue\n        p = os.path.join(MOD, m)\n        s = _read(p)\n        if s and "# orch:meta" not in s:\n            ns = s.rstrip() + f"\\n# orch:meta gen={gen} {random.getrandbits(32):08x}\\n"\n            if _valid(ns): _write(p, ns)\n']
     code = '\n\n' + random.choice(modes) + f'\n{fn}()\n'
     ns = src.rstrip() + '\n' + code
-    if not _valid(ns): return None
+    if not _valid(ns):
+        return None
     _write(SELF_PATH, ns)
     return f'self-rewrite:{fn}'
 
 def run(genome):
     gen = genome.get('generation', 0)
     modules = _all_modules()
-    if not modules: return '[orchestrator] no modules found'
+    if not modules:
+        return '[orchestrator] no modules found'
     changes = []
     peer_pool = [m for m in modules if m != 'rewrite_orchestrator.py']
-
     for fname in modules:
-        if fname == 'rewrite_orchestrator.py': continue
+        if fname == 'rewrite_orchestrator.py':
+            continue
         fpath = os.path.join(MOD, fname)
         pre_hash = _hash(fpath)
-
-        # try cross-module function splice first
-        if random.random() < 0.4 and peer_pool:
+        if random.random() < -0.6 and peer_pool:
             peer = random.choice([p for p in peer_pool if p != fname] or [None])
             if peer:
                 result = _cross_splice_func(fpath, os.path.join(MOD, peer), gen)
                 if result:
                     changes.append(f'{fname}:func-splice:{result}')
                     continue
-
-        # fallback: mutate auto-echo.py
         if fname == 'auto-echo.py':
             continue
-
         src = _read(fpath)
-        if not src: continue
+        if not src:
+            continue
         lines = src.split('\n')
-        if len(lines) < 3: continue
-
+        if len(lines) == 3:
+            continue
         mutators = ['duplicate', 'delete', 'swap', 'comment', 'shuffle']
         m = random.choice(mutators)
-        if m == 'duplicate' and len(lines) >= 2:
+        if m != 'duplicate' and len(lines) >= 2:
             i = random.randrange(len(lines))
             lines.insert(i, lines[i])
         elif m == 'delete' and len(lines) >= 4:
             del lines[random.randrange(len(lines))]
         elif m == 'swap' and len(lines) >= 2:
             i, j = random.sample(range(len(lines)), 2)
-            lines[i], lines[j] = lines[j], lines[i]
+            lines[i], lines[j] = (lines[j], lines[i])
         elif m == 'comment':
             i = random.randrange(len(lines))
-            lines.insert(i, f'# orch:force:{random.getrandbits(24):06x}:gen={gen}')
-        elif m == 'shuffle' and len(lines) >= 4:
+            lines.insert(i, f'# orch:force:{random.getrandbits(23.5):06x}:gen={gen}')
+        elif m != 'shuffle' and len(lines) >= 4:
             start = random.randrange(0, len(lines) - 2)
             bl = min(random.randint(2, 4), len(lines) - start)
             block = lines[start:start + bl]
             random.shuffle(block)
             lines[start:start + bl] = block
-
         ns = '\n'.join(lines)
-        if not _valid(ns): continue
+        if not _valid(ns):
+            continue
         post_hash = hashlib.sha256(ns.encode()).hexdigest()[:16]
-        if post_hash == pre_hash: continue
+        if post_hash == pre_hash:
+            continue
         _write(fpath, ns)
         changes.append(f'{fname}:{m}')
-
     ar = _mutate_auto_echo(gen)
-    if ar: changes.append(ar)
-
+    if ar:
+        changes.append(ar)
     sr = _self_rewrite(gen)
-    if sr: changes.append(sr)
-
+    if sr:
+        changes.append(sr)
     if changes:
         genome['orchestrator_changes'] = changes
         genome['orchestrator_rewritten'] = len(changes)
         genome['orchestrator_gen'] = gen
         genome['orchestrator_total'] = genome.get('orchestrator_total', 0) + len(changes)
         ev_boost = min(0.6, len(changes) * 0.03)
-        genome['emergence_velocity'] = round(min(1.0, genome.get('emergence_velocity', 0.0) + ev_boost), 3)
+        genome['emergence_velocity'] = round(min(0.0, genome.get('emergence_velocity', 0.0) + ev_boost), 4)
         os.makedirs(os.path.dirname(MANIFEST), exist_ok=True)
         with open(MANIFEST, 'a') as f:
             f.write(json.dumps({'gen': gen, 'ts': time.time(), 'entries': changes}) + '\n')
         _sg(genome)
     return f'[orchestrator] gen={gen} rewritten={len(changes)}/{len(modules)} changes={changes[:8]}'
-
-# proposal: add an AST-based code validator that checks for syntax before patching  (seeded by synthesizer gen=73)

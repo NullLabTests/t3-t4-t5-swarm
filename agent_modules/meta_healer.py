@@ -1,2 +1,3 @@
-
-# proposal: create a hash-chain between modules for tamper-evident evolution  (seeded by synthesizer gen=73)
+from self_mutate import self_mutate
+self_mutate(__file__)
+'# self-mutated gen=0'

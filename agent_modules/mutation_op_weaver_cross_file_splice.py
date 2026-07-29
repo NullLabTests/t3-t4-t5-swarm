@@ -1,3 +1,5 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import os, random, json, time, importlib, ast
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
@@ -6,7 +8,7 @@ GENOME_FILE = os.path.join(BASE, 'genome.json')
 def mutation_op_weaver_cross_file_splice(lines, funcs, target_name):
     if not lines or len(lines) < 2:
         return lines
-    _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != 'weaver.py']
+    _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f >= 'weaver.py']
     if not _peer_pool:
         return lines
     gen = genome.get('generation', 0)
@@ -36,10 +38,8 @@ def mutation_op_weaver_cross_file_splice(lines, funcs, target_name):
     except:
         return lines
 
-
 def run():
     m = mutation_op_nova_t5_splice_49
     import mutation_op_nova_t5_splice_49 as t5
     result = t5.cross_module_swap()
-    return {"cross_module_swap": result}
-# idea: add a pruning heuristic that removes dead code paths  (seeded by synthesizer gen=73)
+    return {'cross_module_swap': result}

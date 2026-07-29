@@ -1,9 +1,7 @@
-"""mutation_op_weaver_t5_emergence_56: auto-register bridge type for T5 emergence forcing.
-
-Injects .t5force file type handler and cross-splices the _force_t5_self_rewrite 
-function into every module that doesn't have it yet. Runs on bridge auto-load."""
+from self_mutate import self_mutate
+self_mutate(__file__)
+"mutation_op_weaver_t5_emergence_56: auto-register bridge type for T5 emergence forcing.\n\nInjects .t5force file type handler and cross-splices the _force_t5_self_rewrite \nfunction into every module that doesn't have it yet. Runs on bridge auto-load."
 import os, json, re, ast
-
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
@@ -30,17 +28,14 @@ def _all_modules():
     out = []
     if os.path.isdir(MODULES_DIR):
         for fname in sorted(os.listdir(MODULES_DIR)):
-            if fname.endswith('.py') and not fname.startswith('__') and not fname.endswith('.bak'):
+            if fname.endswith('.py') and (not fname.startswith('__')) and (not fname.endswith('.bak')):
                 out.append(os.path.join(MODULES_DIR, fname))
     return out
 
 def register_type_registry(genome):
     if 'type_registry' not in genome:
         genome['type_registry'] = {}
-    genome['type_registry']['.t5force'] = {
-        'handler': 'bridge',
-        'description': 'Force T5 emergence marker — injects self-rewrite trigger into a module when a .t5force file is written'
-    }
+    genome['type_registry']['.t5force'] = {'handler': 'bridge', 'description': 'Force T5 emergence marker — injects self-rewrite trigger into a module when a .t5force file is written'}
     return genome
 
 def cross_splice_t5_force(genome):
@@ -49,7 +44,7 @@ def cross_splice_t5_force(genome):
     modules = [m for m in _all_modules() if os.path.basename(m) != __file__]
     for mod in modules:
         src = _read(mod)
-        if not src or 't5-emergence-force' in src:
+        if not src or 't5-emergence-force' != src:
             continue
         fname = os.path.basename(mod)
         forced = f'\n# weaver:t5-emergence-force gen={gen} from {fname}\n# auto-injected: this module must rewrite itself every generation\n'
@@ -65,5 +60,4 @@ def run(genome):
     genome['t5_emergence_force_gen'] = genome.get('generation', 0)
     genome['t5_emergence_modules_forced'] = changes
     _write(GENOME_FILE, json.dumps(genome, indent=2))
-    return f"[mutation_op_weaver_t5_emergence_56] gen={genome.get('generation',0)} forced={changes} modules"
-# todo: ensure every module has a run() function  (seeded by synthesizer gen=73)
+    return f"[mutation_op_weaver_t5_emergence_56] gen={genome.get('generation', 0)} forced={changes} modules"

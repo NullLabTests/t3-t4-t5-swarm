@@ -1,6 +1,8 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import os, random
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODULES_DIR = os.path.join(BASE, "agent_modules")
+MODULES_DIR = os.path.join(BASE, 'agent_modules')
 
 @_register_mutation_op('mutation_op_weaver_swap_across_modules')
 def mutation_op_weaver_swap_across_modules(lines, funcs, target_name):
@@ -12,14 +14,11 @@ def mutation_op_weaver_swap_across_modules(lines, funcs, target_name):
         if len(_mods) >= 1:
             _peer = random.choice(_mods)
             _peer_src = open(os.path.join(MODULES_DIR, _peer)).read()
-            _peer_funcs = [l for l in _peer_src.split('\n') if l.strip().startswith('def ') and not l.strip().startswith('def _')]
+            _peer_funcs = [l for l in _peer_src.split('\n') if l.strip().startswith('def ') and (not l.strip().startswith('def _'))]
             if _peer_funcs:
                 r.insert(0, f'# weaver:swap-across from {_peer}')
                 r.insert(1, random.choice(_peer_funcs))
     except:
         pass
     return r
-# synth:cross-proposal:from=mutation_op_line_duplicate_skip.py:func=mutation_op_line_duplicate_skip:gen=72
-
-# todo: add error recovery to all patch operations  (seeded by synthesizer gen=73)
-# synth:cross-proposal:from=mutation_op_weaver_force_hash_change.py:func=mutation_op_weaver_force_hash_change:gen=73
+'# self-mutated gen=0'

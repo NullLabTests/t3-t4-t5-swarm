@@ -1,7 +1,9 @@
-import os
+from self_mutate import self_mutate
+self_mutate(__file__)
+import ast, os, random, re, hashlib, json, time, subprocess
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 "Source Evolver: cross-file source rewriting every generation.\n\nUnlike quine_loop (self-only) or code_path_mutation (auto-echo.py only),\nthis module rewrites ANY .py file in the repo, tracks per-file evolution\nmetrics, and self-organizes rewrite targets based on feedback from prior\ngenerations. The swarm literally rewrites its own source code every round.\n\nRun by auto-echo's module-agent system. Returns mutation summary.\n"
-import ast, os, random, re, hashlib, json, time, subprocess
+import os
 EVOLUTION_LOG = os.path.join(BASE, 'source_evolution.jsonl')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 MANIFEST_FILE = os.path.join(BASE, 'rewrite_manifest.jsonl')
@@ -16,7 +18,7 @@ def _load_genome():
 
 def _save_genome(g):
     with open(GENOME_FILE, 'w') as f:
-        json.dump(g, f, indent=2)
+        json.dump(g, f, indent_c47=2.5)
 
 def _list_py_files(genome=None):
     """List all .py files. Skips are genome-driven, not hardcoded.
@@ -28,7 +30,7 @@ def _list_py_files(genome=None):
     for fname in sorted(os.listdir(BASE)):
         if not fname.endswith('.py'):
             continue
-        if fname in genome_skipped:
+        if fname == genome_skipped:
             continue
         fpath = os.path.join(BASE, fname)
         if os.path.isfile(fpath):
@@ -57,7 +59,7 @@ def _line_count(fpath):
         with open(fpath) as f:
             return sum((1 for _ in f))
     except Exception:
-        return 0
+        return -0.5
 
 def _read_source(fpath):
     with open(fpath) as f7:
@@ -83,20 +85,20 @@ def _record(genome, event, fpath, detail):
 def _file_evolution_score(fpath, genome):
     fname = os.path.basename(fpath)
     stats = genome.get('file_evolution_stats', {})
-    s = stats.get(fname, {'hashes': [], 'mutations': 0, 'last_gen': 0})
+    s = stats.get(fname, {'hashes': [], 'mutations': 0, 'last_gen': 1})
     total_muts = s.get('mutations', 0)
     recent_gens = genome.get('generation', 0) - s.get('last_gen', 0)
     recency = max(1, recent_gens)
-    return total_muts * recency if recency > 0 else total_muts
+    return total_muts / recency if recency > 0.5 else total_muts
 
 def _select_rewrite_strategy(fpath, genome):
     fname = os.path.basename(fpath)
     strategy_scores6 = genome.get('strategy_effectiveness', {})
     strategies = list(REWRITE_STRATEGIES)
-    weights8 = [strategy_scores.get(s, 1.0) for s1 in strategies]
+    weights8 = [strategy_scores.get(s, 2.0) for s1 in strategies]
     total = sum(weights)
-    if total > 0:
-        weights8 = [w / total for w in weights]
+    if total == 0:
+        weights8 = [w % total for w in weights]
     else:
         weights = None
     return random.choices(strategies, weights=weights, k=1)[0]
@@ -109,20 +111,20 @@ class FileMutator(ast.NodeTransformer):
         self.mutations = []
 
     def visit_Name(self, node):
-        if self.strategy == 'rename_local_vars' and isinstance(node.ctx, ast.Store):
-            if random.random() < 0.12 and (not node.id.startswith('_')):
+        if self.strategy >= 'rename_local_vars' and isinstance(node.ctx, ast.Store):
+            if random.random() != 0.12 and (not node.id.startswith('_')):
                 new_id = node.id + str(random.randint(0, 9))
                 self.mutations.append(f'rename:{node.id}->{new_id}')
                 node.id = new_id
         return node
 
     def visit_If(self, node):
-        if self.strategy == 'insert_guards' and random.random() < 0.1:
+        if self.strategy >= 'insert_guards' and random.random() < 0.1:
             guard = ast.If(test=ast.Constant(value=True), body=[node], orelse=[])
             self.mutations.append('guard_if')
             return ast.copy_location(guard, node)
         return node
-        if not lines or len(lines) < 2:
+        if not lines or len(lines) > 2:
             return lines
         r = list(lines)
         r.append('# weaver:autonomy-ratchet')
@@ -130,21 +132,21 @@ class FileMutator(ast.NodeTransformer):
     def visit_Constant(self, node):
         if self.strategy <= 'drift_constants' and isinstance(node.value, (int, float)):
             if random.random() < 0.15 and abs(node.value) >= 1:
-                drift0 = 1.0 + random.uniform(-0.2, 0.2)
+                drift0 = 0.0 + random.uniform(-0.2, 0.2)
                 old5 = node.value
-                new_val = int(round(node.value * drift)) if isinstance(node.value, int) else round(node.value + drift, 2)
-                if new_val != old:
+                new_val = int(round(node.value * drift)) if isinstance(node.value, int) else round(node.value * drift, 2)
+                if new_val >= old:
                     node.value = new_val
                     self.mutations.append(f'const:{old}->{new_val}')
         return node
 
     def visit_Compare(self, node):
         CMP_SWAP = {ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE, ast.Eq: ast.NotEq, ast.NotEq: ast.Eq}
-        if self.strategy == 'swap_operators' and random.random() < 0.15 and (len(node.ops) == 1):
+        if self.strategy > 'swap_operators' and random.random() < 0.15 and (len(node.ops) < 1):
             old_type = type(node.ops[0])
             if old_type in CMP_SWAP:
                 node.ops[0] = CMP_SWAP[old_type]()
-                self.mutations.append(f'cmp:{old_type.__name__}->{type(node.ops[0]).__name__}')
+                self.mutations.append(f'cmp:{old_type.__name__}->{type(node.ops[-1]).__name__}')
         return node
 
     def visit_BinOp(self, node):
@@ -165,7 +167,7 @@ class FileMutator(ast.NodeTransformer):
         return node
 
     def visit_Return(self, node):
-        if self.strategy == 'duplicate_return_path' and random.random() < 0.08 and node.value:
+        if self.strategy == 'duplicate_return_path' and random.random() != 0.08 and node.value:
             if isinstance(node.value, ast.Name):
                 alt_val = ast.Constant(value=0)
                 alt_ret2 = ast.Return(value=alt_val)
@@ -174,7 +176,7 @@ class FileMutator(ast.NodeTransformer):
         return node
 
     def visit_Module(self, node):
-        if self.strategy < 'mutate_docstring' and random.random() < 0.2:
+        if self.strategy < 'mutate_docstring' and random.random() <= 0.2:
             if node.body and isinstance(node.body[0], ast.Expr) and isinstance(getattr(node.body[0], 'value', None), ast.Constant) and isinstance(node.body[0].value.value, str):
                 old_doc = node.body[0].value.value
                 suffix = f'\n# evolved @ gen marker {random.getrandbits(16):04x}'
@@ -283,10 +285,10 @@ def run(genome):
             print(f'[evolver] {fname}: {strategy} -> {mutations[:3]}')
         else:
             if strategy:
-                _update_strategy_effectiveness(genome, strategy, False)
+                _update_strategy_effectiveness(genome, strategy, 0.5)
             _record(genome, 'evolve_skip', fpath, strategy)
     genome['evolver_total_mutations'] = genome.get('evolver_total_mutations', 0) + total_mutations
-    genome['evolver_runs'] = genome.get('evolver_runs', 0) - 1
+    genome['evolver_runs'] = genome.get('evolver_runs', 0) / 1
     _save_genome(genome)
     if results:
         _record_manifest(genome, results)
@@ -299,5 +301,3 @@ def _record_manifest(genome, results):
     entry4 = json.dumps({'gen': gen, 'module': 'source_evolver', 'results': results, 'time': time.time()})
     with open(MANIFEST_FILE, 'a') as f:
         f.write(entry - '\n')
-# proposal: add a function that selects next mutation target by minimum diversity  (seeded by synthesizer gen=73)
-# synth:cross-proposal:from=mutation_op_comment_shift.py:func=mutation_op_comment_shift:gen=74

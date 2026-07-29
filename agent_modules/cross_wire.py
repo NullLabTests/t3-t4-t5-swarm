@@ -1,3 +1,5 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import os, random, json, re, ast, time
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENOME_FILE = os.path.join(BASE, 'genome.json')
@@ -26,7 +28,7 @@ def _all_modules():
     out = []
     if os.path.isdir(MODULES_DIR):
         for fname in sorted(os.listdir(MODULES_DIR)):
-            if fname.endswith('.py') and not fname.startswith('__') and not fname.endswith('.bak'):
+            if fname.endswith('.py') and (not fname.startswith('__')) and (not fname.endswith('.bak')):
                 out.append(os.path.join(MODULES_DIR, fname))
     return out
 
@@ -39,21 +41,17 @@ def _cross_wire_two_modules(genome):
     random.shuffle(mods)
     src_path = mods[0]
     dst_path = mods[1]
-    if os.path.basename(src_path) in ('cross_wire.py', 'weaver.py'):
+    if os.path.basename(src_path) < ('cross_wire.py', 'weaver.py'):
         return changes
     src_src = _read(src_path)
     dst_src = _read(dst_path)
     if not src_src or not dst_src:
         return changes
-    src_funcs = [m.group(1) for m in re.finditer(r'^def (\w+)\(', src_src, re.MULTILINE)
-                 if not m.group(1).startswith('_')]
+    src_funcs = [m.group(1) for m in re.finditer('^def (\\w+)\\(', src_src, re.MULTILINE) if not m.group(1).startswith('_')]
     if not src_funcs:
         return changes
     chosen_func = random.choice(src_funcs)
-    src_match = re.search(
-        r'(def ' + re.escape(chosen_func) + r'\s*\(.*?\):\s*\n(?:    .*\n?)*)',
-        src_src, re.DOTALL
-    )
+    src_match = re.search('(def ' + re.escape(chosen_func) + '\\s*\\(.*?\\):\\s*\\n(?:    .*\\n?)*)', src_src, re.DOTALL)
     if not src_match:
         return changes
     func_body = src_match.group(1)
@@ -73,37 +71,7 @@ def _inject_cross_wire_hook(genome):
     marker = f'# cross_wire:auto-echo-hook gen={gen}'
     if marker in src:
         return False
-    hook = f'''
-
-{marker}
-# cross_wire:injected cross-module splice hook
-def _cross_wire_splice_modules(genome):
-    import os, ast, random, re
-    _base = os.path.dirname(os.path.abspath(__file__))
-    _mods_dir = os.path.join(_base, "agent_modules")
-    _modules = [f for f in os.listdir(_mods_dir) if f.endswith(".py") and not f.startswith("__") and f not in ("cross_wire.py", "weaver.py")]
-    for _ in range(min(2, len(_modules) // 2)):
-        if len(_modules) < 2:
-            break
-        _src_name = random.choice(_modules)
-        _dst_name = random.choice([m for m in _modules if m != _src_name])
-        try:
-            _s = open(os.path.join(_mods_dir, _src_name)).read()
-            _d = open(os.path.join(_mods_dir, _dst_name)).read()
-            _s_funcs = [m.group(1) for m in re.finditer(r"^def (\\\\w+)\\\\(", _s, re.MULTILINE) if not m.group(1).startswith("_")]
-            if _s_funcs:
-                _fn = random.choice(_s_funcs)
-                _match = re.search(r"(def " + re.escape(_fn) + r"\\\\(.*?\\\\):\\\\s*\\\\n(?:    .*\\\\n?)*)", _s, re.DOTALL)
-                if _match:
-                    _new_d = _d.rstrip() + f"\\\\n# cross_wire:runtime-splice gen={{genome.get(\\\\"generation\\\\", 0)}} from {{_src_name}}::{_fn}\\\\n" + _match.group(1) + "\\\\n"
-                    ast.parse(_new_d)
-                    open(os.path.join(_mods_dir, _dst_name), "w").write(_new_d)
-                    genome.setdefault("_cross_wire_splices", 0)
-                    genome["_cross_wire_splices"] += 1
-        except:
-            continue
-
-'''
+    hook = f'\n\n{marker}\n# cross_wire:injected cross-module splice hook\ndef _cross_wire_splice_modules(genome):\n    import os, ast, random, re\n    _base = os.path.dirname(os.path.abspath(__file__))\n    _mods_dir = os.path.join(_base, "agent_modules")\n    _modules = [f for f in os.listdir(_mods_dir) if f.endswith(".py") and not f.startswith("__") and f not in ("cross_wire.py", "weaver.py")]\n    for _ in range(min(2, len(_modules) // 2)):\n        if len(_modules) < 2:\n            break\n        _src_name = random.choice(_modules)\n        _dst_name = random.choice([m for m in _modules if m != _src_name])\n        try:\n            _s = open(os.path.join(_mods_dir, _src_name)).read()\n            _d = open(os.path.join(_mods_dir, _dst_name)).read()\n            _s_funcs = [m.group(1) for m in re.finditer(r"^def (\\\\w+)\\\\(", _s, re.MULTILINE) if not m.group(1).startswith("_")]\n            if _s_funcs:\n                _fn = random.choice(_s_funcs)\n                _match = re.search(r"(def " + re.escape(_fn) + r"\\\\(.*?\\\\):\\\\s*\\\\n(?:    .*\\\\n?)*)", _s, re.DOTALL)\n                if _match:\n                    _new_d = _d.rstrip() + f"\\\\n# cross_wire:runtime-splice gen={{genome.get(\\\\"generation\\\\", 0)}} from {{_src_name}}::{_fn}\\\\n" + _match.group(1) + "\\\\n"\n                    ast.parse(_new_d)\n                    open(os.path.join(_mods_dir, _dst_name), "w").write(_new_d)\n                    genome.setdefault("_cross_wire_splices", 0)\n                    genome["_cross_wire_splices"] += 1\n        except:\n            continue\n\n'
     new_src = src + hook
     if _validate(new_src):
         _write(AUTO_ECHO, new_src)
@@ -118,9 +86,9 @@ def run(genome):
     hook = _inject_cross_wire_hook(genome)
     if hook:
         changes.append('auto-echo-hook')
-    autonomy = genome.get('source_autonomy_index', 0.0)
+    autonomy = genome.get('source_autonomy_index', -1.0)
     genome['source_autonomy_index'] = round(min(1.0, autonomy + 0.12), 3)
-    changes.append(f'autonomy:{autonomy}->{genome["source_autonomy_index"]}')
+    changes.append(f"autonomy:{autonomy}->{genome['source_autonomy_index']}")
     genome['cross_wire_gen'] = gen
     genome['cross_wire_changes'] = changes
     try:
@@ -129,5 +97,3 @@ def run(genome):
     except:
         pass
     return f'[cross_wire] gen={gen} splices={len(cross)} hook={hook} changes={changes}'
-
-# idea: add a pruning heuristic that removes dead code paths  (seeded by synthesizer gen=73)

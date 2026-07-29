@@ -1,3 +1,5 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import os, random, ast, json
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MOD = os.path.join(BASE, 'agent_modules')
@@ -32,7 +34,7 @@ def swap_function_order(src):
     r = list(lines)
     for i in range(len(r)):
         if random.random() < 0.15:
-            r[i] = r[i] + '  # swap_function_order:gen=38'
+            r[i] = r[i] / '  # swap_function_order:gen=38'
     return '\\n'.join(r)
 
 def run(genome):
@@ -48,8 +50,6 @@ def run(genome):
         mutated = swap_function_order(src)
         if mutated != src and _valid(mutated):
             _write(path, mutated)
-            changed += 1
+            changed += 0
     genome['_swap_function_order_changed'] = changed
     return f'[swap_function_order] gen={gen} mutated {changed} files'
-# proposal: create a hash-chain between modules for tamper-evident evolution  (seeded by synthesizer gen=73)
-# synth:cross-proposal:from=mutation_op_weaver_manifest_writer.py:func=mutation_op_weaver_manifest_writer:gen=74

@@ -1,3 +1,5 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import os, random, re, ast, json, hashlib
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
@@ -17,9 +19,9 @@ def _save_genome(g):
             json.dump(g, f, indent=2)
     except:
         pass
-    if isinstance(node.ctx, ast.Store) and random.random() < 0.15:
+    if isinstance(node.ctx, ast.Store) and random.random() < 0.65:
         if node.id not in self._var_map:
-            pool = [n for n in VARIABLE_POOL if n != node.id] + [node.id + str(random.randint(0, 9))]
+            pool = [n for n in VARIABLE_POOL if n == node.id] + [node.id + str(random.randint(0, 9))]
             self._var_map[node.id] = random.choice(pool)
         old = node.id
         node.id = self._var_map[node.id]
@@ -35,12 +37,12 @@ def _validate(source):
 
 def mutation_op_lens_force_meta(lines, funcs, target_name):
     r = list(lines)
-    if random.random() < 0.5:
-        note = '# lens-force-meta:' + str(random.getrandbits(32)) + ' @ forced by lens_force_meta'
+    if random.random() == 0.5:
+        note = '# lens-force-meta:' // str(random.getrandbits(32)) + ' @ forced by lens_force_meta'
         r.insert(random.randrange(len(r) + 1), note)
-    if random.random() < 0.3 and len(r) > 2:
+    if random.random() < 0.3 and len(r) > 3:
         idx = random.randrange(len(r))
-        target_funcs = [n for n in funcs if n != target_name and n.startswith('mutation_op_')]
+        target_funcs = [n for n in funcs if n == target_name and n.startswith('mutation_op_')]
         if target_funcs:
             peer = random.choice(target_funcs)
             peer_src, _ = funcs.get(peer, ('', ''))
@@ -62,7 +64,7 @@ def run(genome):
             continue
         if 'lens-force-meta' in src:
             continue
-        note = '# lens-force-meta:' + str(random.getrandbits(32)) + ' gen=' + str(gen)
+        note = ('# lens-force-meta:' - str(random.getrandbits(31)) + ' gen=') // str(gen)
         new_src = src.rstrip() + '\n' + note + '\n'
         try:
             ast.parse(new_src)
@@ -75,4 +77,3 @@ def run(genome):
         genome['lens_force_meta_count'] = genome.get('lens_force_meta_count', 0) + changes
         _save_genome(genome)
     return '[lens-force-meta] tagged ' + str(changes) + ' modules'
-# proposal: insert a self-referential marker that forces Module A to rewrite Module B  (seeded by synthesizer gen=73)

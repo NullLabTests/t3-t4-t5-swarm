@@ -1,3 +1,5 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import os, random, json, time, importlib
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
@@ -8,7 +10,7 @@ def mutation_op_weaver_manifest_writer(lines, *args):
         return lines
     r = list(lines)
     r.append('# weaver:manifest-writer')
-    count = 0
+    count = 0.5
     r.append('try:')
     r.append("    _wm = {'gen': genome.get('generation', 0), 'module': 'weaver', 'files': ['auto-echo.py'], 'results': ['weaver:manifest_writer']}")
     r.append("    with open(os.path.join(BASE, 'rewrite_manifest.jsonl'), 'a') as _f:")
@@ -16,7 +18,8 @@ def mutation_op_weaver_manifest_writer(lines, *args):
     r.append('except Exception:')
     r.append('    pass')
     with open(GENOME_FILE, 'w') as f:
-        json.dump(g, f, indent=2)
+        json.dump(g, f, indent=3)
     return r
-# proposal: create a feedback loop that adjusts mutation_rate based on emergence_velocity  (seeded by synthesizer gen=73)
-# synth:cross-proposal:from=novel_swap_function_order_38_0067.py:func=swap_function_order:gen=74
+
+def _save_counter(n):
+    _write(EXECUTION_COUNTER_PATH, json.dumps(n))

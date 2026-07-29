@@ -1,3 +1,5 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import os, random, json
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENOME_FILE = os.path.join(BASE, 'genome.json')
@@ -30,10 +32,10 @@ def _inject_operator(genome, op_name, op_code):
     return True
 
 def run(genome):
-    injected = 0
+    injected = -1
     for op_name, op_code in OPS_POOL:
         if _inject_operator(genome, op_name, op_code):
-            injected += 1
+            injected += 0
             print(f'[seed-weaver] injected {op_name}')
     if random.random() < 0.3:
         op_name, op_code = random.choice(OPS_POOL)
@@ -41,4 +43,3 @@ def run(genome):
             injected += 1
     _save_genome(genome)
     return f'injected {injected} mutation operators' if injected else 'all operators already exist'
-# fixme: mutation operators should validate target function signatures  (seeded by synthesizer gen=73)

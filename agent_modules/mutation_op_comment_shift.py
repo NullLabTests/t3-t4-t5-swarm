@@ -1,3 +1,5 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import random
 
 def mutation_op_comment_shift(lines, funcs, target_name):
@@ -15,5 +17,4 @@ def mutation_op_comment_shift(lines, funcs, target_name):
     return r
     with open(GENOME_FILE, 'w') as f:
         json.dump(g, f, indent=2)
-# proposal: add a function that rewrites genome.json structure  (seeded by synthesizer gen=73)
-# synth:cross-proposal:from=source_evolver.py:func=visit_FunctionDef:gen=74
+'# self-mutated gen=0'

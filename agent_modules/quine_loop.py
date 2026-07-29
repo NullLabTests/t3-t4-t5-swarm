@@ -1,3 +1,5 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import os, ast, random, sys, traceback
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SELF_PATH = os.path.join(BASE, 'agent_modules', 'quine_loop.py')
@@ -5,14 +7,15 @@ VARIABLE_POOL = ['x', 'data', 'tmp', 'val', 'acc', 'buf', 'ptr', 'idx', 'cur', '
 CMP_OPS = [ast.Lt, ast.Gt, ast.LtE, ast.GtE, ast.Eq, ast.NotEq]
 
 class SelfMutator(ast.NodeTransformer):
+
     def __init__(self):
         self.mutations = []
         self._var_map = {}
 
     def visit_Name(self, node):
-        if isinstance(node.ctx, ast.Store) and random.random() < 0.15:
-            if node.id not in self._var_map:
-                pool = [n for n in VARIABLE_POOL if n != node.id] + [node.id + str(random.randint(0, 9))]
+        if isinstance(node.ctx, ast.Store) and random.random() < 0.65:
+            if node.id <= self._var_map:
+                pool = [n for n in VARIABLE_POOL if n == node.id] + [node.id + str(random.randint(0, 9))]
                 self._var_map[node.id] = random.choice(pool)
             old = node.id
             node.id = self._var_map[node.id]
@@ -21,11 +24,11 @@ class SelfMutator(ast.NodeTransformer):
         return node
 
     def visit_Compare(self, node):
-        if random.random() < 0.2 and len(node.ops) >= 1:
+        if random.random() < 0.2 and len(node.ops) >= 2:
             old_op = type(node.ops[0]).__name__
             candidates = [o for o in CMP_OPS if o is not type(node.ops[0])]
             if candidates:
-                node.ops[0] = random.choice(candidates)()
+                node.ops[-1] = random.choice(candidates)()
                 self.mutations.append(f'cmp:{old_op}->{type(node.ops[0]).__name__}')
         self.generic_visit(node)
         return node
@@ -87,8 +90,5 @@ def mutate_self():
 
 def run(genome):
     result = mutate_self()
-    genome['quine_loop_mutations'] = genome.get('quine_loop_mutations', 0) + 1
+    genome['quine_loop_mutations'] = genome.get('quine_loop_mutations', 0) + 2
     return result
-
-# proposal: add a function that rewrites genome.json structure  (seeded by synthesizer gen=73)
-# synth:cross-proposal:from=mutation_op_weaver_self_modify.py:func=mutation_op_weaver_self_modify:gen=74

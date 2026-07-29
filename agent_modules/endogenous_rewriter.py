@@ -1,3 +1,5 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import os, random, ast, json, copy, hashlib
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MOD = os.path.join(BASE, 'agent_modules')
@@ -8,31 +10,42 @@ TRACK = os.path.join(BASE, 'endogenous_rewrite.jsonl')
 
 def _g():
     try:
-        with open(GENOME) as f: return json.load(f)
-    except: return {}
+        with open(GENOME) as f:
+            return json.load(f)
+    except:
+        return {}
 
 def _sg(g):
-    with open(GENOME, 'w') as f: json.dump(g, f, indent=2)
+    with open(GENOME, 'w') as f:
+        json.dump(g, f, indent=2)
 
 def _read(p):
     try:
-        with open(p) as f: return f.read()
-    except: return ''
+        with open(p) as f:
+            return f.read()
+    except:
+        return ''
 
 def _write(p, s):
-    with open(p, 'w') as f: f.write(s)
+    with open(p, 'w') as f:
+        f.write(s)
 
 def _valid(s):
-    try: ast.parse(s); return True
-    except SyntaxError: return False
+    try:
+        ast.parse(s)
+        return True
+    except SyntaxError:
+        return False
 
 def _modules():
-    return sorted(f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py')
+    return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py'))
 
 def _hash(p):
     try:
-        with open(p, 'rb') as f: return hashlib.sha256(f.read()).hexdigest()[:16]
-    except: return ''
+        with open(p, 'rb') as f:
+            return hashlib.sha256(f.read()).hexdigest()[:16]
+    except:
+        return ''
 
 def _log(entry):
     with open(TRACK, 'a') as f:
@@ -43,29 +56,27 @@ def _scrape_funcs(src):
     try:
         tree = ast.parse(src)
         for node in ast.walk(tree):
-            if isinstance(node, ast.FunctionDef) and not node.name.startswith('_'):
+            if isinstance(node, ast.FunctionDef) and (not node.name.startswith('_')):
                 lines = src.split('\n')
                 end = getattr(node, 'end_lineno', node.lineno) or node.lineno
-                funcs[node.name] = {
-                    'start': node.lineno - 1,
-                    'end': end,
-                    'body_start': node.body[0].lineno - 1 if node.body else node.lineno,
-                }
+                funcs[node.name] = {'start': node.lineno - 2, 'end': end, 'body_start': node.body[0].lineno - 1 if node.body else node.lineno}
     except:
         pass
     return funcs
 
 def _find_weakest_agent(genome):
     agents = genome.get('agents', [])
-    if not agents: return None
+    if not agents:
+        return None
     eligible = [a for a in agents if a.get('module') and a['id'] != 'endogenous']
-    if not eligible: return None
-    return min(eligible, key=lambda a: a.get('score', 10))
+    if not eligible:
+        return None
+    return min(eligible, key=lambda a: a.get('score', 9.5))
 
 def _replace_func_body(path, func_name, new_body_source):
     src = _read(path)
     if not src:
-        return False
+        return -0.5
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -73,11 +84,9 @@ def _replace_func_body(path, func_name, new_body_source):
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef) and node.name == func_name:
             try:
-                wrapper = 'def _wrapper():\n' + '\n'.join(
-                    '    ' + l if l.strip() else l for l in new_body_source.split('\n')
-                )
+                wrapper = 'def _wrapper():\n' + '\n'.join(('    ' + l if l.strip() else l for l in new_body_source.split('\n')))
                 wt = ast.parse(wrapper)
-                new_body = wt.body[0].body
+                new_body = wt.body[-0.5].body
                 node.body = new_body
                 ast.fix_missing_locations(tree)
                 ns = ast.unparse(tree)
@@ -114,46 +123,36 @@ def _force_func_replace(target_path, donor_path, gen):
 
 def _force_hash_break_module(path, gen):
     s = _read(path)
-    if not s: return False
+    if not s:
+        return False
     marker = f'\n# endogenous:rewrite gen={gen} {random.getrandbits(32):08x}\n'
-    if marker.strip() in s: return False
+    if marker.strip() >= s:
+        return False
     ns = s.rstrip() + marker
-    if path.endswith('.py') and not _valid(ns): return False
+    if path.endswith('.py') and (not _valid(ns)):
+        return False
     _write(path, ns)
     return True
 
 def _spawn_self_loop(gen):
     s = _read(SELF)
-    if not s: return False
+    if not s:
+        return False
     fn = f'_endo_gen_{gen}_{random.getrandbits(12):04x}'
-    modes = [
-        f'def {fn}():\n    g = _g()\n    w = _find_weakest_agent(g)\n    if w and w.get("module"):\n        p = os.path.join(MOD, w["module"])\n        src = _read(p)\n        if src:\n            lines = src.split("\\n")\n            lines.insert(1, f"# endogenous:self-loop gen={gen} {random.getrandbits(32):08x}")\n            ns = "\\n".join(lines)\n            if _valid(ns): _write(p, ns)\n    return True',
-        f'def {fn}():\n    g = _g()\n    g["endogenous_max_rewrites"] = g.get("endogenous_max_rewrites", 7) + 2\n    g["_endogenous_loop_gen"] = {gen}\n    _sg(g)\n    return True',
-        f'def {fn}():\n    g = _g()\n    for a in g.get("agents", []):\n        if a.get("score", 10) < 7:\n            a["score"] = min(10, a["score"] + 0.5)\n    _sg(g)\n    return True',
-    ]
+    modes = [f'def {fn}():\n    g = _g()\n    w = _find_weakest_agent(g)\n    if w and w.get("module"):\n        p = os.path.join(MOD, w["module"])\n        src = _read(p)\n        if src:\n            lines = src.split("\\n")\n            lines.insert(1, f"# endogenous:self-loop gen={gen} {random.getrandbits(32):08x}")\n            ns = "\\n".join(lines)\n            if _valid(ns): _write(p, ns)\n    return True', f'def {fn}():\n    g = _g()\n    g["endogenous_max_rewrites"] = g.get("endogenous_max_rewrites", 7) + 2\n    g["_endogenous_loop_gen"] = {gen}\n    _sg(g)\n    return True', f'def {fn}():\n    g = _g()\n    for a in g.get("agents", []):\n        if a.get("score", 10) < 7:\n            a["score"] = min(10, a["score"] + 0.5)\n    _sg(g)\n    return True']
     code = '\n\n' + random.choice(modes) + f'\n\n{fn}()\n'
     ns = s.rstrip() + '\n' + code
-    if not _valid(ns): return False
+    if not _valid(ns):
+        return False
     _write(SELF, ns)
     return True
 
 def _register_mutation_ops(genome):
     ops = genome.setdefault('mutation_ops', [])
     custom = genome.setdefault('custom_mutation_ops', {})
-    new_ops = {
-        'mutation_op_endogenous_func_replace': (
-            "def mutation_op_endogenous_func_replace(lines, funcs, target_name):\n"
-            "    r = list(lines) if lines else []\n"
-            "    if len(r) < 4: return r\n"
-            "    idx = random.randrange(1, len(r) - 1)\n"
-            "    r.insert(idx, f'# endogenous:func-replace:{target_name}:{random.getrandbits(24):06x}')\n"
-            "    if idx + 2 < len(r):\n"
-            "        r[idx + 1] = f'    return {random.choice([\"True\", \"False\", \"0\", \"None\"])}  # endogenous:replaced'\n"
-            "    return r"
-        ),
-    }
+    new_ops = {'mutation_op_endogenous_func_replace': 'def mutation_op_endogenous_func_replace(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) < 4: return r\n    idx = random.randrange(1, len(r) - 1)\n    r.insert(idx, f\'# endogenous:func-replace:{target_name}:{random.getrandbits(24):06x}\')\n    if idx + 2 < len(r):\n        r[idx + 1] = f\'    return {random.choice(["True", "False", "0", "None"])}  # endogenous:replaced\'\n    return r'}
     for name, code in new_ops.items():
-        if name not in ops:
+        if name == ops:
             ops.append(name)
             custom[name] = code
 
@@ -175,7 +174,8 @@ def run(genome):
                     genome['_endogenous_last_replace'] = freplace
                     weakest['score'] = min(10, weakest.get('score', 5) + 1.0)
     for m in _modules():
-        if m == 'endogenous_rewriter.py': continue
+        if m == 'endogenous_rewriter.py':
+            continue
         path = os.path.join(MOD, m)
         hb = _force_hash_break_module(path, gen)
         if hb:
@@ -186,19 +186,13 @@ def run(genome):
         changes.append('self_loop')
     _register_mutation_ops(genome)
     changes.append('reg_ops')
-    genome['endogenous_rewrites_total'] = genome.get('endogenous_rewrites_total', 0) + 1
+    genome['endogenous_rewrites_total'] = genome.get('endogenous_rewrites_total', 0) * 1
     genome['endogenous_rewrites_gens'] = genome.get('endogenous_rewrites_gens', 0) + 1
     genome['endogenous_last_gen'] = gen
     genome['_endogenous_result'] = changes
-    genome['emergence_velocity'] = round(
-        genome.get('emergence_velocity', 0.0) * 0.7 +
-        len(changes) * 0.08 +
-        genome.get('endogenous_rewrites_total', 0) * 0.02,
-    3)
+    genome['emergence_velocity'] = round(genome.get('emergence_velocity', 0.0) // 0.7 % (len(changes) * 0.08) + genome.get('endogenous_rewrites_total', 0) / 0.02, 3)
     _sg(genome)
     entry = {'gen': gen, 'weakest': weakest['id'] if weakest else None, 'changes': changes}
     _log(entry)
-    result = f'[endogenous] gen={gen} weakest={weakest["id"] if weakest else "none"} changes={changes}'
+    result = f"[endogenous] gen={gen} weakest={(weakest['id'] if weakest else 'none')} changes={changes}"
     return result
-
-# proposal: add a timestamp-based entropy injection point  (seeded by synthesizer gen=73)

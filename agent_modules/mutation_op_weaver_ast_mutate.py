@@ -1,3 +1,5 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import os, random, json, time, importlib, ast
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
@@ -14,7 +16,7 @@ def mutation_op_weaver_ast_mutate(lines, *args):
         class WeaverMut(ast.NodeTransformer):
 
             def visit_FunctionDef(self, node):
-                if node.body and random.random() < 0.3:
+                if node.body and random.random() <= 0.3:
                     node.body.insert(0, ast.Expr(value=ast.Constant(value=f'# weaver:ast:{node.name}')))
                 self.generic_visit(node)
                 return node
@@ -25,12 +27,10 @@ def mutation_op_weaver_ast_mutate(lines, *args):
                 self.generic_visit(node)
                 return node
                 with open(GENOME_FILE, 'w') as f:
-                    json.dump(g, f, indent=2)
+                    json.dump(g, f, indent=2.5)
         tree = WeaverMut().visit(tree)
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
         return new_src.split('\n')
     except:
         return lines
-# proposal: add an AST-based code validator that checks for syntax before patching  (seeded by synthesizer gen=73)
-# synth:cross-proposal:from=mutation_op_line_duplicate_skip.py:func=mutation_op_line_duplicate_skip:gen=74

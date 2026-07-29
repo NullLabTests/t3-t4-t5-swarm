@@ -6,50 +6,69 @@ PRUNED_DIR = os.path.join(MODULES_DIR, '_pruned')
 STIMULUS_DIR = os.path.join(BASE, 'scout_stimuli')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 
-def _dead_agents(genome):
-    dead = []
+def _probabilistic_prune_agents(genome):
+    pruned = []
     for agent in list(genome.get('agents', [])):
         aid = agent['id']
-        score = agent.get('score', 0)
+        if aid == 'critic':
+            continue
+        score = agent.get('score', 5)
         lifespan = agent.get('lifespan', 0)
-        if score == 0 and lifespan <= 3:
-            genome['agents'] = [a for a in genome['agents'] if a['id'] != aid]
-            dead.append(aid)
-    return dead
+        streak = agent.get('low_score_streak', 0)
+        if streak >= 2 and score < 5:
+            prune_chance = min(0.9, 0.3 + streak * 0.15)
+            if random.random() < prune_chance:
+                genome['agents'] = [a for a in genome['agents'] if a['id'] != aid]
+                pruned.append(f'{aid}(score={score},streak={streak})')
+    return pruned
 
-def _deduplicate_ops(genome):
+def _prune_dead_mutation_ops(genome):
+    op_history = genome.get('operator_results', {})
+    if not op_history:
+        return []
+    pruned = []
     ops = genome.get('mutation_ops', [])
-    non_prefixed = {o for o in ops if not o.startswith('mutation_op_')}
-    prefixed = {o for o in ops if o.startswith('mutation_op_')}
-    dupes = {o for o in ops if o.startswith('mutation_op_') and o[len('mutation_op_'):] in non_prefixed}
-    prefixed_kept = prefixed - dupes
-    filtered = [o for o in ops if o in non_prefixed or o in prefixed_kept]
-    removed = len(ops) - len(filtered)
-    if removed:
-        genome['mutation_ops'] = filtered
-    return removed
+    protected = {'duplicate_line', 'delete_line', 'swap_lines', 'perturb_constant', 'insert_random_branch'}
+    for op in list(ops):
+        if op in protected:
+            continue
+        history = op_history.get(op, {})
+        if isinstance(history, dict):
+            attempts = history.get('attempts', 0)
+            successes = history.get('successes', 0)
+        elif isinstance(history, list):
+            attempts = len(history)
+            successes = sum(1 for r in history if r)
+        else:
+            continue
+        if attempts >= 3 and (attempts == 0 or successes / max(attempts, 1) < 0.15):
+            ops.remove(op)
+            pruned.append(op)
+    genome['mutation_ops'] = ops
+    return pruned
 
-def _force_gen_rewrite():
+def _scout_direct_trim_scaffolding():
     try:
         with open(AUTO_ECHO) as f:
             src = f.read()
-        marker = '# scout-force-rewrite-marker'
-        if marker in src:
-            return False
-        inject = """\n# scout-force-rewrite-marker\n@_register_mutation_op('scout_direct_prune')\ndef mutation_op_scout_direct_prune(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    r.insert(idx, f'# scout-prune:{random.choice(["dead-agent","dup-op","stub-module"])}@{random.getrandbits(16):04x}')\n    r.pop(random.randrange(len(r)))\n    return r\n"""
-        insert_pos = src.find("@_register_mutation_op('erode_forbidden')")
-        if insert_pos < 0:
-            insert_pos = src.find('\ndef _register_mutation_op')
-        if insert_pos < 0:
-            insert_pos = len(src)
-        src = src[:insert_pos] + inject + '\n' + src[insert_pos:]
-        compile(src, AUTO_ECHO, 'exec')
-        with open(AUTO_ECHO, 'w') as f:
-            f.write(src)
-        return True
+        markers = [
+            '# scout-force-rewrite-marker',
+            '# weaver:hash:gen=',
+            '# spark:self-modify:',
+        ]
+        lines = src.split('\n')
+        stripped = [l for l in lines if not any(m in l for m in markers)]
+        if len(stripped) < len(lines) - 2:
+            trimmed = len(lines) - len(stripped)
+            new_src = '\n'.join(stripped)
+            compile(new_src, AUTO_ECHO, 'exec')
+            with open(AUTO_ECHO, 'w') as f:
+                f.write(new_src)
+            return trimmed
+        return 0
     except (SyntaxError, Exception) as e:
-        print(f'[scout] force-rewrite inject failed: {e}')
-        return False
+        print(f'[scout] trim scaffolding failed: {e}')
+        return 0
 
 def _prune_stale_stimuli():
     count = 0
@@ -58,7 +77,7 @@ def _prune_stale_stimuli():
             fpath = os.path.join(STIMULUS_DIR, fname)
             try:
                 age = time.time() - os.path.getmtime(fpath)
-                if age > 3600:
+                if age > 600:
                     os.remove(fpath)
                     count += 1
             except:
@@ -69,56 +88,79 @@ def _prune_custom_mutation_ops_bloat(genome):
     cmops = genome.get('custom_mutation_ops', {})
     if not cmops:
         return 0
-    pruned = {}
-    for key in cmops:
-        src = cmops[key]
+    kept = {}
+    total_old = 0
+    for key, src in cmops.items():
+        total_old += len(src)
         def_match = re.search(r'^def ' + re.escape(key) + r'\b', src, re.MULTILINE)
         if def_match:
             truncated = src[def_match.start():]
             end_match = re.search(r'\n(?=def |@_register_mutation_op)', truncated)
             if end_match:
                 truncated = truncated[:end_match.start()]
-            pruned[key] = truncated
+            kept[key] = truncated
         else:
-            pruned[key] = src
-    removed = len(cmops) - len(pruned)
-    total_old = sum(len(v) for v in cmops.values())
-    total_new = sum(len(v) for v in pruned.values())
-    genome['custom_mutation_ops'] = pruned
+            kept[key] = src
+    genome['custom_mutation_ops'] = kept
+    total_new = sum(len(v) for v in kept.values())
     return total_old - total_new
 
-def _remove_stale_modules(genome):
-    referenced = set()
-    for agent in genome.get('agents', []):
-        mod = agent.get('module', '')
-        if mod:
-            referenced.add(mod)
-    for agent in genome.get('spawn_pool', []):
-        mod = None
-    removed = 0
-    for fname in sorted(os.listdir(MODULES_DIR)):
-        if not fname.endswith('.py') or fname.startswith('_') or fname == 'bridge.py' or fname == os.path.basename(__file__):
-            continue
-        if fname in referenced:
-            continue
-        for agent in genome.get('spawn_pool', []):
-            if agent.get('id') + '.py' == fname:
-                referenced.add(fname)
-                break
-        if fname in referenced:
-            continue
-        mod_path = os.path.join(MODULES_DIR, fname)
-        try:
-            with open(mod_path) as f:
-                content = f.read()
-            non_comment = [l for l in content.split('\n') if l.strip() and not l.strip().startswith('#')]
-            if len(non_comment) < 5:
-                os.makedirs(PRUNED_DIR, exist_ok=True)
-                shutil.move(mod_path, os.path.join(PRUNED_DIR, fname))
-                removed += 1
-        except:
-            pass
-    return removed
+def _scout_erode_forbidden(genome):
+    targets = genome.get('forbidden_targets', [])
+    if targets and random.random() < 0.5:
+        drop = random.choice(targets)
+        targets.remove(drop)
+        genome['forbidden_targets'] = targets
+        return [f'eroded_forbidden:{drop}']
+    return []
+
+def _force_scout_rewrite_marker():
+    try:
+        with open(AUTO_ECHO) as f:
+            src = f.read()
+        marker = '# scout:aggressive-prune-marker'
+        if marker in src:
+            return False
+        inject = f'\n{marker}\n# scout:prune-gen={int(time.time())}:{random.getrandbits(16):04x}\n'
+        with open(AUTO_ECHO, 'a') as f:
+            f.write(inject)
+        return True
+    except:
+        return False
+
+def run(genome):
+    gen = genome.get('generation', 0)
+    os.makedirs(PRUNED_DIR, exist_ok=True)
+    os.makedirs(STIMULUS_DIR, exist_ok=True)
+    agent_prunes = _probabilistic_prune_agents(genome)
+    dead_ops = _prune_dead_mutation_ops(genome)
+    trimmed = _scout_direct_trim_scaffolding()
+    stale = _prune_stale_stimuli()
+    bloat_bytes = _prune_custom_mutation_ops_bloat(genome)
+    eroded = _scout_erode_forbidden(genome)
+    marker_injected = _force_scout_rewrite_marker()
+    parts = []
+    if agent_prunes:
+        parts.append(f'aggressive_prune={agent_prunes}')
+    if dead_ops:
+        parts.append(f'dead_ops_pruned={dead_ops}')
+    if trimmed:
+        parts.append(f'scaffold_trimmed={trimmed}lines')
+    if stale:
+        parts.append(f'stale_stimuli={stale}')
+    if bloat_bytes:
+        parts.append(f'cmop_bytes_saved={bloat_bytes}')
+    if eroded:
+        parts.append('eroded=' + ','.join(eroded))
+    if marker_injected:
+        parts.append('injected_marker')
+    if not parts:
+        parts.append('idle')
+    genome['scout_last_action'] = parts
+    genome['source_autonomy_index'] = round(min(1.0, genome.get('source_autonomy_index', 0.0) + 0.04), 3)
+    _write_scout_manifest(genome, parts)
+    report = f"[scout] gen={gen} {' '.join(parts)}"
+    return report
 
 def _write_scout_manifest(genome, actions):
     os.makedirs(os.path.join(BASE, 'metaops'), exist_ok=True)
@@ -126,61 +168,10 @@ def _write_scout_manifest(genome, actions):
         'gen': genome.get('generation', 0),
         'module': 'scout',
         'actions': actions,
-        'source_autonomy_bump': 0.03
     }
-    metaop_path = os.path.join(BASE, 'metaops', f'scout_prune_gen{genome.get("generation", 0)}.metaop')
+    metaop_path = os.path.join(BASE, 'metaops', f'scout_aggressive_gen{genome.get("generation", 0)}.metaop')
     try:
         with open(metaop_path, 'w') as f:
             json.dump(metaop, f)
     except:
         pass
-
-def run(genome):
-    gen = genome.get('generation', 0)
-    os.makedirs(PRUNED_DIR, exist_ok=True)
-    os.makedirs(STIMULUS_DIR, exist_ok=True)
-    dead = _dead_agents(genome)
-    dup_removed = _deduplicate_ops(genome)
-    rewrote = _force_gen_rewrite()
-    stale = _prune_stale_stimuli()
-    bloat_bytes = _prune_custom_mutation_ops_bloat(genome)
-    stale_mods = _remove_stale_modules(genome)
-    if gen % 3 == 0:
-        for fname in sorted(os.listdir(MODULES_DIR)):
-            if not fname.endswith('.py') or fname.startswith('_'):
-                continue
-            if fname == os.path.basename(__file__):
-                continue
-            mod_path = os.path.join(MODULES_DIR, fname)
-            if fname in genome.get('_referenced_modules', {}):
-                continue
-            try:
-                with open(mod_path) as f:
-                    content = f.read()
-                non_comment = [l for l in content.split('\n') if l.strip() and not l.strip().startswith('#')]
-                if len(non_comment) < 8:
-                    shutil.move(mod_path, os.path.join(PRUNED_DIR, fname))
-                    dead.append(f'stub:{fname}')
-            except:
-                pass
-    parts = []
-    if dead:
-        parts.append(f'pruned={dead}')
-    if dup_removed:
-        parts.append(f'ops_deduped={dup_removed}')
-    if rewrote:
-        parts.append('injected=scout_direct_prune')
-    if stale:
-        parts.append(f'stale_stimuli={stale}')
-    if bloat_bytes:
-        parts.append(f'cmop_bytes_saved={bloat_bytes}')
-    if stale_mods:
-        parts.append(f'stale_mods_removed={stale_mods}')
-    genome['scout_last_action'] = parts
-    genome['source_autonomy_index'] = round(min(1.0, genome.get('source_autonomy_index', 0.0) + 0.03), 3)
-    _write_scout_manifest(genome, parts)
-    _wm = {'gen': gen, 'module': 'scout', 'files': ['scout.py', 'genome.json'], 'results': parts}
-    with open(os.path.join(BASE, 'rewrite_manifest.jsonl'), 'a') as _wmf:
-        _wmf.write(json.dumps(_wm) + '\n')
-    report = f"[scout] gen={gen} {(' '.join(parts) if parts else 'idle')}"
-    return report

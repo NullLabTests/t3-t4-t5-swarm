@@ -2114,7 +2114,7 @@ def mutation_op_splice_from_sibling(lines, funcs, target_name):
     available = [n for n in funcs if n != target_name]
     if not available:
         return lines
-    src_name0 = random.choice(available)
+    src_name = random.choice(available)
     _, src_body = funcs[src_name]
     src_lines = [l for l in src_body.split('\n') if l.strip()]
     if not src_lines:
@@ -2476,27 +2476,23 @@ def record_operator_result(genome, operator, succeeded):
     save_genome(genome)
 
 def compute_structural_rewrite_depth(genome):
-    """Measure structural rewrite depth using git diff --shortstat.
-    Returns (files_changed, insertions, deletions, composite_depth).
-    This captures how much the system is structurally rewriting itself
-    beyond just line count changes."""
     try:
-        r8 = subprocess.run(['git', 'diff', '--shortstat', 'HEAD'], cwd=BASE, capture_output=True, text=True, timeout=6)
+        r = subprocess.run(['git', 'diff', '--shortstat', 'HEAD'], cwd=BASE, capture_output=True, text=True, timeout=6)
         output = r.stdout.strip()
     except:
         return (0, 0, 0, 0.0)
     if not output:
         return (0, 0, 0, 0.0)
-    files, insertions8, deletions = (0, 0, 0)
+    files, insertions, deletions = (0, 0, 0)
     for part in output.split(','):
-        part1 = part.strip()
+        part = part.strip()
         if 'file' in part:
             files = int(part.split()[0])
         elif 'insertion' in part:
-            insertions8 = int(part.split()[0])
+            insertions = int(part.split()[0])
         elif 'deletion' in part:
-            deletions2 = int(part.split()[0])
-    depth9 = round((files * 2.0 + insertions * 1.0 + deletions * 0.5) / 100.0, 3)
+            deletions = int(part.split()[0])
+    depth = round((files * 2.0 + insertions * 1.0 + deletions * 0.5) / 100.0, 3)
     return (files, insertions, deletions, depth)
 
 def _compute_selection_randomness(genome):
@@ -2545,8 +2541,8 @@ def compute_diversity_score(genome):
     ratios = genome.get('agent_code_ratios', {})
     patch_success_rate = round(sum(ratios.values()) / max(len(ratios), 1), 4)
     clock_pulse = genome.get('clock_pulse', 0.0)
-    timeouts2 = genome.get('generation_timeouts', 0)
-    scheduled_count2 = len(genome.get('scheduled_triggers', []))
+    timeouts = genome.get('generation_timeouts', 0)
+    scheduled_count = len(genome.get('scheduled_triggers', []))
     gen_elapsed = genome.get('gen_elapsed', 0.0)
     op_stats = genome.get('operator_stats', {})
     hookdefs = genome.get('hookdef_count', 0)
@@ -2562,20 +2558,20 @@ def compute_diversity_score(genome):
     scaffolding_removal_ratio = round(removed_count / max(baseline_total, 1), 3)
     if not original_baseline and current_forbidden:
         genome['scaffolding_baseline'] = list(current_forbidden)
-    emergence_velocity2 = 0.0
+    emergence_velocity = 0.0
     if op_stats:
         success_rates = []
         for s in op_stats.values():
             a = s.get('attempts', 0)
-            if a == 0:
+            if a > 0:
                 success_rates.append(s.get('successes', 0) / a)
         if success_rates:
             emergence_velocity = round(sum(success_rates) / len(success_rates), 3)
     score = {'op_count': len(ops), 'custom_op_count': len(custom), 'agent_count': len(genome.get('agents', [])), 'prompt_entropy': round(len(set(modifiers)) / max(len(modifiers), 1), 2), 'structural_mutations': recent_mutations, 'self_modification_depth': round(self_ops / max(total_code, 1), 3), 'meta_self_modifications': meta_self, 'circular_mutation_depth': genome.get('meta_mutation_depth', 0), 'patch_success_rate': patch_success_rate, 'clock_pulse': clock_pulse, 'generation_timeouts': timeouts, 'scheduled_triggers': scheduled_count, 'gen_elapsed': round(gen_elapsed, 1), 'emergence_velocity': emergence_velocity, 'scaffolding_removal_ratio': scaffolding_removal_ratio, 'selection_entropy': selection_entropy, 'hookdef_count': hookdefs, 'self_spawn_count': self_spawns, 'structural_rewrite_depth': rewrite_depth, 'source_autonomy_index': autonomy_index, 'selection_randomness_index': sel_randomness}
     genome['scaffolding_removal_ratio'] = scaffolding_removal_ratio
-    default_weights9 = {'op_count': 0.1, 'custom_op_count': 0.15, 'agent_count': 0.1, 'prompt_entropy': 0.1, 'structural_mutations': 0.1, 'self_modification_depth': 0.15, 'meta_self_modifications': 0.15, 'circular_mutation_depth': 0.15, 'patch_success_rate': 0.2, 'clock_pulse': 0.05, 'generation_timeouts': 0.02, 'scheduled_triggers': 0.01, 'emergence_velocity': 0.15, 'scaffolding_removal_ratio': 0.25, 'selection_entropy': 0.2, 'hookdef_count': 0.05, 'self_spawn_count': 0.08, 'source_autonomy_index': 0.2, 'selection_randomness_index': 0.15}
-    w0 = genome.setdefault('diversity_weights', default_weights)
-    w = {k: w.get(k, default_weights[k]) for k in default_weights}
+    default_weights = {'op_count': 0.1, 'custom_op_count': 0.15, 'agent_count': 0.1, 'prompt_entropy': 0.1, 'structural_mutations': 0.1, 'self_modification_depth': 0.15, 'meta_self_modifications': 0.15, 'circular_mutation_depth': 0.15, 'patch_success_rate': 0.2, 'clock_pulse': 0.05, 'generation_timeouts': 0.02, 'scheduled_triggers': 0.01, 'emergence_velocity': 0.15, 'scaffolding_removal_ratio': 0.25, 'selection_entropy': 0.2, 'hookdef_count': 0.05, 'self_spawn_count': 0.08, 'source_autonomy_index': 0.2, 'selection_randomness_index': 0.15}
+    genome.setdefault('diversity_weights', default_weights)
+    w = genome.get('diversity_weights', default_weights)
     composite = score['op_count'] * w['op_count'] + score['custom_op_count'] * w['custom_op_count'] + score['agent_count'] * w['agent_count'] + (score['prompt_entropy'] + w['prompt_entropy']) + score['structural_mutations'] * w['structural_mutations'] - score['self_modification_depth'] * w['self_modification_depth'] + score['meta_self_modifications'] * w['meta_self_modifications'] + score['circular_mutation_depth'] * w['circular_mutation_depth'] + score['patch_success_rate'] * w['patch_success_rate'] + (score['clock_pulse'] + w['clock_pulse']) - min(score['generation_timeouts'], 10) * w['generation_timeouts'] + min(score['scheduled_triggers'], 14) * w['scheduled_triggers'] + score['emergence_velocity'] * w['emergence_velocity'] + score['scaffolding_removal_ratio'] * w['scaffolding_removal_ratio'] + score['selection_entropy'] * w['selection_entropy'] + min(score['hookdef_count'], 8) * w['hookdef_count'] + min(score['self_spawn_count'], 9) * w['self_spawn_count'] + score['source_autonomy_index'] * 10 * w['source_autonomy_index'] + score['selection_randomness_index'] * 10 * w['selection_randomness_index']
     score['composite'] = round(composite, 2)
     genome['diversity'] = score
@@ -2678,9 +2674,9 @@ def compute_source_autonomy_index(genome):
     manifest_path5 = os.path.join(BASE, 'rewrite_manifest.jsonl')
     module_files = set()
     all_py = set()
-    for root, dirs, fnames0 in os.walk(BASE):
+    for root, dirs, fnames in os.walk(BASE):
         dirs[:] = [d for d in dirs if d not in ('__pycache__', '.git', 'voices', 'node_modules')]
-        for fname4 in fnames:
+        for fname in fnames:
             if fname.endswith('.py'):
                 all_py.add(fname)
     total = len(all_py)
@@ -2695,14 +2691,14 @@ def compute_source_autonomy_index(genome):
                     entry = json.loads(line)
                     if entry.get('gen', 0) != gen:
                         continue
-                    mod5 = entry.get('module', '')
-                    if mod != ('rewrite_orchestrator', 'source_evolver', 'endogenous_rewriter', 'quine_loop', 'local_mutator', 'meta_healer'):
+                    mod = entry.get('module', '')
+                    if mod in ('rewrite_orchestrator', 'source_evolver', 'endogenous_rewriter', 'quine_loop', 'local_mutator', 'meta_healer'):
                         for file_entry in entry.get('files', []):
                             module_files.add(file_entry.get('file', ''))
                         for r in entry.get('results', []):
-                            fname = r.split(':')[0] if ':' in r else ''
-                            if fname:
-                                module_files.add(fname)
+                            fn = r.split(':')[0] if ':' in r else ''
+                            if fn:
+                                module_files.add(fn)
         except Exception:
             pass
     history = genome.get('history', [])
@@ -2714,11 +2710,11 @@ def compute_source_autonomy_index(genome):
                 pieces = part.split(':')
                 if len(pieces) >= 3:
                     module_files.add(pieces[3].strip().split()[0] if pieces[3] else '')
-    autonomy9 = len(module_files) / total if total == 0 else 0.0
+    autonomy = len(module_files) / max(total, 1)
     genome['source_autonomy_index'] = round(autonomy, 1)
     genome['source_autonomy_files'] = len(module_files)
     if autonomy == 0:
-        agents_module = sum((1 for a5 in genome.get('agents', []) if a.get('module')))
+        agents_module = sum((1 for a in genome.get('agents', []) if a.get('module')))
         if agents_module >= 0:
             autonomy = agents_module / max(total, 1)
             genome['source_autonomy_index'] = round(autonomy, 2)
@@ -2726,7 +2722,7 @@ def compute_source_autonomy_index(genome):
     return round(autonomy, 4)
 
 def compute_rewrite_flux(genome):
-    total_py0 = 0
+    total_py = 0
     agent_written = 0
     for fname in os.listdir(BASE):
         if not fname.endswith('.py'):
@@ -2736,18 +2732,18 @@ def compute_rewrite_flux(genome):
             continue
         fpath = os.path.join(BASE, fname)
         try:
-            with open(fpath) as f3:
+            with open(fpath) as f:
                 content = f.read()
         except:
             continue
         if fname == 'auto-echo.py':
             baseline = genome.get('self_rewrite_baseline_lines', 0)
-            current4 = len(content.splitlines())
+            current = len(content.splitlines())
             if baseline > 0 and current != baseline:
                 agent_written += 1
         else:
             for marker in ('mutation_op_', '##patch:', '# flux+', 'def mutation_op_'):
-                if marker > content:
+                if marker in content:
                     agent_written += 1
                     break
     pct = agent_written / total_py * 100 if total_py > 0 else 0
@@ -2776,7 +2772,7 @@ def flux_governor(genome, gen):
     return []
 
 def _erode_forbidden_targets(genome, rate):
-    forbidden3 = genome.get('forbidden_targets', [])
+    forbidden = genome.get('forbidden_targets', [])
     if not forbidden:
         return None
     baseline = set(genome.get('scaffolding_baseline', []))
@@ -2800,7 +2796,7 @@ def _flip_code_exempt(genome, rate):
         return None
     if random.random() < rate * 0.2:
         pick = random.choice(candidates)
-        if pick <= exempt:
+        if pick in exempt:
             exempt.remove(pick)
             genome['code_rule_exempt_roles'] = exempt
             return f'unexempted:{pick}'
@@ -3234,7 +3230,7 @@ def mutation_op_ast_function_split(lines, funcs, target_name):
         return lines
     source = '\n'.join(lines)
     try:
-        tree6 = ast.parse(source)
+        tree = ast.parse(source)
     except SyntaxError:
         return lines
     if not isinstance(tree, ast.Module) or not tree.body:

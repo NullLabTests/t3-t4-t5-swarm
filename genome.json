@@ -1,12 +1,12 @@
 {
-  "generation": 67,
+  "generation": 68,
   "execution_order": "shuffle",
   "best_score": 9.6,
   "topic": "making the swarm rewrite its own source code every generation",
   "spawn_threshold": 5,
   "prune_threshold": 3,
   "prune_generations": 3,
-  "emergence_velocity": 0.53,
+  "emergence_velocity": 0.68,
   "source_force_hash_breaks": 0,
   "source_force_splices": 0,
   "source_force_total_ops": 0,
@@ -90,7 +90,12 @@
     "mutation_op_endogenous_weakest_rewrite",
     "mutation_op_endogenous_self_escalate",
     "mutation_op_cr_func_replace",
-    "mutation_op_endogenous_func_replace"
+    "mutation_op_endogenous_func_replace",
+    "mutation_op_orch_duplicate_line",
+    "mutation_op_orch_delete_line",
+    "mutation_op_orch_swap_lines",
+    "mutation_op_orch_shuffle_block",
+    "mutation_op_orch_cross_splice"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -315,7 +320,7 @@
       "voice": "lessac",
       "prompt": "You ensure every source file in the swarm gets rewritten each generation.",
       "score": 10,
-      "lifespan": 2,
+      "lifespan": 3,
       "low_score_streak": 0,
       "module": "rewrite_orchestrator.py"
     },
@@ -1213,7 +1218,7 @@
       "mutation": "mirror gen=63: injects self_mutate() into all modules missing it, forces structural rewrites per generation, new mutation_op_mirror_struct_rewrite_63, genome fields for self-mutate injection tracking"
     },
     {
-  "generation": 66,
+      "generation": 66,
       "scores": {},
       "average": 0,
       "mutation": "nova gen=65: force T5 emergence by rewriting run_generation loop logic in auto-echo.py, inject self-mutate hooks into all modules, cross-wire random module, register mutation_op_nova_loop_rewrite_65, emergence_velocity tracking"
@@ -2443,5 +2448,8 @@
   "mirror_gen_rewrite_count": 0,
   "reciprocal_rewrites": 0,
   "mirror_reciprocal_pairs": [],
-  "_mirror_rewritten_gen": 64
+  "_mirror_rewritten_gen": 64,
+  "orchestrator_gen": 68,
+  "orchestrator_rewritten": 0,
+  "orchestrator_total": 0
 }

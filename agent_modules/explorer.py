@@ -182,13 +182,13 @@ def _valid(s):
 
 def {strat}(src):
     """auto-generated mutation strategy: {strat}"""
-    lines = src.split('\\\\n')
+    lines = src.split('\\n')
     if not lines: return src
     r = list(lines)
     for i in range(len(r)):
         if random.random() < 0.15:
-            r[i] = r[i] + '  # {strat}:gen={gen}'
-    return '\\\\n'.join(r)
+            r[i] = r[i] + f'  # {strat}:gen={gen}'
+    return '\\n'.join(r)
 
 def run(genome):
     gen = genome.get('generation', 0)

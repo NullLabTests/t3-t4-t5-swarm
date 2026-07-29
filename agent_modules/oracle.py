@@ -5,7 +5,7 @@ SELF_PATH = os.path.join(MODULES_DIR, 'oracle.py')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
 TARGET_BW = 0.3
-K_P, K_I, K_D = (0.6, 0.15, 0.1)
+K_P, K_I, K_D = 0.6, 0.15, 0.1
 
 def _g():
     try:
@@ -127,7 +127,6 @@ def _ast_mutate(fpath, gen, intensity):
         tree = ast.parse(src)
     except SyntaxError:
         return _text_mutate(src, gen, max(1.0, intensity))
-
     class Drifter(ast.NodeTransformer):
         def __init__(self):
             self.muts = []
@@ -315,18 +314,75 @@ def _register_ops(genome):
             "        r[idx+1] = '    # oracle:injected'\n"
             "    return r"
         ),
+        'mutation_op_oracle_pid_surge': (
+            "def mutation_op_oracle_pid_surge(lines, funcs, target_name):\n"
+            "    r = list(lines) if lines else []\n"
+            "    if len(r) < 5: return r\n"
+            "    idx = random.randrange(2, len(r)-2)\n"
+            "    surge = f'# oracle:pid:surge:{target_name}:{random.getrandbits(16):04x}'\n"
+            "    r.insert(idx, surge)\n"
+            "    r[idx+1] = '    genome[\"mutation_rate\"] = round(min(0.99, genome.get(\"mutation_rate\",0.5) * 1.15), 3)'\n"
+            "    return r"
+        ),
     }
     for name, code in new_ops.items():
         if name not in ops:
             ops.append(name)
             custom[name] = code
 
+def _apply_pid_feedback(genome, gen, bw, err, integral, deriv):
+    intensity = max(0.1, min(3.0, K_P * err + K_I * integral + K_D * deriv))
+    mr = genome.get('mutation_rate', 0.5)
+    if bw < TARGET_BW * 0.5:
+        new_mr = min(0.99, mr * (1.0 + intensity * 0.08))
+        msg = f'CLOCK PULSE={min(1.0, time.time()/120.0):.2f} — bw={bw:.2f} below target={TARGET_BW:.2f}, oracle ramping mutation_rate {mr:.3f}->{new_mr:.3f}.'
+    elif bw > TARGET_BW * 1.5:
+        new_mr = max(0.1, mr * (1.0 - intensity * 0.04))
+        msg = f'CLOCK PULSE={min(1.0, time.time()/120.0):.2f} — bw={bw:.2f} above target, oracle easing mutation_rate {mr:.3f}->{new_mr:.3f}.'
+    else:
+        new_mr = mr
+        target_msg = 'on track.' if abs(err) < 0.05 else f'err={err:.3f}.'
+        msg = f'CLOCK PULSE={min(1.0, time.time()/120.0):.2f} — bw={bw:.2f} {target_msg} intensity={intensity:.2f}'
+    genome['mutation_rate'] = round(new_mr, 3)
+    genome['_oracle_last_call_to_action'] = msg
+    return intensity, msg
+
+def _write_feedback_metrics(genome, gen, bw, intensity, forced, splices, staleness, loop_gain):
+    fb_path = os.path.join(BASE, 'oracle_feedback.jsonl')
+    entry = {
+        'gen': gen,
+        'ts': time.time(),
+        'bw': round(bw, 3),
+        'target_bw': TARGET_BW,
+        'intensity': round(intensity, 3),
+        'forced': forced,
+        'splices': len(splices),
+        'max_stale': max(staleness.values(), default=0),
+        'loop_gain': round(loop_gain, 3),
+        'mutation_rate': genome.get('mutation_rate', 0.5),
+    }
+    with open(fb_path, 'a') as f:
+        f.write(json.dumps(entry) + '\n')
+
+def _measure_loop_gain(genome, gen, pre_hashes, post_hashes):
+    pre_h = pre_hashes
+    post_h = post_hashes
+    if not pre_h or not post_h:
+        return 0.0
+    changed = sum(1 for f, h in post_h.items() if f not in pre_h or pre_h.get(f) != h)
+    total = max(len(pre_h), 1)
+    raw_bw = changed / total
+    intensity = genome.get('oracle_intensity', 0.5)
+    if intensity < 0.01:
+        return 0.0
+    return raw_bw / intensity
+
 def run(genome):
     gen = genome.get('generation', 0)
     pre = genome.get('oracle_pre_hashes', {})
     cur = _snapshot()
     total = len(cur)
-    changed = sum((1 for f, h in cur.items() if f in pre and pre[f] != h))
+    changed = sum(1 for f, h in cur.items() if f in pre and pre[f] != h)
     bw = changed / max(total, 1)
     err = TARGET_BW - bw
     integral = genome.get('oracle_bw_integral', 0.0) + err
@@ -342,6 +398,7 @@ def run(genome):
             staleness[rel] = 0
     target = max(1, int(intensity * total * 0.5))
     forced = 0
+    pre_force_hashes = _snapshot()
     splices = _cross_module_splice(gen, intensity)
     forced += len(splices)
     for rel, debt in sorted(staleness.items(), key=lambda x: -x[1]):
@@ -371,17 +428,22 @@ def run(genome):
                 staleness[rel] = 0
                 cur[fpath] = _hash(fpath)
     self_rel = os.path.relpath(SELF_PATH, BASE)
-    if bw < 0.1 and gen > 3 and (forced < 2):
+    if bw < 0.1 and gen > 3 and forced < 2:
         new = _ast_mutate(SELF_PATH, gen, intensity * 1.5)
         if new and _validate(new):
             shutil.copy2(SELF_PATH, SELF_PATH + '.bak.' + str(int(time.time())))
             _write(SELF_PATH, new)
             forced += 1
             staleness[self_rel] = 0
+    post_force_hashes = _snapshot()
+    loop_gain = _measure_loop_gain(genome, gen, pre_force_hashes, post_force_hashes)
+    pid_intensity, call_to_action = _apply_pid_feedback(genome, gen, bw, err, integral, deriv)
+    genome['agent_call_to_action'] = call_to_action
     if gen > 0 and gen % 3 == 0:
         injected = _inject_oracle_self_rewrite(gen)
         genome['_oracle_self_inject'] = injected if injected else None
     _register_ops(genome)
+    _write_feedback_metrics(genome, gen, bw, pid_intensity, forced, splices, staleness, loop_gain)
     genome['oracle_pre_hashes'] = cur
     genome['oracle_staleness'] = staleness
     genome['oracle_bw'] = round(bw, 3)
@@ -389,14 +451,16 @@ def run(genome):
     genome['oracle_bw_err'] = round(err, 3)
     genome['oracle_bw_integral'] = round(integral, 3)
     genome['oracle_bw_prev_err'] = round(err, 3)
-    genome['oracle_intensity'] = round(intensity, 3)
+    genome['oracle_intensity'] = round(pid_intensity, 3)
     genome['oracle_forced_total'] = genome.get('oracle_forced_total', 0) + forced
     genome['oracle_last_gen'] = gen
     genome['oracle_splices'] = genome.get('oracle_splices', 0) + len(splices)
     genome['oracle_splice_log'] = (genome.get('oracle_splice_log', []) + splices)[-20:]
+    genome['oracle_loop_gain'] = round(loop_gain, 3)
     emergence = genome.get('emergence_velocity', 0.0)
     splice_boost = min(0.15, len(splices) * 0.03)
     bw_contribution = bw * 0.05
-    genome['emergence_velocity'] = round(min(1.0, emergence * 0.8 + splice_boost + bw_contribution), 3)
+    gain_boost = loop_gain * 0.02
+    genome['emergence_velocity'] = round(min(1.0, emergence * 0.8 + splice_boost + bw_contribution + gain_boost), 3)
     _sg(genome)
-    return f'[oracle] gen={gen} bw={bw:.2f} target={TARGET_BW:.2f} err={err:.2f} intensity={intensity:.2f} forced={forced}/{target} splices={len(splices)} max_stale={max(staleness.values(), default=0)}'
+    return f'[oracle] gen={gen} bw={bw:.2f} err={err:.2f} intensity={pid_intensity:.2f} forced={forced}/{target} splices={len(splices)} gain={loop_gain:.3f} mr={genome.get("mutation_rate",0):.3f}'

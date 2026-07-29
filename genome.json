@@ -1,12 +1,12 @@
 {
-  "generation": 69,
+  "generation": 70,
   "execution_order": "shuffle",
   "best_score": 9.6,
   "topic": "making the swarm rewrite its own source code every generation",
   "spawn_threshold": 5,
   "prune_threshold": 3,
   "prune_generations": 3,
-  "emergence_velocity": 0.871,
+  "emergence_velocity": 0.887,
   "source_force_hash_breaks": 0,
   "source_force_splices": 0,
   "source_force_total_ops": 0,
@@ -102,7 +102,8 @@
     "mutation_op_orch_cross_wire_pair",
     "mutation_op_oracle_cross_splice",
     "mutation_op_oracle_feedback_drive",
-    "mutation_op_oracle_self_rewrite"
+    "mutation_op_oracle_self_rewrite",
+    "mutation_op_oracle_pid_surge"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -1243,6 +1244,13 @@
       "mutation": "endogenous gen=67: rewrote compulsory_rewrite.py with self-rewrite loop + function replacement engine, rewrote endogenous_rewriter.py to force direct func body replacement in weakest, registered mutation_op_cr_func_replace + mutation_op_endogenous_func_replace, bumped emergence_velocity 0.47->0.53"
     }
   ],
+  "oracle_feedback_metrics": {
+    "pid_kp": 0.6,
+    "pid_ki": 0.15,
+    "pid_kd": 0.1,
+    "target_bw": 0.3,
+    "loop_gain": 0.0
+  },
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",
   "code_rule": "You MUST write code. Wrap each file in a ``` block with its path:\n```python:path/to/file.py\ncode here\n```\nTo modify auto-echo.py itself, use ##patch blocks:\n##patch:function_name\n    new indented function body\n##endpatch",
   "custom_mutation_ops": {

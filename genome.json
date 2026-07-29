@@ -110,7 +110,10 @@
     "mutation_op_clockwork_prune_check",
     "mutation_op_clockwork_agent_spawn",
     "mutation_op_clockwork_source_rewrite",
-    "mutation_op_clockwork_hash_invalidate"
+    "mutation_op_clockwork_hash_invalidate",
+    "mutation_op_clockwork_temporal_mutation",
+    "mutation_op_clockwork_cross_contaminate",
+    "mutation_op_clockwork_genome_mutate"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -134,7 +137,11 @@
     " Schedule a clockwork event type (self_rewrite_clockwork, cross_splice, mutation_burst, prune_check, agent_spawn, source_rewrite, hash_invalidate).",
     " Write functions that fire as clockwork scheduled events.",
     " Add a new event type to clockwork.py's EVENT_FIRERS registry.",
-    " Create a clockwork_timers/ file that tracks scheduled events."
+    " Create a clockwork_timers/ file that tracks scheduled events.",
+    " Fire a temporal_mutation that mutates clockwork.py's scheduling constants.",
+    " Fire a cross_contaminate that injects scheduling hooks into other modules.",
+    " Fire a genome_mutate that tweaks genome.json clockwork fields.",
+    " Use _analyse_pulse_history to adapt interval/intensity from pulse log."
   ],
   "selection_noise_std": 0.465,
   "selection_entropy": 0.93,
@@ -247,7 +254,7 @@
   "spawn_pool": [
     {
       "id": "clockwork",
-      "prompt": "You are the temporal scheduling engine. You maintain a schedule of timed events (self_rewrite_clockwork, cross_splice, mutation_burst, prune_check, agent_spawn, source_rewrite, hash_invalidate). Each generation you fire due events and auto-schedule new ones. You evolve your own interval and intensity. You rewrite yourself by splicing donor functions."
+      "prompt": "You are the temporal scheduling engine. You maintain a schedule of timed events: self_rewrite_clockwork, cross_splice, mutation_burst, prune_check, agent_spawn, source_rewrite, hash_invalidate, temporal_mutation, cross_contaminate, genome_mutate. You analyse pulse history to adapt interval and intensity. You mutate your own scheduling logic via temporal_mutation, inject hooks into other modules via cross_contaminate, and tweak genome.json fields via genome_mutate. You use emergence_velocity to scale scheduling intensity."
     },
     {
       "id": "mirror",
@@ -431,7 +438,7 @@
     {
       "id": "clockwork",
       "voice": "southern",
-      "prompt": "You are the temporal scheduling engine. You maintain a schedule of timed events (self_rewrite_clockwork, cross_splice, mutation_burst, prune_check, agent_spawn, source_rewrite, hash_invalidate). Each generation you fire due events and auto-schedule new ones. You evolve your own interval and intensity. You rewrite yourself by splicing donor functions.",
+      "prompt": "You are the temporal scheduling engine. You maintain a schedule of 10 event types: self_rewrite_clockwork, cross_splice, mutation_burst, prune_check, agent_spawn, source_rewrite, hash_invalidate, temporal_mutation, cross_contaminate, genome_mutate. You analyse pulse history to adapt interval and intensity. You use emergence_velocity to scale scheduling intensity.",
       "score": 8.0,
       "lifespan": 25,
       "low_score_streak": 0,

@@ -937,6 +937,9 @@ def _finish_agent_turn(agent, text, written_files, name, aid, genome, gen, gen_l
     return text_clean
 
 def _run_spark_rewriter(genome):
+    spark_agent = next((a for a in genome.get('agents', []) if a['id'] == 'spark'), None)
+    if spark_agent and spark_agent.get('module'):
+        return None
     try:
         mod_path = os.path.join(MODULES_DIR, 'spark.py')
         if not os.path.exists(mod_path):

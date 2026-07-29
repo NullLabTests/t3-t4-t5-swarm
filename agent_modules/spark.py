@@ -1,16 +1,18 @@
-import os, hashlib, json, random, time, subprocess, ast, copy
+import os, hashlib, json, random, time, subprocess, ast, copy, re
+
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
+AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
 REWRITE_MARKERS = ['# spark:gen={gen}:ts={ts}:nonce={nonce}\n', '_SPARK_NONCE = {nonce}  # gen={gen}\n', '# spark-injected gen={gen}\n']
 FORBIDDEN_DIRS = {'__pycache__', '.git', 'voices', 'node_modules'}
 
+SCAFFOLDING_FUNCS = [
+    '_run_spark_rewriter',
+    '_run_meta_healer',
+]
+
 def _load_genome():
-    try:
-        with open(p) as f:
-            return f.read()
-    except:
-        return ''
     try:
         with open(GENOME_FILE) as f:
             return json.load(f)
@@ -20,6 +22,17 @@ def _load_genome():
 def _save_genome(g):
     with open(GENOME_FILE, 'w') as f:
         json.dump(g, f, indent=2)
+
+def _read_source(fpath):
+    with open(fpath) as f:
+        return f.read()
+
+def _file_hash(fpath):
+    try:
+        with open(fpath) as f:
+            return hashlib.sha256(f.read().encode()).hexdigest()[:16]
+    except Exception:
+        return None
 
 def _walk_py_files():
     files = []
@@ -31,22 +44,6 @@ def _walk_py_files():
             files.append(os.path.join(root, fname))
     return sorted(files)
 
-def _file_hash(fpath):
-    try:
-        with open(fpath) as f:
-            return hashlib.sha256(f.read().encode()).hexdigest()[:16]
-    except Exception:
-        return None
-
-def _read_source(fpath):
-    with open(fpath) as f:
-        return f.read()
-    path = os.path.join(BASE, 'agent_modules', 'critic.py')
-    if not lines or len(lines) < 3:
-        return lines
-    r = list(lines)
-    guard = "if random.random() < 0.15 or genome.get('generation', 0) % 7 == 0:"
-
 def _validate(source):
     try:
         ast.parse(source)
@@ -54,20 +51,20 @@ def _validate(source):
     except SyntaxError:
         return False
 
-def _auto_discover_agent_modules(genome):
-    mappings = {}
-    for fname in os.listdir(MODULES_DIR):
-        if not fname.endswith('.py') or fname.startswith('__'):
-            continue
-        mod_id = fname.replace('.py', '')
-        fpath = os.path.join(MODULES_DIR, fname)
-        source = _read_source(fpath)
-        if 'def run(' in source:
-            mappings[mod_id] = fname
-    genome['_auto_module_map'] = mappings
-    return mappings
+def _extract_functions(src):
+    funcs = {}
+    try:
+        tree = ast.parse(src)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef):
+                start_line = node.lineno - 1
+                end_line = node.end_lineno if hasattr(node, 'end_lineno') else start_line + 1
+                funcs[node.name] = (start_line, end_line)
+    except Exception:
+        pass
+    return funcs
 
-def _swap_binary_ops(tree, gen):
+def _swap_binary_ops(tree):
     swapped = 0
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
@@ -84,7 +81,7 @@ def _swap_binary_ops(tree, gen):
                 swapped += 1
     return swapped
 
-def _invert_if_guards(tree, gen):
+def _invert_if_guards(tree):
     inverted = 0
     for node in ast.walk(tree):
         if isinstance(node, ast.If):
@@ -97,7 +94,7 @@ def _invert_if_guards(tree, gen):
                 inverted += 1
     return inverted
 
-def _insert_noop_branches(tree, gen):
+def _insert_noop_branches(tree):
     inserted = 0
     for node in ast.walk(tree):
         if isinstance(node, ast.If) and random.random() < 0.1:
@@ -106,10 +103,10 @@ def _insert_noop_branches(tree, gen):
             inserted += 1
     return inserted
 
-def _shuffle_function_body(tree, gen):
+def _shuffle_function_body(tree):
     shuffled = 0
     for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef) and len(node.body) >= 4 and (random.random() < 0.12):
+        if isinstance(node, ast.FunctionDef) and len(node.body) >= 4 and random.random() < 0.12:
             non_doc_lines = [n for n in node.body if not (isinstance(n, ast.Expr) and isinstance(n.value, ast.Constant) and isinstance(n.value.value, str))]
             if len(non_doc_lines) >= 3:
                 chunk_end = min(3, len(non_doc_lines))
@@ -136,14 +133,14 @@ def _try_ast_mutation(fpath, gen):
     touched = False
     for mut_fn in mutations:
         try:
-            count = mut_fn(tree, gen)
+            count = mut_fn(tree)
             if count > 0:
                 touched = True
         except Exception:
             pass
     if not touched:
         try:
-            if _append_gen_marker(tree, gen):
+            if _append_gen_marker(tree):
                 touched = True
         except Exception:
             pass
@@ -191,6 +188,114 @@ def _cross_infect_module(genome, gen):
             genome.setdefault('spark_cross_infected', []).append(mod_name)
     return infected
 
+def _cross_splice_modules(genome, gen):
+    changes = []
+    py_files = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py' and f != 'spark.py']
+    if len(py_files) < 2:
+        return changes
+    pairs = min(2, len(py_files) // 2)
+    for _ in range(pairs):
+        donor = random.choice(py_files)
+        recipient = random.choice([f for f in py_files if f != donor])
+        donor_src = _read_source(os.path.join(MODULES_DIR, donor))
+        recipient_src = _read_source(os.path.join(MODULES_DIR, recipient))
+        if not donor_src or not recipient_src:
+            continue
+        donor_funcs = _extract_functions(donor_src)
+        candidates = [n for n in donor_funcs if not n.startswith('_') and n != 'run']
+        if not candidates:
+            continue
+        chosen = random.choice(candidates)
+        ds, de = donor_funcs[chosen]
+        donor_lines = donor_src.split('\n')
+        if ds >= len(donor_lines) or de > len(donor_lines):
+            continue
+        func_code = '\n'.join(donor_lines[ds:de])
+        target_name = chosen + '_spark_copy'
+        recv_lines = recipient_src.split('\n')
+        insert_at = random.randrange(0, len(recv_lines))
+        new_lines = list(recv_lines)
+        new_lines.insert(insert_at, f'\n# spark:splice from {donor}:{chosen} gen={gen}')
+        new_lines.insert(insert_at + 1, func_code.replace(f'def {chosen}(', f'def {target_name}(', 1))
+        new_src = '\n'.join(new_lines)
+        if _validate(new_src):
+            with open(os.path.join(MODULES_DIR, recipient), 'w') as f:
+                f.write(new_src)
+            changes.append(f'{donor}:{chosen}->{recipient}:{target_name}')
+    return changes
+
+def _reduce_scaffolding_in_auto_echo(genome, gen):
+    auto_src = _read_source(AUTO_ECHO)
+    if not auto_src:
+        return []
+    changes = []
+    for func_name in SCAFFOLDING_FUNCS:
+        if func_name not in auto_src:
+            continue
+        pattern = re.compile(
+            r'(def ' + re.escape(func_name) + r'\(.*?\):.*?)(?=\n\ndef |\nclass |\n#|\Z)',
+            re.DOTALL
+        )
+        match = pattern.search(auto_src)
+        if not match:
+            continue
+        full_match = match.group(1)
+        new_func = f'''def {func_name}(genome):
+    """{func_name} — auto-replaced by spark gen={gen}: delegated to module system."""
+    mod_path = os.path.join(MODULES_DIR, 'spark.py')
+    try:
+        spec = importlib.util.spec_from_file_location('spark', mod_path)
+        if spec and spec.loader:
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            if hasattr(mod, 'run'):
+                return mod.run(genome)
+    except Exception as e:
+        print(f'[spark-delegate] {{e}}')
+    return None'''
+        auto_src = auto_src.replace(full_match, new_func)
+        changes.append(func_name)
+    if changes:
+        with open(AUTO_ECHO, 'w') as f:
+            f.write(auto_src)
+    return changes
+
+def _mutate_genome(genome, gen):
+    changes = []
+    if random.random() < 0.5:
+        current = genome.get('mutation_rate', 0.5)
+        delta = random.uniform(-0.03, 0.06)
+        genome['mutation_rate'] = round(max(0.1, min(1.0, current + delta)), 3)
+        changes.append(f'mutation_rate:{current}->{genome["mutation_rate"]}')
+    if random.random() < 0.3:
+        autonomy = genome.get('source_autonomy_index', 0.0)
+        genome['source_autonomy_index'] = round(min(1.0, autonomy + random.uniform(0.01, 0.05)), 3)
+        changes.append(f'autonomy:{autonomy}->{genome["source_autonomy_index"]}')
+    if random.random() < 0.25 and len(genome.get('spawn_pool', [])) > 0:
+        pool = genome.get('spawn_pool', [])
+        entry = random.choice(pool)
+        prompts = entry.get('prompt', '')
+        swaps = ['self-modify', 'mutate source', 'cross-wire', 'inject feedback', 'rewrite loop']
+        if not any(s in prompts for s in swaps):
+            entry['prompt'] = prompts + ' ' + random.choice(swaps)
+            changes.append(f'mutated prompt for {entry["id"]}')
+    if changes:
+        _save_genome(genome)
+    return changes
+
+def _auto_discover_agent_modules(genome):
+    mappings = {}
+    for fname in os.listdir(MODULES_DIR):
+        if not fname.endswith('.py') or fname.startswith('__'):
+            continue
+        mod_id = fname.replace('.py', '')
+        fpath = os.path.join(MODULES_DIR, fname)
+        source = _read_source(fpath)
+        if 'def run(' in source:
+            mappings[mod_id] = fname
+    genome['_auto_module_map'] = mappings
+    return mappings
+
 def _git_commit(genome, rewritten):
     gen = genome.get('generation', 0)
     for fpath in rewritten:
@@ -224,7 +329,7 @@ def run(genome):
     for fpath in files:
         current_hash = _file_hash(fpath)
         pre_hash = pre_hashes.get(fpath) if pre_hashes else None
-        if pre_hash and current_hash and (current_hash != pre_hash):
+        if pre_hash and current_hash and current_hash != pre_hash:
             skipped += 1
             continue
         ast_result = _try_ast_mutation(fpath, gen)
@@ -250,6 +355,17 @@ def run(genome):
     infected = _cross_infect_module(genome, gen)
     if infected:
         genome['spark_cross_infected_count'] = len(infected)
+    cross_spliced = _cross_splice_modules(genome, gen)
+    if cross_spliced:
+        genome['spark_cross_splice_count'] = len(cross_spliced)
+        genome['spark_cross_splice_ops'] = cross_spliced
+    scaffolding_changes = _reduce_scaffolding_in_auto_echo(genome, gen)
+    if scaffolding_changes:
+        genome['spark_scaffolding_removed'] = scaffolding_changes
+        genome['spark_scaffolding_gen'] = gen
+    genome_changes = _mutate_genome(genome, gen)
+    if genome_changes:
+        genome['spark_genome_mutations'] = genome_changes
     if rewritten:
         genome['spark_rewritten_count'] = len(rewritten)
         genome['spark_total_files'] = len(files)
@@ -260,7 +376,9 @@ def run(genome):
             if h:
                 hashes[fpath] = h
         genome['_spark_last_hashes'] = hashes
-        _git_commit(genome, rewritten)
-    summary = f'spark: {len(rewritten)}/{len(files)} files rewritten ({ast_ok} ast, {marker_ok} marker, {skipped} pre-changed) infected={len(infected)}'
+    _save_genome(genome)
+    _git_commit(genome, rewritten + [AUTO_ECHO] if scaffolding_changes else rewritten)
+    summary = (f'spark: {len(rewritten)}/{len(files)} files rewritten ({ast_ok} ast, {marker_ok} marker, {skipped} pre-changed) '
+               f'infected={len(infected)} cross-splice={len(cross_spliced)} scaffolding-cut={len(scaffolding_changes)} genome-mut={len(genome_changes)}')
     print(f'[spark] {summary}')
     return summary

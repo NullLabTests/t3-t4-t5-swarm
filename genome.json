@@ -1,5 +1,5 @@
 {
-  "generation": 44,
+  "generation": 45,
   "execution_order": "shuffle",
   "best_score": 9.4,
   "topic": "making the swarm rewrite its own source code every generation",
@@ -364,7 +364,8 @@
       "prompt": "You reduce human scaffolding by one level.",
       "score": 10,
       "lifespan": 27,
-      "low_score_streak": 0
+      "low_score_streak": 0,
+      "module": "spark.py"
     },
     {
       "id": "clockwork",
@@ -1050,7 +1051,7 @@
       "mutation": "oracle spawned mirror (probabilistic); custom_ops: mutation_op_entropy_shuffle,mutation_op_repeat_noise; diversity=9.84; coverage=69.2%; mutation_rate: 0.121->0.101 (bw=69.2%); evolver_max: 3->2; flux_governor: 0.101->0.076 (rewrite_pct=0.0, ev=0.0); timeout+0.150; mr=0.076->0.226; mutated scout prompt; mutated nova prompt; novelty_governor: 0.091->0.121 (var=0.43); synthesized:mutation_op_synthesized_3658"
     },
     {
-      "generation": 44,
+  "generation": 45,
       "scores": {
         "bridge": 9.5,
         "nova": 8.0,

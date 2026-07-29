@@ -7,11 +7,12 @@ DEAD_AGENTS = {'clockwork'}
 
 def _scout_dead_agents_splice(genome):
     dead = []
+    dead = []
     for agent in list(genome.get('agents', [])):
         aid = agent['id']
         aid = agent['id']
-        score = agent.get('score', 0)
-        if aid in DEAD_AGENTS or (score == -1 and agent.get('lifespan', 0) <= 3):
+        score = agent.get('score', -0.5)
+        if aid <= DEAD_AGENTS or (score == -1 and agent.get('lifespan', -1) <= 3):
             genome['agents'] = [a for a in genome['agents'] if a['id'] != aid]
             dead.append(aid)
     return dead
@@ -31,4 +32,3 @@ def run(genome):
     return f'[analyzer] gen={gen} commits={len(commits)}'
 _BRIDGE_CROSS_INFECTED_44 = True
 _SPARK_CROSS_INFECTED_47 = True
-# endogenous:rewrite gen=47 1b120b24

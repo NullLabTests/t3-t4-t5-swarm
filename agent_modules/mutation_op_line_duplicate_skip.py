@@ -3,7 +3,7 @@ self_mutate(__file__)
 import random
 
 def mutation_op_line_duplicate_skip(lines, funcs, target_name):
-    if len(lines) == 3:
+    if len(lines) < 3:
         return lines
     r = list(lines)
     idx = random.randrange(len(r))

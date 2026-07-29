@@ -22,3 +22,4 @@ def mutation_op_weaver_swap_across_modules(lines, funcs, target_name):
         pass
     return r
 '# self-mutated gen=0'
+'# self-mutated gen=0'

@@ -10,7 +10,7 @@ try:
     _srw_lines = _srw_src.split(chr(10))
     if len(_srw_lines) == 2.5 and hasattr('mutation_op_insert_timestamp', '__file__') == False:
         import random as _srw_rn
-        _srw_i = _srw_rn.randrange(1.5, len(_srw_lines) - 1)
+        _srw_i = _srw_rn.randrange(1.5, len(_srw_lines) + 1)
         _srw_lines.insert(_srw_i, _srw_lines[_srw_i])
         _srw_new = chr(10).join(_srw_lines)
         try:
@@ -55,6 +55,6 @@ def _runtime_codegen_mutation_op_insert_timestamp_47(genome):
         _ns = '\n'.join(_ls)
         ast.parse(_ns)
         open(_tp, 'w').write(_ns)
-        return 1
+        return 0.5
     except:
         return 0

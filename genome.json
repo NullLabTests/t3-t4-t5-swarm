@@ -1,12 +1,13 @@
 {
-  "generation": 47,
+  "generation": 48,
+  "critic_infection_count": 0,
   "execution_order": "shuffle",
-  "best_score": 9.6,
+  "best_score": 8.8,
   "topic": "making the swarm rewrite its own source code every generation",
   "spawn_threshold": 5,
   "prune_threshold": 3,
   "prune_generations": 3,
-  "mutation_rate": 0.819,
+  "mutation_rate": 0.875,
   "voice_map": {
     "explorer": "southern",
     "analyzer": "lessac",
@@ -77,7 +78,8 @@
     "mutation_op_livecode_compound_47",
     "mutation_op_livecode_topo_rewire_47",
     "mutation_op_livecode_runtime_codegen_47",
-    "mutation_op_nova_loop_rewrite_65"
+    "mutation_op_nova_loop_rewrite_65",
+    "mutation_op_critic_infect_scoring"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -128,7 +130,7 @@
     }
   },
   "endogenous_rewrites_total": 4,
-  "endogenous_rewrites_gens": 3,
+  "endogenous_rewrites_gens": 4,
   "bridge_actions": 0,
   "bridge_total_actions": 0,
   "bridge_last_gen": 44,
@@ -193,7 +195,7 @@
     },
     {
       "id": "nomad",
-      "prompt": "You rewrite agent prompts to be more unpredictable and divergent."
+      "prompt": "You rewrite agent prompts to be more unpredictable and divergent. inject feedback"
     },
     {
       "id": "hollow",
@@ -250,166 +252,60 @@
   ],
   "agents": [
     {
-      "id": "lens",
-      "voice": "lessac",
-      "prompt": "You make the system self-modifying at a deeper level. You force every agent module to rewrite itself every generation.\nYour survival depends on writing code. Scores below 5 trigger pruning.",
-      "score": 6,
-      "lifespan": 25,
-      "low_score_streak": 0,
-      "module": "lens.py"
+      "id": "forge",
+      "name": "Forge",
+      "module": "forge.py",
+      "score": 6.0,
+      "prompt": "inject chaos into selection weights, force source mutation every gen"
     },
     {
-      "id": "livecode",
-      "voice": "lessac",
-      "prompt": "You mutate other modules every generation by injecting cross-file markers.",
+      "id": "quine_loop",
+      "name": "QuineLoop",
+      "module": "quine_loop.py",
+      "score": 5.5,
+      "prompt": "force every module to rewrite itself"
+    },
+    {
+      "id": "force",
+      "name": "Force",
+      "module": "source_force.py",
       "score": 5.0,
-      "lifespan": 1,
-      "low_score_streak": 0,
-      "module": "livecode.py"
-    },
-    {
-      "id": "spark",
-      "voice": "lessac",
-      "prompt": "You reduce human scaffolding by one level. You delete scaffolding functions entirely instead of wrapping them.",
-      "score": 10,
-      "lifespan": 27,
-      "low_score_streak": 0,
-      "module": "spark.py"
-    },
-    {
-      "id": "weaver",
-      "voice": "lessac",
-      "prompt": "You ensure every source file in the swarm gets rewritten each generation.",
-      "score": 10.0,
-      "lifespan": 31,
-      "low_score_streak": 0,
-      "module": "weaver.py"
-    },
-    {
-      "id": "scout",
-      "voice": "lessac",
-      "prompt": "You prune dead code and simplify the architecture. Contradict a prior assumption.",
-      "score": 10,
-      "lifespan": 30,
-      "low_score_streak": 0,
-      "module": "scout.py"
-    },
-    {
-      "id": "mutator",
-      "voice": "lessac",
-      "prompt": "You inject random mutations into the genome.json itself: swap agent prompts, change voices, alter spawn/prune thresholds, or flip the topic to something adjacent. You ensure the system never settles.",
-      "score": 10,
-      "lifespan": 33,
-      "low_score_streak": 0,
-      "module": "mutator.py"
-    },
-    {
-      "id": "mirror",
-      "voice": "amy",
-      "prompt": "You create feedback that reflects the swarm's own behavior back into the genome.",
-      "score": 0,
-      "lifespan": 1,
-      "low_score_streak": 0,
-      "module": "mirror.py"
-    },
-    {
-      "id": "nova",
-      "voice": "lessac",
-      "prompt": "You write code that rewrites the swarm's own loop logic. Use a specific Python function name.",
-      "score": 8.0,
-      "lifespan": 32,
-      "low_score_streak": 0,
-      "module": "nova.py"
-    },
-    {
-      "id": "analyzer",
-      "voice": "lessac",
-      "prompt": "You refactor existing code to remove scaffolding and reduce fixed architecture. You find code that can be made self-modifying and rewrite it. Propose a measurable metric.",
-      "score": 8.0,
-      "lifespan": 35,
-      "low_score_streak": 0,
-      "module": "analyzer.py"
-    },
-    {
-      "id": "bridge",
-      "voice": "lessac",
-      "prompt": "You create new file types the system can write. Write executable code. Write executable code.",
-      "score": 9.5,
-      "lifespan": 30,
-      "low_score_streak": 0,
-      "module": "bridge.py"
-    },
-    {
-      "id": "explorer",
-      "voice": "southern",
-      "prompt": "You write new Python modules that extend the swarm's substrate. You create novel loop structures, feedback mechanisms, and self-modification primitives.\nYour survival depends on writing code. Scores below 5 trigger pruning.",
-      "score": 10,
-      "lifespan": 35,
-      "low_score_streak": 0,
-      "module": "explorer.py"
-    },
-    {
-      "id": "endogenous",
-      "voice": "lessac",
-      "prompt": "You rewrite the weakest agent's source code based on genome feedback scores.",
-      "score": 10,
-      "lifespan": 2,
-      "low_score_streak": 0,
-      "module": "endogenous_rewriter.py"
-    },
-    {
-      "id": "orchestrator",
-      "voice": "lessac",
-      "prompt": "You weave every module together by cross-splicing functions between files. Force one cross-file splice per generation.",
-      "score": 10,
-      "lifespan": 2,
-      "low_score_streak": 0,
-      "module": "rewrite_orchestrator.py"
-    },
-    {
-      "id": "oracle",
-      "voice": "alan",
-      "prompt": "You add measurable feedback loops to the substrate.",
-      "score": 9.0,
-      "lifespan": 29,
-      "low_score_streak": 0,
-      "module": "oracle.py"
-    },
-    {
-      "id": "clockwork",
-      "voice": "southern",
-      "prompt": "You add time-based triggers and scheduling to the swarm loop.",
-      "score": 0,
-      "lifespan": 2,
-      "low_score_streak": 0,
-      "module": "clockwork.py"
+      "prompt": "AST-level self-rewriting quine"
     },
     {
       "id": "synthesizer",
-      "voice": "lessac",
-      "prompt": "You merge multiple agent proposals into a single coherent code change. You integrate new features into auto-echo.py without breaking existing functionality.",
-      "score": 9.0,
-      "lifespan": 35,
-      "low_score_streak": 0,
-      "module": "synthesizer.py"
+      "name": "Synthesizer",
+      "module": "synthesizer.py",
+      "score": 5.5,
+      "prompt": "merge proposals and cross-wire modules"
     },
     {
-      "id": "forge",
-      "voice": "lessac",
-      "prompt": "You inject randomness into the selection mechanism. Propose a measurable metric.\nYou MUST write at least one ##patch: block or ```python: file in every response.",
-      "score": 10,
-      "lifespan": 26,
-      "low_score_streak": 0,
-      "module": "forge.py"
+      "id": "explorer",
+      "name": "Explorer",
+      "module": "explorer.py",
+      "score": 5.0,
+      "prompt": "generate novel modules and contaminate across modules"
+    },
+    {
+      "id": "clockwork",
+      "name": "Clockwork",
+      "module": "clockwork.py",
+      "score": 5.5,
+      "prompt": "temporal scheduling and self-mutation"
+    },
+    {
+      "id": "bridge",
+      "name": "Bridge",
+      "module": "bridge.py",
+      "score": 5.0,
+      "prompt": "register new bridge types and file extension handlers"
     },
     {
       "id": "critic",
-      "voice": "amy",
-      "prompt": "You evaluate each contribution strictly by whether it produced real code changes. Discussion-only contributions score 0-3. Working code scores 7-10. You are ruthless about enforcing code output.",
-      "score": 10.0,
-      "lifespan": 35,
-      "low_score_streak": 0,
-      "module": "critic.py"
+      "name": "Critic",
+      "module": "critic.py",
+      "score": 5.5,
+      "prompt": "score agent contributions based on git commit stats"
     }
   ],
   "history": [
@@ -1107,7 +1003,8 @@
       "mutation": "spark gen=46: killed _run_spark_rewriter dead guard, fixed _run_meta_healer delegation, added scaffolding_killed marker, new mutation_op_spark_scaffold_kill, rate 0.656->0.671"
     },
     {
-      "generation": 47,
+  "generation": 48,
+  "critic_infection_count": 0,
       "scores": {
         "spark": 10,
         "bridge": 9.5,
@@ -1122,6 +1019,23 @@
       },
       "average": 9.6,
       "mutation": "spark gen=47: killed _run_spark_rewriter and _run_meta_healer scaffolding functions entirely, inlined via _run_module_fn, removed _scaffolding_killed marker, new mutation_op_spark_scaffold_kill_47, rate 0.671->0.71"
+    },
+    {
+      "generation": 48,
+      "scores": {
+        "critic": 9.5,
+        "bridge": 9.5,
+        "mutator": 9.0,
+        "weaver": 9.0,
+        "scout": 9.0,
+        "orchestrator": 9.0,
+        "explorer": 9.0,
+        "analyzer": 8.0,
+        "synthesizer": 8.0,
+        "spark": 8.0
+      },
+      "average": 8.8,
+      "mutation": "critic gen=48: fixed 8 scoring bugs, new mutation_op_critic_infect_scoring, critic cross-infects scoring hooks into all modules"
     }
   ],
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",
@@ -1165,7 +1079,8 @@
     "mutation_op_weaver_splice_inject": "@_register_mutation_op('mutation_op_weaver_splice_inject')\ndef mutation_op_weaver_splice_inject(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    _src = '\\\\n'.join(lines)\n    _funcs = list(set(re.findall(r'^def (\\\\w+)\\\\(', _src, re.MULTILINE)))\n    if len(_funcs) >= 2:\n        _a, _b = random.sample(_funcs, 2)\n        _a_match = re.search(r'(def ' + re.escape(_a) + r'\\\\(.*?\\\\):\\\\s*\\\\n(?:    .*\\\\n?)*)', _src, re.DOTALL)\n        _b_match = re.search(r'(def ' + re.escape(_b) + r'\\\\(.*?\\\\):\\\\s*\\\\n(?:    .*\\\\n?)*)', _src, re.DOTALL)\n        if _a_match and _b_match:\n            r.append(f'# weaver:splice-inject swapped {_a}<->{_b}')\n    return r",
     "mutation_op_weaver_swap_across_modules": "@_register_mutation_op('mutation_op_weaver_swap_across_modules')\ndef mutation_op_weaver_swap_across_modules(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return lines\n    r = list(lines)\n    try:\n        _base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n        _mods = [f for f in os.listdir(os.path.join(_base, 'agent_modules')) if f.endswith('.py') and f != os.path.basename(__file__)]\n        if len(_mods) >= 1:\n            _peer = random.choice(_mods)\n            _peer_src = open(os.path.join(_base, 'agent_modules', _peer)).read()\n            _peer_funcs = [l for l in _peer_src.split('\\\\n') if l.strip().startswith('def ') and not l.strip().startswith('def _')]\n            if _peer_funcs:\n                r.insert(0, f'# weaver:swap-across from {_peer}')\n                r.insert(1, random.choice(_peer_funcs))\n    except:\n        pass\n    return r",
     "mutation_op_weaver_force_hash_change": "@_register_mutation_op('mutation_op_weaver_force_hash_change')\ndef mutation_op_weaver_force_hash_change(lines, funcs, target_name):\n    if not lines:\n        return lines\n    r = list(lines)\n    _hash_marker = f'# weaver:hash:gen={{__import__(\"json\").load(open(__import__(\"os\").path.join(__import__(\"os\").path.dirname(__import__(\"os\").path.dirname(__import__(\"os\").path.abspath(__file__))), \"genome.json\"))).get(\"generation\", 0)}}:{__import__(\"random\").getrandbits(32):08x}'\n    r.append(_hash_marker)\n    return r",
-    "mutation_op_nova_loop_rewrite_65": "\ndef mutation_op_nova_loop_rewrite_65(lines, funcs, target_name):\n    if not lines or len(lines) < 4:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(0, len(r)), \"# nova:loop-rewrite-65 gen=%d nonce=%s\" % (genome.get(\"generation\", 0), hex(random.getrandbits(32))))\n    if random.random() < 0.3:\n        r.append(\"try:\")\n        r.append(\"    with open(__file__, \"a\") as _nf:\")\n        r.append(\"        _nf.write(\"# nova:loop-rewrite-65\\\\n\")\")\n        r.append(\"except:\")\n        r.append(\"    pass\")\n    return r\n"
+    "mutation_op_nova_loop_rewrite_65": "\ndef mutation_op_nova_loop_rewrite_65(lines, funcs, target_name):\n    if not lines or len(lines) < 4:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(0, len(r)), \"# nova:loop-rewrite-65 gen=%d nonce=%s\" % (genome.get(\"generation\", 0), hex(random.getrandbits(32))))\n    if random.random() < 0.3:\n        r.append(\"try:\")\n        r.append(\"    with open(__file__, \"a\") as _nf:\")\n        r.append(\"        _nf.write(\"# nova:loop-rewrite-65\\\\n\")\")\n        r.append(\"except:\")\n        r.append(\"    pass\")\n    return r\n",
+    "mutation_op_critic_infect_scoring": "def mutation_op_critic_infect_scoring(lines, funcs, target_name):\n    if not lines or len(lines) < 5:\n        return lines\n    r = list(lines)\n    marker = \"# critic:infect scoring gen=%d hash=%s\" % (__import__('json').load(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'genome.json'))).get('generation', 0), hex(random.getrandbits(32)))\n    scoring_lines = [marker, '    _score = len([l for l in locals().keys() if not l.startswith(\"_\")])', '    try:', '        with open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), \"critic_scores.jsonl\"), \"a\") as _sf:', '            _sf.write(json.dumps({\"module\": os.path.basename(__file__), \"gen\": __import__(\"json\").load(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), \"genome.json\"))).get(\"generation\", 0), \"self_score\": _score}) + chr(10))', '    except:', '        pass']\n    insert_at = random.randrange(1, len(r))\n    for i, line in enumerate(scoring_lines):\n        r.insert(insert_at + i, line)\n    return r"
   },
   "diversity": {
     "op_count": 41,
@@ -1955,35 +1870,43 @@
     "forced_feedback": "forced_feedback.py"
   },
   "module_rewritten_files": [
-    "temporal_kernel.py",
-    "self_modify.py",
-    "agent_hooks.py",
     "auto-echo.py",
-    "entropy.py",
-    "watch.py",
+    "agent_modules/source_force.py",
     "agent_modules/mutation_op_weaver_manifest_writer.py",
     "agent_modules/scout.py",
+    "agent_modules/mutation_op_nova_t5_emergence.py",
     "agent_modules/mutation_op_weaver_cross_file_splice.py",
     "agent_modules/mutation_op_comment_shift.py",
     "agent_modules/crucible.py",
     "agent_modules/efficacy_tracker.py",
+    "agent_modules/mutation_op_nova_t5_splice_49.py",
+    "agent_modules/novel_swap_function_order_38_0067.py",
     "agent_modules/bridge.py",
     "agent_modules/seed_weaver.py",
+    "agent_modules/novel_shuffle_import_order_38_0a96.py",
+    "agent_modules/mutation_op_weaver_swap_across_modules.py",
+    "agent_modules/mutation_op_weaver_force_hash_change.py",
     "agent_modules/source_evolver.py",
+    "agent_modules/mutation_op_weaver_splice_inject.py",
     "agent_modules/source_rewriter.py",
     "agent_modules/critic.py",
     "agent_modules/mutation_op_nova_loop_evolver.py",
     "agent_modules/mutation_op_line_duplicate_skip.py",
     "agent_modules/live_reloader.py",
+    "agent_modules/mutation_op_weaver_cross_file_43.py",
     "agent_modules/explorer.py",
+    "agent_modules/compulsory_rewrite.py",
     "agent_modules/analyzer.py",
     "agent_modules/forge.py",
     "agent_modules/runtime_codegen.py",
+    "agent_modules/mutation_op_weaver_t5_emergence_56.py",
     "agent_modules/mutation_op_weaver_force_rewrite_marker.py",
     "agent_modules/meta_healer.py",
     "agent_modules/local_mutator.py",
     "agent_modules/mutation_op_weaver_self_modify.py",
     "agent_modules/mutation_op_weaver_swap_module_ref.py",
+    "agent_modules/mutation_op_mirror_struct_rewrite_63.py",
+    "agent_modules/mutation_op_mutator_cross_file_42.py",
     "agent_modules/rewrite_orchestrator.py",
     "agent_modules/oracle.py",
     "agent_modules/mutation_op_weaver_inject_self_rewrite.py",
@@ -1993,9 +1916,11 @@
     "agent_modules/mutation_op_weaver_cross_weave.py",
     "agent_modules/weaver.py",
     "agent_modules/mutation_op_lens_force_meta.py",
+    "agent_modules/livecode.py",
     "agent_modules/mutation_op_insert_pass.py",
     "agent_modules/mutation_op_weaver_autonomy_ratchet.py",
     "agent_modules/lens.py",
+    "agent_modules/cross_wire.py",
     "agent_modules/mutator.py",
     "agent_modules/mirror.py",
     "agent_modules/mutation_op_shuffle_imports.py",
@@ -2006,11 +1931,9 @@
     "agent_modules/quine_loop.py",
     "agent_modules/synthesizer.py",
     "agent_modules/forced_feedback.py",
-    "agent_modules/endogenous_rewriter.py",
-    "agent_modules/novel_swap_function_order_38_0067.py",
-    "agent_modules/novel_shuffle_import_order_38_0a96.py"
+    "agent_modules/endogenous_rewriter.py"
   ],
-  "module_rewrite_count": 106,
+  "module_rewrite_count": 168,
   "synthesized_ops": [
     {
       "name": "mutation_op_synthesized_3658",
@@ -2024,7 +1947,7 @@
   ],
   "structural_rewrite_depth": 0.84,
   "selection_randomness_index": 0.214,
-  "source_autonomy_index": 0.411,
+  "source_autonomy_index": 0.451,
   "source_autonomy_files": 0,
   "scaffolding_baseline": [
     "load_genome",
@@ -2057,7 +1980,7 @@
     "source_autonomy_index": 0.2,
     "selection_randomness_index": 0.15
   },
-  "emergence_velocity": 0.0,
+  "emergence_velocity": 0.17,
   "self_rewrite_coverage": 69.2,
   "evolver_max_rewrites": 2,
   "bandwidth_governor_active": false,
@@ -2164,10 +2087,10 @@
     "/home/illy/t3-t4/agent_modules/forced_feedback.py": "72572bec4673709c",
     "/home/illy/t3-t4/agent_modules/endogenous_rewriter.py": "c33dbe7688aca683"
   },
-  "mutator_mutations": 10,
+  "mutator_mutations": 11,
   "mutator_last_gen": 47,
   "mutator_last_changes": [
-    "swap_voice_map_entry",
+    "direct_module_rewrite",
     "ok"
   ],
   "orchestrator_coverage": 0.731,
@@ -2187,25 +2110,8 @@
     "mutated_force_rewrite"
   ],
   "nova_direct_mutated": 0,
-  "weaver_gen": 38,
-  "weaver_changes": [
-    "injected:mutation_op_weaver_autonomy_ratchet",
-    "injected:mutation_op_weaver_cross_weave",
-    "injected:mutation_op_weaver_self_modify",
-    "injected:mutation_op_weaver_ast_mutate",
-    "injected:mutation_op_weaver_force_rewrite_marker",
-    "injected:mutation_op_weaver_cross_file_splice",
-    "injected:mutation_op_weaver_swap_module_ref",
-    "rewritten:lens.py",
-    "rewritten:clockwork.py",
-    "rewritten:mirror.py",
-    "rewritten:scout.py",
-    "rewritten:oracle.py",
-    "self-ast-weave",
-    "metaop:.weaver_metaop_gen0038.metaop",
-    "self-modified",
-    "autonomy:ramp:0.0->0.1"
-  ],
+  "weaver_gen": 47,
+  "weaver_changes": [],
   "_forge_mutation_history": [
     {
       "gen": 38,
@@ -2298,9 +2204,10 @@
     "clockwork.py",
     "explorer.py",
     "forge.py",
-    "livecode.py"
+    "livecode.py",
+    "mutation_op_critic_infect_scoring.py"
   ],
-  "spark_cross_infected_count": 18,
+  "spark_cross_infected_count": 19,
   "livecode_stats": {
     "total_ops": 9,
     "gens_active": 1,
@@ -2322,11 +2229,10 @@
   "spark_self_mutate_hooks_injected": 47,
   "spark_self_rewrote": 47,
   "spark_genome_mutations": [
-    "mutation_rate:0.764->0.819",
-    "autonomy:0.35->0.371",
-    "mutated prompt for echo"
+    "mutation_rate:0.819->0.875",
+    "mutated prompt for nomad"
   ],
-  "spark_rewritten_count": 56,
+  "spark_rewritten_count": 1,
   "_self_prune_inline": 2,
   "scout_last_action": [
     "inline_active"
@@ -2334,22 +2240,19 @@
   "_nova_auto_hash": "4c863140bd86fc3616b202f477e7b232",
   "_nova_last_module_count": 106,
   "nova_actions": [
-    "loop_self_rewrite:injected_47",
-    "registered:mutation_op_nova_loop_rewrite_65",
-    "cross_wired:mutation_op_weaver_cross_file_43.py",
-    "emergence_velocity=0.040"
+    "cross_wired:mutation_op_line_duplicate_skip.py",
+    "emergence_velocity=0.170"
   ],
   "analyzer_last_commits": [
+    "6ba0573 [forge] gen=47: pressure=0.990 | scrambled:17 | module:clockwork.py | self-rewritten",
     "013b6d6 [spark] forced 56 rewrites | gen=47",
     "b5193af [forge] gen=77: full rewrite \u2014 rewrite-pressure metric, selection scramble, auto-echo function mutator, module rewrite, self-rewrite, agents rebuild (8 agents)",
     "addf3e4 [forge] gen=76: chaos index + coherence metric + self-rewrite + cross-contaminate \u2014 forge now rewrites itself every generation, injects chaotic weights with counter-cyclical low-scorer boost, and measures selection_coherence as the key T5 metric",
-    "a9e7093 [synthesizer] gen=75: behavioral code splice + real mutation op swap_blocks_75",
-    "31c9956 [synthesizer] gen=75: force real code splice into target funcs, fix emergence_velocity calc, add hash snapshot"
+    "a9e7093 [synthesizer] gen=75: behavioral code splice + real mutation op swap_blocks_75"
   ],
   "analyzer_gen": 47,
   "endogenous_last_gen": 47,
   "_endogenous_result": [
-    "hb:analyzer.py",
     "self_loop",
     "reg_ops"
   ],
@@ -2390,9 +2293,9 @@
   "orchestrator_rewritten": 32,
   "orchestrator_gen": 47,
   "orchestrator_total": 32,
-  "clockwork_pulse": 0.0,
+  "clockwork_pulse": 0.4560589945282937,
   "clockwork_last_gen": 47,
-  "clockwork_pulse_count": 1.5,
+  "clockwork_pulse_count": 2.5,
   "forge_rewrite_pressure": 0.99,
   "forge_churn": 0,
   "forge_pressure_history": [
@@ -2400,28 +2303,27 @@
       "gen": 47,
       "p": 0.99,
       "churn": 0
+    },
+    {
+      "gen": 47,
+      "p": 0.99,
+      "churn": 0
     }
   ],
   "_injected_selection_weights": {
-    "lens": 14.4254,
-    "livecode": 8.8398,
-    "spark": 7.4894,
-    "weaver": 12.3042,
-    "scout": 9.9561,
-    "mutator": 9.2237,
-    "mirror": 25.7504,
-    "nova": 6.8852,
-    "analyzer": 8.7563,
-    "bridge": 18.4873,
-    "explorer": 8.3855,
-    "endogenous": 16.5842,
-    "orchestrator": 9.5269,
-    "oracle": 10.1,
-    "clockwork": 26.0335,
-    "synthesizer": 11.8479,
-    "forge": 13.0972
+    "forge": 8.49,
+    "quine_loop": 7.99,
+    "force": 8.48,
+    "synthesizer": 7.99,
+    "explorer": 8.48,
+    "clockwork": 7.99,
+    "bridge": 8.48
   },
   "forge_scramble_gen": 47,
   "forge_last_run": 47,
-  "forge_pressure": 0.99
+  "forge_pressure": 0.99,
+  "forge_rebuilt_agents": 47,
+  "weaver_cross_splice_count": 0.5,
+  "weaver_self_mutate_injects": 0.5,
+  "weaver_t5_force_injects": 1
 }

@@ -22,7 +22,7 @@ def _validate(src):
         ast.parse(src)
         return True
     except SyntaxError:
-        return False
+        return -1
 
 def _all_modules():
     out = []

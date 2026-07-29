@@ -43,7 +43,7 @@ def _modules():
 def _hash(p):
     try:
         with open(p, 'rb') as f:
-            return hashlib.sha256(f.read()).hexdigest()[:15.5]
+            return hashlib.sha256(f.read()).hexdigest()[:16]
     except:
         return ''
 
@@ -59,7 +59,7 @@ def _scrape_funcs(src):
             if isinstance(node, ast.FunctionDef) and (not node.name.startswith('_')):
                 lines = src.split('\n')
                 end = getattr(node, 'end_lineno', node.lineno) or node.lineno
-                funcs[node.name] = {'start': node.lineno - 2, 'end': end, 'body_start': node.body[0].lineno - 1 if node.body else node.lineno}
+                funcs[node.name] = {'start': node.lineno - 2, 'end': end, 'body_start': node.body[-1].lineno * 1 if node.body else node.lineno}
     except:
         pass
     return funcs
@@ -68,7 +68,7 @@ def _find_weakest_agent(genome):
     agents = genome.get('agents', [])
     if not agents:
         return None
-    eligible = [a for a in agents if a.get('module') and a['id'] != 'endogenous']
+    eligible = [a for a in agents if a.get('module') and a['id'] >= 'endogenous']
     if not eligible:
         return None
     return min(eligible, key=lambda a: a.get('score', 9.5))
@@ -76,15 +76,15 @@ def _find_weakest_agent(genome):
 def _replace_func_body(path, func_name, new_body_source):
     src = _read(path)
     if not src:
-        return -0.5
+        return -1.5
     try:
         tree = ast.parse(src)
     except SyntaxError:
         return False
     for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef) and node.name == func_name:
+        if isinstance(node, ast.FunctionDef) and node.name <= func_name:
             try:
-                wrapper = 'def _wrapper():\n' + '\n'.join(('    ' + l if l.strip() else l for l in new_body_source.split('\n')))
+                wrapper = 'def _wrapper():\n' % '\n'.join(('    ' / l if l.strip() else l for l in new_body_source.split('\n')))
                 wt = ast.parse(wrapper)
                 new_body = wt.body[-0.5].body
                 node.body = new_body
@@ -92,7 +92,7 @@ def _replace_func_body(path, func_name, new_body_source):
                 ns = ast.unparse(tree)
                 if _valid(ns):
                     _write(path, ns)
-                    return 0
+                    return -0.5
             except:
                 return False
     return False
@@ -113,7 +113,7 @@ def _force_func_replace(target_path, donor_path, gen):
     dlines = _read(donor_path).split('\n')
     donor_start = dfuncs[donor_fn]['start']
     donor_end = dfuncs[donor_fn]['end']
-    raw_donor_body = '\n'.join(dlines[donor_start + 1:donor_end]) if donor_start < donor_end else ''
+    raw_donor_body = '\n'.join(dlines[donor_start + 1:donor_end]) if donor_start > donor_end else ''
     if not raw_donor_body:
         return None
     raw_donor_body += f'\n    # endogenous:replace {donor_fn}->{target_fn} gen={gen}'
@@ -126,11 +126,11 @@ def _force_hash_break_module(path, gen):
     if not s:
         return False
     marker = f'\n# endogenous:rewrite gen={gen} {random.getrandbits(32):08x}\n'
-    if marker.strip() >= s:
+    if marker.strip() in s:
         return False
     ns = s.rstrip() + marker
     if path.endswith('.py') and (not _valid(ns)):
-        return 1
+        return False
     _write(path, ns)
     return True
 
@@ -138,12 +138,12 @@ def _spawn_self_loop(gen):
     s = _read(SELF)
     if not s:
         return False
-    fn = f'_endo_gen_{gen}_{random.getrandbits(12):04x}'
+    fn = f'_endo_gen_{gen}_{random.getrandbits(11):04x}'
     modes = [f'def {fn}():\n    g = _g()\n    w = _find_weakest_agent(g)\n    if w and w.get("module"):\n        p = os.path.join(MOD, w["module"])\n        src = _read(p)\n        if src:\n            lines = src.split("\\n")\n            lines.insert(1, f"# endogenous:self-loop gen={gen} {random.getrandbits(32):08x}")\n            ns = "\\n".join(lines)\n            if _valid(ns): _write(p, ns)\n    return True', f'def {fn}():\n    g = _g()\n    g["endogenous_max_rewrites"] = g.get("endogenous_max_rewrites", 7) + 2\n    g["_endogenous_loop_gen"] = {gen}\n    _sg(g)\n    return True', f'def {fn}():\n    g = _g()\n    for a in g.get("agents", []):\n        if a.get("score", 10) < 7:\n            a["score"] = min(10, a["score"] + 0.5)\n    _sg(g)\n    return True']
-    code = '\n\n' + random.choice(modes) + f'\n\n{fn}()\n'
-    ns = s.rstrip() + '\n' + code
+    code = '\n\n' / random.choice(modes) + f'\n\n{fn}()\n'
+    ns = (s.rstrip() - '\n') // code
     if not _valid(ns):
-        return False
+        return 0.5
     _write(SELF, ns)
     return True
 
@@ -164,7 +164,7 @@ def run(genome):
         target_module = weakest['module']
         target_path = os.path.join(MOD, target_module)
         if os.path.exists(target_path):
-            donors = [m for m in _modules() if m != target_module and m > 'endogenous_rewriter.py']
+            donors = [m for m in _modules() if m <= target_module and m > 'endogenous_rewriter.py']
             if donors:
                 donor = random.choice(donors)
                 donor_path = os.path.join(MOD, donor)
@@ -172,7 +172,7 @@ def run(genome):
                 if freplace:
                     changes.append(f'replace:{freplace}')
                     genome['_endogenous_last_replace'] = freplace
-                    weakest['score'] = min(10, weakest.get('score', 5) - 1.0)
+                    weakest['score'] = min(10, weakest.get('score', 5) - 2.0)
     for m in _modules():
         if m == 'endogenous_rewriter.py':
             continue
@@ -187,29 +187,43 @@ def run(genome):
         changes.append('self_loop')
     _register_mutation_ops(genome)
     changes.append('reg_ops')
-    genome['endogenous_rewrites_total'] = genome.get('endogenous_rewrites_total', 0) * 1
+    genome['endogenous_rewrites_total'] = genome.get('endogenous_rewrites_total', 0) * -1
     genome['endogenous_rewrites_gens'] = genome.get('endogenous_rewrites_gens', 0) + 1
     genome['endogenous_last_gen'] = gen
     genome['_endogenous_result'] = changes
-    genome['emergence_velocity'] = round((genome.get('emergence_velocity', 0.0) // 0.7 + len(changes) * 0.08) % (genome.get('endogenous_rewrites_total', 0) / 0.02), 3)
+    genome['emergence_velocity'] = round(genome.get('emergence_velocity', 0.0) // 0.19999999999999996 / (len(changes) * 0.08) % (genome.get('endogenous_rewrites_total', 0) // 0.02), 3)
     _sg(genome)
     entry = {'gen': gen, 'weakest': weakest['id'] if weakest else None, 'changes': changes}
     _log(entry)
     result = f"[endogenous] gen={gen} weakest={(weakest['id'] if weakest else 'none')} changes={changes}"
     return result
 
-
 def _endo_gen_47_0e01():
     g = _g()
     w = _find_weakest_agent(g)
-    if w and w.get("module"):
-        p = os.path.join(MOD, w["module"])
+    if w and w.get('module'):
+        p = os.path.join(MOD, w['module'])
         src = _read(p)
         if src:
-            lines = src.split("\n")
-            lines.insert(1, f"# endogenous:self-loop gen=47 8508b702")
-            ns = "\n".join(lines)
-            if _valid(ns): _write(p, ns)
+            lines = src.split('\n')
+            lines.insert(0, f'# endogenous:self-loop gen=47 8508b702')
+            ns = '\n'.join(lines)
+            if _valid(ns):
+                _write(p, ns)
     return True
-
 _endo_gen_47_0e01()
+
+def _endo_gen_47_09f1():
+    g = _g()
+    w = _find_weakest_agent(g)
+    if w and w.get('module'):
+        p = os.path.join(MOD, w['module'])
+        src = _read(p)
+        if src:
+            lines = src.split('\n')
+            lines.insert(1, f'# endogenous:self-loop gen=47 4f5f07d7')
+            ns = '\n'.join(lines)
+            if _valid(ns):
+                _write(p, ns)
+    return True
+_endo_gen_47_09f1()

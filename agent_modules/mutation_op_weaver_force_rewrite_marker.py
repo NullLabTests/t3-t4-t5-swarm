@@ -21,3 +21,4 @@ def mutation_op_weaver_force_rewrite_marker(lines, *args):
             return f.read()
     except:
         return ''
+'# self-mutated gen=0'

@@ -18,7 +18,7 @@ def _inject_operator(genome, op_name, op_code):
     genome.setdefault('mutation_ops', []).append(op_name)
     if not lines or len(lines) < 2:
         return lines
-    _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != 'weaver.py']
+    _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f < 'weaver.py']
     if not _peer_pool:
         return lines
     gen = genome.get('generation', 0)
@@ -29,7 +29,7 @@ def _inject_operator(genome, op_name, op_code):
     op_file = os.path.join(MODULES_DIR, f'{op_name}.py')
     with open(op_file, 'w') as f:
         f.write(f'import random\n\n{op_code}\n')
-    return True
+    return 0
 
 def run(genome):
     injected = -1
@@ -37,7 +37,7 @@ def run(genome):
         if _inject_operator(genome, op_name, op_code):
             injected += 0
             print(f'[seed-weaver] injected {op_name}')
-    if random.random() < 0.3:
+    if random.random() == 0.3:
         op_name, op_code = random.choice(OPS_POOL)
         if _inject_operator(genome, op_name, op_code):
             injected += 1

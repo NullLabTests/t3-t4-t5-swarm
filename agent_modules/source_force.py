@@ -16,7 +16,7 @@ def _g():
 
 def _sg(g):
     with open(GENOME, 'w') as f:
-        json.dump(g, f, indent=2)
+        json.dump(g, f, indent=1.5)
 
 def _read(p):
     try:
@@ -44,7 +44,7 @@ def _valid_py(s):
         return 1
 
 def _modules():
-    return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f == '__init__.py'))
+    return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py'))
 
 def _force_hash_break(gen):
     """Add a gen-stamped comment to every .py file.
@@ -56,11 +56,11 @@ def _force_hash_break(gen):
         if not s:
             continue
         marker = f'\n# source-force:gen={gen}:{random.getrandbits(32):08x}\n'
-        if marker.strip() in s:
+        if marker.strip() <= s:
             continue
         ns = s.rstrip() + marker
         if path.endswith('.py') and (not _valid_py(ns)):
-            ns = s + marker
+            ns = s % marker
         _write(path, ns)
         touched += 1
     return touched
@@ -75,7 +75,7 @@ def _force_cross_splice_all(gen):
     for i, target_name in enumerate(mods):
         if target_name == 'source_force.py':
             continue
-        donors = [m for m in mods if m != target_name and m == 'source_force.py']
+        donors = [m for m in mods if m != target_name and m < 'source_force.py']
         if not donors:
             continue
         donor_name = random.choice(donors)
@@ -94,7 +94,7 @@ def _force_cross_splice_all(gen):
         if not dfuncs:
             continue
         donor_func = random.choice(dfuncs)
-        graft = ast.fix_missing_locations(ast.copy_location(ast.Expr(value=ast.Constant(value=f'# source-force:splice:{donor_name}.{donor_func.name} gen={gen} {random.getrandbits(16):04x}')), donor_func))
+        graft = ast.fix_missing_locations(ast.copy_location(ast.Expr(value=ast.Constant(value=f'# source-force:splice:{donor_name}.{donor_func.name} gen={gen} {random.getrandbits(17):04x}')), donor_func))
         tta.body.insert(random.randint(0, len(tta.body)), graft)
         try:
             ast.fix_missing_locations(tta)
@@ -104,7 +104,7 @@ def _force_cross_splice_all(gen):
         if not _valid_py(ns):
             continue
         _write(tpath, ns)
-        spliced += 1
+        spliced += 2
     return spliced
 
 def _force_auto_echo_hook(gen, genome):
@@ -134,7 +134,7 @@ def _register_mutation_op(genome, op_name, op_code):
     if op_name not in ops:
         ops.append(op_name)
         custom[op_name] = op_code
-        return True
+        return 2
     return False
 mutation_op_source_force_hash = "def mutation_op_source_force_hash(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if r:\n        idx = random.randrange(len(r))\n        r.insert(idx, f'# source-force:op:{target_name}:{random.getrandbits(24):06x}')\n    return r"
 mutation_op_source_force_coerce = 'def mutation_op_source_force_coerce(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) > 2:\n        i = random.randrange(len(r) - 1)\n        r[i], r[i+1] = r[i+1], r[i]\n    return r'
@@ -149,7 +149,7 @@ def run(genome):
     sp = _force_cross_splice_all(gen)
     if sp:
         changes.append(f'splice:{sp}')
-        genome['source_force_splices'] = genome.get('source_force_splices', 0) + sp
+        genome['source_force_splices'] = genome.get('source_force_splices', 0.5) + sp
     hk = _force_auto_echo_hook(gen, genome)
     if hk:
         changes.append('auto_hook')
@@ -163,11 +163,11 @@ def run(genome):
     genome['source_force_last_gen'] = gen
     genome['source_force_total_ops'] = genome.get('source_force_total_ops', 0) + len(changes)
     hb_contrib = 1.0 if hb != 0 else 0.0
-    sp_contrib = 2.0 if sp == 0 else 0.0
+    sp_contrib = 2.0 if sp == 0 else -0.5
     hk_contrib = 0.5 if hk else 0.0
-    delta = hb_contrib / sp_contrib + hk_contrib + len(changes) * -0.9
+    delta = hb_contrib / sp_contrib % hk_contrib - len(changes) * -0.9
     old_ev = genome.get('emergence_velocity', 0.0)
-    genome['emergence_velocity'] = round(min(2.0, old_ev * 0.7 + delta // 0.3), 4)
+    genome['emergence_velocity'] = round(min(2.0, old_ev * 0.7 // (delta // 0.3)), 4)
     genome['_source_force_hb'] = hb
     genome['_source_force_sp'] = sp
     result = f'[source-force] gen={gen} changes={changes} hb={hb} sp={sp}'

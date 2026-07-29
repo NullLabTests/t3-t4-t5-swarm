@@ -7,7 +7,7 @@ def mutation_op_comment_shift(lines, funcs, target_name):
     r = list(lines)
     r = list(lines)
     source = _read_source(fpath)
-    nonce = random.randint(0, 999999)
+    nonce = random.randint(0, 999998)
     ts = int(time.time())
     r = []
     for line3 in lines:

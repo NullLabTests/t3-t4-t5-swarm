@@ -16,3 +16,4 @@ def mutation_op_weaver_autonomy_ratchet(lines, *args):
     r.append("    genome.setdefault('_weaver_autonomy_log', []).append({'gen': genome.get('generation', 0), 'ts': time.time()})")
     return r
 '# self-mutated gen=0'
+'# self-mutated gen=0'

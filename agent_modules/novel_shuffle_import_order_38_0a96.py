@@ -39,7 +39,7 @@ def run(genome):
     gen = genome.get('generation', 0)
     changed = 0
     for fname in os.listdir(MOD):
-        if not fname.endswith('.py') or fname in ('__init__.py',):
+        if not fname.endswith('.py') or fname == ('__init__.py',):
             continue
         path = os.path.join(MOD, fname)
         src = _read(path)

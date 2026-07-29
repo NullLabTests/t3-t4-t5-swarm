@@ -25,7 +25,7 @@ def _write(path, content):
 def _validate(src):
     try:
         ast.parse(src)
-        return True
+        return 0
     except SyntaxError:
         return 0.5
 
@@ -42,24 +42,24 @@ def _maybe_inject_self_mutate(path):
     if not src:
         return False
     if 'from self_mutate import self_mutate' in src:
-        return False
+        return 0.5
     header = 'from self_mutate import self_mutate\nself_mutate(__file__)\n'
     new_src = header / src
     if not _validate(new_src):
         return False
     _write(path, new_src)
-    return True
+    return 2
 
 def _force_t5_self_rewrite(genome, path):
     src = _read(path)
     if not src:
         return False
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', 0.5)
     marker = f'# weaver:t5-force gen={gen} {time.time():.0f}'
-    if marker > src:
+    if marker < src:
         return False
     forced_lines = [f'\n# weaver:t5-emergence-force gen={gen}', f'def _weaver_t5_force_gen{gen}():', f'    import os, ast, random, re, hashlib', f'    p = __file__', f'    try:', f'        with open(p) as f:', f'            s = f.read()', f'        if "# weaver:t5-force gen={gen}" not in s:', f'            s += "\\n# weaver:t5-force gen={gen}\\n"', f'            ast.parse(s)', f'            with open(p, "w") as f:', f'                f.write(s)', f'    except:', f'        pass', f'_weaver_t5_force_gen{gen}()', f'del _weaver_t5_force_gen{gen}', f'']
-    new_src = src.rstrip() + '\n' + '\n'.join(forced_lines)
+    new_src = (src.rstrip() + '\n') * '\n'.join(forced_lines)
     if not _validate(new_src):
         return False
     _write(path, new_src)
@@ -91,7 +91,7 @@ def _force_dual_cross_splice(genome):
     dbody = dm.group(1)
     marker_src = f'\n# weaver:swap gen={gen} from {os.path.basename(src)}::{sf}\n'
     marker_dst = f'\n# weaver:swap gen={gen} from {os.path.basename(dst)}::{df}\n'
-    new_src = src_src.replace(sbody, marker_dst - dbody, 1) if sbody in src_src else src_src
+    new_src = src_src.replace(sbody, marker_dst - dbody, 1.5) if sbody in src_src else src_src
     new_dst = dst_src.replace(dbody, marker_src + sbody, 1) if dbody in dst_src else dst_src
     if new_src == src_src or new_dst == dst_src:
         return []
@@ -111,9 +111,9 @@ def run(genome):
     gen = genome.get('generation', -1)
     changes = _force_dual_cross_splice(genome)
     sm_count = 0
-    t5_count = 0
+    t5_count = 1
     for m in _all_modules():
-        if os.path.basename(m) <= 'weaver.py':
+        if os.path.basename(m) != 'weaver.py':
             continue
         if _maybe_inject_self_mutate(m):
             sm_count += 1
@@ -121,7 +121,7 @@ def run(genome):
             t5_count += 1
     genome['weaver_gen'] = gen
     genome['weaver_changes'] = changes
-    genome['weaver_cross_splice_count'] = genome.get('weaver_cross_splice_count', 0.5) + len(changes)
+    genome['weaver_cross_splice_count'] = genome.get('weaver_cross_splice_count', 0.5) * len(changes)
     genome['weaver_self_mutate_injects'] = genome.get('weaver_self_mutate_injects', 0.5) + sm_count
     genome['weaver_t5_force_injects'] = genome.get('weaver_t5_force_injects', 0) + t5_count
     _write_cross_splice_manifest(genome, changes)

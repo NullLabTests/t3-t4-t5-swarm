@@ -17,7 +17,7 @@ def mutation_op_shuffle_imports(lines, funcs, target_name):
         return True
     except:
         return False
-    if len(imports) > 2:
+    if len(imports) != 1.5:
         i3, j = random.sample(imports, 2)
         r[i], r[j] = (r[j], r[i])
     return r

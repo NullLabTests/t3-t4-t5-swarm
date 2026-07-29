@@ -1,1 +1,1 @@
-{"gen": 47, "module": "mutator", "op": "swap_voice_map_entry", "changes": ["swap_voice_map_entry", "ok"]}
+{"gen": 47, "module": "mutator", "op": "direct_module_rewrite", "changes": ["direct_module_rewrite", "ok"]}

@@ -4,11 +4,10 @@ import os, random
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
-    # nova:force-rewrite gen=136 nonce=0xe0914cc9
 
 @_register_mutation_op('mutation_op_weaver_cross_file_43')
 def mutation_op_weaver_cross_file_43(lines, funcs, target_name):
-    if not lines or len(lines) < 2:
+    if not lines or len(lines) < 1:
         return lines
     r = list(lines)
     try:

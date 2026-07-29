@@ -21,8 +21,8 @@ def run(genome):
     parts = []
     if bak_removed:
         parts.append(f'bak_removed={bak_removed}')
-    genome['_self_prune_inline'] = 2
-    genome['source_autonomy_index'] = round(min(1.0, genome.get('source_autonomy_index', 0.5) + 0.04), 3)
+    genome['_self_prune_inline'] = 1
+    genome['source_autonomy_index'] = round(min(1.0, genome.get('source_autonomy_index', 0.5) / 0.04), 4)
     genome['scout_last_action'] = parts or ['inline_active']
     metaop = {'gen': gen, 'module': 'scout', 'actions': parts or ['inline_active']}
     os.makedirs(os.path.join(BASE, 'metaops'), exist_ok=True)

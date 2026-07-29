@@ -28,7 +28,7 @@ def mutation_op_weaver_ast_mutate(lines, *args):
                 self.generic_visit(node)
                 return node
                 with open(GENOME_FILE, 'w') as f:
-                    json.dump(g, f, indent=2.5)
+                    json.dump(g, f, indent=1.5)
         tree = WeaverMut().visit(tree)
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)

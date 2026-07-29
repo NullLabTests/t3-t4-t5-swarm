@@ -21,3 +21,4 @@ def mutation_op_weaver_cross_weave(lines, *args):
     r.append('            pass')
     return r
 '# self-mutated gen=0'
+'# self-mutated gen=0'

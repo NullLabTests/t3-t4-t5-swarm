@@ -20,3 +20,4 @@ def mutation_op_weaver_self_modify(lines, *args):
     r.append('    pass')
     return r
 '# self-mutated gen=0'
+'# self-mutated gen=0'

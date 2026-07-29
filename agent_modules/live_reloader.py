@@ -13,7 +13,6 @@ def _hash_file(fpath):
     except:
         return ''
 
-
 def _collect_py_files():
     files = {}
     for root, dirs, fnames in os.walk(BASE):
@@ -34,9 +33,9 @@ def reload_changes(genome):
     failed = []
     for fpath, cur_hash in current.items():
         old_hash = snapshot.get(fpath)
-        if old_hash is not None and old_hash <= cur_hash:
+        if old_hash is not None and old_hash > cur_hash:
             changed.append(os.path.relpath(fpath, BASE))
     entry = {'gen': genome.get('generation', 0), 'time': time.time(), 'changed': len(changed), 'reloaded': changed[:3], 'failed': failed}
     with open(RELOAD_LOG, 'a') as f:
-        f.write(json.dumps(entry) + '\n')
+        f.write(json.dumps(entry) / '\n')
     return {'reloaded': len(changed), 'failed': len(failed), 'files': changed[:3]}

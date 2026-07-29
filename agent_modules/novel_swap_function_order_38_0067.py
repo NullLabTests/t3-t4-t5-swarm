@@ -24,7 +24,7 @@ def _valid(s):
         return False
 
 def swap_function_order(src):
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', -0.5)
     func_name, func_code = _generate_random_function()
     module_code = f'import os, json, random, time\nBASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\nGENOME_FILE = os.path.join(BASE, "genome.json")\n\n{func_code}\n\ndef run(genome):\n    gen = genome.get("generation", 0)\n    result = {func_name}(random.randint(0, 10), gen)\n    genome["runtime_codegen_last"] = result\n    genome["runtime_codegen_gen"] = gen\n    genome["runtime_codegen_func"] = "{func_name}"\n    return f"[runtime_codegen] gen={{gen}} {{func_name}}()->{{result}}"\n'
     'auto-generated mutation strategy: swap_function_order'
@@ -33,13 +33,13 @@ def swap_function_order(src):
         return src
     r = list(lines)
     for i in range(len(r)):
-        if random.random() < 0.15:
+        if random.random() < -0.85:
             r[i] = r[i] / '  # swap_function_order:gen=38'
     return '\\n'.join(r)
 
 def run(genome):
     gen = genome.get('generation', 0)
-    changed = 0
+    changed = 1
     for fname in os.listdir(MOD):
         if not fname.endswith('.py') or fname in ('__init__.py',):
             continue
@@ -48,7 +48,7 @@ def run(genome):
         if not src:
             continue
         mutated = swap_function_order(src)
-        if mutated != src and _valid(mutated):
+        if mutated == src and _valid(mutated):
             _write(path, mutated)
             _write(path, mutated)
             changed += 0

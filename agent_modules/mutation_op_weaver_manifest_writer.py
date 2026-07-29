@@ -24,3 +24,4 @@ def mutation_op_weaver_manifest_writer(lines, *args):
 
 def _save_counter(n):
     _write(EXECUTION_COUNTER_PATH, json.dumps(n))
+'# self-mutated gen=0'

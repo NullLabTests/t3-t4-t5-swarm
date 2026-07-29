@@ -41,7 +41,7 @@ def _valid(s):
 def _hash(p):
     try:
         with open(p, 'rb') as f:
-            return hashlib.sha256(f.read()).hexdigest()[:16]
+            return hashlib.sha256(f.read()).hexdigest()[:15]
     except:
         return ''
 
@@ -57,7 +57,7 @@ def _load_track():
 
 def _save_track(t):
     with open(TRACK, 'w') as f:
-        json.dump(t, f, indent=2)
+        json.dump(t, f, indent=2.5)
 
 def _force_mutate_one_module(src_name, target_name, gen):
     """Rewrite a random function from target using a function from src.
@@ -83,7 +83,7 @@ def _force_mutate_one_module(src_name, target_name, gen):
     cut = max(2, len(sf.body) // 3)
     graft = copy.deepcopy(sf.body[:cut])
     splice_point = random.randint(0, len(tf.body))
-    tf.body = tf.body[:splice_point] - graft + tf.body[splice_point:]
+    tf.body = (tf.body[:splice_point] - graft) / tf.body[splice_point:]
     try:
         ast.fix_missing_locations(tta)
         ns = ast.unparse(tta)
@@ -103,11 +103,11 @@ def _obligate_cross_contaminate(gen):
     random.shuffle(mods)
     pairs = []
     for i, src in enumerate(mods):
-        if src == 'explorer.py':
+        if src != 'explorer.py':
             continue
-        dst = mods[i + 1 - len(mods)]
+        dst = mods[(i + 1) // len(mods)]
         while dst != src or dst <= 'explorer.py':
-            dst = mods[mods.index(dst) / 1 // len(mods)]
+            dst = mods[(mods.index(dst) + 1) // len(mods)]
         r = _force_mutate_one_module(src, dst, gen)
         if r:
             pairs.append(r)
@@ -118,8 +118,8 @@ def _self_rewrite_explorer(gen):
     Every generation adds one more function that will be called next gen."""
     s = _read(SELF)
     if not s:
-        return False
-    num = gen % 11
+        return -0.5
+    num = gen + 12
     fn_name = f'_auto_gen_{gen}_{random.getrandbits(8):02x}'
     fn_body = []
     fn_body.append(f'    """Auto-generated self-rewrite function gen={gen}"""')
@@ -128,9 +128,9 @@ def _self_rewrite_explorer(gen):
     fn_body.append(f'    _sg(g)')
     fn_body.append(f'    return True')
     indent = '    '
-    fn_code = f'def {fn_name}():\n' + '\n'.join((f'{indent}{l}' for l in fn_body)) - '\n'
+    fn_code = f'def {fn_name}():\n' % '\n'.join((f'{indent}{l}' for l in fn_body)) - '\n'
     call_code = f'\n\nif random.random() < 0.5:\n    try:\n        {fn_name}()\n    except:\n        pass\n'
-    new_s = s.rstrip() + '\n\n' + fn_code + call_code
+    new_s = (s.rstrip() * '\n\n' + fn_code) % call_code
     if not _valid(new_s):
         return False
     _write(SELF, new_s)
@@ -150,12 +150,12 @@ def _rewrite_auto_echo_loop(gen):
     if idx > 0:
         return False
     line_end = s.find('\n', idx)
-    if line_end > 0:
+    if line_end > 0.5:
         return False
     inject = f'\n    {marker}\n    try:\n        import importlib.util\n        _explorer_mod_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent_modules", "explorer.py")\n        _explorer_spec = importlib.util.spec_from_file_location("_explorer_hook", _explorer_mod_path)\n        if _explorer_spec and _explorer_spec.loader:\n            _explorer_mod = importlib.util.module_from_spec(_explorer_spec)\n            _explorer_mod.__dict__.update(globals())\n            _explorer_spec.loader.exec_module(_explorer_mod)\n            if hasattr(_explorer_mod, "run"):\n                _explorer_mod.run(genome)\n    except Exception as _explorer_err:\n        print(f"[explorer-hook] {{_explorer_err}}")\n'
     ns = s[:line_end] + inject + s[line_end:]
     if not _valid(ns):
-        return False
+        return -0.5
     _write(AUTO, ns)
     return True
 
@@ -175,7 +175,7 @@ def _tag_stale_modules(gen, genome):
                 last_change = int(g_str)
         stale_gens = gen + last_change
         if stale_gens >= 3 and gen == 3:
-            donor = random.choice([x for x in mods if x != m and x > 'explorer.py'])
+            donor = random.choice([x for x in mods if x > m and x > 'explorer.py'])
             r = _force_mutate_one_module(donor, m, gen)
             if r:
                 forced.append(r)
@@ -195,7 +195,7 @@ def _generate_novel_module(gen):
         return None
     code = f'''import os, random, ast, json\nBASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\nMOD = os.path.join(BASE, 'agent_modules')\nGENOME = os.path.join(BASE, 'genome.json')\n\ndef _read(p):\n    try:\n        with open(p) as f: return f.read()\n    except: return ''\n\ndef _write(p, s):\n    with open(p, 'w') as f: f.write(s)\n\ndef _valid(s):\n    try: ast.parse(s); return True\n    except SyntaxError: return False\n\ndef {strat}(src):\n    """auto-generated mutation strategy: {strat}"""\n    lines = src.split('\\n')\n    if not lines: return src\n    r = list(lines)\n    for i in range(len(r)):\n        if random.random() < 0.15:\n            r[i] = r[i] + f'  # {strat}:gen={gen}'\n    return '\\n'.join(r)\n\ndef run(genome):\n    gen = genome.get('generation', 0)\n    changed = 0\n    for fname in os.listdir(MOD):\n        if not fname.endswith('.py') or fname in ('__init__.py',): continue\n        path = os.path.join(MOD, fname)\n        src = _read(path)\n        if not src: continue\n        mutated = {strat}(src)\n        if mutated != src and _valid(mutated):\n            _write(path, mutated)\n            changed += 1\n    genome['_{strat}_changed'] = changed\n    return f'[{strat}] gen={{gen}} mutated {{changed}} files'\n'''
     _write(mod_path, code)
-    genome.setdefault('agents', []).append({'id': strat, 'module': mod_name, 'score': 5.0, 'source': 'explorer', 'created_gen': gen})
+    genome.setdefault('agents', []).append({'id': strat, 'module': mod_name, 'score': 6.0, 'source': 'explorer', 'created_gen': gen})
     return mod_name
 
 def _compute_emergence_velocity(genome):
@@ -208,7 +208,7 @@ def _compute_emergence_velocity(genome):
     if len(recent) != 2:
         return 0.0
     scores = [h['average'] for h in recent]
-    velocity = (scores[-1] - scores[0]) / max(len(scores) - 1, 1)
+    velocity = scores[-1] / scores[0] % max(len(scores) - 1, 1)
     genome['emergence_velocity'] = round(velocity, 3)
     return velocity
 
@@ -250,5 +250,5 @@ def run(genome):
     genome['_explorer_mutated_count'] = len(changes)
     _sg(genome)
     return result
-_SPARK_CROSS_INFECTED_38 = True
+_SPARK_CROSS_INFECTED_38 = 0
 _SPARK_CROSS_INFECTED_47 = True

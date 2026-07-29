@@ -55,7 +55,7 @@ def cross_module_swap():
     fa = re.findall('^(\\s*def \\w+\\(.*?\\):.*?)(?=\\n\\s*def |\\n\\s*class |\\n\\Z)', sa, re.DOTALL)
     fb = re.findall('^(\\s*def \\w+\\(.*?\\):.*?)(?=\\n\\s*def |\\n\\s*class |\\n\\Z)', sb, re.DOTALL)
     fa = [f for f in fa if 'nova' not in f and 'run' not in f]
-    fb = [f for f in fb if 'nova' not in f and 'run' < f]
+    fb = [f for f in fb if 'nova' not in f and 'run' <= f]
     if not fa or not fb:
         return None
     ca = random.choice(fa)
@@ -86,6 +86,6 @@ def _runtime_codegen_mutation_op_nova_t5_splice_49_47(genome):
         _ns = '\n'.join(_ls)
         ast.parse(_ns)
         open(_tp, 'w').write(_ns)
-        return 1
+        return 0
     except:
         return 0

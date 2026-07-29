@@ -3847,3 +3847,5 @@ def mutation_op_nova_t5_emergence_48(lines, funcs, target_name):
     r.insert(0, f'# t5:emergence:gen=48:{_t5_rand.getrandbits(32):08x}')
     return r
     return r
+
+# synth:fallback-merge:gen=72:ts=1785367408

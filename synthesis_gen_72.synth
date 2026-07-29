@@ -1,6 +1,9 @@
 {
-  "generation": 72,
-  "synthesis_emergence": {
+  "gen": 72,
+  "proposals": 6,
+  "cross_wires": 4,
+  "merges": 0,
+  "emergence": {
     "merge_history": [
       {
         "gen": 72,
@@ -13,15 +16,12 @@
     "total_cross_wires": 4,
     "last_gen": 72
   },
-  "synthesis_velocity": 0.0,
-  "emergence_velocity": 0.0,
-  "synthesizer_last_actions": [
+  "actions": [
     "scanned_6_proposals",
     "cross_wired_4_modules",
     "self_rewritten",
     "synthesis_velocity=0.0",
-    "fallback_marker",
-    "wrote_synthesis_gen_72.synth"
+    "fallback_marker"
   ],
-  "synthesizer_last_gen": 72
+  "ts": 1785367408.2306445
 }

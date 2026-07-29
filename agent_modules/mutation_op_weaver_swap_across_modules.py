@@ -19,3 +19,4 @@ def mutation_op_weaver_swap_across_modules(lines, funcs, target_name):
     except:
         pass
     return r
+# synth:cross-proposal:from=mutation_op_line_duplicate_skip.py:func=mutation_op_line_duplicate_skip:gen=72

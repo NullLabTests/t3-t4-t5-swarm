@@ -19,3 +19,4 @@ def mutation_op_weaver_force_rewrite_marker(lines, *args):
             return f.read()
     except:
         return ''
+# synth:cross-proposal:from=mutation_op_weaver_cross_file_43.py:func=mutation_op_weaver_cross_file_43:gen=72

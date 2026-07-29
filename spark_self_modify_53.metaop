@@ -1,0 +1,4 @@
+{
+  "name": "mutation_op_spark_self_modify_53",
+  "code": "def mutation_op_spark_self_modify_53(lines, funcs, target_name):\n    r = list(lines)\n    idx = random.randrange(max(1, len(r)))\n    marker = '# spark-self-modify:gen=53:target=' + target_name + ':nonce=' + str(random.getrandbits(24))\n    r.insert(idx, marker)\n    return r"
+}

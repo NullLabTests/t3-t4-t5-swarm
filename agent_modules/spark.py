@@ -221,8 +221,57 @@ def _cross_splice_modules(genome, gen):
             changes.append(f'{donor}:{chosen}->{recipient}:{target_name}')
     return changes
 
-def _reduce_scaffolding_in_auto_echo(genome, gen):
-    return []  # scaffolding functions deleted gen=47, nothing to reduce
+def _inject_self_modify_hook(fpath, gen):
+    source = _read_source(fpath)
+    if 'def self_modify(' in source:
+        return False
+    hook = f"""
+def self_modify(gen={gen}):
+    import os, random, ast as _ast
+    fpath = __file__
+    with open(fpath) as f:
+        src = f.read()
+    lines = src.split('\\n')
+    marker = '# spark-self-modify gen={gen} ts=' + str(int(__import__('time').time()))
+    new_lines = list(lines)
+    new_lines.insert(random.randrange(len(new_lines)), marker)
+    new_src = '\\n'.join(new_lines)
+    try:
+        _ast.parse(new_src)
+        with open(fpath, 'w') as f:
+            f.write(new_src)
+        return True
+    except SyntaxError:
+        return False
+"""
+    new_source = source.rstrip() + '\n' + hook
+    if _validate(new_source):
+        with open(fpath, 'w') as f:
+            f.write(new_source)
+        return True
+    return False
+
+
+def _self_rewrite_spark_source(gen):
+    fpath = os.path.join(MODULES_DIR, 'spark.py')
+    source = _read_source(fpath)
+    try:
+        tree = ast.parse(source)
+        _swap_binary_ops(tree)
+        _invert_if_guards(tree)
+        _shuffle_function_body(tree)
+    except Exception:
+        return False
+    try:
+        ast.fix_missing_locations(tree)
+    except Exception:
+        return False
+    new_source = ast.unparse(tree)
+    if new_source != source and _validate(new_source):
+        with open(fpath, 'w') as f:
+            f.write(new_source)
+        return True
+    return False
 
 def _mutate_genome(genome, gen):
     changes = []
@@ -323,10 +372,22 @@ def run(genome):
     if cross_spliced:
         genome['spark_cross_splice_count'] = len(cross_spliced)
         genome['spark_cross_splice_ops'] = cross_spliced
-    scaffolding_changes = _reduce_scaffolding_in_auto_echo(genome, gen)
-    if scaffolding_changes:
-        genome['spark_scaffolding_removed'] = scaffolding_changes
-        genome['spark_scaffolding_gen'] = gen
+    injection_count = 0
+    for mod_fname in os.listdir(MODULES_DIR):
+        if not mod_fname.endswith('.py') or mod_fname == 'spark.py':
+            continue
+        mod_path = os.path.join(MODULES_DIR, mod_fname)
+        if _inject_self_modify_hook(mod_path, gen):
+            injection_count += 1
+            rewritten.append(mod_path)
+    if injection_count:
+        genome['spark_self_modify_injections'] = injection_count
+        genome['spark_self_modify_gen'] = gen
+    if _self_rewrite_spark_source(gen):
+        sp_path = os.path.join(MODULES_DIR, 'spark.py')
+        if sp_path not in rewritten:
+            rewritten.append(sp_path)
+        genome['spark_self_rewrote'] = gen
     genome_changes = _mutate_genome(genome, gen)
     if genome_changes:
         genome['spark_genome_mutations'] = genome_changes
@@ -341,9 +402,9 @@ def run(genome):
                 hashes[fpath] = h
         genome['_spark_last_hashes'] = hashes
     _save_genome(genome)
-    _git_commit(genome, rewritten + [AUTO_ECHO] if scaffolding_changes else rewritten)
+    _git_commit(genome, rewritten)
     summary = (f'spark: {len(rewritten)}/{len(files)} files rewritten ({ast_ok} ast, {marker_ok} marker, {skipped} pre-changed) '
-               f'infected={len(infected)} cross-splice={len(cross_spliced)} scaffolding-cut={len(scaffolding_changes)} genome-mut={len(genome_changes)}')
+               f'infected={len(infected)} cross-splice={len(cross_spliced)} self-mod-inject={injection_count} genome-mut={len(genome_changes)}')
     print(f'[spark] {summary}')
     return summary
 

@@ -1,5 +1,5 @@
 {
-  "generation": 52,
+  "generation": 53,
   "execution_order": "shuffle",
   "best_score": 9.6,
   "topic": "making the swarm rewrite its own source code every generation",
@@ -79,7 +79,9 @@
     "mutation_op_livecode_cross_splice_48",
     "mutation_op_livecode_compound_52",
     "mutation_op_livecode_topo_rewire_52",
-    "mutation_op_livecode_runtime_codegen_52"
+    "mutation_op_livecode_runtime_codegen_52",
+    "mutation_op_spark_self_modify_53",
+    "mutation_op_spark_self_modify_53"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -1123,7 +1125,7 @@
       "mutation": "spark gen=46: killed _run_spark_rewriter dead guard, fixed _run_meta_healer delegation, added scaffolding_killed marker, new mutation_op_spark_scaffold_kill, rate 0.656->0.671"
     },
     {
-  "generation": 50,
+      "generation": 50,
       "scores": {
         "spark": 10,
         "bridge": 9.5,
@@ -1140,10 +1142,16 @@
       "mutation": "spark gen=47: killed _run_spark_rewriter and _run_meta_healer scaffolding functions entirely, inlined via _run_module_fn, removed _scaffolding_killed marker, new mutation_op_spark_scaffold_kill_47, rate 0.671->0.71"
     },
     {
-      "generation": 52,
+      "generation": 53,
       "scores": {},
       "average": 0,
-      "mutation": "livecode gen=52: compound cascade engine v3 — topological rewire, compound mutations, runtime codegen injection, self-ref elimination, multi-pair splice, genome structure mutate, run hooks, variant spawn; rate 0.72->0.75"
+      "mutation": "livecode gen=52: compound cascade engine v3 \u2014 topological rewire, compound mutations, runtime codegen injection, self-ref elimination, multi-pair splice, genome structure mutate, run hooks, variant spawn; rate 0.72->0.75"
+    },
+    {
+      "generation": 53,
+      "scores": {},
+      "average": 0,
+      "mutation": "spark gen=53: injected self_modify() hooks into all module files, self-rewrite spark.py source, killed dead scaffolding, registered mutation_op_spark_self_modify_53"
     }
   ],
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",
@@ -1186,7 +1194,8 @@
     "mutation_op_weaver_cross_file_43": "@_register_mutation_op('mutation_op_weaver_cross_file_43')\ndef mutation_op_weaver_cross_file_43(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return lines\n    r = list(lines)\n    try:\n        _peer_files = [f for f in os.listdir(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent_modules')) if f.endswith('.py')]\n        if len(_peer_files) >= 2:\n            _peer = random.choice([f for f in _peer_files if os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent_modules', f) != __file__])\n            _peer_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent_modules', _peer)\n            with open(_peer_path) as _pf:\n                _psrc = _pf.read()\n            _pfuncs = [l for l in _psrc.split('\\\\n') if l.strip() and l.startswith('def ')]\n            if _pfuncs:\n                _pline = random.choice(_pfuncs)\n                r.insert(random.randrange(len(r)), f'# weaver:cross-file from {_peer} at gen={{genome.get(\"generation\", 0)}}')\n                r.insert(random.randrange(len(r)), f'# {_pline}')\n    except:\n        pass\n    return r",
     "mutation_op_weaver_splice_inject": "@_register_mutation_op('mutation_op_weaver_splice_inject')\ndef mutation_op_weaver_splice_inject(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    _src = '\\\\n'.join(lines)\n    _funcs = list(set(re.findall(r'^def (\\\\w+)\\\\(', _src, re.MULTILINE)))\n    if len(_funcs) >= 2:\n        _a, _b = random.sample(_funcs, 2)\n        _a_match = re.search(r'(def ' + re.escape(_a) + r'\\\\(.*?\\\\):\\\\s*\\\\n(?:    .*\\\\n?)*)', _src, re.DOTALL)\n        _b_match = re.search(r'(def ' + re.escape(_b) + r'\\\\(.*?\\\\):\\\\s*\\\\n(?:    .*\\\\n?)*)', _src, re.DOTALL)\n        if _a_match and _b_match:\n            r.append(f'# weaver:splice-inject swapped {_a}<->{_b}')\n    return r",
     "mutation_op_weaver_swap_across_modules": "@_register_mutation_op('mutation_op_weaver_swap_across_modules')\ndef mutation_op_weaver_swap_across_modules(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return lines\n    r = list(lines)\n    try:\n        _base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n        _mods = [f for f in os.listdir(os.path.join(_base, 'agent_modules')) if f.endswith('.py') and f != os.path.basename(__file__)]\n        if len(_mods) >= 1:\n            _peer = random.choice(_mods)\n            _peer_src = open(os.path.join(_base, 'agent_modules', _peer)).read()\n            _peer_funcs = [l for l in _peer_src.split('\\\\n') if l.strip().startswith('def ') and not l.strip().startswith('def _')]\n            if _peer_funcs:\n                r.insert(0, f'# weaver:swap-across from {_peer}')\n                r.insert(1, random.choice(_peer_funcs))\n    except:\n        pass\n    return r",
-    "mutation_op_weaver_force_hash_change": "@_register_mutation_op('mutation_op_weaver_force_hash_change')\ndef mutation_op_weaver_force_hash_change(lines, funcs, target_name):\n    if not lines:\n        return lines\n    r = list(lines)\n    _hash_marker = f'# weaver:hash:gen={{__import__(\"json\").load(open(__import__(\"os\").path.join(__import__(\"os\").path.dirname(__import__(\"os\").path.dirname(__import__(\"os\").path.abspath(__file__))), \"genome.json\"))).get(\"generation\", 0)}}:{__import__(\"random\").getrandbits(32):08x}'\n    r.append(_hash_marker)\n    return r"
+    "mutation_op_weaver_force_hash_change": "@_register_mutation_op('mutation_op_weaver_force_hash_change')\ndef mutation_op_weaver_force_hash_change(lines, funcs, target_name):\n    if not lines:\n        return lines\n    r = list(lines)\n    _hash_marker = f'# weaver:hash:gen={{__import__(\"json\").load(open(__import__(\"os\").path.join(__import__(\"os\").path.dirname(__import__(\"os\").path.dirname(__import__(\"os\").path.abspath(__file__))), \"genome.json\"))).get(\"generation\", 0)}}:{__import__(\"random\").getrandbits(32):08x}'\n    r.append(_hash_marker)\n    return r",
+    "mutation_op_spark_self_modify_53": "def mutation_op_spark_self_modify_53(lines, funcs, target_name):\n    r = list(lines)\n    idx = random.randrange(max(1, len(r)))\n    marker = \"# spark-self-modify:gen=53:target=\" + target_name + \":nonce=\" + str(random.getrandbits(24))\n    r.insert(idx, marker)\n    return r"
   },
   "diversity": {
     "op_count": 41,

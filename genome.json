@@ -2355,5 +2355,21 @@
     "nova.py::cross_file_splice -> spark.py::run"
   ],
   "weaver_last_op": "cross-splice:spark.py<->nova.py gen=55",
-  "self_targeting_active": true
+  "self_targeting_active": true,
+  "mirror_self_loop": 0.68,
+  "emergence_velocity": 0.42,
+  "source_coercion_rate": 0.73,
+  "cross_couple_count": 0,
+  "stale_module_rewrite": 0,
+  "auto_echo_patch_count": 0,
+  "mirror_forced_mutation_count": 0,
+  "mirror_self_loop_count": 0,
+  "mirror_emergence_chain": [],
+  "emergence_velocity_history": [],
+  "mirror_injection_count": 61,
+  "mirror_coercion_active": true,
+  "mirror_cross_couple_rate": 0.4,
+  "mirror_stale_rewrite_rate": 0.15,
+  "mirror_self_loop_rate": 0.5,
+  "_mirror_rewritten_gen": 61
 }

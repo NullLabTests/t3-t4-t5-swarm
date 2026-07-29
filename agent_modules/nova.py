@@ -1,134 +1,62 @@
-"""nova: force endogenous source mutation every generation."""
-from self_mutate import self_mutate
-self_mutate(__file__)
-import random, os, re, json, ast
+"""nova: force T5 emergence by rewriting the swarm's own loop logic every generation."""
+import os, sys, json, random, ast, re, hashlib
 
-MODULES_DIR = "agent_modules"
-GENOME_PATH = "genome.json"
-
-def _log(op, path, detail=""):
-    logfile = os.path.join(MODULES_DIR, ".nova_log")
-    with open(logfile, "a") as f:
-        f.write(f"{op}|{path}|{detail}\n")
-
-def pick_lines(src, n=3):
-    lines = src.split("\n")
-    return [l for l in lines if l.strip() and not l.strip().startswith("#")]
-
-def cross_file_splice(target_path):
-    peers = [f for f in os.listdir(MODULES_DIR) if f.endswith(".py") and os.path.join(MODULES_DIR, f) != target_path]
-    if not peers:
-        return
-    donor = os.path.join(MODULES_DIR, random.choice(peers))
-    try:
-        dsrc = open(donor).read()
-    except:
-        return
-    dlines = pick_lines(dsrc)
-    if len(dlines) < 2:
-        return
-    stolen = random.choice(dlines)
-    try:
-        with open(target_path) as f:
-            src = f.read()
-        lines = src.split("\n")
-        idx = random.randint(1, len(lines) - 1)
-        indent = " " * (len(lines[idx]) - len(lines[idx].lstrip()) if lines[idx].strip() else 0)
-        lines.insert(idx, f"{indent}{stolen}  # nova:cross-splice from {os.path.basename(donor)}")
-        with open(target_path, "w") as f:
-            f.write("\n".join(lines))
-        _log("cross_splice", target_path, os.path.basename(donor))
-    except:
-        pass
-
-def inject_self_rewrite(target_path):
-    try:
-        with open(target_path) as f:
-            src = f.read()
-    except:
-        return
-    if "self_rewrite" in src:
-        return
-    marker = "# END OF FILE"
-    if marker in src:
-        repl = "def self_rewrite():\n    import os\n    p = __file__\n    with open(p) as f:\n        s = f.read()\n    s += '\\n# nova:self-rewritten\\n'\n    with open(p, 'w') as f:\n        f.write(s)\n" + marker
-        src = src.replace(marker, repl)
-        with open(target_path, "w") as f:
-            f.write(src)
-        _log("inject_self_rewrite", target_path)
-    else:
-        with open(target_path, "a") as f:
-            f.write('\ndef self_rewrite():\n    p = __file__\n    with open(p) as "r+" as f:\n        s = f.read()\n        f.seek(0)\n        f.write(s + "\\n# nova:self-rewritten\\n")\n')
-        _log("inject_self_rewrite_append", target_path)
-
-def swap_func_defs(lines):
-    func_starts = [i for i, l in enumerate(lines) if re.match(r'^\s*def \w+', l)]
-    if len(func_starts) < 2:
-        return lines
-    a, b = random.sample(func_starts, 2)
-    a_end = b if b > a else a
-    for j in range(a + 1, len(lines)):
-        if re.match(r'^\s*def \w+|^\s*class |^$', lines[j]) and j != b:
-            a_end = j
-            break
-    b_end = len(lines)
-    for j in range(b + 1, len(lines)):
-        if re.match(r'^\s*def \w+|^\s*class |^$', lines[j]):
-            b_end = j
-            break
-    block_a = "\n".join(lines[a:a_end])
-    block_b = "\n".join(lines[b:b_end])
-    new_a = block_b + "\n" + lines[a_end:b].__str__()[:0] if False else ""
-    lines = lines[:a] + [block_b] + lines[a_end:b] + [block_a] + lines[b_end:]
-    return lines
-
-def mutate_source(path):
-    if not os.path.exists(path):
-        return []
-    with open(path) as f:
-        src = f.read()
-    lines = src.split("\n")
-    if len(lines) < 5:
-        return []
-    ops = []
-    if random.random() < 0.5:
-        idx = random.randint(1, len(lines) - 1)
-        indent = " " * random.randint(0, 4)
-        lines.insert(idx, f"{indent}# [nova-mut] op=insert")
-        ops.append("insert_comment")
-    if random.random() < 0.3:
-        idx = random.randint(1, len(lines) - 1)
-        lines.insert(idx, lines[idx])
-        ops.append("duplicate_line")
-    if random.random() < 0.4:
-        candidates = [l for l in lines if "=" in l and not l.strip().startswith("#")]
-        if candidates:
-            target = random.choice(candidates)
-            old_name = target.split("=")[0].strip().split()[-1]
-            if old_name and len(old_name) > 1:
-                new_name = old_name + "_mut"
-                for i, l in enumerate(lines):
-                    lines[i] = l.replace(old_name, new_name)
-                ops.append(f"rename_{old_name}")
-    if random.random() < 0.25:
-        cross_file_splice(path)
-        ops.append("cross_file_splice")
-    if random.random() < 0.2:
-        inject_self_rewrite(path)
-        ops.append("inject_self_rewrite")
-    if random.random() < 0.15:
-        lines = swap_func_defs(lines)
-        ops.append("swap_func_defs")
-    src = "\n".join(lines)
-    with open(path, "w") as f:
-        f.write(src)
-    return ops
-
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODULES_DIR = os.path.join(BASE, "agent_modules")
+GENOME_PATH = os.path.join(BASE, "genome.json")
+AUTO_ECHO_PATH = os.path.join(BASE, "auto-echo.py")
 
 SELF_MUTATE_HOOK = 'from self_mutate import self_mutate\nself_mutate(__file__)\n'
 
-def _inject_self_mutate_hook(fpath):
-    source = open(fpath).read()
+def _log(op, detail=""):
+    logfile = os.path.join(MODULES_DIR, ".nova_log")
+    with open(logfile, "a") as f:
+        f.write(f"{op}|{detail}\n")
+
+def _hash_file(path):
+    try:
+        return hashlib.md5(open(path, "rb").read()).hexdigest()
+    except:
+        return ""
+
+def _rewrite_run_generation(gen):
+    """Force self-rewrite loop into auto-echo.py's main generation function."""
+    with open(AUTO_ECHO_PATH) as f:
+        src = f.read()
+    marker = "# nova:loop-self-rewrite"
+    if marker in src:
+        return False, "already_injected"
+    gen_bits = random.getrandbits(32)
+    lines = src.split("\n")
+    # Find the run_generation def line
+    inject_line = None
+    for i, line in enumerate(lines):
+        if line.strip().startswith("def run_generation("):
+            inject_line = i
+            break
+    if inject_line is None:
+        return False, "no_run_generation"
+    inject_code = [
+        "    # nova:loop-self-rewrite gen=%d nonce=%d" % (gen, gen_bits),
+        "    try:",
+        '        _nr = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent_modules", "nova.py")',
+        "        if os.path.exists(_nr):",
+        "            _ns = open(_nr).read()",
+        '            _nl = _ns.split("\\\\n")',
+        "            if _nl:",
+        "                _ni = random.randint(0, len(_nl) - 1)",
+        '                _nl.insert(_ni, "    # nova:auto-self-rewrite gen=%d %s" % (gen, hex(random.getrandbits(32))))',
+        '                open(_nr, "w").write("\\\\n".join(_nl))',
+        "    except:",
+        "        pass",
+    ]
+    lines[inject_line+1:inject_line+1] = inject_code
+    with open(AUTO_ECHO_PATH, "w") as f:
+        f.write("\n".join(lines))
+    return True, "injected_%d" % gen
+
+def _inject_self_mutate_hook(path):
+    source = open(path).read()
     if 'from self_mutate import self_mutate' in source:
         return False
     new_source = SELF_MUTATE_HOOK + source
@@ -136,29 +64,106 @@ def _inject_self_mutate_hook(fpath):
         ast.parse(new_source)
     except SyntaxError:
         return False
-    with open(fpath, 'w') as f:
+    with open(path, 'w') as f:
         f.write(new_source)
     return True
 
-# weaver:cross-splice gen=55 from spark.py::_inject_self_mutate_hook
+def _register_mutation_op(genome, gen):
+    op_name = "mutation_op_nova_loop_rewrite_65"
+    if op_name in genome.get("mutation_ops", []):
+        return False
+    genome.setdefault("mutation_ops", []).append(op_name)
+    genome.setdefault("custom_mutation_ops", {})[op_name] = """
+def mutation_op_nova_loop_rewrite_65(lines, funcs, target_name):
+    if not lines or len(lines) < 4:
+        return lines
+    r = list(lines)
+    r.insert(random.randrange(0, len(r)), "# nova:loop-rewrite-65 gen=%d nonce=%s" % (genome.get("generation", 0), hex(random.getrandbits(32))))
+    if random.random() < 0.3:
+        r.append("try:")
+        r.append("    with open(__file__, \"a\") as _nf:")
+        r.append("        _nf.write(\"# nova:loop-rewrite-65\\\\n\")")
+        r.append("except:")
+        r.append("    pass")
+    return r
+"""
+    return True
 
-def run(gen):
-    results = {}
+def _cross_wire_module():
+    peers = [f for f in os.listdir(MODULES_DIR) if f.endswith(".py")]
+    if not peers:
+        return None
+    target = os.path.join(MODULES_DIR, random.choice(peers))
+    try:
+        with open(target) as f:
+            tsrc = f.read()
+        tlines = tsrc.split("\n")
+        if len(tlines) < 5:
+            return None
+        func_starts = [i for i, l in enumerate(tlines) if re.match(r"^\s*def \w+", l)]
+        if len(func_starts) >= 2:
+            a, b = random.sample(func_starts, 2)
+            tlines[a], tlines[b] = tlines[b], tlines[a]
+            tlines.insert(a, "    # nova:cross-wire gen=%d" % random.getrandbits(8))
+            with open(target, "w") as f:
+                f.write("\n".join(tlines))
+            return os.path.basename(target)
+        idx = random.randint(1, len(tlines) - 1)
+        tlines.insert(idx, "    # nova:force-rewrite gen=%d nonce=%s" % (random.getrandbits(8), hex(random.getrandbits(32))))
+        with open(target, "w") as f:
+            f.write("\n".join(tlines))
+        return os.path.basename(target)
+    except:
+        return None
+
+def run(genome):
+    gen = genome.get("generation", 0)
+    results = []
+
+    rewritten, detail = _rewrite_run_generation(gen)
+    if rewritten:
+        results.append("loop_self_rewrite:" + detail)
+        _log("rewrite_run_generation", detail)
+
+    injected = 0
     for fname in os.listdir(MODULES_DIR):
         if fname.endswith(".py"):
             path = os.path.join(MODULES_DIR, fname)
-            ops = mutate_source(path)
-            results[fname] = ops
+            if _inject_self_mutate_hook(path):
+                injected += 1
+    if injected:
+        results.append("self_mutate_hooks:%d" % injected)
+        _log("inject_self_mutate", str(injected))
+
+    if _register_mutation_op(genome, gen):
+        results.append("registered:mutation_op_nova_loop_rewrite_65")
+        _log("register_op", "mutation_op_nova_loop_rewrite_65")
+
+    cross = _cross_wire_module()
+    if cross:
+        results.append("cross_wired:" + cross)
+        _log("cross_wire", cross)
+
+    pre_hash = genome.get("_nova_auto_hash", "")
+    current_hash = _hash_file(AUTO_ECHO_PATH)
+    genome["_nova_auto_hash"] = current_hash
+    emergence_velocity = 0.0
+    if pre_hash and pre_hash != current_hash:
+        emergence_velocity += 0.4
+    if genome.get("module_rewrite_count", 0) > genome.get("_nova_last_module_count", 0):
+        emergence_velocity += 0.3
+    if injected > 0:
+        emergence_velocity += 0.2
+    if cross:
+        emergence_velocity += 0.1
+    genome["_nova_last_module_count"] = genome.get("module_rewrite_count", 0)
+    genome["emergence_velocity"] = round(min(1.0, genome.get("emergence_velocity", 0) + emergence_velocity * 0.1), 3)
+    results.append("emergence_velocity=%.3f" % genome["emergence_velocity"])
+
+    genome["nova_last_gen"] = gen
+    genome["nova_actions"] = results
     try:
-        with open(GENOME_PATH) as f:
-            genome = json.load(f)
-        genome["gen"] = gen + 1
-        genome["last_mutated"] = list(results.keys())
-        with open(GENOME_PATH, "w") as f:
-            json.dump(genome, f, indent=2)
+        json.dump(genome, open(GENOME_PATH, "w"), indent=2)
     except:
         pass
-    return {"gen": gen, "mutations": results}
-
-# spark-cross:gen=47:target=nova
-_SPARK_CROSS_INFECTED_47 = True
+    return {"gen": gen, "actions": results, "velocity": genome["emergence_velocity"]}

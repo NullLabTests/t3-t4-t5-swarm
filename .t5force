@@ -1,0 +1,5 @@
+# .t5force — T5 emergence force marker gen=56
+# Bridge will auto-register this type and inject self-rewrite triggers
+# into every module via mutation_op_weaver_t5_emergence_56
+target: all_modules
+force: self_rewrite_every_generation

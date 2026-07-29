@@ -23,3 +23,4 @@ def mutation_op_weaver_inject_self_rewrite(lines, *args):
     r.insert(min(4, len(r)), "    _schedule_self_rewrite(genome, 'injected')")
     r.insert(min(5, len(r)), '    # weaver:self-rewrite injected')
     return r
+# idea: cross-wire run() functions between two agent modules  (seeded by synthesizer gen=73)

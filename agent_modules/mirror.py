@@ -610,3 +610,5 @@ _SPARK_CROSS_INFECTED_38 = True
 
 # spark-cross:gen=47:target=mirror
 _SPARK_CROSS_INFECTED_47 = True
+
+# proposal: add a timestamp-based entropy injection point  (seeded by synthesizer gen=73)

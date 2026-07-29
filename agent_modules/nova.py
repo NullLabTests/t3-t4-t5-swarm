@@ -167,3 +167,5 @@ def run(genome):
     except:
         pass
     return {"gen": gen, "actions": results, "velocity": genome["emergence_velocity"]}
+
+# proposal: add a timestamp-based entropy injection point  (seeded by synthesizer gen=73)

@@ -16,3 +16,4 @@ def mutation_op_weaver_swap_module_ref(lines, funcs, target_name):
     except SyntaxError:
         return False
     return r
+# idea: add a pruning heuristic that removes dead code paths  (seeded by synthesizer gen=73)

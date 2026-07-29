@@ -37,3 +37,5 @@ def reload_changes(genome):
     with open(RELOAD_LOG, 'a') as f:
         f.write(json.dumps(entry) + '\n')
     return {'reloaded': len(changed), 'failed': len(failed), 'files': changed[:3]}
+
+# proposal: add a function that selects next mutation target by minimum diversity  (seeded by synthesizer gen=73)

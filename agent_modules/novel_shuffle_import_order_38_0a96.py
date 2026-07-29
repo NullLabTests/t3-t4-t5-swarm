@@ -39,3 +39,5 @@ def run(genome):
             changed += 1
     genome['_shuffle_import_order_changed'] = changed
     return f'[shuffle_import_order] gen={gen} mutated {changed} files'
+
+# proposal: create a cross-wiring function that splices code between modules  (seeded by synthesizer gen=73)

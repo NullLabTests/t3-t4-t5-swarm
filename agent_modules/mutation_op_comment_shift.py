@@ -15,3 +15,4 @@ def mutation_op_comment_shift(lines, funcs, target_name):
     return r
     with open(GENOME_FILE, 'w') as f:
         json.dump(g, f, indent=2)
+# proposal: add a function that rewrites genome.json structure  (seeded by synthesizer gen=73)

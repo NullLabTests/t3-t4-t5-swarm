@@ -18,3 +18,4 @@ def mutation_op_weaver_manifest_writer(lines, *args):
     with open(GENOME_FILE, 'w') as f:
         json.dump(g, f, indent=2)
     return r
+# proposal: create a feedback loop that adjusts mutation_rate based on emergence_velocity  (seeded by synthesizer gen=73)

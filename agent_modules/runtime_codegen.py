@@ -115,3 +115,4 @@ def _nova_cross_call(genome):
     except:
         pass
     return None
+# proposal: create a cross-wiring function that splices code between modules  (seeded by synthesizer gen=73)

@@ -148,3 +148,4 @@ def run(genome):
     _save_genome(genome)
     report = f"[weaver] gen={gen} cross_spliced={changes} self_mutate_injects={sm_count} t5_force={t5_count}"
     return report
+# proposal: create a cross-wiring function that splices code between modules  (seeded by synthesizer gen=73)

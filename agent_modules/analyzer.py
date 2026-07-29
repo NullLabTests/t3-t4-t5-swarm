@@ -34,3 +34,5 @@ _BRIDGE_CROSS_INFECTED_44 = True
 
 # spark-cross:gen=47:target=analyzer
 _SPARK_CROSS_INFECTED_47 = True
+
+# todo: ensure every module has a run() function  (seeded by synthesizer gen=73)

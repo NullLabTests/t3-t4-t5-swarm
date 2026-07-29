@@ -89,3 +89,5 @@ def run(genome):
     result = mutate_self()
     genome['quine_loop_mutations'] = genome.get('quine_loop_mutations', 0) + 1
     return result
+
+# proposal: add a function that rewrites genome.json structure  (seeded by synthesizer gen=73)

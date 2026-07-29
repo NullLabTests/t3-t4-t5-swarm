@@ -16,3 +16,6 @@ def mutation_op_weaver_force_hash_change(lines, funcs, target_name):
     _hash_marker = f'# weaver:hash:gen={_gen}:{random.getrandbits(32):08x}'
     r.append(_hash_marker)
     return r
+
+# proposal: create a feedback loop that adjusts mutation_rate based on emergence_velocity  (seeded by synthesizer gen=73)
+# synth:cross-proposal:from=mutation_op_weaver_swap_across_modules.py:func=mutation_op_weaver_swap_across_modules:gen=73

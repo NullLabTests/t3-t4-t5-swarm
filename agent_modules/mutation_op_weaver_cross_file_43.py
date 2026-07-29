@@ -24,3 +24,5 @@ def mutation_op_weaver_cross_file_43(lines, funcs, target_name):
         pass
     return r
 # synth:cross-proposal:from=mutation_op_weaver_force_rewrite_marker.py:func=mutation_op_weaver_force_rewrite_marker:gen=72
+
+# proposal: create a hash-chain between modules for tamper-evident evolution  (seeded by synthesizer gen=73)

@@ -66,3 +66,5 @@ def cross_module_swap():
     with open(pb, 'w') as f:
         f.write(sb)
     return f"swapped funcs between {a} and {b}"
+
+# proposal: create a cross-wiring function that splices code between modules  (seeded by synthesizer gen=73)

@@ -44,3 +44,6 @@ def mutation_op_nova_t5_emergence_48(lines, funcs, target_name):
     r = list(lines)
     r.insert(0, f'# t5:emergence:gen=48:{hashlib.md5(str(time.time()).encode()).hexdigest()[:8]}')
     return r
+
+# proposal: add a function that selects next mutation target by minimum diversity  (seeded by synthesizer gen=73)
+# synth:cross-proposal:from=mutation_op_line_duplicate_skip.py:func=mutation_op_line_duplicate_skip:gen=73

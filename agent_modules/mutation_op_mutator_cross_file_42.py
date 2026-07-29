@@ -17,3 +17,6 @@ def mutation_op_mutator_cross_file_42(lines, funcs, target_name):
                 borrowed = random.choice(src_lines)
                 r.insert(random.randrange(len(r)), borrowed + f'  # mutator:splice from {src_name}')
     return r
+
+# idea: inject a clockwork-style event scheduler into module lifecycle  (seeded by synthesizer gen=73)
+# synth:cross-proposal:from=mutation_op_weaver_cross_weave.py:func=mutation_op_weaver_cross_weave:gen=73

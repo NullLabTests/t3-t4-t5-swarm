@@ -20,3 +20,6 @@ def mutation_op_weaver_swap_across_modules(lines, funcs, target_name):
         pass
     return r
 # synth:cross-proposal:from=mutation_op_line_duplicate_skip.py:func=mutation_op_line_duplicate_skip:gen=72
+
+# todo: add error recovery to all patch operations  (seeded by synthesizer gen=73)
+# synth:cross-proposal:from=mutation_op_weaver_force_hash_change.py:func=mutation_op_weaver_force_hash_change:gen=73

@@ -204,3 +204,5 @@ def run(genome):
             f.write(json.dumps({'gen': gen, 'ts': time.time(), 'entries': changes}) + '\n')
         _sg(genome)
     return f'[orchestrator] gen={gen} rewritten={len(changes)}/{len(modules)} changes={changes[:8]}'
+
+# proposal: add an AST-based code validator that checks for syntax before patching  (seeded by synthesizer gen=73)

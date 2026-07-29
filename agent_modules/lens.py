@@ -333,3 +333,5 @@ def run(genome):
 _BRIDGE_CROSS_INFECTED_44 = True
 # spark-cross:gen=47:target=lens
 _SPARK_CROSS_INFECTED_47 = True
+
+# idea: inject a clockwork-style event scheduler into module lifecycle  (seeded by synthesizer gen=73)

@@ -253,3 +253,5 @@ def run(genome):
 
 # spark-cross:gen=47:target=forge
 _SPARK_CROSS_INFECTED_47 = True
+
+# todo: add error recovery to all patch operations  (seeded by synthesizer gen=73)

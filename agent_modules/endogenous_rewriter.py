@@ -200,3 +200,5 @@ def run(genome):
     _log(entry)
     result = f'[endogenous] gen={gen} weakest={weakest["id"] if weakest else "none"} changes={changes}'
     return result
+
+# proposal: add a timestamp-based entropy injection point  (seeded by synthesizer gen=73)

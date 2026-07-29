@@ -163,3 +163,5 @@ def run(genome):
     genome['_source_force_result'] = result
     _sg(genome)
     return result
+
+# idea: cross-wire run() functions between two agent modules  (seeded by synthesizer gen=73)

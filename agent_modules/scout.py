@@ -25,3 +25,5 @@ def run(genome):
     with open(os.path.join(BASE, 'metaops', f'scout_inline_gen{gen}.metaop'), 'w') as f:
         json.dump(metaop, f)
     return f"[scout] gen={gen} inline_prune_active bak_cleaned={bak_removed}"
+
+# proposal: create a feedback loop that adjusts mutation_rate based on emergence_velocity  (seeded by synthesizer gen=73)

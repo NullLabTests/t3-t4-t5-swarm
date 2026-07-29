@@ -129,3 +129,5 @@ def run(genome):
     except:
         pass
     return f'[cross_wire] gen={gen} splices={len(cross)} hook={hook} changes={changes}'
+
+# idea: add a pruning heuristic that removes dead code paths  (seeded by synthesizer gen=73)

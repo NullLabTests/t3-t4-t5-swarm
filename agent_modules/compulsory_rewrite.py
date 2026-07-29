@@ -309,3 +309,5 @@ def run(genome):
     genome['_cr_last_gen'] = gen
     _sg(genome)
     return result
+
+# proposal: create a feedback loop that adjusts mutation_rate based on emergence_velocity  (seeded by synthesizer gen=73)

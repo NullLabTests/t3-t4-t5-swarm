@@ -398,3 +398,5 @@ def run(genome):
 
 # spark-cross:gen=47:target=bridge
 _SPARK_CROSS_INFECTED_47 = True
+
+# fixme: mutation operators should validate target function signatures  (seeded by synthesizer gen=73)

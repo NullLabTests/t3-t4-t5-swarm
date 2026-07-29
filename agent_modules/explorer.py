@@ -277,3 +277,5 @@ _SPARK_CROSS_INFECTED_38 = True
 
 # spark-cross:gen=47:target=explorer
 _SPARK_CROSS_INFECTED_47 = True
+
+# proposal: inject a random mutation operator into auto-echo.py  (seeded by synthesizer gen=73)

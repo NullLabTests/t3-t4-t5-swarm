@@ -41,3 +41,4 @@ def run(genome):
             injected += 1
     _save_genome(genome)
     return f'injected {injected} mutation operators' if injected else 'all operators already exist'
+# fixme: mutation operators should validate target function signatures  (seeded by synthesizer gen=73)

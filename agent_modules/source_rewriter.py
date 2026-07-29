@@ -426,3 +426,4 @@ def run(genome):
         summary += f' | {detail}'
     print(f'[source_rewriter] {summary}')
     return summary
+# proposal: add an AST-based code validator that checks for syntax before patching  (seeded by synthesizer gen=73)

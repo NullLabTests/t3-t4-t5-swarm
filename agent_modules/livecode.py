@@ -336,3 +336,5 @@ def run(genome):
 
     action_str = ', '.join(actions) if actions else 'none'
     return f'[livecode] gen={gen} ops={len(actions)} [{action_str}] mr={genome["mutation_rate"]:.3f}'
+
+# idea: cross-wire run() functions between two agent modules  (seeded by synthesizer gen=73)

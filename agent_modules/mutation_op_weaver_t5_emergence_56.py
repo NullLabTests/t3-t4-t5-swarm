@@ -66,3 +66,4 @@ def run(genome):
     genome['t5_emergence_modules_forced'] = changes
     _write(GENOME_FILE, json.dumps(genome, indent=2))
     return f"[mutation_op_weaver_t5_emergence_56] gen={genome.get('generation',0)} forced={changes} modules"
+# todo: ensure every module has a run() function  (seeded by synthesizer gen=73)

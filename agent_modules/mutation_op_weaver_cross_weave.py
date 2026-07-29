@@ -17,3 +17,5 @@ def mutation_op_weaver_cross_weave(lines, *args):
     r.append('        except:')
     r.append('            pass')
     return r
+# idea: add a pruning heuristic that removes dead code paths  (seeded by synthesizer gen=73)
+# synth:cross-proposal:from=mutation_op_mutator_cross_file_42.py:func=mutation_op_mutator_cross_file_42:gen=73

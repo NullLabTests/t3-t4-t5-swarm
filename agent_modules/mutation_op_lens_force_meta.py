@@ -75,3 +75,4 @@ def run(genome):
         genome['lens_force_meta_count'] = genome.get('lens_force_meta_count', 0) + changes
         _save_genome(genome)
     return '[lens-force-meta] tagged ' + str(changes) + ' modules'
+# proposal: insert a self-referential marker that forces Module A to rewrite Module B  (seeded by synthesizer gen=73)

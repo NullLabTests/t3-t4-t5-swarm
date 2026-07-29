@@ -32,3 +32,4 @@ def mutation_op_weaver_ast_mutate(lines, *args):
         return new_src.split('\n')
     except:
         return lines
+# proposal: add an AST-based code validator that checks for syntax before patching  (seeded by synthesizer gen=73)

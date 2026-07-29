@@ -701,3 +701,5 @@ def run(genome):
     return f'[clockwork] gen={gen} pulse={pulse:.4f} ev={ev:.3f} events={len(results)} {action_str}'
 
 # clockwork:splice from oracle.py gen=48
+
+# todo: add error recovery to all patch operations  (seeded by synthesizer gen=73)

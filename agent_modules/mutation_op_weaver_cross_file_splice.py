@@ -42,3 +42,4 @@ def run():
     import mutation_op_nova_t5_splice_49 as t5
     result = t5.cross_module_swap()
     return {"cross_module_swap": result}
+# idea: add a pruning heuristic that removes dead code paths  (seeded by synthesizer gen=73)

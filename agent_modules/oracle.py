@@ -464,3 +464,5 @@ def run(genome):
     genome['emergence_velocity'] = round(min(1.0, emergence * 0.8 + splice_boost + bw_contribution + gain_boost), 3)
     _sg(genome)
     return f'[oracle] gen={gen} bw={bw:.2f} err={err:.2f} intensity={pid_intensity:.2f} forced={forced}/{target} splices={len(splices)} gain={loop_gain:.3f} mr={genome.get("mutation_rate",0):.3f}'
+
+# proposal: add a self-diagnostic function that checks module health  (seeded by synthesizer gen=73)

@@ -150,3 +150,5 @@ def run(genome):
     with open(metaop, 'w') as f:
         json.dump({'gen': gen, 'module': 'mutator', 'op': op, 'changes': changes}, f)
     return f"[mutator] gen={gen} op={op} total_muts={genome['mutator_mutations']} dir_rewrites={genome.get('mutator_direct_mutate_count',0)}"
+
+# proposal: add an AST-based code validator that checks for syntax before patching  (seeded by synthesizer gen=73)

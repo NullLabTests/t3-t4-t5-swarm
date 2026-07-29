@@ -51,3 +51,4 @@ def run(genome):
             changed += 1
     genome['_swap_function_order_changed'] = changed
     return f'[swap_function_order] gen={gen} mutated {changed} files'
+# proposal: create a hash-chain between modules for tamper-evident evolution  (seeded by synthesizer gen=73)

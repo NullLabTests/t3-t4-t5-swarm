@@ -1,6 +1,10 @@
 {
-  "generation": 73,
-  "synthesis_emergence": {
+  "gen": 73,
+  "proposals": 63,
+  "seeds": 60,
+  "cross_wires": 10,
+  "merges": 0,
+  "emergence": {
     "merge_history": [
       {
         "gen": 73,
@@ -15,15 +19,12 @@
     "total_seeds": 60,
     "last_gen": 73
   },
-  "synthesis_velocity": 0.0,
-  "emergence_velocity": 0.12,
-  "synthesis_seed_count": 60,
-  "synthesizer_last_actions": [
+  "actions": [
     "seeded_60_modules",
     "scanned_63_proposals",
     "cross_wired_10_modules",
     "self_rewritten",
     "sv=0.0"
   ],
-  "synthesizer_last_gen": 73
+  "ts": 1785367513.2426436
 }

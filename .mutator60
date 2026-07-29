@@ -1,0 +1,4 @@
+# mutator gen=60 marker
+# Forces mutator.py as active module in the spawn pool
+target: agent_modules/mutator.py
+force: auto_register

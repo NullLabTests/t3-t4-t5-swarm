@@ -1,0 +1,1 @@
+{"gen": 60, "module": "mutator", "op": "compound_mutate", "changes": ["voice_swap_explorer_critic", "inject_op_mutator_self_inject_60", "bump_mutation_rate_0.92", "flip_prompt_idx_3", "add_structural_rewrite_depth"]}

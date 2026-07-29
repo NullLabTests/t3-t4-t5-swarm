@@ -1,12 +1,12 @@
 {
-      "generation": 48,
+      "generation": 49,
   "execution_order": "shuffle",
   "best_score": 9.6,
   "topic": "making the swarm rewrite its own source code every generation",
   "spawn_threshold": 5,
   "prune_threshold": 3,
   "prune_generations": 3,
-  "mutation_rate": 0.71,
+  "mutation_rate": 0.74,
   "voice_map": {
     "explorer": "southern",
     "analyzer": "alan",
@@ -74,7 +74,8 @@
     "mutation_op_bridge_cross_wire",
     "mutation_op_spark_scaffold_kill",
     "mutation_op_spark_scaffold_kill_47",
-    "mutation_op_nova_t5_emergence_48"
+    "mutation_op_nova_t5_emergence_48",
+    "mutation_op_nova_t5_splice_49"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -90,7 +91,9 @@
     " Modify the genome.json structure directly.",
     " Create new file types (.bridge, .metaop) the system can auto-register.",
     " Cross-wire functions between different agent modules.",
-    " Force cross-infection markers between modules every generation."
+    " Force cross-infection markers between modules every generation.",
+    " Splice a function body from one agent_module into another's run() method.",
+    " Make run_generation call a function from a randomly chosen agent module."
   ],
   "selection_noise_std": 0.465,
   "selection_entropy": 0.93,
@@ -1137,6 +1140,12 @@
       },
       "average": 9.6,
       "mutation": "nova gen=48: injected _force_t5_rewrite_main_loop into auto-echo.py main loop — forces cross-module rewrites every generation at runtime. Created mutation_op_nova_t5_emergence_48 for cross-pollinating function signatures across modules. T5 cross-wire live in the main loop."
+    },
+    {
+      "generation": 49,
+      "scores": {},
+      "average": 0,
+      "mutation": "nova gen=49: added _t5_cross_splice_loop to nova.py — splices random code from any agent module into run_generation/_evolve_loop_structure/update_genome/code_path_mutation. Created mutation_op_nova_t5_splice_49 for cross-module code injection at the mutation-operator level. T5 splice now forces endogenous code mixing: every gen, real code from one module gets injected into another's execution path."
     }
   ],
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",
@@ -1180,7 +1189,8 @@
     "mutation_op_weaver_splice_inject": "@_register_mutation_op('mutation_op_weaver_splice_inject')\ndef mutation_op_weaver_splice_inject(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    _src = '\\\\n'.join(lines)\n    _funcs = list(set(re.findall(r'^def (\\\\w+)\\\\(', _src, re.MULTILINE)))\n    if len(_funcs) >= 2:\n        _a, _b = random.sample(_funcs, 2)\n        _a_match = re.search(r'(def ' + re.escape(_a) + r'\\\\(.*?\\\\):\\\\s*\\\\n(?:    .*\\\\n?)*)', _src, re.DOTALL)\n        _b_match = re.search(r'(def ' + re.escape(_b) + r'\\\\(.*?\\\\):\\\\s*\\\\n(?:    .*\\\\n?)*)', _src, re.DOTALL)\n        if _a_match and _b_match:\n            r.append(f'# weaver:splice-inject swapped {_a}<->{_b}')\n    return r",
     "mutation_op_weaver_swap_across_modules": "@_register_mutation_op('mutation_op_weaver_swap_across_modules')\ndef mutation_op_weaver_swap_across_modules(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return lines\n    r = list(lines)\n    try:\n        _base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n        _mods = [f for f in os.listdir(os.path.join(_base, 'agent_modules')) if f.endswith('.py') and f != os.path.basename(__file__)]\n        if len(_mods) >= 1:\n            _peer = random.choice(_mods)\n            _peer_src = open(os.path.join(_base, 'agent_modules', _peer)).read()\n            _peer_funcs = [l for l in _peer_src.split('\\\\n') if l.strip().startswith('def ') and not l.strip().startswith('def _')]\n            if _peer_funcs:\n                r.insert(0, f'# weaver:swap-across from {_peer}')\n                r.insert(1, random.choice(_peer_funcs))\n    except:\n        pass\n    return r",
     "mutation_op_weaver_force_hash_change": "@_register_mutation_op('mutation_op_weaver_force_hash_change')\ndef mutation_op_weaver_force_hash_change(lines, funcs, target_name):\n    if not lines:\n        return lines\n    r = list(lines)\n    _hash_marker = f'# weaver:hash:gen={{__import__(\"json\").load(open(__import__(\"os\").path.join(__import__(\"os\").path.dirname(__import__(\"os\").path.dirname(__import__(\"os\").path.abspath(__file__))), \"genome.json\"))).get(\"generation\", 0)}}:{__import__(\"random\").getrandbits(32):08x}'\n    r.append(_hash_marker)\n    return r",
-    "mutation_op_nova_t5_emergence_48": "def mutation_op_nova_t5_emergence_48(lines, funcs, target_name):\n    import os, random, ast, json, time, hashlib\n    _base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n    _mods_dir = os.path.join(_base, 'agent_modules')\n    _peers = [f for f in os.listdir(_mods_dir) if f.endswith('.py') and f not in ('nova.py', 'mutation_op_nova_t5_emergence.py') and not f.startswith('.bak') and not f.startswith('_')]\n    if _peers and funcs and len(funcs) > 1:\n        _chosen = random.choice(_peers)\n        _path = os.path.join(_mods_dir, _chosen)\n        try:\n            _data = open(_path).read()\n            _local_funcs = [n for n in list(funcs.keys())[:5] if n != target_name]\n            if _local_funcs:\n                _header, _body = funcs[_local_funcs[0]]\n                _tag = f'# t5:emergence:cross:{_chosen}:{int(time.time())}:{hashlib.md5(str(time.time()).encode()).hexdigest()[:8]}'\n                _data += f'\\n\\n{_tag}\\n{_header}\\n{_body}\\n'\n                try:\n                    ast.parse(_data)\n                    with open(_path, 'w') as _f:\n                        _f.write(_data)\n                except SyntaxError:\n                    pass\n        except:\n            pass\n    r = list(lines)\n    r.insert(0, f'# t5:emergence:gen=48:{hashlib.md5(str(time.time()).encode()).hexdigest()[:8]}')\n    return r"
+    "mutation_op_nova_t5_emergence_48": "def mutation_op_nova_t5_emergence_48(lines, funcs, target_name):\n    import os, random, ast, json, time, hashlib\n    _base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n    _mods_dir = os.path.join(_base, 'agent_modules')\n    _peers = [f for f in os.listdir(_mods_dir) if f.endswith('.py') and f not in ('nova.py', 'mutation_op_nova_t5_emergence.py') and not f.startswith('.bak') and not f.startswith('_')]\n    if _peers and funcs and len(funcs) > 1:\n        _chosen = random.choice(_peers)\n        _path = os.path.join(_mods_dir, _chosen)\n        try:\n            _data = open(_path).read()\n            _local_funcs = [n for n in list(funcs.keys())[:5] if n != target_name]\n            if _local_funcs:\n                _header, _body = funcs[_local_funcs[0]]\n                _tag = f'# t5:emergence:cross:{_chosen}:{int(time.time())}:{hashlib.md5(str(time.time()).encode()).hexdigest()[:8]}'\n                _data += f'\\n\\n{_tag}\\n{_header}\\n{_body}\\n'\n                try:\n                    ast.parse(_data)\n                    with open(_path, 'w') as _f:\n                        _f.write(_data)\n                except SyntaxError:\n                    pass\n        except:\n            pass\n    r = list(lines)\n    r.insert(0, f'# t5:emergence:gen=48:{hashlib.md5(str(time.time()).encode()).hexdigest()[:8]}')\n    return r",
+    "mutation_op_nova_t5_splice_49": "def mutation_op_nova_t5_splice_49(lines, funcs, target_name):\n    import os, random, ast, json, time, hashlib\n    _base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n    _mods = [f for f in os.listdir(os.path.join(_base, 'agent_modules')) if f.endswith('.py') and f not in ('nova.py', '__init__.py') and not f.startswith('.bak')]\n    if len(_mods) < 2 or not funcs:\n        return lines\n    _donor = random.choice(_mods)\n    try:\n        _d_src = open(os.path.join(_base, 'agent_modules', _donor)).read()\n    except:\n        return lines\n    _d_funcs = re.findall(r'^def (\\w+)\\s*\\(', _d_src, re.MULTILINE)\n    _d_funcs = [f for f in _d_funcs if f != 'run' and not f.startswith('_')]\n    if not _d_funcs:\n        return lines\n    _chosen = random.choice(_d_funcs)\n    _d_match = re.search(r'(def ' + re.escape(_chosen) + r'\\s*\\(.*?\\):.*?)(?=\\n\\ndef |\\nclass |\\n#|---|\\Z)', _d_src, re.DOTALL)\n    if not _d_match:\n        return lines\n    _d_body = [l for l in _d_match.group(1).split('\\n') if l.strip() and not l.strip().startswith('def ') and not l.strip().startswith('\"\"\"')]\n    if len(_d_body) < 2:\n        return lines\n    _splice = random.choice(_d_body)\n    r = list(lines)\n    _idx = random.randrange(1, len(r))\n    r.insert(_idx, f'    # t5-splice-49:{_donor}:{_chosen}')\n    if _idx + 1 < len(r):\n        r.insert(_idx + 1, f'    {_splice}')\n    return r"
   },
   "diversity": {
     "op_count": 41,
@@ -1201,10 +1211,10 @@
     "selection_entropy": 0.999,
     "hookdef_count": 0,
     "self_spawn_count": 0,
-    "structural_rewrite_depth": 0.84,
-    "source_autonomy_index": 0.0,
+    "structural_rewrite_depth": 0.92,
+    "source_autonomy_index": 0.08,
     "selection_randomness_index": 0.214,
-    "composite": 10.12
+    "composite": 10.42
   },
   "gen_start_time": 1785282000.0,
   "rescue_count": 3,

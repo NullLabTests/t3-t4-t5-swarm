@@ -443,6 +443,68 @@ def _force_t5_rewrite_main_loop(genome):
     except SyntaxError:
         return False
 
+def _t5_cross_splice_loop(genome):
+    gen = genome.get('generation', 0)
+    src = _read_file(AUTO_ECHO)
+    if src is None:
+        return None
+    marker = f'nova:t5-splice:v{gen}'
+    if marker in src:
+        return None
+    modules = sorted([f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f not in ('nova.py', '__init__.py') and not f.startswith('.bak') and not f.startswith('_')])
+    if len(modules) < 2:
+        return None
+    donor = random.choice(modules)
+    donor_path = os.path.join(MODULES_DIR, donor)
+    d_src = _read_file(donor_path)
+    if d_src is None:
+        return None
+    d_funcs = re.findall(r'^def (\w+)\s*\(', d_src, re.MULTILINE)
+    d_funcs = [f for f in d_funcs if f != 'run' and not f.startswith('_')]
+    if not d_funcs:
+        return None
+    chosen_donor = random.choice(d_funcs)
+    d_func_match = re.search(r'(def ' + re.escape(chosen_donor) + r'\s*\(.*?\):.*?)(?=\n\ndef |\nclass |\n#|---|\Z)', d_src, re.DOTALL)
+    if not d_func_match:
+        return None
+    d_func_code = d_func_match.group(1)
+    d_lines = d_func_code.split('\n')
+    d_body = [l for l in d_lines if l.strip() and not l.strip().startswith('def ') and not l.strip().startswith('"""') and not l.strip().startswith("'''")]
+    if len(d_body) < 2:
+        return None
+    splice_line = random.choice(d_body)
+    loop_targets = ['run_generation', '_evolve_loop_structure', 'update_genome', 'code_path_mutation']
+    random.shuffle(loop_targets)
+    for target in loop_targets:
+        if target in src:
+            tgt_pattern = r'(def ' + re.escape(target) + r'\s*\(.*?\):.*?)(?=\n\ndef |\nclass |\n#|---|\Z)'
+            tgt_match = re.search(tgt_pattern, src, re.DOTALL)
+            if tgt_match:
+                tgt_full = tgt_match.group(1)
+                tgt_lines = tgt_full.split('\n')
+                insert_pos = len(tgt_lines) - 1
+                for i in range(len(tgt_lines) - 1, 0, -1):
+                    if tgt_lines[i].strip().startswith('    '):
+                        insert_pos = i + 1
+                        break
+                indent = '    '
+                for i in range(1, min(5, len(tgt_lines))):
+                    if tgt_lines[i].strip().startswith('    '):
+                        indent = tgt_lines[i][:len(tgt_lines[i]) - len(tgt_lines[i].lstrip())]
+                        break
+                injected_line = f'{indent}# {marker} from {donor}:{chosen_donor}\n{indent}try:\n{indent}    {splice_line}\n{indent}except:\n{indent}    pass\n'
+                new_tgt = '\n'.join(tgt_lines[:insert_pos]) + '\n' + injected_line + '\n'.join(tgt_lines[insert_pos:])
+                new_src = src[:tgt_match.start()] + new_tgt + src[tgt_match.end():]
+                try:
+                    ast.parse(new_src)
+                    _write_file(AUTO_ECHO, new_src)
+                    genome['t5_cross_splice_count'] = genome.get('t5_cross_splice_count', 0) + 1
+                    genome['t5_last_splice'] = f'{donor}:{chosen_donor}->{target}'
+                    return f'{donor}:{chosen_donor}->{target}'
+                except SyntaxError:
+                    pass
+    return None
+
 def run(genome):
     gen = genome.get('generation', 0)
     changes = []
@@ -469,6 +531,9 @@ def run(genome):
         changes.append('mutated_force_rewrite')
     if _inject_self_rewrite_operator(genome):
         changes.append('injected_self_rewrite_op')
+    splice = _t5_cross_splice_loop(genome)
+    if splice:
+        changes.append(f't5_splice:{splice}')
     if _inject_permanent_rewrite_stub(genome):
         changes.append('permanent_stub')
     if not changes:

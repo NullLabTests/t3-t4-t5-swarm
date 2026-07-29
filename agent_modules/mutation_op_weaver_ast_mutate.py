@@ -33,3 +33,4 @@ def mutation_op_weaver_ast_mutate(lines, *args):
     except:
         return lines
 # proposal: add an AST-based code validator that checks for syntax before patching  (seeded by synthesizer gen=73)
+# synth:cross-proposal:from=mutation_op_line_duplicate_skip.py:func=mutation_op_line_duplicate_skip:gen=74

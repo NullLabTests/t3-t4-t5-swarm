@@ -18,3 +18,4 @@ def mutation_op_weaver_splice_inject(lines, funcs, target_name):
 
 # proposal: create a feedback loop that adjusts mutation_rate based on emergence_velocity  (seeded by synthesizer gen=73)
 # synth:cross-proposal:from=mutation_op_shuffle_imports.py:func=mutation_op_shuffle_imports:gen=73
+# synth:cross-proposal:from=mutation_op_shuffle_imports.py:func=mutation_op_shuffle_imports:gen=74

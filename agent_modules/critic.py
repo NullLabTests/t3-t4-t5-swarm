@@ -198,3 +198,4 @@ _SPARK_CROSS_INFECTED_47 = True
 # mutator:direct-rewrite:gen61:1a3b7c9d
 
 # proposal: add an AST-based code validator that checks for syntax before patching  (seeded by synthesizer gen=73)
+# synth:cross-proposal:from=mutation_op_weaver_force_hash_change.py:func=mutation_op_weaver_force_hash_change:gen=74

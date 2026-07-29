@@ -19,3 +19,4 @@ def mutation_op_weaver_manifest_writer(lines, *args):
         json.dump(g, f, indent=2)
     return r
 # proposal: create a feedback loop that adjusts mutation_rate based on emergence_velocity  (seeded by synthesizer gen=73)
+# synth:cross-proposal:from=novel_swap_function_order_38_0067.py:func=swap_function_order:gen=74

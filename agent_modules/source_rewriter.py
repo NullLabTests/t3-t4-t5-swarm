@@ -427,3 +427,4 @@ def run(genome):
     print(f'[source_rewriter] {summary}')
     return summary
 # proposal: add an AST-based code validator that checks for syntax before patching  (seeded by synthesizer gen=73)
+# synth:cross-proposal:from=mutation_op_weaver_inject_self_rewrite.py:func=mutation_op_weaver_inject_self_rewrite:gen=74

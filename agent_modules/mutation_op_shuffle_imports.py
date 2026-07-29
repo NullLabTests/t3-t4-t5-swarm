@@ -20,3 +20,4 @@ def mutation_op_shuffle_imports(lines, funcs, target_name):
     return r
 # proposal: add a self-diagnostic function that checks module health  (seeded by synthesizer gen=73)
 # synth:cross-proposal:from=mutation_op_weaver_splice_inject.py:func=mutation_op_weaver_splice_inject:gen=73
+# synth:cross-proposal:from=mutation_op_weaver_splice_inject.py:func=mutation_op_weaver_splice_inject:gen=74

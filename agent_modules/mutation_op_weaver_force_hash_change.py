@@ -19,3 +19,4 @@ def mutation_op_weaver_force_hash_change(lines, funcs, target_name):
 
 # proposal: create a feedback loop that adjusts mutation_rate based on emergence_velocity  (seeded by synthesizer gen=73)
 # synth:cross-proposal:from=mutation_op_weaver_swap_across_modules.py:func=mutation_op_weaver_swap_across_modules:gen=73
+# synth:cross-proposal:from=critic.py:func=self_modify:gen=74

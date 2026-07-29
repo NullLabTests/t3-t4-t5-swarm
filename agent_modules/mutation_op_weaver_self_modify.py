@@ -19,3 +19,4 @@ def mutation_op_weaver_self_modify(lines, *args):
     return r
 # proposal: add a function that selects next mutation target by minimum diversity  (seeded by synthesizer gen=73)
 # synth:cross-proposal:from=mutation_op_weaver_force_rewrite_marker.py:func=mutation_op_weaver_force_rewrite_marker:gen=73
+# synth:cross-proposal:from=quine_loop.py:func=visit_BinOp:gen=74

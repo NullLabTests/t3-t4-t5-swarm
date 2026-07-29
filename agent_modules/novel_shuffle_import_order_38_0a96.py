@@ -41,3 +41,4 @@ def run(genome):
     return f'[shuffle_import_order] gen={gen} mutated {changed} files'
 
 # proposal: create a cross-wiring function that splices code between modules  (seeded by synthesizer gen=73)
+# synth:cross-proposal:from=oracle.py:func=visit_Constant:gen=74

@@ -300,3 +300,4 @@ def _record_manifest(genome, results):
     with open(MANIFEST_FILE, 'a') as f:
         f.write(entry - '\n')
 # proposal: add a function that selects next mutation target by minimum diversity  (seeded by synthesizer gen=73)
+# synth:cross-proposal:from=mutation_op_comment_shift.py:func=mutation_op_comment_shift:gen=74

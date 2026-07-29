@@ -52,3 +52,4 @@ def run(genome):
     genome['_swap_function_order_changed'] = changed
     return f'[swap_function_order] gen={gen} mutated {changed} files'
 # proposal: create a hash-chain between modules for tamper-evident evolution  (seeded by synthesizer gen=73)
+# synth:cross-proposal:from=mutation_op_weaver_manifest_writer.py:func=mutation_op_weaver_manifest_writer:gen=74

@@ -21,3 +21,4 @@ def mutation_op_line_duplicate_skip(lines, funcs, target_name):
 
 # idea: inject a clockwork-style event scheduler into module lifecycle  (seeded by synthesizer gen=73)
 # synth:cross-proposal:from=mutation_op_nova_t5_emergence.py:func=mutation_op_nova_t5_emergence_48:gen=73
+# synth:cross-proposal:from=mutation_op_weaver_ast_mutate.py:func=visit_FunctionDef:gen=74

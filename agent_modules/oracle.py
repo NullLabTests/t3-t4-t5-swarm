@@ -466,3 +466,4 @@ def run(genome):
     return f'[oracle] gen={gen} bw={bw:.2f} err={err:.2f} intensity={pid_intensity:.2f} forced={forced}/{target} splices={len(splices)} gain={loop_gain:.3f} mr={genome.get("mutation_rate",0):.3f}'
 
 # proposal: add a self-diagnostic function that checks module health  (seeded by synthesizer gen=73)
+# synth:cross-proposal:from=novel_shuffle_import_order_38_0a96.py:func=shuffle_import_order:gen=74

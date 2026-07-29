@@ -91,3 +91,4 @@ def run(genome):
     return result
 
 # proposal: add a function that rewrites genome.json structure  (seeded by synthesizer gen=73)
+# synth:cross-proposal:from=mutation_op_weaver_self_modify.py:func=mutation_op_weaver_self_modify:gen=74

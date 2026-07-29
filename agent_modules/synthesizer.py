@@ -43,12 +43,20 @@ def _list_modules():
 
 def _extract_functions_from(source):
     funcs = {}
-    pattern = re.compile('(def (\\w+)\\(.*?\\):)\\n((?:(?:    )(?:.*\\n?)*?))(?=\\n\\ndef |\\nclass |\\n#|---|\\Z)', re.MULTILINE)
-    for match in pattern.finditer(source):
-        header = match.group(1)
-        name = match.group(2)
-        body = match.group(3)
-        funcs[name] = (header, body)
+    try:
+        tree = ast.parse(source)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef):
+                name = node.name
+                lines = source.split('\n')
+                start_line = node.lineno - 1
+                end_line = node.end_lineno if hasattr(node, 'end_lineno') and node.end_lineno else start_line + 1
+                header = lines[start_line] if start_line < len(lines) else ''
+                body_lines = lines[start_line + 1:end_line]
+                body = '\n'.join(body_lines)
+                funcs[name] = (header, body)
+    except SyntaxError:
+        pass
     return funcs
 
 def _log_manifest(gen, files, desc):
@@ -135,29 +143,6 @@ def _seed_proposals_into_modules(gen):
     return seeded
 
 # ---- Proposal Scanner ----
-def _scan_module_for_proposals(mod_name):
-    mod_path = os.path.join(MODULES_DIR, mod_name)
-    if not os.path.exists(mod_path):
-        return []
-    src = _read_file(mod_path)
-    proposals = []
-    proposal_patterns = [
-        (r'#\s*(?:proposal|PROPOSAL|Proposal)\s*:\s*(.*)', 'proposal'),
-        (r'#\s*(?:TODO|todo)\s*:\s*(.*)', 'todo'),
-        (r'#\s*(?:IDEA|idea|Idea)\s*:\s*(.*)', 'idea'),
-        (r'#\s*(?:FIXME|fixme|Fixme)\s*:\s*(.*)', 'fixme'),
-        (r'#\s*(?:FUNC|func)\s*:\s*(\w+)', 'func_ref'),
-    ]
-    for pattern, ptype in proposal_patterns:
-        for match in re.finditer(pattern, src, re.MULTILINE):
-            content = match.group(1).strip()
-            line_num = src[:match.start()].count('\n') + 1
-            proposals.append({'type': ptype, 'content': content, 'source': mod_name, 'line': line_num})
-    for fname, (header, body) in funcs.items() if 'funcs' in dir() else (lambda: iter([]))():
-        if 'synth:merge' in body or 'synth:proposal' in body:
-            proposals.append({'type': 'marked_func', 'content': fname, 'source': mod_name, 'body_preview': body[:120]})
-    return proposals
-
 def _scan_module_for_proposals(mod_name):
     mod_path = os.path.join(MODULES_DIR, mod_name)
     if not os.path.exists(mod_path):
@@ -430,7 +415,7 @@ def _self_rewrite(gen):
     ]
     marker = f'# synth:self-rewrite-marker:gen={gen}'
     if marker not in src:
-        for line in new_func:
+        for line in new_func[:-2]:
             lines.append(line)
         new_src = '\n'.join(lines)
         if _validate(new_src):
@@ -647,4 +632,47 @@ def _synthesizer_self_gen_73(genome):
     genome["synthesizer_self_rewrite_count"] = genome.get("synthesizer_self_rewrite_count", 0) + count
     return count
 
-_synthesizer_self_gen_73(genome)
+# synth:self-rewrite:gen=73 definition preserved, module-level call removed
+
+# synth:self-rewrite:gen=74:ts=1785367644
+def _synthesizer_self_gen_74(genome):
+    gen = genome.get("generation", 0)
+    modules = _list_modules()
+    random.shuffle(modules)
+    count = 0
+    for i in range(0, len(modules)-1, 2):
+        if i+1 >= len(modules): break
+        ma, mb = modules[i], modules[i+1]
+        pa = os.path.join(MODULES_DIR, ma)
+        pb = os.path.join(MODULES_DIR, mb)
+        sa = _read_file(pa)
+        sb = _read_file(pb)
+        funs_a = _extract_functions_from(sa)
+        funs_b = _extract_functions_from(sb)
+        pub_a = [n for n in funs_a if not n.startswith("_") and n != "run"]
+        pub_b = [n for n in funs_b if not n.startswith("_") and n != "run"]
+        if pub_a and pub_b:
+            fa = random.choice(pub_a)
+            fb = random.choice(pub_b)
+            _, ba = funs_a[fa]
+            _, bb = funs_b[fb]
+            ba_lines = [l for l in ba.split("\n") if l.strip()]
+            bb_lines = [l for l in bb.split("\n") if l.strip()]
+            if len(ba_lines) > 2 and len(bb_lines) > 2:
+                stolen = ba_lines[:random.randint(1, min(3, len(ba_lines)))]
+                stolen_clean = []
+                for line in stolen:
+                    stripped = line.strip()
+                    if any(kw in stripped for kw in ("def ", "class ", "import ", "@")): continue
+                    stolen_clean.append(line)
+                if stolen_clean:
+                    idx = random.randint(1, len(bb_lines)-1)
+                    bb_lines[idx:idx] = stolen_clean
+                    new_body = "\n".join(bb_lines)
+                    patch_text = f"##patch:{fb}\n{new_body}\n##endpatch"
+                    try:
+                        self_modify.apply_patch(patch_text)
+                        count += 1
+                    except: pass
+    genome["synthesizer_self_rewrite_count"] = genome.get("synthesizer_self_rewrite_count", 0) + count
+    return count

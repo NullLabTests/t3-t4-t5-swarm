@@ -72,7 +72,8 @@
     "mutation_op_weaver_t5_emergence_56",
     "mutator_self_inject_60",
     "mutator_direct_module_rewrite",
-    "mutation_op_mirror_struct_rewrite_63"
+    "mutation_op_mirror_struct_rewrite_63",
+    "mutation_op_mirror_reciprocal_64"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -1172,7 +1173,7 @@
       "mutation": "scout gen=59: contradicted the assumption that pruning must be an external module — inlined _self_prune_inline into update_genome, rewrote scout.py as minimal 25-line trigger, deleted 5 .bak dead files, autonomy +0.04"
     },
     {
-      "generation": 63,
+"generation": 64,
       "scores": {},
       "average": 0,
       "mutation": "mirror gen=63: injects self_mutate() into all modules missing it, forces structural rewrites per generation, new mutation_op_mirror_struct_rewrite_63, genome fields for self-mutate injection tracking"
@@ -2381,5 +2382,7 @@
   "mirror_self_loop_rate": 0.5,
   "mirror_self_mutate_injections": 0,
   "mirror_gen_rewrite_count": 0,
-  "_mirror_rewritten_gen": 63
+  "reciprocal_rewrites": 0,
+  "mirror_reciprocal_pairs": [],
+  "_mirror_rewritten_gen": 64
 }

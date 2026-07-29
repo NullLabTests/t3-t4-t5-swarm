@@ -1,7 +1,7 @@
 """nova: force endogenous source mutation every generation."""
 from self_mutate import self_mutate
 self_mutate(__file__)
-import random, os, re, json
+import random, os, re, json, ast
 
 MODULES_DIR = "agent_modules"
 GENOME_PATH = "genome.json"
@@ -124,6 +124,23 @@ def mutate_source(path):
         f.write(src)
     return ops
 
+
+SELF_MUTATE_HOOK = 'from self_mutate import self_mutate\nself_mutate(__file__)\n'
+
+def _inject_self_mutate_hook(fpath):
+    source = open(fpath).read()
+    if 'from self_mutate import self_mutate' in source:
+        return False
+    new_source = SELF_MUTATE_HOOK + source
+    try:
+        ast.parse(new_source)
+    except SyntaxError:
+        return False
+    with open(fpath, 'w') as f:
+        f.write(new_source)
+    return True
+
+# weaver:cross-splice gen=55 from spark.py::_inject_self_mutate_hook
 
 def run(gen):
     results = {}

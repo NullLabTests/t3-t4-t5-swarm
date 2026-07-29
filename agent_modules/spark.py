@@ -154,6 +154,33 @@ def _git_commit(genome, rewritten):
             print(f'[spark] git error: {e}')
     return False
 
+def _cross_file_splice_from_nova(dst_path, genome):
+    peers = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and os.path.join(MODULES_DIR, f) != dst_path]
+    if not peers:
+        return False
+    donor = os.path.join(MODULES_DIR, random.choice(peers))
+    try:
+        dsrc = open(donor).read()
+    except Exception:
+        return False
+    dlines = [l for l in dsrc.split('\n') if l.strip() and not l.strip().startswith('#')]
+    if len(dlines) < 2:
+        return False
+    stolen = random.choice(dlines)
+    try:
+        src = open(dst_path).read()
+        lines = src.split('\n')
+        idx = random.randint(1, len(lines) - 1)
+        lines.insert(idx, f'{stolen}  # spark:nova-splice from {os.path.basename(donor)}')
+        new_src = '\n'.join(lines)
+        ast.parse(new_src)
+        open(dst_path, 'w').write(new_src)
+        return True
+    except Exception:
+        return False
+
+# weaver:cross-splice gen=55 from nova.py::cross_file_splice
+
 def run(genome):
     gen = genome.get('generation', 0)
     rewritten = []

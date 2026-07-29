@@ -1155,7 +1155,7 @@
       "mutation": "spark gen=53: injected self_modify() hooks into all module files, self-rewrite spark.py source, killed dead scaffolding, registered mutation_op_spark_self_modify_53"
     },
     {
-      "generation": 54,
+"generation": 55,
       "scores": {},
       "average": 0,
       "mutation": "spark gen=54: killed _auto_discover_agent_modules scaffolding, killed _inject_self_modify_hook stamping, replaced with per-module direct AST mutation, registered mutation_op_spark_direct_mutate_54, removed duplicate op, rate 0.75->0.78"
@@ -2309,7 +2309,7 @@
     "mutation_op_weaver_self_modify.py": "9ef0c154",
     "mutation_op_weaver_swap_module_ref.py": "490a864f",
     "mutator.py": "1e27fcff",
-    "nova.py": "cb43d225",
+    "nova.py": "79a9f758",
     "novel_shuffle_import_order_38_0a96.py": "ac4dc6e5",
     "novel_swap_function_order_38_0067.py": "96eb7d45",
     "oracle.py": "885e6d11",
@@ -2320,7 +2320,7 @@
     "seed_weaver.py": "76803f6b",
     "source_evolver.py": "68c003e8",
     "source_rewriter.py": "f442f4f5",
-    "spark.py": "70a711b6",
+    "spark.py": "702150cd",
     "synthesizer.py": "b2749787",
     "weaver.py": "0c23c079"
   },
@@ -2351,5 +2351,11 @@
     "forge.py",
     "livecode.py"
   ],
-  "spark_cross_infected_count": 18
+  "spark_cross_infected_count": 18,
+  "weaver_gen": 55,
+  "weaver_cross_splices": [
+    "spark.py::_inject_self_mutate_hook -> nova.py::run",
+    "nova.py::cross_file_splice -> spark.py::run"
+  ],
+  "weaver_last_op": "cross-splice:spark.py<->nova.py gen=55"
 }

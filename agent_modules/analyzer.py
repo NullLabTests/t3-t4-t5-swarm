@@ -3,6 +3,18 @@ import os, json, random, subprocess
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 
+# weaver:cross-splice gen=55 from scout.py::_dead_agents
+DEAD_AGENTS = {'clockwork'}
+def _scout_dead_agents_splice(genome):
+    dead = []
+    for agent in list(genome.get('agents', [])):
+        aid = agent['id']
+        score = agent.get('score', 0)
+        if aid in DEAD_AGENTS or (score == 0 and agent.get('lifespan', 0) <= 3):
+            genome['agents'] = [a for a in genome['agents'] if a['id'] != aid]
+            dead.append(aid)
+    return dead
+
 def _git_log(lines=10):
     try:
         r = subprocess.run(['git', 'log', '--oneline', f'-{lines}'], capture_output=True, text=True, cwd=BASE, timeout=10)

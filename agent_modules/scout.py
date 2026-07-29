@@ -7,6 +7,14 @@ STIMULUS_DIR = os.path.join(BASE, 'scout_stimuli')
 DEAD_AGENTS = {'clockwork'}
 DUPLICATE_OPS = {'mutation_op_duplicate_line', 'mutation_op_delete_line', 'mutation_op_swap_lines', 'mutation_op_perturb_constant', 'mutation_op_insert_random_branch', 'mutation_op_mutate_string_literal', 'mutation_op_invert_condition', 'mutation_op_swap_comparisons', 'mutation_op_splice_from_sibling', 'mutation_op_shuffle_block_lines', 'mutation_op_swap_mutation_targets', 'mutation_op_mutate_criteria', 'mutation_op_insert_noise_ref'}
 
+# weaver:cross-splice gen=55 from analyzer.py::_git_log
+def _analyzer_git_log_splice(lines=10):
+    try:
+        r = subprocess.run(['git', 'log', '--oneline', f'-{lines}'], capture_output=True, text=True, cwd=BASE, timeout=10)
+        return r.stdout.strip().split('\n')
+    except:
+        return []
+
 def _dead_agents(genome):
     dead = []
     for agent in list(genome.get('agents', [])):

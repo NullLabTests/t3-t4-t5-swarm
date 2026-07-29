@@ -190,6 +190,11 @@ def run(genome=None, force=0.5):
             print(f'[critic-cross-infect] gen={gen} infected {infected} modules')
     except Exception:
         pass
+    try:
+        from agent_modules.mutation_op_critic_self_heal import run as self_heal_run
+        self_heal_run(genome)
+    except Exception:
+        pass
     entry = {'generation': gen, 'scores': scores, 'details': details}
     log_path = os.path.join(BASE, 'critic_scores.jsonl')
     os.makedirs(os.path.dirname(log_path), exist_ok=True)

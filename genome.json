@@ -1,5 +1,5 @@
 {
-  "generation": 48,
+  "generation": 50,
   "critic_infection_count": 0,
   "execution_order": "shuffle",
   "best_score": 8.8,
@@ -79,7 +79,8 @@
     "mutation_op_livecode_topo_rewire_47",
     "mutation_op_livecode_runtime_codegen_47",
     "mutation_op_nova_loop_rewrite_65",
-    "mutation_op_critic_infect_scoring"
+    "mutation_op_critic_infect_scoring",
+    "mutation_op_critic_self_heal"
   ],
   "prompt_modifiers": [
     " Write executable code.",

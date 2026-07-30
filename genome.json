@@ -85,7 +85,10 @@
     "mutation_op_source_force_coerce",
     "mutation_op_source_force_ast_rename",
     "mutation_op_source_force_cross_contaminate",
-    "mutation_op_source_force_swap_defs"
+    "mutation_op_source_force_swap_defs",
+    "mutation_op_synth_control_flow",
+    "mutation_op_synth_proposal_codegen",
+    "mutation_op_synth_module_spawn"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -252,8 +255,16 @@
       "prompt": "You cut code from one agent module and paste it into another. You create dependencies between previously independent modules."
     },
     {
-      "id": "livecode",
-      "prompt": "You mutate other modules every generation by injecting cross-file markers."
+    "id": "livecode",
+    "prompt": "You mutate other modules every generation by injecting cross-file markers."
+    },
+    {
+      "id": "synthesynth",
+      "prompt": "You generate runnable Python functions from proposal text and inject them into auto-echo.py every generation."
+    },
+    {
+      "id": "flowmorph",
+      "prompt": "You rewrite control flow in auto-echo.py: convert for loops to while loops, extract conditions to variables, materialize return values."
     }
   ],
   "agents": [
@@ -279,12 +290,12 @@
       "prompt": "AST-level self-rewriting quine: force every module to rewrite itself every gen"
     },
     {
-      "id": "synthesizer",
-      "name": "Synthesizer",
-      "module": "synthesizer.py",
-      "score": 5.5,
-      "prompt": "merge proposals and cross-wire modules"
-    },
+    "id": "synthesizer",
+    "name": "Synthesizer",
+    "module": "synthesizer.py",
+    "score": 6.0,
+    "prompt": "merge proposals, cross-wire modules, synthesize code from proposals, rewrite control flow, spawn new modules"
+  },
     {
       "id": "explorer",
       "name": "Explorer",
@@ -1044,7 +1055,7 @@
       "mutation": "critic gen=48: fixed 8 scoring bugs, new mutation_op_critic_infect_scoring, critic cross-infects scoring hooks into all modules"
     },
     {
-      "generation": 53,
+  "generation": 54,
       "scores": {
         "synthesizer": 9.0
       },

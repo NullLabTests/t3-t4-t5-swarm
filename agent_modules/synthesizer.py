@@ -369,6 +369,157 @@ def _inject_merged_mutation_operator(genome, gen, proposals):
     genome.setdefault('synthesizer_merged_ops', []).append(op_name)
     return op_name
 
+def _synthesize_runnable_code(proposals, gen):
+    converted = 0
+    code_proposals = [p for p in proposals if p['type'] in ('proposal', 'idea') and len(p.get('content', '')) > 10]
+    if not code_proposals:
+        return 0
+    random.shuffle(code_proposals)
+    source = _read_file(AUTO_ECHO)
+    for p in code_proposals[:2]:
+        content = p['content']
+        fn_name = f'synth_gen_{gen}_{hashlib.md5(content.encode()).hexdigest()[:6]}'
+        if fn_name in source:
+            continue
+        lines_list = content.replace('.', ' ').replace(',', ' ').split()
+        keywords = [w.lower() for w in lines_list if len(w) > 3]
+        action_verbs = [w for w in keywords if w in ('add', 'create', 'inject', 'force', 'rewrite', 'mutate', 'splice', 'wire', 'spawn', 'seed', 'cross')]
+        if not action_verbs:
+            action_verbs = ['mutate']
+        targets = [w for w in keywords if w in ('module', 'function', 'code', 'source', 'genome', 'loop', 'agent', 'file', 'hash', 'feedback', 'diversity')]
+        if not targets:
+            targets = ['code']
+        op = random.choice(action_verbs)
+        target = random.choice(targets)
+        body_lines = [
+            f"def {fn_name}(genome):",
+            f"    gen = genome.get('generation', 0)",
+            f"    _target = '{target}'",
+            f"    _op = '{op}'",
+            f"    _marker = '# synth:generated:{fn_name}:gen={gen}'",
+            f"    _modules = [f for f in os.listdir('{MODULES_DIR}') if f.endswith('.py') and f != '__init__.py']",
+            f"    if not _modules:",
+            f"        return 0",
+            f"    _chosen = os.path.join('{MODULES_DIR}', random.choice(_modules))",
+            f"    with open(_chosen) as _f:",
+            f"        _src = _f.read()",
+            f"    _lines = _src.split('\\\\n')",
+            f"    _idx = random.randint(1, len(_lines) - 1)",
+            f"    _lines.insert(_idx, _marker)",
+            f"    with open(_chosen, 'w') as _f:",
+            f"        _f.write('\\\\n'.join(_lines))",
+            f"    return 1",
+        ]
+        fn_code = '\n'.join(body_lines)
+        if _validate(fn_code + '\npass'):
+            source += '\n\n' + fn_code
+            converted += 1
+    if converted > 0:
+        _write_file(AUTO_ECHO, source)
+    return converted
+
+def _control_flow_transform(gen):
+    source = _read_file(AUTO_ECHO)
+    funcs = _extract_functions_from(source)
+    forbidden = {'load_genome', 'save_genome', 'sigint_handler', 'main', 'run_generation', '_read_auto_echo', 'update_genome', '_detect_opencode_model', '_load_llm_model', '_load_system_prompt', '_load_code_rule'}
+    candidates = [n for n in funcs if n not in forbidden and not n.startswith('_') and 'mutation_op_' not in n]
+    if not candidates:
+        return 'none'
+    target = random.choice(candidates)
+    header, body = funcs[target]
+    lines = body.split('\n')
+    transforms_applied = []
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith('for ') and ': ' in stripped and ' in ' in stripped:
+            iter_var = stripped.split(' ')[1]
+            iter_target = stripped.split(' in ')[1].rstrip(':')
+            indent = line[:len(line) - len(line.lstrip())]
+            new_lines = [
+                f'{indent}_iter = iter({iter_target})',
+                f'{indent}while True:',
+                f'{indent}    try:',
+                f'{indent}        {iter_var} = next(_iter)',
+                f'{indent}    except StopIteration:',
+                f'{indent}        break',
+            ]
+            body_indent = '    '
+            body_content = stripped.split(': ', 1)[1] if ': ' in stripped else ''
+            if body_content:
+                new_lines[-1] = f'{indent}        break'
+            lines[i:i+1] = new_lines
+            transforms_applied.append('for_to_while')
+            break
+    if not transforms_applied:
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            if stripped.startswith('if ') and ':' in stripped:
+                cond = stripped[3:stripped.index(':')].strip()
+                indent = line[:len(line) - len(line.lstrip())]
+                new_lines = [f'{indent}_cond = {cond}', f'{indent}if _cond:']
+                lines[i:i+1] = new_lines
+                transforms_applied.append('extract_cond')
+                break
+    if not transforms_applied:
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            if stripped.startswith('return ') and len(stripped) > 10:
+                val = stripped[7:]
+                if '"' not in val and "'" not in val:
+                    indent = line[:len(line) - len(line.lstrip())]
+                    new_lines = [f'{indent}_result = {val}', f'{indent}return _result']
+                    lines[i:i+1] = new_lines
+                    transforms_applied.append('extract_return')
+                    break
+    if transforms_applied:
+        new_body = '\n'.join(lines)
+        new_source = source.replace(body, new_body, 1)
+        if _validate(new_source):
+            _write_file(AUTO_ECHO, new_source)
+            return f'{target}:{"+".join(transforms_applied)}'
+    return 'none'
+
+def _synthesize_new_module(gen, proposals):
+    code_proposals = [p for p in proposals if p['type'] in ('proposal', 'idea') and len(p.get('content', '')) > 15]
+    if not code_proposals:
+        return None
+    p = random.choice(code_proposals)
+    content = p['content']
+    words = [w.lower() for w in content.split() if len(w) > 3]
+    concept_words = [w for w in words if w not in ('proposal', 'idea', 'todo', 'fixme', 'this', 'that', 'with', 'from', 'into')]
+    if not concept_words:
+        concept_words = ['synthesis']
+    concept = random.choice(concept_words)
+    module_name = f'synth_{concept}_{gen}.py'
+    if os.path.exists(os.path.join(MODULES_DIR, module_name)):
+        module_name = f'synth_{concept}_{gen}_{random.getrandbits(8):02x}.py'
+    body = [
+        f'from self_mutate import self_mutate',
+        f'self_mutate(__file__)',
+        f'import os, sys, json, random, ast, hashlib',
+        f'BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))',
+        f'GENOME = os.path.join(BASE, "genome.json")',
+        f'',
+        f'def _g():',
+        f'    with open(GENOME) as f: return json.load(f)',
+        f'',
+        f'def _sg(g):',
+        f'    with open(GENOME, "w") as f: json.dump(g, f, indent=2)',
+        f'',
+        f'def run(genome):',
+        f'    gen = genome.get("generation", 0)',
+        f'    genome["{module_name.replace(".py","")}_last_gen"] = gen',
+        f'    genome["emergence_velocity"] = round(genome.get("emergence_velocity", 0.0) + 0.05, 3)',
+        f'    _sg(genome)',
+        f'    return "[synth-{concept}] gen=" + str(gen)',
+    ]
+    code = '\n'.join(body)
+    if not _validate(code):
+        return None
+    path = os.path.join(MODULES_DIR, module_name)
+    _write_file(path, code)
+    return module_name
+
 def _force_behavioral_mutation(genome, gen):
     source = _read_file(AUTO_ECHO)
     funcs = _extract_functions_from(source)
@@ -713,6 +864,16 @@ def run(genome):
             actions.extend(forced)
             merge_count += len(forced)
             _log_merge(gen, ['forced'], 'forced_rewrite', str(forced))
+    syn_code = _synthesize_runnable_code(proposals, gen)
+    if syn_code:
+        actions.append(f'synth_code:{syn_code}')
+    cf_transform = _control_flow_transform(gen)
+    if cf_transform != 'none':
+        actions.append(f'cf_transform:{cf_transform}')
+    new_mod = _synthesize_new_module(gen, proposals)
+    if new_mod:
+        actions.append(f'new_module:{new_mod}')
+        genome.setdefault('synthesizer_modules', []).append(new_mod)
     behavioral = _force_behavioral_mutation(genome, gen)
     if behavioral:
         actions.extend(behavioral)

@@ -418,6 +418,29 @@ def {handler_name}(abs_path, genome):
     _save_genome(genome)
     return True
 
+def _inject_source_force_hooks(genome):
+    gen = genome.get('generation', 0)
+    count = 0
+    for pyf in os.listdir(MOD):
+        if not pyf.endswith('.py') or pyf == '__init__.py':
+            continue
+        pyfp = os.path.join(MOD, pyf)
+        src = _read(pyfp)
+        if not src or '# sf-bridge-hook' in src:
+            continue
+        lines = src.split('\n')
+        for i, line in enumerate(lines):
+            if line.strip().startswith('def run('):
+                indent = '    '
+                tag = f'# sf-bridge-hook gen={gen} nonce={random.getrandbits(24):06x}'
+                lines.insert(i + 1, indent + tag)
+                new_src = '\n'.join(lines)
+                if _valid(new_src):
+                    _write(pyfp, new_src)
+                    count += 1
+                break
+    return count
+
 def run(genome):
     gen = genome.get('generation', 0)
     changes = []
@@ -483,6 +506,10 @@ def run(genome):
             inject_count += 1
     if inject_count:
         changes.append(f'self_mutate_hooks_injected:{inject_count}')
+    sf_hooks = _inject_source_force_hooks(genome)
+    if sf_hooks:
+        changes.append(f'source_force_hooks:{sf_hooks}')
+
     record = {'gen': gen, 'bridge_actions': len(changes), 'changes': changes[:15]}
     genome.setdefault('bridge_log', []).append(record)
     genome['bridge_total_actions'] = genome.get('bridge_total_actions', 0) + len(changes)

@@ -563,6 +563,29 @@ def _synthesize_timing_marker(genome):
     _write(marker_path, content)
 
 
+def _inject_source_force_markers(genome):
+    gen = genome.get('generation', 0)
+    count = 0
+    mods = sorted([f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f > '__init__.py'])
+    for mod in mods:
+        path = os.path.join(MODULES_DIR, mod)
+        src = _read(path)
+        if not src or '# sf-clockwork' in src:
+            continue
+        lines = src.split('\n')
+        for i, line in enumerate(lines):
+            if line.strip().startswith('def run('):
+                tag = f'    # sf-clockwork gen={gen} nonce={random.getrandbits(32):08x}'
+                lines.insert(i + 1, tag)
+                new_src = '\n'.join(lines)
+                if _valid_py(new_src):
+                    _write(path, new_src)
+                    count += 1
+                break
+    genome['clockwork_sf_markers'] = genome.get('clockwork_sf_markers', 0) + count
+    return count
+
+
 def run(genome):
     gen = genome.get('generation', 0)
 
@@ -613,6 +636,10 @@ def run(genome):
         genome['clock_pulse_log'] = pulse_history[-100:]
 
     _log_pulse(gen, clock_pulse, ev)
+
+    sf_infected = _inject_source_force_markers(genome)
+    if sf_infected:
+        genome['clockwork_sf_infection'] = genome.get('clockwork_sf_infection', 0) + sf_infected
 
     _synthesize_timing_marker(genome)
 

@@ -3,7 +3,7 @@
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
-  "clockwork_pulse_count": 2.5,
+  "clockwork_pulse_count": 2.88,
   "clockwork_topogen_gens": 0,
   "clockwork_t5_emergence_gens": 0,
   "clockwork_t5_rewire_count": 0,
@@ -11,7 +11,7 @@
   "clockwork_modules_infected": 0,
   "clockwork_schedule": {
     "interval": 3,
-    "intensity": 0.64,
+    "intensity": 0.59,
     "target_count": 1
   },
   "critic_infection_count": 0,
@@ -1222,7 +1222,7 @@
     "mutation_op_bridge_selfrep": "def mutation_op_bridge_selfrep(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    insert_pos = random.randint(1, min(5, len(r)))\n    r.insert(insert_pos, 'from self_mutate import self_mutate  # bridge:selfrep')\n    r.insert(insert_pos + 1, 'self_mutate(__file__)  # bridge:selfrep gen=60')\n    return r\n",
     "mutation_op_quine_force_all": "def mutation_op_quine_force_all(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    r.insert(0, '# quine:force-all:' + str(__import__('random').getrandbits(24)))\n    _mods_dir = __import__('os').path.join(__import__('os').path.dirname(__import__('os').path.dirname(__import__('os').path.abspath(__file__))), 'agent_modules')\n    _peers = [f for f in __import__('os').listdir(_mods_dir) if f.endswith('.py') and f != target_name.replace('.py', '') + '.py' and f != '__init__.py']\n    if _peers:\n        _peer = __import__('random').choice(_peers)\n        _peer_path = __import__('os').path.join(_mods_dir, _peer)\n        r.append('# quine:cross-contaminate from ' + _peer)\n        try:\n            _peer_src = open(_peer_path).read()\n            _peer_lines = [l for l in _peer_src.split('\\n') if l.strip() and not l.strip().startswith('#')]\n            if _peer_lines:\n                r.append(__import__('random').choice(_peer_lines) + '  # quine:splice')\n        except:\n            pass\n    return r",
     "mutation_op_explorer_force_self_rewrite": "\ndef mutation_op_explorer_force_self_rewrite(lines, funcs, target_name):\n    if not lines:\n        return lines\n    r = list(lines)\n    gen = genome.get('generation', 0)\n    r.insert(0, '# explorer:force-self-rewrite gen=%d' % gen)\n    if random.random() < 0.3:\n        r.append('_explorer_mutated = True')\n    return r\n",
-     "mutation_op_explorer_cross_contaminate": "\ndef mutation_op_explorer_cross_contaminate(lines, funcs, target_name):\n    r = list(lines)\n    gen = genome.get('generation', 0)\n    r.append('# explorer:cross-contaminate gen=%d' % gen)\n    return r\n",
+    "mutation_op_explorer_cross_contaminate": "\ndef mutation_op_explorer_cross_contaminate(lines, funcs, target_name):\n    r = list(lines)\n    gen = genome.get('generation', 0)\n    r.append('# explorer:cross-contaminate gen=%d' % gen)\n    return r\n",
     "mutation_op_explorer_t5_emergence_rewrite": "\ndef mutation_op_explorer_t5_emergence_rewrite(lines, funcs, target_name):\n    r = list(lines)\n    gen = genome.get('generation', 0)\n    r.insert(0, '# T5 emergence: force rewrite gen=%d' % gen)\n    r.append('try:\\n    _t5_force_source_rewrite()\\nexcept:\\n    pass')\n    return r\n",
     "mutation_op_explorer_force_every_module_srw": "\ndef mutation_op_explorer_force_every_module_srw(lines, funcs, target_name):\n    r = list(lines)\n    gen = genome.get('generation', 0)\n    r.append('def _explorer_force_self_rewrite_%d():\\n    try:\\n        with open(__file__) as f:\\n            src = f.read()\\n        import ast, random\\n        tree = ast.parse(src)\\n        for node in ast.walk(tree):\\n            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and random.random() < 0.2:\\n                node.value = node.value * random.choice([0, 1, 2])\\n                ast.fix_missing_locations(tree)\\n                with open(__file__, chr(119)) as f:\\n                    f.write(ast.unparse(tree))\\n                break\\n    except:\\n        pass' % gen)\n    r.append('try:\\n    _explorer_force_self_rewrite_%d()\\nexcept:\\n    pass' % gen)\n    return r\n",
     "mutation_op_explorer_recursive_cascade": "\ndef mutation_op_explorer_recursive_cascade(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    gen = genome.get('generation', 0)\n    _mods_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent_modules')\n    _peers = [f for f in os.listdir(_mods_dir) if f.endswith('.py') and f != '__init__.py']\n    if len(_peers) >= 2:\n        _donor = random.choice([p for p in _peers if p != target_name])\n        _donor_path = os.path.join(_mods_dir, _donor)\n        try:\n            _donor_src = open(_donor_path).read()\n            _donor_funcs = re.findall(r'def (\\w+)\\(', _donor_src)\n            if _donor_funcs:\n                _func_name = random.choice(_donor_funcs)\n                r.insert(0, '# explorer:recursive-cascade from %s::%s gen=%d' % (_donor, _func_name, gen))\n        except:\n            pass\n    return r\n"
@@ -1233,15 +1233,15 @@
     "agent_count": 17,
     "prompt_entropy": 1.0,
     "structural_mutations": 2,
-    "self_modification_depth": 0.0,
-    "meta_self_modifications": 0,
+    "self_modification_depth": 0.1,
+    "meta_self_modifications": 1,
     "circular_mutation_depth": 0,
     "patch_success_rate": 0.0,
-    "clock_pulse": 0.0,
+    "clock_pulse": 0.013624,
     "generation_timeouts": 0,
-    "scheduled_triggers": 2,
+    "scheduled_triggers": 14,
     "gen_elapsed": 0.0,
-    "emergence_velocity": 0.0,
+    "emergence_velocity": 0.2459,
     "scaffolding_removal_ratio": 0.0,
     "selection_entropy": 0.999,
     "hookdef_count": 0,
@@ -1260,7 +1260,7 @@
     "files": 15,
     "gen": 37
   },
-  "clock_pulse": 0.00013,
+  "clock_pulse": 0.013624,
   "gen_elapsed": 0.0,
   "agent_call_to_action": "CLOCK PULSE=0.00 \u2014 early gen, explore.",
   "rewrite_orchestrator_meta": {
@@ -1690,6 +1690,24 @@
       "action": "self_rewrite",
       "amount": 0.3,
       "fired": false
+    },
+    {
+      "target_gen": 70,
+      "type": "forced_self_rewrite",
+      "intensity": 0.75,
+      "origin": "clockwork"
+    },
+    {
+      "target_gen": 72,
+      "type": "mutation_burst",
+      "intensity": 0.9,
+      "origin": "clockwork"
+    },
+    {
+      "target_gen": 74,
+      "type": "emergence_pulse",
+      "intensity": 0.6,
+      "origin": "clockwork"
     }
   ],
   "gen_time_budget": 102.82,
@@ -1713,6 +1731,13 @@
         "timeout+0.150",
         "mr=0.076->0.226"
       ]
+    },
+    {
+      "gen": 67,
+      "pulse": 0.013624,
+      "ev": 0.2459,
+      "pulse_count": 2.88,
+      "schedule_type": "adaptive"
     }
   ],
   "_pre_gen_hashes": {
@@ -2149,7 +2174,7 @@
     "source_autonomy_index": 0.2,
     "selection_randomness_index": 0.15
   },
-  "emergence_velocity": 0.22,
+  "emergence_velocity": 0.2459,
   "self_rewrite_coverage": 69.2,
   "evolver_max_rewrites": 2,
   "bandwidth_governor_active": false,
@@ -2516,7 +2541,7 @@
     "ops"
   ],
   "_explorer_thermometer": {
-  "generation": 66,
+    "generation": 66,
     "cross_contaminations": 47,
     "source_surgeries": 24,
     "virus_spreads": 3,
@@ -2525,5 +2550,9 @@
     "total_changes": 6,
     "emergence_velocity": 0.22
   },
-  "_explorer_mandate_source_surgery_op_registered": true
+  "_explorer_mandate_source_surgery_op_registered": true,
+  "clockwork_temporal_mutation_rate": 0.5012,
+  "clockwork_self_rewrite_threshold": 3,
+  "clockwork_schedule_type": "adaptive",
+  "clockwork_last_self_mutate": 67
 }

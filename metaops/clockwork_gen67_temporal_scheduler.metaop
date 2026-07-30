@@ -1,0 +1,7 @@
+{
+  "name": "mutation_op_clockwork_temporal_scheduler_67",
+  "code": "def mutation_op_clockwork_temporal_scheduler_67(lines, funcs, target_name):\n    r = list(lines)\n    gen = __import__('json').load(open(__import__('os').path.join(__import__('os').path.dirname(__import__('os').path.dirname(__import__('os').path.abspath(__file__))), 'genome.json'))).get('generation', 0)\n    mod = random.choice(['pulse', 'interval', 'rate', 'entropy', 'schedule'])\n    if mod == 'pulse':\n        r.append(f'# clockwork:temporal-pulse gen={gen} nonce={random.getrandbits(32):08x}')\n    elif mod == 'interval':\n        for i, li in enumerate(r):\n            if 'clockwork_interval' in li and '=' in li:\n                r[i] = f'    clockwork_interval = {random.randint(1, 5)}  # temporal mutation gen={gen}'\n                break\n    elif mod == 'rate':\n        r.insert(random.randrange(len(r)), f'    mutation_rate = min(0.99, mutation_rate * {round(random.uniform(0.9, 1.1), 3)})  # clockwork:temporal')\n    elif mod == 'entropy':\n        r.insert(random.randrange(len(r)), f'    selection_entropy = {round(random.uniform(0.3, 0.95), 4)}  # clockwork:temporal-shift gen={gen}')\n    elif mod == 'schedule':\n        r.insert(0, f'# clockwork:schedule-override gen={gen} trigger_at={gen + random.randint(2, 10)}')\n    return r",
+  "gen": 67,
+  "origin": "clockwork",
+  "type": "temporal_scheduler"
+}

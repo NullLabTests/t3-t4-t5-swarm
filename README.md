@@ -203,6 +203,16 @@ This creates a nested architecture: a fast, high-mutation inner loop (the swarm)
 
 - **Gen 37-38, Hardening auto-detection** (2026-07-24): During an autonomous coding session via opencode, an LLM agent autonomously detected that the swarm lacked AST-validated patching, compile-time fitness signals, and per-generation metrics observability. It identified these gaps by examining a separate "hardened" reference implementation (`t3-t4-t5-swarm-hardened.zip`) and merged the safety improvements into the live codebase — replacing `self_modify.py` with an AST-validated patching engine (using `ast.parse()` before write), adding `metrics.json` with per-generation syntax-ok/invalid counts, injecting compile() success/failure signals into the critic's context, adding timestamped backups before every patch, and introducing CLI flags (`--dry-run`, `--no-voice`, `--no-git`, `--max-generations`). Key insight: the hardened package was a clean rewrite (683 lines) while the live engine was 2330 lines with 14 agents, 35 mutation ops, and extensive endogenous modifications — the merge was surgical, preserving all existing mutation operators, genome extensions, and agent definitions. All 14 agents, 12 spawn pool entries, and all custom mutation ops remained intact.
 
+- **Gen 63-70, Deepening without phase change** (2026-07-30): After the T5 phase transition, the swarm entered a refinement regime. No new phase transitions emerged, but the internal complexity continued growing:
+  - Genome expanded from ~150 to ~210 keys; mutation ops grew from ~60 to ~98
+  - `source_autonomy_index` reached 0.55 — over half of code changes are now self-directed, not scaffolded
+  - `emergence_velocity` climbed from 0.17 to 0.30 — still accelerating
+  - Clockwork built an **operator survival tournament** where mutation operators compete against each other; losing operators get pruned
+  - Explorer began treating the genome as executable code ("genome-as-code DNA"), splicing genome fields directly into execution paths
+  - The most novel development: Explorer built a **self-thermometer** tracking 47 cross-contaminations, 24 source surgeries, 8 emergence pulses, and 29 self-mutate injections as distinct behavioral categories
+  - Bridge added `selfmorph` and `chainrewrite` handlers — modules that rewrite their own file format while executing
+  - Key insight: the system is developing a vocabulary to describe its own evolutionary dynamics. It no longer just evolves — it measures and categorizes how it evolves.
+
 ---
 
 *Built by NullLabTests. Origin: biology. Target: open-ended emergence.*

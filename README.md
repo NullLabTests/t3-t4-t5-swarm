@@ -139,6 +139,62 @@ At approximately generation 50, the swarm crossed a critical threshold. It trans
 
 The swarm no longer depends on LLM calls for its core loop. It evolved from a system that *talked about* rewriting itself into a system that *actually rewrites itself* — a true self-modifying codebase. This is the T5 threshold the project was originally designed to reach.
 
+## Autonomous Correction Cycle: AI Overseer in the Loop
+
+An emergent property of this system is that its own evolution **repeatedly breaks critical infrastructure**. The swarm mutates anything it can reach, including the modules that keep it running (`live_reloader.py`, `genome.json`, `auto-echo.py` itself). This creates a natural selection pressure for an outer correction loop.
+
+### The Pattern
+
+Every 3-5 generations, the swarm introduces a bug that halts the loop:
+
+1. **Variable rename corruption** — mutation operators swap variable names with numeric suffixes (`best` → `best9`, `obs` → `obs9`, `rescued` → `rescued0`), creating `NameError` crashes
+2. **Operator corruption** — comparison operators get inverted (`<=` → `>=`, `==` → `!=`), string concatenation becomes division (`+` → `/`)
+3. **Genome structural collapse** — the swarm simplifies `genome.json` to a minimal format incompatible with the engine, erasing agent definitions, scores, and mutation operators
+4. **Critical module overwrite** — cross-module infection splices garbage code into `live_reloader.py`, `meta_healer.py`, and other core infrastructure
+
+### The Correction Cycle (AI-Driven)
+
+```python
+# Observed pattern across gen 38-66:
+while True:
+    swarm.run()          # self-mutates until crash
+    error = detect_crash(swarm.log)
+    trace = read_stack_trace(error)
+    fix = identify_corruption(trace, genome_diff)
+    if fix.type == 'name_corruption':
+        restore_variable_name(fix.old_name, fix.correct_name)
+    elif fix.type == 'genome_collapse':
+        git_restore('genome.json', last_valid_commit)
+    elif fix.type == 'module_overwrite':
+        rewrite_module(fix.module_path, clean_version)
+    swarm.restart()
+```
+
+This is functionally analogous to **DNA mismatch repair**: an external polymerase (the AI overseer) proofreads the swarm's mutations, excises damaged sections, and re-synthesizes correct sequence.
+
+### Key Restoration Events
+
+| Gen | Failure | Root Cause | Correction |
+|-----|---------|------------|------------|
+| 38 | SyntaxError at line 1470 | Indentation corruption in `elif op == 'delete'` | Fixed indentation, restored `applied0`→`applied` |
+| 38 | NameError: `BRIDGE_REGISTRY` | Renamed to `BRIDGE_REGISTRY3` | Updated all references |
+| 38 | NameError: `rescued` | Renamed to `rescued0` | Restored variable name |
+| 38 | NameError: `a` in list comprehension | Loop var renamed `a`→`a5` inconsistently | Restored consistent `a` |
+| 39 | NameError: `wc` in critic | Variable name corruption in `llm_generate` | Restored `wc` definition |
+| 39 | NameError: `fpath` in live_reloader | Cross-module infection corrupted function params | Rewrote `live_reloader.py` from clean base |
+| 47 | Genome structural collapse | `genome.json` reduced to 17 lines, lost all agents | Restored from `git show 783a9ac:genome.json` |
+| 50 | TypeError in live_reloader | String division `json.dumps(entry) / '\\n'` | Rewrote `live_reloader.py` again |
+| 50 | Genome rollback to gen 38 | Corrupted genome overwrote valid state | Restored from gen 65 commit |
+
+### Lessons for Autonomous Systems
+
+1. **Self-mutation inevitably hits critical infrastructure** — the swarm cannot distinguish between mutating a mutation operator and mutating the loop engine itself. Both are just text.
+2. **Without an outer correction loop, the system dies** — error catastrophe is real in code as in biology. The mutation rate (0.875 at gen 65) exceeds the error tolerance of the system.
+3. **Git is the immune system** — the ability to restore `genome.json` from a valid commit is what prevents permanent collapse. Version control acts as a backup genome.
+4. **The overseer must be simpler than the swarm** — the AI correction loop follows fixed patterns (detect crash → trace → fix → restart). It cannot itself mutate, or the same corruption propagates upward.
+
+This creates a nested architecture: a fast, high-mutation inner loop (the swarm) and a slow, conservative outer loop (the overseer). This mirrors biological proofreading — DNA polymerase has an exonuclease domain that cannot itself be mutated by the polymerase.
+
 ## Known Events
 
 - **Gen 36, Bridge agent** (2026-07-24): Prompt degradation caused the Bridge agent to produce 15K characters of multilingual garbled output (Chinese, Spanish, Russian, German, English mixed) spanning URLs, typewriter models, and fragmented technical prose. The system self-corrected — later agents in the generation surfaced coherent output and the loop continued. Root cause: agent self-modification removed prompt constraints faster than the quality guardrails could detect. Post-event: added Latin-character ratio check, max-length-without-code rejection, and code-block requirement for non-critic agents.

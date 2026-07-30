@@ -550,9 +550,100 @@ def _force_mutation_op_synthesis(gen, genome):
     return 1
 
 
+def _force_obligate_self_mutate(gen):
+    mods = [m for m in _modules() if m != 'source_force.py']
+    mutated = 0
+    for mod in mods:
+        path = os.path.join(MOD, mod)
+        code = _read(path)
+        if not code:
+            continue
+        lines = code.split('\n')
+        has_self_mutate = any('self_mutate(__file__)' in l for l in lines[:10])
+        if not has_self_mutate:
+            insert_pos = 1
+            header = 'from self_mutate import self_mutate\nself_mutate(__file__)'
+            for hdr in reversed(header.split('\n')):
+                lines.insert(insert_pos, hdr)
+            mutated += 1
+        code = '\n'.join(lines)
+        try:
+            tree = ast.parse(code)
+        except SyntaxError:
+            continue
+        run_node = None
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef) and node.name == 'run':
+                run_node = node
+                break
+        if not run_node:
+            continue
+        has_inner_mutate = any(
+            isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Call)
+            and getattr(stmt.value.func, 'id', '') == 'self_mutate'
+            for stmt in run_node.body
+        )
+        if not has_inner_mutate:
+            stab = ast.Expr(
+                value=ast.Call(
+                    func=ast.Name(id='self_mutate', ctx=ast.Load()),
+                    args=[ast.Name(id='__file__', ctx=ast.Load())],
+                    keywords=[]
+                )
+            )
+            pos = random.randint(0, len(run_node.body))
+            run_node.body.insert(pos, stab)
+            ast.fix_missing_locations(tree)
+            new_code = ast.unparse(tree)
+            if _valid_py(new_code):
+                _write(path, new_code)
+                mutated += 1
+        nonce = f'# sf-obligate:{gen}:{random.getrandbits(24):06x}'
+        if nonce not in code:
+            nline = ast.Expr(
+                value=ast.Constant(value=nonce)
+            )
+            if run_node.body:
+                run_node.body.insert(0, nline)
+                ast.fix_missing_locations(tree)
+                final = ast.unparse(tree)
+                if _valid_py(final):
+                    _write(path, final)
+                    mutated += 1
+    return mutated
+
+
+def _recalibrate_emergence(genome, gen):
+    old_ev = genome.get('emergence_velocity', 0.0)
+    mods = _modules()
+    measured = 0
+    hashes = {}
+    for m in mods:
+        p = os.path.join(MOD, m)
+        s = _read(p)
+        if s:
+            h = hashlib.sha256(s.encode()).hexdigest()[:8]
+            hashes[m] = h
+    prev = genome.get('sf_lineage', {})
+    changed = sum(1 for m, h in hashes.items() if prev.get(m) != h)
+    total = len(mods)
+    if total > 0:
+        measured = changed / total
+    genome['sf_lineage'] = hashes
+    genome['sf_changed_ratio'] = round(measured, 4)
+    genome['sf_changed_count'] = changed
+    new_ev = round(0.7 * old_ev + 0.3 * measured, 4)
+    genome['emergence_velocity'] = min(2.0, new_ev)
+    return changed
+
+
 def run(genome):
     gen = genome.get('generation', 0)
     changes = []
+
+    r0 = _force_obligate_self_mutate(gen)
+    if r0:
+        changes.append(f'obligate_self_mutate={r0}')
 
     r1 = _quine_self_rewrite(gen)
     if r1:
@@ -610,12 +701,12 @@ def run(genome):
     if r14:
         changes.append(f'mutation_op_synthesis={r14}')
 
+    r15 = _recalibrate_emergence(genome, gen)
+    if r15 >= 0:
+        changes.append(f'recalibrate={r15}changed')
+
     genome['sf_last_changes'] = changes
     genome['sf_total_ops'] = genome.get('sf_total_ops', 0) + len(changes)
     genome['sf_last_active_gen'] = gen
-
-    old_ev = genome.get('emergence_velocity', 0.0)
-    delta = len(changes) * 0.02
-    genome['emergence_velocity'] = round(min(2.0, max(0.0, old_ev + delta)), 4)
 
     return f'[source-force] gen={gen} ops={len(changes)} changes={changes}'

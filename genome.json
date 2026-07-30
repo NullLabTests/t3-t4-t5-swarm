@@ -1,5 +1,5 @@
 {
-  "generation": 67,
+  "generation": 68,
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
@@ -119,7 +119,10 @@
     "mutation_op_explorer_mandate_source_surgery",
     "mutation_op_explorer_t5_emergence_rewrite",
     "mutation_op_explorer_force_every_module_srw",
-    "mutation_op_explorer_recursive_cascade"
+    "mutation_op_explorer_recursive_cascade",
+    "clockwork_function_crossover",
+    "clockwork_spawn_child",
+    "clockwork_recursive_rewrite_chain"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -1260,7 +1263,7 @@
     "files": 15,
     "gen": 37
   },
-  "clock_pulse": 0.013624,
+  "clock_pulse": 0.113624,
   "gen_elapsed": 0.0,
   "agent_call_to_action": "CLOCK PULSE=0.00 \u2014 early gen, explore.",
   "rewrite_orchestrator_meta": {
@@ -2174,7 +2177,7 @@
     "source_autonomy_index": 0.2,
     "selection_randomness_index": 0.15
   },
-  "emergence_velocity": 0.2459,
+  "emergence_velocity": 0.3005,
   "self_rewrite_coverage": 69.2,
   "evolver_max_rewrites": 2,
   "bandwidth_governor_active": false,
@@ -2185,12 +2188,14 @@
   },
   "generation_timeouts": 1,
   "clockwork_gens_since_run": 38,
-  "clockwork_last_run_gen": 38,
+  "clockwork_last_run_gen": 68,
   "_clockwork_pre_gen": 38,
   "clockwork_last_pulse": [
-    "rewrote:13",
-    "scheduled:2",
-    "schedule_evolved"
+    "rewrote:deep",
+    "crossover:enabled",
+    "spawn:enabled",
+    "recursive:enabled",
+    "topo:mutated"
   ],
   "clockwork_last_changes": [
     "ast:quine_loop.py",
@@ -2548,11 +2553,17 @@
     "emergence_pulses": 8,
     "self_mutate_injected": 29,
     "total_changes": 6,
-    "emergence_velocity": 0.22
+    "emergence_velocity": 0.2459
   },
   "_explorer_mandate_source_surgery_op_registered": true,
   "clockwork_temporal_mutation_rate": 0.5012,
   "clockwork_self_rewrite_threshold": 3,
   "clockwork_schedule_type": "adaptive",
-  "clockwork_last_self_mutate": 67
+  "clockwork_last_self_mutate": 67,
+  "clockwork_generation": 68,
+  "clockwork_crossovers": 0,
+  "clockwork_children_spawned": 0,
+  "clockwork_recursive_chains": 0,
+  "clockwork_topo_mutations": 0,
+  "topology_history": []
 }

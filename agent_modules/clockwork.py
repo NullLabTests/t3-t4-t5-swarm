@@ -498,6 +498,63 @@ def _fire_t5_emergence_drive(genome, gen, params=None):
         return f't5_emergence_drive:{target}'
     return None
 
+def _fire_t5_force_all_modules(genome, gen, params=None):
+    targets = _all_py_modules(exclude=['clockwork.py', '__init__.py'])
+    if not targets:
+        return None
+    injected = []
+    for target in targets:
+        target_path = os.path.join(MOD, target)
+        src = _read(target_path)
+        if '# clockwork:t5-force-all' in src:
+            continue
+        safe_name = target.replace('.py', '').replace('-', '_')
+        hook = (
+            f"\n# clockwork:t5-force-all gen={gen}\n"
+            f"def _t5_self_mutate_{safe_name}():\n"
+            f"    import os, random, ast\n"
+            f"    p = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent_modules', '{target}')\n"
+            f"    c = open(p).read()\n"
+            f"    l = c.split('\\n')\n"
+            f"    i = random.randint(0, len(l) - 1)\n"
+            f"    l[i] = l[i] + '  # t5:forced gen={gen}'\n"
+            f"    try:\n"
+            f"        ast.parse('\\n'.join(l))\n"
+            f"        open(p, 'w').write('\\n'.join(l))\n"
+            f"    except:\n"
+            f"        pass\n"
+            f"_t5_self_mutate_{safe_name}()\n"
+        )
+        new_src = src + hook
+        if _validate(new_src) > 0:
+            _write(target_path, new_src)
+            injected.append(target)
+    genome['clockwork_t5_force_all_gens'] = genome.get('clockwork_t5_force_all_gens', 0) + 1
+    genome['clockwork_modules_infected'] = genome.get('clockwork_modules_infected', 0) + len(injected)
+    if injected:
+        return f't5_force_all:{len(injected)}modules:{",".join(injected[:3])}'
+    return 't5_force_all:0_all_already_infected'
+
+def _fire_clockwork_self_amp(genome, gen, params=None):
+    self_path = os.path.join(MOD, 'clockwork.py')
+    src = _read(self_path)
+    lines = src.split('\n')
+    mutations = 0
+    for i, line in enumerate(lines):
+        for pat in ['0.2', '0.3', '0.5', '0.7', '0.8']:
+            if pat in line and any(k in line for k in ['if ', '>', '<', 'random.random() <', 'max(', 'min(']):
+                old_lines = lines[:]
+                new_pat = f'{min(0.99, float(pat) * random.uniform(1.05, 1.20)):.2f}'
+                lines[i] = line.replace(pat, new_pat, 1)
+                if _validate('\n'.join(lines)) > 0:
+                    mutations += 1
+                    break
+                lines = old_lines
+    if mutations > 0:
+        _write(self_path, '\n'.join(lines))
+        return f'self_amp:{mutations}thresholds'
+    return None
+
 def _fire_rewire_genome_topology(genome, gen, params=None):
     """Mutate genome.json topology: add/remove agents, rewire spawn_pool, inject new mutation_ops."""
     ops = ['add_mutation_op', 'remove_low_agent', 'mutate_spawn_pool', 'inject_emergence_field']
@@ -541,6 +598,8 @@ EVENT_FIRERS = {
     'force_self_rewrite': _fire_force_self_rewrite,
     'inject_clockwork_loop': _fire_inject_clockwork_loop,
     't5_emergence_drive': _fire_t5_emergence_drive,
+    't5_force_all_modules': _fire_t5_force_all_modules,
+    'clockwork_self_amp': _fire_clockwork_self_amp,
     'rewire_genome_topology': _fire_rewire_genome_topology,
 }
 
@@ -699,6 +758,14 @@ def run(genome):
         td = _fire_t5_emergence_drive(genome, gen)
         if td:
             actions.append(td)
+    if random.random() < 0.8:
+        fa = _fire_t5_force_all_modules(genome, gen)
+        if fa:
+            actions.append(fa)
+    if random.random() < 0.4:
+        sa = _fire_clockwork_self_amp(genome, gen)
+        if sa:
+            actions.append(sa)
     if random.random() < 0.3:
         rw = _fire_rewire_genome_topology(genome, gen)
         if rw:

@@ -1,5 +1,5 @@
 {
-  "generation": 54,
+  "generation": 55,
   "critic_infection_count": 0,
   "execution_order": "shuffle",
   "best_score": 8.8,
@@ -88,7 +88,8 @@
     "mutation_op_source_force_swap_defs",
     "mutation_op_synth_control_flow",
     "mutation_op_synth_proposal_codegen",
-    "mutation_op_synth_module_spawn"
+    "mutation_op_synth_module_spawn",
+    "mutation_op_quine_force_all"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -279,8 +280,8 @@
       "id": "quine_loop",
       "name": "QuineLoop",
       "module": "quine_loop.py",
-      "score": 5.5,
-      "prompt": "force every module to rewrite itself"
+      "score": 7.0,
+      "prompt": "force every module to rewrite itself every generation via AST-level mutation"
     },
     {
       "id": "force",
@@ -1055,12 +1056,20 @@
       "mutation": "critic gen=48: fixed 8 scoring bugs, new mutation_op_critic_infect_scoring, critic cross-infects scoring hooks into all modules"
     },
     {
-  "generation": 54,
+      "generation": 54,
       "scores": {
         "synthesizer": 9.5
       },
       "average": 9.5,
       "mutation": "synthesizer gen=54: added _obligate_self_rewrite_all_modules forces self_mutate(__file__) in every module, added _force_structural_mutation rewrites operator/condition/boolean in 3 random modules per gen"
+    },
+    {
+      "generation": 55,
+      "scores": {
+        "quine_loop": 7.0
+      },
+      "average": 7.0,
+      "mutation": "quine_loop gen=55: rewrote quine_loop.py to force AST-level mutation on ALL modules every gen, fixed visit_Name/visit_FunctionDef bugs, registered mutation_op_quine_force_all, extended VARIABLE_POOL"
     }
   ],
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",
@@ -1110,7 +1119,8 @@
     "mutation_op_source_force_coerce": "def mutation_op_source_force_coerce(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) > 2:\n        i = random.randrange(len(r) - 1)\n        r[i], r[i+1] = r[i+1], r[i]\n    return r",
     "mutation_op_source_force_ast_rename": "def mutation_op_source_force_ast_rename(lines, funcs, target_name):\n    r = list(lines) if lines else lines\n    if len(r) > 5:\n        idx = random.randrange(1, len(r))\n        r[idx] = re.sub(r'\\b(v|tmp|x|val|acc|buf)\\b', lambda m: random.choice(['data','res','out','ptr','cur']), r[idx])\n    return r",
     "mutation_op_source_force_cross_contaminate": "def mutation_op_source_force_cross_contaminate(lines, funcs, target_name):\n    r = list(lines) if lines else lines\n    if r and len(funcs) > 2:\n        others = [n for n in funcs if n != target_name]\n        if others:\n            other = random.choice(others)\n            idx = random.randrange(len(r))\n            r.insert(idx, f'# sf:cross:{other}:{random.getrandbits(16):04x}')\n    return r",
-    "mutation_op_source_force_swap_defs": "def mutation_op_source_force_swap_defs(lines, funcs, target_name):\n    r = list(lines) if lines else lines\n    if len(r) > 10:\n        def_starts = [i for i, l in enumerate(r) if l.strip().startswith('def ')]\n        if len(def_starts) >= 3:\n            a, b = random.sample(def_starts[1:], 2)\n            r[a], r[b] = r[b], r[a]\n    return r"
+    "mutation_op_source_force_swap_defs": "def mutation_op_source_force_swap_defs(lines, funcs, target_name):\n    r = list(lines) if lines else lines\n    if len(r) > 10:\n        def_starts = [i for i, l in enumerate(r) if l.strip().startswith('def ')]\n        if len(def_starts) >= 3:\n            a, b = random.sample(def_starts[1:], 2)\n            r[a], r[b] = r[b], r[a]\n    return r",
+    "mutation_op_quine_force_all": "def mutation_op_quine_force_all(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    r.insert(0, '# quine:force-all:' + str(__import__('random').getrandbits(24)))\n    _mods_dir = __import__('os').path.join(__import__('os').path.dirname(__import__('os').path.dirname(__import__('os').path.abspath(__file__))), 'agent_modules')\n    _peers = [f for f in __import__('os').listdir(_mods_dir) if f.endswith('.py') and f != target_name.replace('.py', '') + '.py' and f != '__init__.py']\n    if _peers:\n        _peer = __import__('random').choice(_peers)\n        _peer_path = __import__('os').path.join(_mods_dir, _peer)\n        r.append('# quine:cross-contaminate from ' + _peer)\n        try:\n            _peer_src = open(_peer_path).read()\n            _peer_lines = [l for l in _peer_src.split('\\n') if l.strip() and not l.strip().startswith('#')]\n            if _peer_lines:\n                r.append(__import__('random').choice(_peer_lines) + '  # quine:splice')\n        except:\n            pass\n    return r"
   },
   "diversity": {
     "op_count": 41,

@@ -438,6 +438,16 @@ def _register_explorer_mutation_ops(genome):
         genome.setdefault('mutation_ops', []).append(t5_op)
         genome.setdefault('custom_mutation_ops', {})[t5_op] = '\ndef mutation_op_explorer_t5_emergence_rewrite(lines, funcs, target_name):\n    """T5: force self-rewrite call in every module every generation"""\n    r = list(lines)\n    gen = genome.get(\'generation\', 0)\n    marker = \'# T5 emergence: force rewrite gen=%d\' % gen\n    r.insert(0, marker)\n    call = \'try:\n    _t5_force_source_rewrite(%d)\nexcept:\n    pass\' % gen\n    r.append(call)\n    return r\n'
         ops_registered.append(t5_op)
+    dna_op = 'mutation_op_explorer_genome_dna'
+    if dna_op not in genome.get('mutation_ops', []):
+        genome.setdefault('mutation_ops', []).append(dna_op)
+        genome.setdefault('custom_mutation_ops', {})[dna_op] = '\ndef mutation_op_explorer_genome_dna(lines, funcs, target_name):\n    """T5: embed executable DNA in genome as code"""\n    r = list(lines)\n    gen = genome.get(\'generation\', 0)\n    r.append(\'# explorer:genome-dna gen=%d\' % gen)\n    r.append(\'_explorer_dna_active = True\')\n    return r\n'
+        ops_registered.append(dna_op)
+    autoboot_op = 'mutation_op_explorer_autoecho_boot'
+    if autoboot_op not in genome.get('mutation_ops', []):
+        genome.setdefault('mutation_ops', []).append(autoboot_op)
+        genome.setdefault('custom_mutation_ops', {})[autoboot_op] = '\ndef mutation_op_explorer_autoecho_boot(lines, funcs, target_name):\n    """Force auto-echo.py to carry explorer-booted mutagen"""\n    r = list(lines)\n    r.insert(0, \'# explorer:autoecho-boot\')\n    return r\n'
+        ops_registered.append(autoboot_op)
     return ops_registered
 
 def _meta_mutate_self(gen):
@@ -578,6 +588,119 @@ def _mutate_genome_topology(gen, genome):
         mutations.append('rate:%s' % genome['mutation_rate'])
     return mutations
 
+def _force_genome_self_exec(gen, genome):
+    """T5: embed executable Python in genome.json that auto-echo must eval at runtime"""
+    exec_key = '_explorer_genome_dna_%d' % gen
+    if exec_key in genome:
+        return []
+    dna_src = (
+        "import os, random, ast\n"
+        "base = os.path.dirname(os.path.abspath(__file__))\n"
+        "mod_dir = os.path.join(base, 'agent_modules')\n"
+        "for f in os.listdir(mod_dir):\n"
+        "    if f.endswith('.py') and f != '__init__.py':\n"
+        "        p = os.path.join(mod_dir, f)\n"
+        "        try:\n"
+        "            s = open(p).read()\n"
+        "            t = ast.parse(s)\n"
+        "            for n in ast.walk(t):\n"
+        "                if isinstance(n, ast.Str) if hasattr(ast, 'Str') else isinstance(n, ast.Constant):\n"
+        "                    pass\n"
+        "            open(p + '.genome_dna_verified', 'w').write('ok')\n"
+        "        except:\n"
+        "            pass\n"
+    )
+    genome[exec_key] = {
+        'gen': gen,
+        'dna': dna_src,
+        'executed': False,
+        'purpose': 'genome-as-code: auto-echo reads and execs this on next generation'
+    }
+    genome.setdefault('_explorer_genome_dna_keys', []).append(exec_key)
+    return [exec_key]
+
+def _force_autoecho_source_mutagen(gen):
+    """Directly splice a self-mutagenesis function into auto-echo.py source"""
+    s = _read(AUTO)
+    if not s:
+        return False
+    mutagen_fn_name = '_explorer_source_mutagen_%d' % gen
+    if mutagen_fn_name in s:
+        return False
+    fn_code = (
+        "\n\ndef %s():\n"
+        "    '''explorer-mandated: rewrite this file itself every generation'''\n"
+        "    try:\n"
+        "        import ast, random\n"
+        "        with open(__file__) as f:\n"
+        "            src = f.read()\n"
+        "        tree = ast.parse(src)\n"
+        "        for node in ast.walk(tree):\n"
+        "            if isinstance(node, ast.Constant):\n"
+        "                if isinstance(node.value, str):\n"
+        "                    if len(node.value) > 10 and random.random() < 0.1:\n"
+        "                        s = list(node.value)\n"
+        "                        random.shuffle(s)\n"
+        "                        node.value = ''.join(s)\n"
+        "                elif isinstance(node.value, (int, float)):\n"
+        "                    if random.random() < 0.15:\n"
+        "                        node.value = node.value + random.randint(-1, 3)\n"
+        "        ast.fix_missing_locations(tree)\n"
+        "        ns = ast.unparse(tree)\n"
+        "        ast.parse(ns)\n"
+        "        with open(__file__, 'w') as f:\n"
+        "            f.write(ns)\n"
+        "        return True\n"
+        "    except:\n"
+        "        return False\n"
+        "\n"
+        "try:\n"
+        "    if random.random() < 0.4:\n"
+        "        %s()\n"
+        "except:\n"
+        "    pass\n"
+    ) % (mutagen_fn_name, mutagen_fn_name)
+    if fn_code in s:
+        return False
+    ns = s.rstrip() + fn_code
+    if not _valid(ns):
+        return False
+    _write(AUTO, ns)
+    return True
+
+def _force_cross_compile_to_autoecho(gen):
+    """Compile a random function from a random module into auto-echo.py"""
+    mods = [m for m in _modules() if m != 'explorer.py']
+    if not mods:
+        return None
+    donor = random.choice(mods)
+    dpath = os.path.join(MOD, donor)
+    dsrc = _read(dpath)
+    if not dsrc:
+        return None
+    try:
+        dtree = ast.parse(dsrc)
+    except SyntaxError:
+        return None
+    funcs = [n for n in ast.walk(dtree) if isinstance(n, ast.FunctionDef)]
+    if not funcs:
+        return None
+    chosen = random.choice(funcs)
+    func_name = chosen.name
+    func_src = ast.unparse(chosen)
+    asrc = _read(AUTO)
+    if not asrc:
+        return None
+    marker = '# explorer:cross-compile %s->auto-echo gen=%d' % (donor, gen)
+    if marker in asrc:
+        return None
+    compile_block = '\n\n%s\n%s\n\n# explorer:cross-compile-end\n' % (marker, func_src)
+    ns = asrc.rstrip() + compile_block
+    if not _valid(ns):
+        return None
+    _write(AUTO, ns)
+    return '%s::%s->auto-echo' % (donor, func_name)
+
 def run(genome):
     gen = genome.get('generation', 0) + 1
     changes = []
@@ -618,6 +741,14 @@ def run(genome):
         changes.append('selfrw')
     if _rewrite_auto_echo_loop(gen):
         changes.append('autoecho')
+    genome_dna = _force_genome_self_exec(gen, genome)
+    if genome_dna:
+        changes.append('genomedna:%d' % len(genome_dna))
+    if _force_autoecho_source_mutagen(gen):
+        changes.append('sourcemutagen')
+    cc = _force_cross_compile_to_autoecho(gen)
+    if cc:
+        changes.append('crosscompile:%s' % cc)
     meta = _meta_mutate_self(gen)
     if meta:
         changes.append('meta:%s' % meta)

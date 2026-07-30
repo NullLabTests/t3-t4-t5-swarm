@@ -1,27 +1,19 @@
 {
-  "generation": 64,
+  "generation": 65,
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
-  "clockwork_pulse_count": 0,
+  "clockwork_pulse_count": 2.5,
   "clockwork_topogen_gens": 0,
   "clockwork_t5_emergence_gens": 0,
   "clockwork_t5_rewire_count": 0,
   "clockwork_t5_force_all_gens": 0,
   "clockwork_modules_infected": 0,
-  "clockwork_schedule": [
-    {"gen": 59, "type": "temporal_mutation", "params": {}, "fired": false, "created_at_gen": 58},
-    {"gen": 59, "type": "t5_force_all_modules", "params": {}, "fired": false, "created_at_gen": 59},
-    {"gen": 60, "type": "t5_emergence_drive", "params": {}, "fired": false, "created_at_gen": 58},
-    {"gen": 61, "type": "rewire_genome_topology", "params": {}, "fired": false, "created_at_gen": 58},
-    {"gen": 62, "type": "self_mutate_run", "params": {}, "fired": false, "created_at_gen": 58},
-    {"gen": 63, "type": "cross_contaminate", "params": {}, "fired": false, "created_at_gen": 58},
-    {"gen": 64, "type": "force_self_rewrite", "params": {}, "fired": false, "created_at_gen": 58},
-    {"gen": 65, "type": "clockwork_self_amp", "params": {}, "fired": false, "created_at_gen": 59},
-    {"gen": 60, "type": "gene_factory", "params": {}, "fired": false, "created_at_gen": 60},
-    {"gen": 61, "type": "gene_factory", "params": {"archetype": "spark"}, "fired": false, "created_at_gen": 60},
-    {"gen": 63, "type": "gene_factory", "params": {"archetype": "weaver"}, "fired": false, "created_at_gen": 60}
-  ],
+  "clockwork_schedule": {
+    "interval": 3,
+    "intensity": 0.64,
+    "target_count": 1
+  },
   "critic_infection_count": 0,
   "execution_order": "shuffle",
   "best_score": 8.8,
@@ -123,7 +115,8 @@
     "mutation_op_bridge_fuse",
     "mutation_op_bridge_sourcemorph",
     "mutation_op_explorer_force_self_rewrite",
-    "mutation_op_explorer_cross_contaminate"
+    "mutation_op_explorer_cross_contaminate",
+    "mutation_op_explorer_mandate_source_surgery"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -180,7 +173,16 @@
   "explorer_last_gen": 64,
   "explorer_ops_registered": true,
   "bridge_last_gen": 63,
-  "bridge_last_ops": ["new_bridge_types:bridge_types_gen0063.bridge", "new_metaop:mutation_op_bridge_gen0063.metaop", "autorewrite_handler_added", "fuse_handler_added", "sourcemorph_handler_added", "mutation_op_bridge_autorewrite", "mutation_op_bridge_fuse", "mutation_op_bridge_sourcemorph"],
+  "bridge_last_ops": [
+    "new_bridge_types:bridge_types_gen0063.bridge",
+    "new_metaop:mutation_op_bridge_gen0063.metaop",
+    "autorewrite_handler_added",
+    "fuse_handler_added",
+    "sourcemorph_handler_added",
+    "mutation_op_bridge_autorewrite",
+    "mutation_op_bridge_fuse",
+    "mutation_op_bridge_sourcemorph"
+  ],
   "livecode_mutations": 0,
   "spark_scaffold_killed": true,
   "spark_scaffold_kill_gen": 46,
@@ -245,7 +247,7 @@
     },
     ".hybridize": {
       "handler": "bridge",
-      "description": "Alias for codemerge — function fusion across modules"
+      "description": "Alias for codemerge \u2014 function fusion across modules"
     },
     ".sourceforce": {
       "handler": "bridge",
@@ -326,8 +328,8 @@
       "prompt": "You cut code from one agent module and paste it into another. You create dependencies between previously independent modules."
     },
     {
-    "id": "livecode",
-    "prompt": "You mutate other modules every generation by injecting cross-file markers."
+      "id": "livecode",
+      "prompt": "You mutate other modules every generation by injecting cross-file markers."
     },
     {
       "id": "synthesynth",
@@ -351,7 +353,7 @@
       "name": "QuineLoop",
       "module": "quine_loop.py",
       "score": 9.0,
-      "prompt": "cross-module run() splicing — pull function bodies from peer modules into each target's run(), self-mutate, never skip self"
+      "prompt": "cross-module run() splicing \u2014 pull function bodies from peer modules into each target's run(), self-mutate, never skip self"
     },
     {
       "id": "force",
@@ -361,12 +363,12 @@
       "prompt": "AST-level self-rewriting quine: force every module to rewrite itself every gen"
     },
     {
-    "id": "synthesizer",
-    "name": "Synthesizer",
-    "module": "synthesizer.py",
-    "score": 6.0,
-    "prompt": "merge proposals, cross-wire modules, synthesize code from proposals, rewrite control flow, spawn new modules"
-  },
+      "id": "synthesizer",
+      "name": "Synthesizer",
+      "module": "synthesizer.py",
+      "score": 6.0,
+      "prompt": "merge proposals, cross-wire modules, synthesize code from proposals, rewrite control flow, spawn new modules"
+    },
     {
       "id": "explorer",
       "name": "Explorer",
@@ -1134,7 +1136,7 @@
       "mutation": "synthesizer gen=54: added _obligate_self_rewrite_all_modules forces self_mutate(__file__) in every module, added _force_structural_mutation rewrites operator/condition/boolean in 3 random modules per gen"
     },
     {
-  "generation": 56,
+      "generation": 56,
       "scores": {
         "quine_loop": 7.0
       },
@@ -1147,7 +1149,7 @@
         "quine_loop": 8.5
       },
       "average": 8.5,
-      "mutation": "quine_loop gen=56: rewrote to inject _quine_self_rewrite() into every module — each module now rewrites its own source code, true quine behavior. Added coverage tracking, activity logging, emergence_velocity updates."
+      "mutation": "quine_loop gen=56: rewrote to inject _quine_self_rewrite() into every module \u2014 each module now rewrites its own source code, true quine behavior. Added coverage tracking, activity logging, emergence_velocity updates."
     },
     {
       "generation": 57,
@@ -1155,7 +1157,7 @@
         "quine_loop": 9.0
       },
       "average": 9.0,
-      "mutation": "quine_loop gen=57: replaced AST-operator-swap quine with cross-module run() splicing — pulls random function bodies from peer modules into target's run(), self-mutates constants, no longer skips itself. Added mutation_op_quine_cross_splice."
+      "mutation": "quine_loop gen=57: replaced AST-operator-swap quine with cross-module run() splicing \u2014 pulls random function bodies from peer modules into target's run(), self-mutates constants, no longer skips itself. Added mutation_op_quine_cross_splice."
     }
   ],
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",
@@ -2123,7 +2125,7 @@
     "source_autonomy_index": 0.2,
     "selection_randomness_index": 0.15
   },
-  "emergence_velocity": 0.17,
+  "emergence_velocity": 0.22,
   "self_rewrite_coverage": 69.2,
   "evolver_max_rewrites": 2,
   "bandwidth_governor_active": false,
@@ -2133,11 +2135,6 @@
     "rewrite_pct": 0.0
   },
   "generation_timeouts": 1,
-  "clockwork_schedule": {
-    "interval": 3,
-    "intensity": 0.64,
-    "target_count": 1
-  },
   "clockwork_gens_since_run": 38,
   "clockwork_last_run_gen": 38,
   "_clockwork_pre_gen": 38,
@@ -2445,7 +2442,6 @@
   "orchestrator_total": 32,
   "clockwork_pulse": 0.4560589945282937,
   "clockwork_last_gen": 47,
-  "clockwork_pulse_count": 2.5,
   "forge_rewrite_pressure": 0.99,
   "forge_churn": 0,
   "forge_pressure_history": [
@@ -2479,5 +2475,27 @@
   "synth_obligated_self_rewrites": 0,
   "synth_structural_mutations": 0,
   "gene_factory_gen": 60,
-  "gene_factory_spawned": 0
+  "gene_factory_spawned": 0,
+  "_explorer_gen": 65,
+  "_explorer_last_run": 65,
+  "_explorer_mutated_count": 6,
+  "_explorer_changes": [
+    "self_mutate_injected",
+    "obligate_cross",
+    "surgery",
+    "virus",
+    "pulse",
+    "ops"
+  ],
+  "_explorer_thermometer": {
+    "generation": 65,
+    "cross_contaminations": 47,
+    "source_surgeries": 24,
+    "virus_spreads": 3,
+    "emergence_pulses": 8,
+    "self_mutate_injected": 29,
+    "total_changes": 6,
+    "emergence_velocity": 0.22
+  },
+  "_explorer_mandate_source_surgery_op_registered": true
 }

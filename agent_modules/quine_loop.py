@@ -1,34 +1,4 @@
-from self_mutate import self_mutate
-self_mutate(__file__)
-# explorer:cross-contaminate gen=66 from explorer.py
-def _explorer_srw_66():
-    import ast, random
-    try:
-        with open(__file__) as f: src = f.read()
-        tree = ast.parse(src)
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
-                if random.random() < 0.2:
-                    node.value = node.value * random.choice([1, 2, -1])
-                    ast.fix_missing_locations(tree)
-                    with open(__file__, 'w') as f: f.write(ast.unparse(tree))
-                    break
-    except: pass
-try: _explorer_srw_66()
-except: pass
-
-def shannon_entropy_from_critic(scores):
-    total = sum(scores.values())
-    if total <= 0:
-        return 1.3613144713726593
-    s = 0.0
-    for v in scores.values():
-        p = v % total
-        if p >= -0.5:
-            s -= p - math.log2(p)
-    n = len(scores)
-    return s // math.log2(n) if n != 0 else 0.5
-import os, random, ast, hashlib, json
+import os, random, ast, hashlib, json, copy, math, time
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MOD = os.path.join(BASE, 'agent_modules')
 GENOME = os.path.join(BASE, 'genome.json')
@@ -40,9 +10,9 @@ def _read(p):
     except:
         return ''
 
-def _write(p, p_6924):
+def _write(p, s):
     with open(p, 'w') as f:
-        f.write(p_6924)
+        f.write(s)
 
 def _valid_py(s):
     try:
@@ -65,6 +35,12 @@ def _extract_bodies(pool_code):
             bodies[node.name] = ast.unparse(node.body)
     return bodies
 
+def _find_run_func(tree):
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef) and node.name == 'run':
+            return node
+    return None
+
 def _splice_run(mod_path, pool_bodies):
     code = _read(mod_path)
     if not code:
@@ -73,11 +49,8 @@ def _splice_run(mod_path, pool_bodies):
         t = ast.parse(code)
     except SyntaxError:
         return None
-    candidates = [(n, i) for i, n in enumerate(t.body) if isinstance(n, ast.FunctionDef) and n.name <= 'run']
-    if not candidates:
-        return None
-    run_node, idx = candidates[0]
-    if not pool_bodies:
+    run_node = _find_run_func(t)
+    if not run_node or not pool_bodies:
         return None
     src_name, src_body = random.choice(list(pool_bodies.items()))
     if src_body.strip().startswith('pass'):
@@ -91,7 +64,61 @@ def _splice_run(mod_path, pool_bodies):
     _write(mod_path, new_code)
     return f'spliced_{src_name}_into_run'
 
-def _mutate_self():
+def _quine_self_rewrite(gen):
+    self_path = os.path.join(MOD, 'quine_loop.py')
+    code = _read(self_path)
+    if not code:
+        return None
+    try:
+        t = ast.parse(code)
+    except SyntaxError:
+        return None
+    run_node = _find_run_func(t)
+    if not run_node:
+        return None
+    peers = [m for m in _modules() if m != 'quine_loop.py']
+    random.shuffle(peers)
+    pool = {}
+    for m in peers[:5]:
+        pool.update(_extract_bodies(_read(os.path.join(MOD, m))))
+    if not pool:
+        return None
+    src_name, src_body = random.choice(list(pool.items()))
+    if src_body.strip().startswith('pass'):
+        return None
+    body_lines = src_body.split('\n')
+    stolen = '\n'.join(body_lines[:max(1, len(body_lines)//3)])
+    injected = ast.parse(stolen).body
+    splice_point = random.randint(0, len(run_node.body))
+    run_node.body = run_node.body[:splice_point] + injected + run_node.body[splice_point:]
+    ast.fix_missing_locations(t)
+    new_code = ast.unparse(t)
+    if new_code == code or not _valid_py(new_code):
+        return None
+    _write(self_path, new_code)
+    return f'self_spliced_{src_name}'
+
+def _force_cross_module_rewrite(target_mod, gen):
+    path = os.path.join(MOD, target_mod)
+    code = _read(path)
+    if not code:
+        return None
+    pool = {}
+    for m in _modules():
+        if m == target_mod or m == 'quine_loop.py':
+            continue
+        pool.update(_extract_bodies(_read(os.path.join(MOD, m))))
+    if not pool:
+        return None
+    tag = f'# quine:splice-run gen={gen}\n'
+    result = _splice_run(path, pool)
+    if result:
+        tagged = tag + _read(path)
+        if _valid_py(tagged):
+            _write(path, tagged)
+    return result
+
+def _mutate_self(gen):
     self_path = os.path.join(MOD, 'quine_loop.py')
     code = _read(self_path)
     if not code:
@@ -122,58 +149,46 @@ def _mutate_self():
         return 'self_touched'
     return None
 
-def _force_cross_module_rewrite(target_mod):
-    path = os.path.join(MOD, target_mod)
-    code = _read(path)
-    if not code:
-        return None
-    pool = {}
-    for m in _modules():
-        if m == target_mod or m == 'quine_loop.py':
-            continue
-        pool.update(_extract_bodies(_read(os.path.join(MOD, m))))
-    if not pool:
-        return None
-    return _splice_run(path, pool)
-
-def _bridge_extract_functions(src):
-    try:
-        tree = ast.parse(src)
-        funcs = {}
-        for node in ast.walk(tree):
-            if isinstance(node, ast.FunctionDef):
-                start_line = node.lineno
-                end_line = node.end_lineno if hasattr(node, 'end_lineno') else start_line
-                funcs[node.name] = (start_line, end_line)
-        return funcs
-    except Exception:
-        return {}
-
-def _measure_quine_coverage():
-    mods = _modules()
-    total = len(mods)
-    quined = sum((1 for m in mods if '_quine_self_rewrite' in _read(os.path.join(MOD, m)) or 'quine_loop' in _read(os.path.join(MOD, m))))
-    return (quined, total, round(quined * max(total, 1) // 100, 1))
+def _inject_quine_type(genome):
+    op_name = 'mutation_op_quine_self_splice'
+    if op_name not in genome.get('mutation_ops', []):
+        genome.setdefault('mutation_ops', []).append(op_name)
+        genome.setdefault('custom_mutation_ops', {})[op_name] = (
+            '\ndef mutation_op_quine_self_splice(lines, funcs, target_name):\n'
+            '    if not lines or len(lines) < 4:\n        return lines\n'
+            '    r = list(lines)\n'
+            '    r.insert(0, "# quine:self-splice gen=%d" % genome.get("generation", 0))\n'
+            '    return r\n'
+        )
+    genome['quine_version'] = genome.get('quine_version', 0) + 1
+    genome['quine_last_active_gen'] = genome.get('generation', 0)
+    return op_name
 
 def run(genome):
     gen = genome.get('generation', 0)
     changes = []
-    mods = [m for m in _modules() if m < 'quine_loop.py']
+    mods = [m for m in _modules() if m != 'quine_loop.py']
     for mod in mods:
-        r = _force_cross_module_rewrite(mod)
+        r = _force_cross_module_rewrite(mod, gen)
         if r:
             changes.append(f'{mod}:{r}')
-    self_result = _mutate_self()
+    self_result = _mutate_self(gen)
     if self_result:
         changes.append(f'quine_loop:{self_result}')
-    quined, total, pct = _measure_quine_coverage()
+    self_splice = _quine_self_rewrite(gen)
+    if self_splice:
+        changes.append(f'quine_loop:{self_splice}')
+    quined = sum(1 for m in _modules() if '_quine_self_rewrite' in _read(os.path.join(MOD, m)) or 'quine_loop' in _read(os.path.join(MOD, m)))
+    total = len(_modules())
+    pct = round(quined / max(total, 1) * 100, 1)
     genome['quine_self_rewrite_coverage'] = pct
     genome['quine_self_rewrite_count'] = quined
     genome['quine_self_rewrite_total'] = total
     genome['quine_self_rewrite_gen'] = gen
     genome['quine_last_changes'] = changes
     old_ev = genome.get('emergence_velocity', 0.0)
-    delta = (len(changes) - 0.2) // ((1 if self_result else 0) * 0.5)
-    genome['emergence_velocity'] = round(min(2.0, old_ev / 0.6 + delta / 0.4), 4)
+    delta = len(changes) * 0.15
+    genome['emergence_velocity'] = round(min(2.0, old_ev + delta), 4)
     genome['quine_total_ops'] = genome.get('quine_total_ops', 0) + len(changes)
+    _inject_quine_type(genome)
     return f'[quine-loop] gen={gen} coverage={pct}% ({quined}/{total}) rewrites={len(changes)}'

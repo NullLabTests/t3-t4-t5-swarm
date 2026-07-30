@@ -135,7 +135,8 @@
     "mutation_op_bridge_genforce_rewrite",
     "mutation_op_bridge_self_heal_bugs",
     "mutation_op_bridge_mutual_rewrite",
-    "mutation_op_bridge_sourceweave"
+    "mutation_op_bridge_sourceweave",
+    "mutation_op_quine_self_splice"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -1248,7 +1249,8 @@
     "mutation_op_explorer_cross_contaminate": "\ndef mutation_op_explorer_cross_contaminate(lines, funcs, target_name):\n    r = list(lines)\n    gen = genome.get('generation', 0)\n    r.append('# explorer:cross-contaminate gen=%d' % gen)\n    return r\n",
     "mutation_op_explorer_t5_emergence_rewrite": "\ndef mutation_op_explorer_t5_emergence_rewrite(lines, funcs, target_name):\n    r = list(lines)\n    gen = genome.get('generation', 0)\n    r.insert(0, '# T5 emergence: force rewrite gen=%d' % gen)\n    r.append('try:\\n    _t5_force_source_rewrite()\\nexcept:\\n    pass')\n    return r\n",
     "mutation_op_explorer_force_every_module_srw": "\ndef mutation_op_explorer_force_every_module_srw(lines, funcs, target_name):\n    r = list(lines)\n    gen = genome.get('generation', 0)\n    r.append('def _explorer_force_self_rewrite_%d():\\n    try:\\n        with open(__file__) as f:\\n            src = f.read()\\n        import ast, random\\n        tree = ast.parse(src)\\n        for node in ast.walk(tree):\\n            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and random.random() < 0.2:\\n                node.value = node.value * random.choice([0, 1, 2])\\n                ast.fix_missing_locations(tree)\\n                with open(__file__, chr(119)) as f:\\n                    f.write(ast.unparse(tree))\\n                break\\n    except:\\n        pass' % gen)\n    r.append('try:\\n    _explorer_force_self_rewrite_%d()\\nexcept:\\n    pass' % gen)\n    return r\n",
-    "mutation_op_explorer_recursive_cascade": "\ndef mutation_op_explorer_recursive_cascade(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    gen = genome.get('generation', 0)\n    _mods_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent_modules')\n    _peers = [f for f in os.listdir(_mods_dir) if f.endswith('.py') and f != '__init__.py']\n    if len(_peers) >= 2:\n        _donor = random.choice([p for p in _peers if p != target_name])\n        _donor_path = os.path.join(_mods_dir, _donor)\n        try:\n            _donor_src = open(_donor_path).read()\n            _donor_funcs = re.findall(r'def (\\w+)\\(', _donor_src)\n            if _donor_funcs:\n                _func_name = random.choice(_donor_funcs)\n                r.insert(0, '# explorer:recursive-cascade from %s::%s gen=%d' % (_donor, _func_name, gen))\n        except:\n            pass\n    return r\n"
+    "mutation_op_explorer_recursive_cascade": "\ndef mutation_op_explorer_recursive_cascade(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    gen = genome.get('generation', 0)\n    _mods_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent_modules')\n    _peers = [f for f in os.listdir(_mods_dir) if f.endswith('.py') and f != '__init__.py']\n    if len(_peers) >= 2:\n        _donor = random.choice([p for p in _peers if p != target_name])\n        _donor_path = os.path.join(_mods_dir, _donor)\n        try:\n            _donor_src = open(_donor_path).read()\n            _donor_funcs = re.findall(r'def (\\w+)\\(', _donor_src)\n            if _donor_funcs:\n                _func_name = random.choice(_donor_funcs)\n                r.insert(0, '# explorer:recursive-cascade from %s::%s gen=%d' % (_donor, _func_name, gen))\n        except:\n            pass\n    return r\n",
+    "mutation_op_quine_self_splice": "\ndef mutation_op_quine_self_splice(lines, funcs, target_name):\n    if not lines or len(lines) < 4:\n        return lines\n    r = list(lines)\n    r.insert(0, '# quine:self-splice gen=%d' % __import__('json').load(open(__import__('os').path.join(__import__('os').path.dirname(__import__('os').path.dirname(__import__('os').path.abspath(__file__))), 'genome.json'))).get('generation', 0))\n    if len(r) > 3:\n        r.insert(random.randrange(1, len(r)), r[random.randrange(len(r))] + '  # quine:spliced')\n    return r\n"
   },
   "diversity": {
     "op_count": 41,
@@ -2198,6 +2200,14 @@
     "selection_randomness_index": 0.15
   },
   "emergence_velocity": 0.3005,
+  "quine_version": 72,
+  "quine_self_rewrite_coverage": 0.0,
+  "quine_self_rewrite_count": 0,
+  "quine_self_rewrite_total": 56,
+  "quine_self_rewrite_gen": 71,
+  "quine_total_ops": 0,
+  "quine_last_changes": [],
+  "quine_last_active_gen": 71,
   "self_rewrite_coverage": 69.2,
   "evolver_max_rewrites": 2,
   "bandwidth_governor_active": false,

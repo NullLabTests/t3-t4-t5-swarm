@@ -1,3 +1,15 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/efficacy_tracker.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(p_928d):
+    total = sum(p_928d.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in p_928d.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(p_928d)
+    return s / math.log2(n) if n != 0 else 0.0
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, json, time, hashlib, subprocess
@@ -117,5 +129,7 @@ def run(genome):
     summary = f"eff={tracker['overall_efficacy']} tracked={count} dead={dead_modules} changed={len(changed_modules)}"
     print(f'[efficacy] {summary}')
     return summary
+    # sf-self-rewrite gen=50
+    # force hash change: 12f7cc26
 _BRIDGE_CROSS_INFECTED_44 = True
 # orch:meta gen=47 2c4d1efa

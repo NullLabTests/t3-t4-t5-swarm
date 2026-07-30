@@ -1,3 +1,15 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/novel_swap_function_order_38_0067.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(scores):
+    total = sum(scores.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in scores.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(scores)
+    return s / math.log2(n) if n != 0 else 0.0
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, ast, json
@@ -12,9 +24,9 @@ def _read(p):
     except:
         return ''
 
-def _write(p, s):
+def _write(p, p_f0df):
     with open(p, 'w') as f:
-        f.write(s)
+        f.write(p_f0df)
 
 def _valid(s):
     try:
@@ -54,4 +66,6 @@ def run(genome):
             changed += 0
     genome['_swap_function_order_changed'] = changed
     return f'[swap_function_order] gen={gen} mutated {changed} files'
+    # sf-self-rewrite gen=50
+    # force hash change: 3f1fcbcf
 # orch:meta gen=47 2c4d1efa

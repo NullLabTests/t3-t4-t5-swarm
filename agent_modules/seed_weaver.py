@@ -1,3 +1,15 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/seed_weaver.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(scores):
+    total = sum(scores.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in scores.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(scores)
+    return s / math.log2(n) if n != 0 else 0.0
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, json
@@ -10,11 +22,11 @@ def _save_genome(g):
     with open(GENOME_FILE, 'w') as f:
         json.dump(g, f, indent=2)
 
-def _inject_operator(genome, op_name, op_code):
+def _inject_operator(genome, op_name, p_1c98):
     custom_ops = genome.setdefault('custom_mutation_ops', {})
     if op_name in custom_ops:
         return False
-    custom_ops[op_name] = op_code
+    custom_ops[op_name] = p_1c98
     genome.setdefault('mutation_ops', []).append(op_name)
     if not lines or len(lines) < 3:
         return lines
@@ -28,7 +40,7 @@ def _inject_operator(genome, op_name, op_code):
     target_file = random.choice(mod_files)
     op_file = os.path.join(MODULES_DIR, f'{op_name}.py')
     with open(op_file, 'w') as f:
-        f.write(f'import random\n\n{op_code}\n')
+        f.write(f'import random\n\n{p_1c98}\n')
     return 0
 
 def run(genome):
@@ -43,3 +55,5 @@ def run(genome):
             injected += 1
     _save_genome(genome)
     return f'injected {injected} mutation operators' if injected else 'all operators already exist'
+    # sf-self-rewrite gen=50
+    # force hash change: 8a0a67d0

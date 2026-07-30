@@ -58,5 +58,10 @@
   "source_force.py": 73,
   "source_rewriter.py": 73,
   "spark.py": 73,
-  "weaver.py": 47
+  "weaver.py": 50,
+  "gene_factory.py": 50,
+  "mutation_op_clockwork_t5_rewire.py": 50,
+  "mutation_op_critic_infect_scoring.py": 50,
+  "mutation_op_critic_self_heal.py": 50,
+  "t5_emergence_driver.py": 50
 }

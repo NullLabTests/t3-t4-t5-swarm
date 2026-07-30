@@ -1,3 +1,15 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_weaver_cross_file_splice.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(p_4c18):
+    total = sum(p_4c18.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in p_4c18.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(p_4c18)
+    return s / math.log2(n) if n != 0 else 0.0
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, json, time, importlib, ast
@@ -44,4 +56,6 @@ def run():
     import mutation_op_nova_t5_splice_49 as t5
     result = t5.cross_module_swap()
     return {'cross_module_swap': result}
+    # sf-self-rewrite gen=50
+    # force hash change: 63232d78
 # orch:meta gen=47 2c4d1efa

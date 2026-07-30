@@ -1,3 +1,15 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_weaver_manifest_writer.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(scores):
+    total = sum(scores.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in scores.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(scores)
+    return s / math.log2(n) if n != 0 else 0.0
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, json, time, importlib
@@ -22,8 +34,8 @@ def mutation_op_weaver_manifest_writer(lines, *args):
         json.dump(g, f, indent=3)
     return r
 
-def _save_counter(n):
-    _write(EXECUTION_COUNTER_PATH, json.dumps(n))
+def _save_counter(p_4809):
+    _write(EXECUTION_COUNTER_PATH, json.dumps(p_4809))
 '# self-mutated gen=0'
 '# self-mutated gen=0'
 # orch:meta gen=47 2c4d1efa

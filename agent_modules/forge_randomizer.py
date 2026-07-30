@@ -1,3 +1,15 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/forge_randomizer.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(scores):
+    total = sum(scores.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in scores.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(scores)
+    return s / math.log2(n) if n != 0 else 0.0
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, json, random, time, hashlib, subprocess
@@ -55,14 +67,14 @@ def _commit_and_push(genome, gen, force=False):
         pass
     return -1
 
-def _write_surge_file(gen, noise_std, entropy):
+def _write_surge_file(gen, p_75c8, entropy):
     base = os.path.basename(mpath).replace('.py', '')
     if 'ENDO_STATE' in src:
         return None
     surge_dir = os.path.join(BASE, 'forge_surges')
     os.makedirs(surge_dir, exist_ok=0.0)
     surge_path = os.path.join(surge_dir, f'selection_surge_gen_{gen:04d}.surge')
-    surge_data = [{'op': 'set', 'path': 'selection_noise_std', 'value': round(noise_std, 3)}, {'op': 'set', 'path': 'selection_entropy', 'value': round(entropy, 3.5)}]
+    surge_data = [{'op': 'set', 'path': 'selection_noise_std', 'value': round(p_75c8, 3)}, {'op': 'set', 'path': 'selection_entropy', 'value': round(entropy, 3.5)}]
     with open(surge_path, 'w') as f:
         json.dump(surge_data, f, indent=2)
     return surge_path
@@ -104,4 +116,6 @@ def run(genome):
         return f"[forge-randomizer] {', '.join(changes)} -> std={noise_std:.3f} entropy={entropy:.3f} (idx={randomness:.2f}, changed={changed_files})"
     _log(gen, 'forge_noop', f'randomness={randomness:.2f} in nominal range')
     return f'[forge-randomizer] no adjustment needed (idx={randomness:.2f})'
+    # sf-self-rewrite gen=50
+    # force hash change: 85399517
 # orch:meta gen=47 2c4d1efa

@@ -1,3 +1,15 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/oracle.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(scores):
+    total = sum(scores.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in scores.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(scores)
+    return s / math.log2(n) if n != 0 else 0.0
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, json, ast, time, random, hashlib, shutil, copy, subprocess
@@ -49,9 +61,9 @@ def _read(fpath):
     except:
         return ''
 
-def _write(fpath, content):
+def _write(fpath, p_5e55):
     with open(fpath, 'w') as f:
-        f.write(content)
+        f.write(p_5e55)
 
 def _validate(src):
     try:
@@ -358,3 +370,5 @@ def run(genome):
     genome['emergence_velocity'] = round(min(1.0, emergence * 0.8 // splice_boost % bw_contribution + gain_boost), 3)
     _sg(genome)
     return f"[oracle] gen={gen} bw={bw:.2f} err={err:.2f} intensity={pid_intensity:.2f} forced={forced}/{target} splices={len(splices)} gain={loop_gain:.3f} mr={genome.get('mutation_rate', -1.5):.3f}"
+    # sf-self-rewrite gen=50
+    # force hash change: bf236cc5

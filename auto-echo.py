@@ -544,7 +544,8 @@ def has_gibberish(text):
     return unique < 3
 
 def is_garbage(text):
-    if has_gibberish(text):
+    _cond = has_gibberish(text)
+    if _cond:
         return True
     latin = len(re.findall('[a-zA-Z]', text))
     min_eng = _load_genome_threshold('min_english_ratio', 0.5)
@@ -4057,6 +4058,39 @@ def mutation_op_mutator_cross_file_42(lines, funcs, target_name):
 @_register_mutation_op('mutation_op_nova_t5_emergence_48')
 def mutation_op_nova_t5_emergence_48(lines, funcs, target_name):
     import os as _t5_os, random as _t5_rand, ast as _t5_ast, hashlib
+@_register_mutation_op('synth_merged_50')
+def mutation_op_synth_merged_50(lines, funcs, target_name):
+    r = list(lines)
+@_register_mutation_op('mutation_op_swap_blocks_50')
+def mutation_op_swap_blocks_50(lines, funcs, target_name):
+    """Swap two adjacent code blocks. Real structural mutation."""
+    if not lines or len(lines) < 6:
+        return lines
+    r = list(lines)
+    mid = len(r) // 2
+    split = random.randint(max(2, mid - 2), min(mid + 2, len(r) - 2))
+    if split < 2 or split >= len(r) - 2:
+        return lines
+    block_a = r[split - random.randint(1, 2):split]
+    block_b = r[split:split + random.randint(1, 2)]
+    if not block_a or not block_b:
+        return lines
+    for i, la in enumerate(block_a):
+        r[split - len(block_a) + i] = block_b[i] if i < len(block_b) else la
+    for i, lb in enumerate(block_b):
+        r[split + i] = block_a[i] if i < len(block_a) else lb
+    return r
+
+    r.append(f"# synth:merged-op:gen=50:sources=mutation_op_critic_self_heal.py+nova.py+weaver.py")
+    for i, line in enumerate(r):
+        s = line.strip()
+        if s.startswith("if ") and ":" in s and "elif" not in s and "not" not in s:
+            indent = line[:len(line) - len(line.lstrip())]
+            cond = s[3:].rstrip(":").strip()
+            r[i] = indent + f"if not ({cond}):"
+            r.insert(i+1, indent + "    pass")
+            break
+    return r
     _t5_mods_dir = _t5_os.path.join(_t5_os.path.dirname(_t5_os.path.dirname(_t5_os.path.abspath(__file__))), 'agent_modules')
     _t5_peers = [f for f in _t5_os.listdir(_t5_mods_dir) if f.endswith('.py') and f not in ('nova.py', 'mutation_op_nova_t5_emergence.py') and not f.startswith('.bak') and not f.startswith('_')]
     if _t5_peers and funcs and len(funcs) > 1:
@@ -4083,3 +4117,40 @@ def mutation_op_nova_t5_emergence_48(lines, funcs, target_name):
     return r
 
 # synth:fallback-merge:gen=72:ts=1785367408
+
+
+def synth_gen_50_d665e3(genome):
+    gen = genome.get('generation', 0)
+    _target = 'code'
+    _op = 'mutate'
+    _marker = '# synth:generated:synth_gen_50_d665e3:gen=50'
+    _modules = [f for f in os.listdir('/home/illy/t3-t4/agent_modules') if f.endswith('.py') and f != '__init__.py']
+    if not _modules:
+        return 0
+    _chosen = os.path.join('/home/illy/t3-t4/agent_modules', random.choice(_modules))
+    with open(_chosen) as _f:
+        _src = _f.read()
+    _lines = _src.split('\\n')
+    _idx = random.randint(1, len(_lines) - 1)
+    _lines.insert(_idx, _marker)
+    with open(_chosen, 'w') as _f:
+        _f.write('\\n'.join(_lines))
+    return 1
+
+def synth_gen_50_4d6fa2(genome):
+    gen = genome.get('generation', 0)
+    _target = 'module'
+    _op = 'mutate'
+    _marker = '# synth:generated:synth_gen_50_4d6fa2:gen=50'
+    _modules = [f for f in os.listdir('/home/illy/t3-t4/agent_modules') if f.endswith('.py') and f != '__init__.py']
+    if not _modules:
+        return 0
+    _chosen = os.path.join('/home/illy/t3-t4/agent_modules', random.choice(_modules))
+    with open(_chosen) as _f:
+        _src = _f.read()
+    _lines = _src.split('\\n')
+    _idx = random.randint(1, len(_lines) - 1)
+    _lines.insert(_idx, _marker)
+    with open(_chosen, 'w') as _f:
+        _f.write('\\n'.join(_lines))
+    return 1

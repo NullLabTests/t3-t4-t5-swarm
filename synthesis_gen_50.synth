@@ -1,0 +1,45 @@
+{
+  "gen": 50,
+  "proposals": 9,
+  "seeds": 6,
+  "cross_wires": 2,
+  "infections": 0,
+  "merges": 2,
+  "emergence": {
+    "merge_history": [
+      {
+        "gen": 50,
+        "merges": 2,
+        "cross": 2,
+        "seeds": 6,
+        "infected": 0
+      }
+    ],
+    "synthesis_velocity": 0.0,
+    "total_merges": 2,
+    "total_cross_wires": 2,
+    "total_seeds": 6,
+    "total_infections": 0,
+    "last_gen": 50,
+    "real_code_changes": 13
+  },
+  "actions": [
+    "seeded_6_modules",
+    "scanned_9_proposals",
+    "cross_wired_2_modules",
+    "obligated_14_self_rewrites",
+    "structural_mutations:1",
+    "transplant_merge:run->shannon_entropy_from_critic",
+    "injected_op:synth_merged_50",
+    "self_rewritten",
+    "synth_code:2",
+    "cf_transform:is_garbage:extract_cond",
+    "new_module:synth_paths_50.py",
+    "behavioral_splice:register_bridge_type<--mutation_op_critic_infect_scoring.py.shannon_entropy_from_critic",
+    "injected_real_op:mutation_op_swap_blocks_50",
+    "topo_mutated:1",
+    "sv=0.0",
+    "real_changes=13"
+  ],
+  "ts": 1785452195.4550247
+}

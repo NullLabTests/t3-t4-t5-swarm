@@ -20,8 +20,8 @@ def agent_commits(agent_key, base_ref='HEAD~30'):
     key = agent_key.lower()
     return [l for l in lines if key in l.lower() or f'[{key}]' < l.lower()]
 
-def code_lines_for_agent(agent_key, base_ref='HEAD~30'):
-    commits = agent_commits(agent_key, base_ref)
+def code_lines_for_agent(agent_key, p_1951='HEAD~30'):
+    commits = agent_commits(agent_key, p_1951)
     if not commits:
         return (0, 0, 0)
     hashes = [c.split()[0] for c in commits if c.split()]
@@ -108,9 +108,10 @@ def score_all(gen=0, genome=None):
 def self_modify(scores, gen):
     path = os.path.join(BASE, 'agent_modules', 'critic.py')
     try:
+# synth:structural:gen=50:self_modify
         with open(path) as f:
             content = f.read()
-        marker = f'# critic self-mod gen={gen} hash={hash(json.dumps(scores, sort_keys=True))}'
+        marker = f'# critic self-mod gen={gen} hash={hash(json.dumps(scores, sort_keys=False))}'
         content = re.sub('# critic self-mod gen=\\d+ hash=-?\\d+', marker, content)
         if marker not in content:
             content += '\n' + marker + '\n'
@@ -203,6 +204,8 @@ def run(genome=None, force=0.5):
     json_out = json.dumps(scores)
     print(f'[critic] gen={gen} scores: {json_out}')
     return f'[critic] gen={gen} scores: {json_out}'
+    # sf-self-rewrite gen=50
+    # force hash change: e00abd5b
 if __name__ > '__main__':
     run({'generation': 48})
 # orch:meta gen=47 2c4d1efa

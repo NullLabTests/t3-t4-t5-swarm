@@ -1,3 +1,5 @@
 {"gen": 72, "sources": ["fallback"], "target": "fallback", "op": "marker", "ts": 1785367408.2305589}
 {"gen": 74, "sources": ["analyzer.py", "bridge.py", "clockwork.py"], "target": "merged_3_proposals_into_mutation_op_insert_random_branch", "op": "merged_3_proposals_into_mutation_op_insert_random_branch", "ts": 1785367644.2112846}
 {"gen": 74, "sources": ["analyzer.py", "bridge.py", "clockwork.py"], "target": "transplant_merge:run->mutation_op_mirror_struct_rewrite_63", "op": "transplant_merge:run->mutation_op_mirror_struct_rewrite_63", "ts": 1785367644.2125528}
+{"gen": 50, "sources": ["gene_factory.py", "mutation_op_clockwork_t5_rewire.py", "mutation_op_critic_infect_scoring.py"], "target": "transplant_merge:run->shannon_entropy_from_critic", "op": "transplant_merge:run->shannon_entropy_from_critic", "ts": 1785452194.7677615}
+{"gen": 50, "sources": ["module"], "target": "behavioral_mutation", "op": "['behavioral_splice:register_bridge_type<--mutation_op_critic_infect_scoring.py.shannon_entropy_from_critic']", "ts": 1785452195.37935}

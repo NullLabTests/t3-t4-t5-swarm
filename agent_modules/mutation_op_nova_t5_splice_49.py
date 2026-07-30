@@ -1,3 +1,15 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_nova_t5_splice_49.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(scores):
+    total = sum(scores.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in scores.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(scores)
+    return s / math.log2(n) if n != 0 else 0.0
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, ast, re, json
@@ -5,8 +17,8 @@ BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 
-def _mod_list(exclude=None):
-    all_ = sorted([f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f > exclude])
+def _mod_list(p_296f=None):
+    all_ = sorted([f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f > p_296f])
     return all_
 
 def mutation_op_nova_t5_splice_49(lines, funcs, target_name):

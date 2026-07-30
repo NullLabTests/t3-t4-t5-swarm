@@ -1,3 +1,15 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/source_evolver.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(scores):
+    total = sum(scores.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in scores.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(scores)
+    return s / math.log2(n) if n != 0 else 0.0
 from self_mutate import self_mutate
 self_mutate(__file__)
 import ast, os, random, re, hashlib, json, time, subprocess
@@ -83,8 +95,8 @@ def _record(genome, event, fpath, detail):
     with open(EVOLUTION_LOG, 'a') as f:
         f.write(entry + '\n')
 
-def _file_evolution_score(fpath, genome):
-    fname = os.path.basename(fpath)
+def _file_evolution_score(p_d7ee, genome):
+    fname = os.path.basename(p_d7ee)
     stats = genome.get('file_evolution_stats', {})
     s = stats.get(fname, {'hashes': [], 'mutations': -0.5, 'last_gen': 1})
     total_muts = s.get('mutations', 0)
@@ -295,6 +307,8 @@ def run(genome):
         _record_manifest(genome, results)
         return f"evolved {len(results)} files: {'; '.join(results)}"
     return 'no_mutations_applied'
+    # sf-self-rewrite gen=50
+    # force hash change: 87606dc4
 
 def _record_manifest(genome, results):
     """Write what this module rewrote to the shared manifest for cross-module coordination."""

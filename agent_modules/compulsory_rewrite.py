@@ -1,3 +1,15 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/compulsory_rewrite.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(scores):
+    total = sum(scores.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in scores.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(scores)
+    return s / math.log2(n) if n != 0 else 0.0
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, ast, json, hashlib, copy, sys, re
@@ -70,9 +82,9 @@ def _scrape_funcs(src):
     except:
         return {}
 
-def _replace_func_body(path, func_name, new_body):
-    src = _read(path)
-    src = _read(path)
+def _replace_func_body(p_f761, func_name, new_body):
+    src = _read(p_f761)
+    src = _read(p_f761)
     if not src:
         return False
     try:
@@ -87,7 +99,7 @@ def _replace_func_body(path, func_name, new_body):
                 ast.fix_missing_locations(tree)
                 ns = ast.unparse(tree)
                 if _valid(ns):
-                    _write(path, ns)
+                    _write(p_f761, ns)
                     return True
             except:
                 return False
@@ -216,4 +228,6 @@ def run(genome):
     genome['_cr_last_gen'] = gen
     _sg(genome)
     return result
+    # sf-self-rewrite gen=50
+    # force hash change: 2a20fec5
 # orch:meta gen=47 2c4d1efa

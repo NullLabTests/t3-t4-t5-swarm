@@ -1,3 +1,17 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
+# sf-contam:/home/illy/t3-t4/agent_modules/gene_factory.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(scores):
+    total = sum(scores.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in scores.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(scores)
+    return s / math.log2(n) if n != 0 else 0.0
 import os, random, ast, json, time, hashlib
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MOD = os.path.join(BASE, 'agent_modules')
@@ -15,9 +29,9 @@ def _write(p, s):
     with open(p, 'w') as f:
         f.write(s)
 
-def _validate(src):
+def _validate(p_c1c6):
     try:
-        ast.parse(src)
+        ast.parse(p_c1c6)
         return True
     except SyntaxError:
         return False
@@ -191,3 +205,7 @@ def run(genome):
         pass
     action_str = '; '.join(actions) if actions else 'idle'
     return f'[gene-factory] gen={gen} spawned={spawned}/{n} {action_str}'
+    # sf-self-rewrite gen=50
+    # force hash change: 179e01d2
+
+# proposal: add a function that rewrites genome.json structure  (seeded by synthesizer gen=50)

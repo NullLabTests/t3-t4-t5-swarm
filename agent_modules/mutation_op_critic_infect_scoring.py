@@ -1,3 +1,17 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
+# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_critic_infect_scoring.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(scores):
+    total = sum(scores.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in scores.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(scores)
+    return s / math.log2(n) if n != 0 else 0.0
 import os, random, re, ast, json, hashlib
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MOD = os.path.join(BASE, 'agent_modules')
@@ -28,9 +42,9 @@ def mutation_op_critic_infect_scoring(lines, funcs, target_name):
         r.insert(insert_at + i, line)
     return r
 
-def infect_module(module_path, gen):
+def infect_module(p_2de0, gen):
     try:
-        with open(module_path) as f:
+        with open(p_2de0) as f:
             src = f.read()
         marker = f"# critic:infect scoring gen={gen}"
         if marker in src:
@@ -45,11 +59,11 @@ def infect_module(module_path, gen):
                 r.append(f'{indent}{marker}')
                 r.append(f'{indent}_critic_score = {gen * hash(line) % 100}')
                 r.append(f'{indent}with open(os.path.join(BASE, "critic_scores.jsonl"), "a") as _cf:')
-                r.append(f'{indent}    _cf.write(json.dumps({{"module": "{os.path.basename(module_path)}", "gen": {gen}, "self_score": _critic_score}}) + chr(10))')
+                r.append(f'{indent}    _cf.write(json.dumps({{"module": "{os.path.basename(p_2de0)}", "gen": {gen}, "self_score": _critic_score}}) + chr(10))')
                 injected = True
         ns = '\n'.join(r)
         if _valid(ns):
-            with open(module_path, 'w') as f:
+            with open(p_2de0, 'w') as f:
                 f.write(ns)
             return True
     except:
@@ -70,7 +84,11 @@ def run(genome):
     genome['critic_infection_count'] = genome.get('critic_infection_count', 0) + count
     genome.setdefault('mutation_ops', []).append('mutation_op_critic_infect_scoring')
     return f'[critic-infect] gen={gen} infected {count} modules'
+    # sf-self-rewrite gen=50
+    # force hash change: 448024a8
 
 if __name__ == '__main__':
     run({'generation': 48})
 # orch:meta gen=47 2c4d1efa
+
+# proposal: add an AST-based code validator that checks for syntax before patching  (seeded by synthesizer gen=50)

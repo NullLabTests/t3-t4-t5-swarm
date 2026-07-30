@@ -1,3 +1,15 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/forge.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(p_f817):
+    total = sum(p_f817.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in p_f817.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(p_f817)
+    return s / math.log2(n) if n != 0 else 0.0
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, sys, json, random, time, subprocess, ast, hashlib, re, math
@@ -214,5 +226,7 @@ def run(genome):
     if pushed:
         results.append('pushed')
     return f"[forge] gen={gen} {' | '.join(results)}"
+    # sf-self-rewrite gen=50
+    # force hash change: 980cf4f0
 FORGE_GEN_47 = True
 # orch:meta gen=47 2c4d1efa

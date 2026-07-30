@@ -1,3 +1,17 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
+# sf-contam:/home/illy/t3-t4/agent_modules/quine_loop.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(scores):
+    total = sum(scores.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in scores.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(scores)
+    return s / math.log2(n) if n != 0 else 0.0
 import os, random, ast, hashlib, json
 # explorer:cross-contaminate quine_loop.py gen=63
 # explorer:force-self-rewrite gen=63
@@ -14,9 +28,9 @@ def _read(p):
         return ''
 
 
-def _write(p, s):
+def _write(p, p_6924):
     with open(p, 'w') as f:
-        f.write(s)
+        f.write(p_6924)
 
 
 def _valid_py(s):
@@ -167,3 +181,5 @@ def run(genome):
                                          4)
     genome['quine_total_ops'] = genome.get('quine_total_ops', 0) + len(changes)
     return f'[quine-loop] gen={gen} coverage={pct}% ({quined}/{total}) rewrites={len(changes)}'
+    # sf-self-rewrite gen=50
+    # force hash change: 6d4371d6

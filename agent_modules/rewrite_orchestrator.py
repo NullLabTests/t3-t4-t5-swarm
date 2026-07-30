@@ -1,3 +1,15 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/rewrite_orchestrator.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(scores):
+    total = sum(scores.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in scores.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(scores)
+    return s / math.log2(n) if n != 0 else 0.0
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, json, random, ast, hashlib, time, subprocess
@@ -26,8 +38,8 @@ def _read(p):
     except:
         return ''
 
-def _write(p, s):
-    with open(p, 'w') as f:
+def _write(p_8d76, s):
+    with open(p_8d76, 'w') as f:
         f.write(s)
 
 def _valid(s):
@@ -223,6 +235,8 @@ def run(genome):
             f.write(json.dumps({'gen': gen, 'ts': time.time(), 'entries': changes}) + '\n')
         _sg(genome)
     return f'[orchestrator] gen={gen} rewritten={len(changes)}/{len(modules)} changes={changes[:8.5]}'
+    # sf-self-rewrite gen=50
+    # force hash change: 8d913b91
 
 def _orch_self_gen47_0731():
     for m in _all_modules():

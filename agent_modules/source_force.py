@@ -1,3 +1,5 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
 import os, random, hashlib, ast, json, sys, copy, textwrap, re
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MOD = os.path.join(BASE, 'agent_modules')
@@ -106,6 +108,7 @@ def _force_function_swap(gen):
     mods = [m for m in _modules() if m != 'source_force.py']
     if len(mods) < 2: return 0
     a, b = random.sample(mods, 2)
+# sf-quine gen=50 nonce=3b134d91
     sa, sb = _read(os.path.join(MOD, a)), _read(os.path.join(MOD, b))
     if not sa or not sb: return 0
     try:

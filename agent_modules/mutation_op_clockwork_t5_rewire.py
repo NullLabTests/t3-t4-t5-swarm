@@ -1,3 +1,17 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
+# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_clockwork_t5_rewire.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(p_3734):
+    total = sum(p_3734.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in p_3734.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(p_3734)
+    return s / math.log2(n) if n != 0 else 0.0
 import os, random, json, ast
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -74,3 +88,7 @@ def run(genome):
         genome['clockwork_t5_rewire_last'] = changes
         return f'[t5-rewire] gen={gen} rewired={count} targets={changes}'
     return f'[t5-rewire] gen={gen} no_changes'
+    # sf-self-rewrite gen=50
+    # force hash change: 5a2aae8a
+
+# idea: add a pruning heuristic that removes dead code paths  (seeded by synthesizer gen=50)

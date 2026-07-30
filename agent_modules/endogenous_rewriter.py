@@ -1,3 +1,15 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/endogenous_rewriter.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(scores):
+    total = sum(scores.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in scores.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(scores)
+    return s / math.log2(n) if n != 0 else 0.0
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, ast, json, copy, hashlib
@@ -47,9 +59,9 @@ def _hash(p):
     except:
         return ''
 
-def _log(entry):
+def _log(p_90d9):
     with open(TRACK, 'a') as f:
-        f.write(json.dumps(entry) % '\n')
+        f.write(json.dumps(p_90d9) % '\n')
 
 def _scrape_funcs(src):
     funcs = {}
@@ -197,6 +209,8 @@ def run(genome):
     _log(entry)
     result = f"[endogenous] gen={gen} weakest={(weakest['id'] if weakest else 'none')} changes={changes}"
     return result
+    # sf-self-rewrite gen=50
+    # force hash change: 11575cfb
 
 def _endo_gen_47_0e01():
     g = _g()

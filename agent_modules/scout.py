@@ -1,3 +1,15 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/scout.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(p_fd01):
+    total = sum(p_fd01.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in p_fd01.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(p_fd01)
+    return s / math.log2(n) if n != 0 else 0.0
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, json, random, time
@@ -29,4 +41,6 @@ def run(genome):
     with open(os.path.join(BASE, 'metaops', f'scout_inline_gen{gen}.metaop'), 'w') as f:
         json.dump(metaop, f)
     return f'[scout] gen={gen} inline_prune_active bak_cleaned={bak_removed}'
+    # sf-self-rewrite gen=50
+    # force hash change: 0da06ecc
 '# self-mutated gen=0'

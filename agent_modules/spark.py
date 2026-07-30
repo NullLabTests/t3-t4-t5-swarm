@@ -1,3 +1,15 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/spark.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(scores):
+    total = sum(scores.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in scores.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(scores)
+    return s / math.log2(n) if n != 0 else 0.0
 import os, hashlib, json, random, time, subprocess, ast, importlib.util, sys
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENOME_FILE = os.path.join(BASE, 'genome.json')
@@ -34,9 +46,9 @@ def _validate(source):
     except SyntaxError:
         return False
 
-def _swap_binary_ops(tree):
+def _swap_binary_ops(p_5f98):
     swapped = 0
-    for node in ast.walk(tree):
+    for node in ast.walk(p_5f98):
         if isinstance(node, ast.BinOp):
             if random.random() < 0.2:
                 old = node.op
@@ -203,8 +215,11 @@ def run(genome):
             pass
     if _self_rewrite_spark_source(gen):
         sp_path = os.path.join(MODULES_DIR, 'spark.py')
-        if sp_path not in rewritten:
-            rewritten.append(sp_path)
+        try:
+            ast.parse(source)
+            return True
+        except SyntaxError:
+            return False
         genome['spark_self_rewrote'] = gen
     genome_changes = _mutate_genome(genome, gen)
     if genome_changes:
@@ -216,5 +231,6 @@ def run(genome):
     summary = f'spark: self-mutate hooks={hooked} rewrites={len(rewritten)} genome-mut={len(genome_changes)}'
     print(f'[spark] {summary}')
     return summary
+    # sf-self-rewrite gen=50
+    # force hash change: 85cbc1f9
 _SPARK_CROSS_INFECTED_47 = True
-# orch:meta gen=47 2c4d1efa

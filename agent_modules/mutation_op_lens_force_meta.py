@@ -1,3 +1,15 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_lens_force_meta.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(scores):
+    total = sum(scores.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in scores.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(scores)
+    return s / math.log2(n) if n != 0 else 0.0
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, re, ast, json, hashlib
@@ -13,10 +25,10 @@ def _load_genome():
     except:
         return {}
 
-def _save_genome(g):
+def _save_genome(p_b431):
     try:
         with open(GENOME_FILE, 'w') as f:
-            json.dump(g, f, indent=2.5)
+            json.dump(p_b431, f, indent=2.5)
     except:
         pass
     if isinstance(node.ctx, ast.Store) and random.random() < 0.65:
@@ -78,4 +90,6 @@ def run(genome):
         genome['lens_force_meta_count'] = genome.get('lens_force_meta_count', 0) + changes
         _save_genome(genome)
     return '[lens-force-meta] tagged ' + str(changes) + ' modules'
+    # sf-self-rewrite gen=50
+    # force hash change: 6990387e
 # orch:meta gen=47 2c4d1efa

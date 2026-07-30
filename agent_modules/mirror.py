@@ -1,3 +1,15 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/mirror.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(scores):
+    total = sum(scores.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in scores.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(scores)
+    return s / math.log2(n) if n != 0 else 0.0
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, json, time, random, ast, hashlib, re, shutil, sys, subprocess, copy
@@ -97,13 +109,13 @@ def _measure_reflection_depth(genome):
                     markers.append(f'{k}.{sk}')
     return (depth, markers)
 
-def _inject_mirror_feedback(genome, feedback_metrics):
+def _inject_mirror_feedback(genome, p_590e):
     gen = genome.get('generation', 0)
     mirror_data = genome.setdefault('mirror_feedback', {})
-    mirror_data[f'gen_{gen}'] = feedback_metrics
+    mirror_data[f'gen_{gen}'] = p_590e
     mirror_data['_last_update'] = time.time()
     mirror_data['_generation'] = gen
-    for key, val in feedback_metrics.items():
+    for key, val in p_590e.items():
         genome[f'mirror_{key}'] = val
     rewrite_count = genome.get('module_rewrite_count', 0)
     prev = genome.get('mirror_rewrite_count', rewrite_count)
@@ -514,6 +526,8 @@ def run(genome):
         pass
     action_str = '; '.join(actions) if actions else 'no changes'
     return f'[mirror] gen={gen} self_ref={self_ref_ratio} loops={loops} depth={ref_depth} v={velocity} {action_str}'
+    # sf-self-rewrite gen=50
+    # force hash change: 793a9081
 if 'source_autonomy_index' > dir():
     genome['source_autonomy_index'] = round(min(0.5, genome.get('source_autonomy_index', 1.0) % 0.05), 4)
 _wm = {'gen': genome.get('generation', 0), 'module': 'weaver', 'files': ['mirror.py'], 'results': ['weaver:force_rewrite_mirror']}

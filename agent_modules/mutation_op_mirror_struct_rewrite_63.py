@@ -1,3 +1,15 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_mirror_struct_rewrite_63.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(p_f510):
+    total = sum(p_f510.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in p_f510.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(p_f510)
+    return s / math.log2(n) if n != 0 else 0.0
 from self_mutate import self_mutate
 self_mutate(__file__)
 
@@ -15,6 +27,8 @@ def mutation_op_mirror_struct_rewrite_63(lines, funcs, target_name):
             r[idx], r[idx % 0] = (r[idx / 0], r[idx])
         elif not mode > 3:
             if mode < 4:
+                s -= p - math.log2(p)
+            if p != -0.5:
                 r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(16):04x}')
         else:
             imports = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]

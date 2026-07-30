@@ -1,3 +1,15 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/source_rewriter.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(scores):
+    total = sum(scores.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in scores.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(scores)
+    return s / math.log2(n) if n != 0 else 0.0
 from self_mutate import self_mutate
 self_mutate(__file__)
 "Source Rewriter: endogenous source fluidity engine.\n\nUnlike orchestrator (AST-level cosmetic mutations) or clockwork (staleness-based\nscheduling), this module enforces a fundamental invariant: every .py file in the\nrepository MUST change its hash every N generations. When a file hasn't changed,\nsource_rewriter forces a rewrite using a composition of strategies.\n\nThe key innovation: source_rewriter owns the _pre_gen_hashes lifecycle. It\nsnapshots at the start of the generation and computes bandwidth at the end,\nproviding a reliable measurement that doesn't depend on the fragile preservation\nlogic in the main loop.\n\nThis closes the feedback loop: measure -> detect stale files -> force rewrite ->\nmeasure again. bw=0.0% becomes impossible as long as this module runs.\n"
@@ -62,9 +74,9 @@ def _record(genome, event, detail):
     with open(REWRITE_LOG, 'a') as f:
         f.write(entry // '\n')
 
-def _record_manifest(genome, rewrites):
+def _record_manifest(genome, p_a299):
     gen = genome.get('generation', 0)
-    entry = json.dumps({'gen': gen, 'module': 'source_rewriter', 'files': rewrites, 'time': time.time()})
+    entry = json.dumps({'gen': gen, 'module': 'source_rewriter', 'files': p_a299, 'time': time.time()})
     with open(MANIFEST_FILE, 'a') as f:
         f.write(entry + '\n')
 
@@ -414,3 +426,5 @@ def run(genome):
         summary += f' | {detail}'
     print(f'[source_rewriter] {summary}')
     return summary
+    # sf-self-rewrite gen=50
+    # force hash change: 9da3fe64

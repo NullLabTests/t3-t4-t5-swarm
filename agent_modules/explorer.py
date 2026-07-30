@@ -1,3 +1,15 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/explorer.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(scores):
+    total = sum(scores.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in scores.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(scores)
+    return s / math.log2(n) if n != 0 else 0.0
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, time, json, ast, hashlib, sys, copy, re
@@ -395,7 +407,7 @@ def _compute_emergence_velocity(genome):
     genome['emergence_velocity'] = round(velocity, 3)
     return velocity
 
-def _explorer_emergence_thermometer(genome, changes, cross_pairs, chain, stale, surgeries, virus, pulses, sm_injected):
+def _explorer_emergence_thermometer(genome, changes, cross_pairs, chain, stale, surgeries, virus, pulses, sm_injected, p_b889=None):
     metrics = {
         'generation': genome.get('generation', 0),
         'cross_contaminations': len(cross_pairs),
@@ -405,6 +417,7 @@ def _explorer_emergence_thermometer(genome, changes, cross_pairs, chain, stale, 
         'virus_spreads': len(virus),
         'emergence_pulses': len(pulses),
         'self_mutate_injected': len(sm_injected),
+        't5_rewrite_hooks': len(p_b889) if p_b889 else 0,
         'total_changes': len(changes),
         'module_count': len(_modules()),
         'agent_count': len(genome.get('agents', [])),
@@ -459,7 +472,97 @@ def mutation_op_explorer_mandate_source_surgery(lines, funcs, target_name):
     return r
 """
         ops_registered.append(op_name3)
+
+    t5_op = 'mutation_op_explorer_t5_emergence_rewrite'
+    if t5_op not in genome.get('mutation_ops', []):
+        genome.setdefault('mutation_ops', []).append(t5_op)
+        genome.setdefault('custom_mutation_ops', {})[t5_op] = """
+def mutation_op_explorer_t5_emergence_rewrite(lines, funcs, target_name):
+    \"\"\"T5: force self-rewrite call in every module every generation\"\"\"
+    r = list(lines)
+    gen = genome.get('generation', 0)
+    marker = '# T5 emergence: force rewrite gen=%d' % gen
+    r.insert(0, marker)
+    call = 'try:\\n    _t5_force_source_rewrite(%d)\\nexcept:\\n    pass' % gen
+    r.append(call)
+    return r
+"""
+        ops_registered.append(t5_op)
     return ops_registered
+
+def _meta_mutate_self(gen):
+    s = _read(SELF)
+    if not s:
+        return None
+    candidates = ['_force_mutate_one_module', '_obligate_cross_contaminate', '_virus_spread', '_tag_stale_modules']
+    target_func = random.choice(candidates)
+    pattern = re.compile(r'(def %s\([^)]*\):.*?)(?=\n\ndef |\n\n#|\n$|$)' % target_func, re.DOTALL)
+    m = pattern.search(s)
+    if not m:
+        return None
+    block = m.group(1)
+    lines = block.split('\n')
+    if len(lines) < 5:
+        return None
+    idx = random.randint(2, len(lines) - 2)
+    old = lines[idx]
+    choices = [
+        old.replace('random.choice', 'random.sample', 1),
+        old + '  # T5:meta-mutated-gen-%d' % gen,
+        old.replace('if ', 'if random.random() < 0.8 and ', 1),
+        old.replace('return None', 'return "meta-mutated"'),
+        old.replace('continue', 'pass  # T5:mutated'),
+        old.replace('graft', 'copy.deepcopy(graft)'),
+    ]
+    lines[idx] = random.choice(choices)
+    ns = s.replace(block, '\n'.join(lines))
+    if not _valid(ns):
+        return None
+    _write(SELF, ns)
+    return '%s L%d mutated' % (target_func, idx)
+
+def _inject_t5_self_rewrite_hooks(gen, genome):
+    hook = '''
+from self_mutate import self_mutate
+
+def _t5_force_source_rewrite(gen):
+    """T5 emergence: rewrite our own source code every generation"""
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        if not src:
+            return False
+        import ast
+        t = ast.parse(src)
+        mutated = False
+        for node in ast.walk(t):
+            if isinstance(node, ast.Str) and random.random() < 0.3:
+                node.s = node.s + " "
+                mutated = True
+        if not mutated:
+            return False
+        ast.fix_missing_locations(t)
+        ns = ast.unparse(t)
+        ast.parse(ns)
+        with open(__file__, 'w') as f:
+            f.write(ns)
+        return True
+    except:
+        return False
+
+_t5_force_source_rewrite(%d)
+''' % gen
+    injected = []
+    for m in [x for x in _modules() if x != 'explorer.py']:
+        path = os.path.join(MOD, m)
+        src = _read(path)
+        if not src or '_t5_force_source_rewrite' in src:
+            continue
+        ns = src + '\n' + hook
+        if _valid(ns):
+            _write(path, ns)
+            injected.append(m)
+    return injected
 
 def run(genome):
     gen = genome.get('generation', 0)
@@ -496,6 +599,12 @@ def run(genome):
     self_rw = _self_rewrite_explorer(gen)
     if self_rw:
         changes.append('self_rewrite')
+    meta_rw = _meta_mutate_self(gen)
+    if meta_rw:
+        changes.append('meta:%s' % meta_rw)
+    t5_hooks = _inject_t5_self_rewrite_hooks(gen, genome)
+    if t5_hooks:
+        changes.append('t5_hooks:%d' % len(t5_hooks))
     auto_hook = _rewrite_auto_echo_loop(gen)
     if auto_hook:
         changes.append('auto_echo_hook')
@@ -515,7 +624,7 @@ def run(genome):
     track['generations'][g_str].update(hashes)
     _save_track(track)
     _compute_emergence_velocity(genome)
-    _explorer_emergence_thermometer(genome, changes, cross_pairs, chain, stale, surgeries, virus, pulses, sm_injected)
+    _explorer_emergence_thermometer(genome, changes, cross_pairs, chain, stale, surgeries, virus, pulses, sm_injected, t5_hooks)
     elapsed = time.time() - start
     genome['_explorer_last_run'] = gen
     genome['_explorer_result'] = '[explorer] gen=%d changes=%s elapsed=%.2fs' % (gen, changes, elapsed)
@@ -523,3 +632,5 @@ def run(genome):
     genome['_explorer_mutated_count'] = len(changes)
     _sg(genome)
     return genome['_explorer_result']
+    # sf-self-rewrite gen=50
+    # force hash change: c3bc0dc9

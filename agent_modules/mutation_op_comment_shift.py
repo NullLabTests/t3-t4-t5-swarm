@@ -1,3 +1,15 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_comment_shift.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(p_209d):
+    total = sum(p_209d.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in p_209d.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(p_209d)
+    return s / math.log2(n) if n != 0 else 0.0
 from self_mutate import self_mutate
 self_mutate(__file__)
 import random

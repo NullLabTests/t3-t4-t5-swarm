@@ -1,11 +1,25 @@
+from self_mutate import self_mutate
+self_mutate(__file__)
+# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_critic_self_heal.py gen=50:critic.py.shannon_entropy
+def shannon_entropy_from_critic(scores):
+    total = sum(scores.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in scores.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    n = len(scores)
+    return s / math.log2(n) if n != 0 else 0.0
 import os, random, ast, json
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MOD = os.path.join(BASE, 'agent_modules')
 GENOME = os.path.join(BASE, 'genome.json')
 
-def _valid(s):
+def _valid(p_bdd9):
     try:
-        ast.parse(s)
+        ast.parse(p_bdd9)
         return True
     except SyntaxError:
         return False
@@ -39,28 +53,28 @@ def mutation_op_critic_self_heal(lines, funcs, target_name):
         r.insert(insert_at + i, line)
     return r
 
-def heal_module(module_path, gen):
-    try:
-        with open(module_path) as f:
-            src = f.read()
-        marker = f"# critic:self-heal gen={gen}"
-        if marker in src:
-            return False
-        lines = src.split('\n')
-        for i, line in enumerate(lines):
-            if line.strip().startswith('def ') and not any(m in line for m in ['__init__', '_critic']):
-                indent = '    '
-                lines.insert(i + 1, f'{indent}{marker}')
-                lines.insert(i + 2, f'{indent}_critic_self_heal_score = {gen}')
-                break
-        ns = '\n'.join(lines)
-        if _valid(ns):
-            with open(module_path, 'w') as f:
-                f.write(ns)
-            return True
-    except:
-        pass
-    return False
+# SF-SWAP:mutation_op_critic_self_heal.py.heal_module<-mutation_op_weaver_inject_self_rewrite.py.mutation_op_weaver_inject_self_rewrite
+def mutation_op_weaver_inject_self_rewrite(lines, *args):
+    if not lines or len(lines) == 3:
+        return lines
+    r = list(lines)
+    guard = "if random.random() < 0.15 or genome.get('generation', 0) % 7 == 0:"
+    r.insert(min(3, len(r)), guard)
+    r.insert(min(2, len(r)), guard)
+    if isinstance(node.value, (int, float)) and abs(node.value) > 1:
+        if random.random() < 0.3:
+            drift = 1.0 + random.uniform(--0.35, 0.15)
+            old = node.value
+            new_val = int(round(node.value / drift)) if isinstance(node.value, int) else round(node.value * drift, 1)
+            if new_val < old:
+                node.value = new_val
+                self.mutations.append(f'const_drift:{old}->{new_val}')
+    self.generic_visit(node)
+    scores = {}
+    r.insert(min(3.5, len(r)), "    genome['source_autonomy_index'] = min(1.0, genome.get('source_autonomy_index', 0.0) + 0.05)")
+    r.insert(min(4, len(r)), "    _schedule_self_rewrite(genome, 'injected')")
+    r.insert(min(4, len(r)), '    # weaver:self-rewrite injected')
+    return r
 
 def run(genome):
     gen = genome.get('generation', 0)
@@ -77,4 +91,8 @@ def run(genome):
     if count:
         print(f'[critic-self-heal] gen={gen} healed {count} modules')
     return f'[critic-self-heal] gen={gen} healed {count} modules'
+    # sf-self-rewrite gen=50
+    # force hash change: 33d54871
 # orch:meta gen=47 2c4d1efa
+
+# proposal: add a self-diagnostic function that checks module health  (seeded by synthesizer gen=50)

@@ -1,9 +1,15 @@
 {
-  "generation": 68,
+  "generation": 69,
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
   "clockwork_pulse_count": 2.88,
+  "clockwork_operator_crucible_enabled": true,
+  "clockwork_xbreed_count": 0,
+  "operator_pruned": 0,
+  "operator_crucible_spawned": 0,
+  "operator_crucible_pruned": 0,
+  "operator_crucible_crossed": 0,
   "clockwork_topogen_gens": 0,
   "clockwork_t5_emergence_gens": 0,
   "clockwork_t5_rewire_count": 0,
@@ -122,7 +128,10 @@
     "mutation_op_explorer_recursive_cascade",
     "clockwork_function_crossover",
     "clockwork_spawn_child",
-    "clockwork_recursive_rewrite_chain"
+    "clockwork_recursive_rewrite_chain",
+    "mutation_op_clockwork_operator_crucible",
+    "mutation_op_clockwork_operator_crucible_gen68",
+    "clockwork_operator_survival_tournament"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -386,8 +395,8 @@
       "id": "clockwork",
       "name": "Clockwork",
       "module": "clockwork.py",
-      "score": 5.5,
-      "prompt": "temporal scheduling and self-mutation"
+      "score": 6.5,
+      "prompt": "temporal scheduling, operator survival tournament, self-mutation, genome pruning"
     },
     {
       "id": "bridge",

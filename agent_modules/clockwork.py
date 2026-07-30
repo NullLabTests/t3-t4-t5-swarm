@@ -397,6 +397,158 @@ def _modulate_genome_params(genome):
     diversity['clock_pulse'] = round(pulse, 6)
 
 
+def _operator_survival_tournament(genome):
+    gen = genome.get('generation', 0)
+    ops_log = genome.setdefault('operator_survival_log', [])
+    tracking = genome.setdefault('operator_tracking', {})
+    now = int(time.time())
+    ops_total = 0
+    ops_success = 0
+    mods = _all_modules()
+    for fname in mods:
+        if not fname.startswith('mutation_op_'):
+            continue
+        ops_total += 1
+        fpath = os.path.join(MODULES_DIR, fname)
+        src = _read(fpath)
+        if not src:
+            continue
+        h = _hash_file(fpath)
+        prev = tracking.get(fname, {})
+        prev_hash = prev.get('hash', '')
+        attempts = prev.get('attempts', 0) + 1
+        successes = prev.get('successes', 0)
+        if prev_hash and prev_hash != h:
+            successes += 1
+        tracking[fname] = {'hash': h, 'attempts': attempts, 'successes': successes, 'last_gen': gen}
+        rate = successes / max(attempts, 1)
+        tracking[fname]['success_rate'] = round(rate, 4)
+    pruned = 0
+    if ops_total >= 6:
+        sorted_ops = sorted(tracking.items(), key=lambda kv: kv[1].get('success_rate', 0))
+        underperformers = sorted_ops[:max(1, len(sorted_ops) // 6)]
+        for op_name, _ in underperformers:
+            op_path = os.path.join(MODULES_DIR, op_name)
+            if os.path.exists(op_path):
+                os.rename(op_path, os.path.join(MODULES_DIR, '_pruned', op_name))
+                tracking[op_name]['pruned_gen'] = gen
+                tracking[op_name]['pruned'] = True
+                pruned += 1
+                _log_rewrite(gen, op_name, 'operator_pruned')
+    spawned = 0
+    if ops_total >= 3:
+        sorted_ops = sorted(tracking.items(), key=lambda kv: kv[1].get('success_rate', 0), reverse=True)
+        elite = [n for n, _ in sorted_ops[:3] if os.path.exists(os.path.join(MODULES_DIR, n))]
+        if len(elite) >= 2:
+            a_path = os.path.join(MODULES_DIR, elite[0])
+            b_path = os.path.join(MODULES_DIR, elite[1])
+            a_src = _read(a_path)
+            b_src = _read(b_path)
+            if a_src and b_src:
+                try:
+                    a_tree = ast.parse(a_src)
+                    b_tree = ast.parse(b_src)
+                    a_funcs = [n for n in ast.walk(a_tree) if isinstance(n, ast.FunctionDef)]
+                    b_funcs = [n for n in ast.walk(b_tree) if isinstance(n, ast.FunctionDef)]
+                    if a_funcs and b_funcs:
+                        donor = copy.deepcopy(random.choice(a_funcs))
+                        recipient = random.choice(b_funcs)
+                        b_lines = b_src.split('\n')
+                        r_start = recipient.lineno - 1
+                        r_end = recipient.end_lineno
+                        donor_src = ast.unparse(donor)
+                        b_lines[r_start:r_end] = [donor_src]
+                        hybrid_src = '\n'.join(b_lines)
+                        if _valid_py(hybrid_src):
+                            child_name = f'mutation_op_clockwork_crucible_gen{gen}_{random.getrandbits(16):04x}'
+                            child_path = os.path.join(MODULES_DIR, child_name + '.py')
+                            _write(child_path, hybrid_src)
+                            genome.setdefault('custom_mutation_ops', {})[child_name] = '# synthetic:operator_crucible_crossover'
+                            genome.setdefault('mutation_ops', []).append(child_name)
+                            _log_rewrite(gen, child_name, 'operator_crucible_spawn')
+                            spawned += 1
+                except (SyntaxError, Exception):
+                    pass
+    genome['operator_pruned'] = genome.get('operator_pruned', 0) + pruned
+    genome['operator_crucible_spawned'] = genome.get('operator_crucible_spawned', 0) + spawned
+    ops_log.append({'gen': gen, 'total': ops_total, 'pruned': pruned, 'spawned': spawned, 'ts': now})
+    if len(ops_log) > 30:
+        genome['operator_survival_log'] = ops_log[-30:]
+    return pruned + spawned
+
+
+def _cross_breed_mutation_ops(genome):
+    gen = genome.get('generation', 0)
+    mods = [f for f in _all_modules() if f.startswith('mutation_op_')]
+    if len(mods) < 3:
+        return 0
+    a_name, b_name = random.sample(mods, 2)
+    a_src = _read(os.path.join(MODULES_DIR, a_name))
+    b_src = _read(os.path.join(MODULES_DIR, b_name))
+    if not a_src or not b_src:
+        return 0
+    try:
+        a_tree = ast.parse(a_src)
+        b_tree = ast.parse(b_src)
+    except SyntaxError:
+        return 0
+    a_funcs = [n for n in ast.walk(a_tree) if isinstance(n, ast.FunctionDef)]
+    b_funcs = [n for n in ast.walk(b_tree) if isinstance(n, ast.FunctionDef)]
+    if len(a_funcs) < 1 or len(b_funcs) < 1:
+        return 0
+    child_name = f'mutation_op_clockwork_xbreed_gen{gen}_{random.getrandbits(16):04x}'
+    child_path = os.path.join(MODULES_DIR, child_name + '.py')
+    imports = set()
+    for func in a_funcs + b_funcs:
+        for node in ast.walk(func):
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+                if node.func.id in ('random', 'json', 'os', 'hashlib', 'ast', 'copy'):
+                    imports.add(node.func.id)
+    import_lines = '\n'.join(sorted(f'import {i}' for i in imports)) + '\n' if imports else ''
+    selected = []
+    for func in [random.choice(a_funcs), random.choice(b_funcs)]:
+        try:
+            selected.append(ast.unparse(func))
+        except Exception:
+            continue
+    if not selected:
+        return 0
+    child_src = import_lines + '\n\n'.join(selected)
+    child_src = f'# clockwork:xbreed gen={gen} parents={a_name},{b_name}\n' + child_src
+    if _valid_py(child_src):
+        _write(child_path, child_src)
+        genome.setdefault('mutation_ops', []).append(child_name)
+        genome.setdefault('custom_mutation_ops', {})[child_name] = '# synthetic:operator_xbreed'
+        genome['clockwork_xbreed_count'] = genome.get('clockwork_xbreed_count', 0) + 1
+        _log_rewrite(gen, child_name, 'operator_xbreed')
+        return 1
+    return 0
+
+
+def _pulse_driven_genome_prune(genome):
+    gen = genome.get('generation', 0)
+    pulse = genome.get('clock_pulse', 0.0)
+    removed = 0
+    if pulse < 0.2:
+        for key in list(genome.keys()):
+            if key.startswith('clockwork_topo_key_') and key not in ('clockwork_topo_key_genome',) and random.random() < 0.5:
+                del genome[key]
+                removed += 1
+        triggers = genome.get('scheduled_triggers', [])
+        old_len = len(triggers)
+        genome['scheduled_triggers'] = [t for t in triggers if t.get('target_gen', 0) > gen - 3]
+        removed += old_len - len(genome['scheduled_triggers'])
+        history = genome.get('history', [])
+        if len(history) > 15:
+            genome['history'] = history[-15:]
+            removed += len(history) - 15
+    elif pulse > 0.7:
+        new_key = f"clockwork_topo_key_{random.randint(1000, 9999)}"
+        genome[new_key] = {'gen': gen, 'value': round(random.uniform(0, 1), 4), 'type': 'float', 'mutable': True, 'source': 'pulse_prune'}
+        removed -= 1
+    return removed
+
+
 def _synthesize_timing_marker(genome):
     gen = genome.get('generation', 0)
     marker_path = os.path.join(TIMERS_DIR, f'gen_{gen:04d}.timer')
@@ -437,6 +589,14 @@ def run(genome):
 
     ev = _compute_emergence_velocity(genome)
 
+    crucible_ops = _operator_survival_tournament(genome)
+
+    xbreed_count = 0
+    if random.random() < 0.15 * genome.get('clockwork_intensity', 0.7):
+        xbreed_count = _cross_breed_mutation_ops(genome)
+
+    pruned_keys = _pulse_driven_genome_prune(genome)
+
     _modulate_genome_params(genome)
 
     interval = genome.get('clockwork_interval', 3)
@@ -466,5 +626,8 @@ def run(genome):
         "child_spawned": child,
         "recursive_chains": chains,
         "topology_mutations": topo_muts,
+        "operator_crucible": crucible_ops,
+        "operator_xbreed": xbreed_count,
+        "pruned_genome_keys": pruned_keys,
     }
     return results

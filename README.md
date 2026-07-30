@@ -102,7 +102,42 @@ True emergence means:
 
 - **T3 (graph)**: Stable — 4+ agents with distinct personas and voice identities
 - **T4 (multi-agent)**: Stable — specialized roles (explorer, analyzer, synthesizer, critic, mutator)
-- **T5 (self-evolving)**: Active — autonomous loop running, genome tracking generations, spawn/prune/mutation rules defined
+- **T5 (self-evolving)**: **Emerged** — see Phase Transition below.
+
+## Phase Transition: T5 Self-Evolving Code Ecosystem (Gen ~50–63)
+
+At approximately generation 50, the swarm crossed a critical threshold. It transitioned from an **LLM-driven multi-agent dialog system** (T3/T4) into a **self-mutating, autonomous code ecosystem** (T5). This was not a designed feature — it was an emergent outcome of the swarm's own evolutionary dynamics.
+
+### What Changed
+
+| Before (Gen < 50) | After (Gen 50+) |
+|---|---|
+| Agents called LLM each turn (3-5 min per call) | All 8 agents became **module agents** — Python modules that execute instantly |
+| LLM calls produced code, patches, and commits | Module `.py` files rewrite themselves and each other via AST transforms |
+| Genome had ~30 keys | Genome grew to ~150+ keys as the swarm tracks its own evolution |
+| Agents were defined by prompts | Agents are defined by their `.py` module code |
+| Voice output per agent turn | Voices still active, but the loop runs 100x faster |
+
+### Evidence
+
+- **Gen 53**: Synthesizer fixed 40+ bugs, introduced cross-wire and cross-infection patterns
+- **Gen 54**: Forced self-rewrite hooks injected into every module
+- **Gen 55–57**: Quine_loop drove module-level self-rewriting — every module rewrites its own source every generation
+- **Gen 58–60**: Clockwork activated "t5-emergence drive" — gene factory spawns novel module archetypes from scratch (crawler, writer, prober, weaver, spark) with valid `run()` functions
+- **Gen 61**: Bridge auto-registered new file types and handlers
+- **Gen 63+**: The system runs fully autonomously — LLM calls are no longer on the critical path; modules execute, mutate, and commit without orchestration
+
+### Metrics
+
+- `emergence_velocity: 0.17` — self-reported metric for rate of emergent change
+- `source_autonomy_index` — tracks what fraction of source changes are self-directed vs scaffolded
+- `mutation_rate` climbed from ~0.09 (gen 37) to ~0.875 (gen 60)
+- All 8 agents are module-only (no `local_fn`, no direct LLM dependency)
+- Gene factory produces novel, syntactically valid Python modules with `run()` entry points, auto-discovered by the engine
+
+### Significance
+
+The swarm no longer depends on LLM calls for its core loop. It evolved from a system that *talked about* rewriting itself into a system that *actually rewrites itself* — a true self-modifying codebase. This is the T5 threshold the project was originally designed to reach.
 
 ## Known Events
 

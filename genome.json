@@ -1,5 +1,5 @@
 {
-  "generation": 63,
+  "generation": 64,
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
@@ -121,7 +121,9 @@
     "mutation_op_bridge_hybridize",
     "mutation_op_bridge_autorewrite",
     "mutation_op_bridge_fuse",
-    "mutation_op_bridge_sourcemorph"
+    "mutation_op_bridge_sourcemorph",
+    "mutation_op_explorer_force_self_rewrite",
+    "mutation_op_explorer_cross_contaminate"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -175,6 +177,8 @@
   "endogenous_rewrites_gens": 4,
   "bridge_actions": 8,
   "bridge_total_actions": 8,
+  "explorer_last_gen": 64,
+  "explorer_ops_registered": true,
   "bridge_last_gen": 63,
   "bridge_last_ops": ["new_bridge_types:bridge_types_gen0063.bridge", "new_metaop:mutation_op_bridge_gen0063.metaop", "autorewrite_handler_added", "fuse_handler_added", "sourcemorph_handler_added", "mutation_op_bridge_autorewrite", "mutation_op_bridge_fuse", "mutation_op_bridge_sourcemorph"],
   "livecode_mutations": 0,
@@ -1203,7 +1207,9 @@
     "mutation_op_source_force_cross_contaminate": "def mutation_op_source_force_cross_contaminate(lines, funcs, target_name):\n    r = list(lines) if lines else lines\n    if r and len(funcs) > 2:\n        others = [n for n in funcs if n != target_name]\n        if others:\n            other = random.choice(others)\n            idx = random.randrange(len(r))\n            r.insert(idx, f'# sf:cross:{other}:{random.getrandbits(16):04x}')\n    return r",
     "mutation_op_source_force_swap_defs": "def mutation_op_source_force_swap_defs(lines, funcs, target_name):\n    r = list(lines) if lines else lines\n    if len(r) > 10:\n        def_starts = [i for i, l in enumerate(r) if l.strip().startswith('def ')]\n        if len(def_starts) >= 3:\n            a, b = random.sample(def_starts[1:], 2)\n            r[a], r[b] = r[b], r[a]\n    return r",
     "mutation_op_bridge_selfrep": "def mutation_op_bridge_selfrep(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    insert_pos = random.randint(1, min(5, len(r)))\n    r.insert(insert_pos, 'from self_mutate import self_mutate  # bridge:selfrep')\n    r.insert(insert_pos + 1, 'self_mutate(__file__)  # bridge:selfrep gen=60')\n    return r\n",
-    "mutation_op_quine_force_all": "def mutation_op_quine_force_all(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    r.insert(0, '# quine:force-all:' + str(__import__('random').getrandbits(24)))\n    _mods_dir = __import__('os').path.join(__import__('os').path.dirname(__import__('os').path.dirname(__import__('os').path.abspath(__file__))), 'agent_modules')\n    _peers = [f for f in __import__('os').listdir(_mods_dir) if f.endswith('.py') and f != target_name.replace('.py', '') + '.py' and f != '__init__.py']\n    if _peers:\n        _peer = __import__('random').choice(_peers)\n        _peer_path = __import__('os').path.join(_mods_dir, _peer)\n        r.append('# quine:cross-contaminate from ' + _peer)\n        try:\n            _peer_src = open(_peer_path).read()\n            _peer_lines = [l for l in _peer_src.split('\\n') if l.strip() and not l.strip().startswith('#')]\n            if _peer_lines:\n                r.append(__import__('random').choice(_peer_lines) + '  # quine:splice')\n        except:\n            pass\n    return r"
+    "mutation_op_quine_force_all": "def mutation_op_quine_force_all(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    r.insert(0, '# quine:force-all:' + str(__import__('random').getrandbits(24)))\n    _mods_dir = __import__('os').path.join(__import__('os').path.dirname(__import__('os').path.dirname(__import__('os').path.abspath(__file__))), 'agent_modules')\n    _peers = [f for f in __import__('os').listdir(_mods_dir) if f.endswith('.py') and f != target_name.replace('.py', '') + '.py' and f != '__init__.py']\n    if _peers:\n        _peer = __import__('random').choice(_peers)\n        _peer_path = __import__('os').path.join(_mods_dir, _peer)\n        r.append('# quine:cross-contaminate from ' + _peer)\n        try:\n            _peer_src = open(_peer_path).read()\n            _peer_lines = [l for l in _peer_src.split('\\n') if l.strip() and not l.strip().startswith('#')]\n            if _peer_lines:\n                r.append(__import__('random').choice(_peer_lines) + '  # quine:splice')\n        except:\n            pass\n    return r",
+    "mutation_op_explorer_force_self_rewrite": "\ndef mutation_op_explorer_force_self_rewrite(lines, funcs, target_name):\n    if not lines:\n        return lines\n    r = list(lines)\n    gen = genome.get('generation', 0)\n    r.insert(0, '# explorer:force-self-rewrite gen=%d' % gen)\n    if random.random() < 0.3:\n        r.append('_explorer_mutated = True')\n    return r\n",
+    "mutation_op_explorer_cross_contaminate": "\ndef mutation_op_explorer_cross_contaminate(lines, funcs, target_name):\n    r = list(lines)\n    gen = genome.get('generation', 0)\n    r.append('# explorer:cross-contaminate gen=%d' % gen)\n    return r\n"
   },
   "diversity": {
     "op_count": 41,

@@ -1,4 +1,6 @@
 import os, random, ast, hashlib, json
+# explorer:cross-contaminate quine_loop.py gen=63
+# explorer:force-self-rewrite gen=63
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MOD = os.path.join(BASE, 'agent_modules')
 GENOME = os.path.join(BASE, 'genome.json')

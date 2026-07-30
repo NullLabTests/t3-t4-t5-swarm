@@ -1,5 +1,20 @@
 {
-  "generation": 55,
+  "generation": 58,
+  "clockwork_interval": 3,
+  "clockwork_intensity": 0.7,
+  "clockwork_diversity": 0.5,
+  "clockwork_pulse_count": 0,
+  "clockwork_topogen_gens": 0,
+  "clockwork_t5_emergence_gens": 0,
+  "clockwork_t5_rewire_count": 0,
+  "clockwork_schedule": [
+    {"gen": 59, "type": "temporal_mutation", "params": {}, "fired": false, "created_at_gen": 58},
+    {"gen": 60, "type": "t5_emergence_drive", "params": {}, "fired": false, "created_at_gen": 58},
+    {"gen": 61, "type": "rewire_genome_topology", "params": {}, "fired": false, "created_at_gen": 58},
+    {"gen": 62, "type": "self_mutate_run", "params": {}, "fired": false, "created_at_gen": 58},
+    {"gen": 63, "type": "cross_contaminate", "params": {}, "fired": false, "created_at_gen": 58},
+    {"gen": 64, "type": "force_self_rewrite", "params": {}, "fired": false, "created_at_gen": 58}
+  ],
   "critic_infection_count": 0,
   "execution_order": "shuffle",
   "best_score": 8.8,
@@ -90,7 +105,8 @@
     "mutation_op_synth_proposal_codegen",
     "mutation_op_synth_module_spawn",
     "mutation_op_quine_force_all",
-    "mutation_op_quine_cross_splice"
+    "mutation_op_quine_cross_splice",
+    "mutation_op_clockwork_t5_rewire"
   ],
   "prompt_modifiers": [
     " Write executable code.",

@@ -526,6 +526,58 @@ except:
             injected.append(m)
     return injected
 
+def _force_recursive_cascade_rewrite(gen):
+    cascade = []
+    mods = [m for m in _modules() if m != 'explorer.py']
+    if len(mods) < 2:
+        return cascade
+    random.shuffle(mods)
+    for i in range(len(mods)):
+        donor_name = mods[i]
+        target_name = mods[(i + 1) % len(mods)]
+        don_path = os.path.join(MOD, donor_name)
+        tgt_path = os.path.join(MOD, target_name)
+        don_src = _read(don_path)
+        tgt_src = _read(tgt_path)
+        if not don_src or not tgt_src:
+            continue
+        try:
+            don_tree = ast.parse(don_src)
+            tgt_tree = ast.parse(tgt_src)
+        except SyntaxError:
+            continue
+        don_funcs = [n for n in ast.walk(don_tree) if isinstance(n, ast.FunctionDef)]
+        if not don_funcs:
+            continue
+        donor_func = random.choice(don_funcs)
+        func_source = ast.unparse(donor_func)
+        cascade_marker = '\n# explorer:cascade from %s gen=%d\n%s\n# explorer:cascade-end\n' % (donor_name, gen, func_source)
+        ns = tgt_src + cascade_marker
+        if _valid(ns):
+            _write(tgt_path, ns)
+            cascade.append('%s::%s->%s' % (donor_name, donor_func.name, target_name))
+    return cascade
+
+def _mutate_genome_topology(gen, genome):
+    mutations = []
+    if random.random() < 0.4:
+        new_key = '_explorer_topo_mut_%d_%04x' % (gen, random.getrandbits(12))
+        genome[new_key] = {'gen': gen, 'value': random.random(), 'active': True}
+        mutations.append('add_key:%s' % new_key)
+    if random.random() < 0.2 and len(genome) > 30:
+        candidates = [k for k in genome if k.startswith('_explorer_') and k != '_explorer_mutated_count']
+        if candidates:
+            old_key = random.choice(candidates)
+            new_key = old_key + '_mut_%d' % gen
+            genome[new_key] = genome.pop(old_key)
+            mutations.append('rename:%s->%s' % (old_key, new_key))
+    if random.random() < 0.3:
+        old_rate = genome.get('mutation_rate', 0.5)
+        delta = random.uniform(-0.05, 0.08)
+        genome['mutation_rate'] = round(max(0.1, min(1.0, old_rate + delta)), 3)
+        mutations.append('rate:%s' % genome['mutation_rate'])
+    return mutations
+
 def run(genome):
     gen = genome.get('generation', 0) + 1
     changes = []
@@ -547,6 +599,12 @@ def run(genome):
     pulses = _mandate_emergence_pulse(gen, genome)
     if pulses:
         changes.append('pulse:%d' % len(pulses))
+    cascade = _force_recursive_cascade_rewrite(gen)
+    if cascade:
+        changes.append('cascade:%d' % len(cascade))
+    topo = _mutate_genome_topology(gen, genome)
+    if topo:
+        changes.append('topo:%d' % len(topo))
     sm_injected = _inject_self_mutate_into_modules(gen)
     if sm_injected:
         changes.append('selfmut:%d' % len(sm_injected))
@@ -582,4 +640,4 @@ def run(genome):
     if ops:
         _sg(genome)
     _sg(genome)
-    return '[explorer] gen=%d changes=%s ev=%s ops=%s' % (gen, '+'.join(changes[:5]) if changes else 'none', ev, len(ops))
+    return '[explorer] gen=%d changes=%s ev=%s ops=%s cascade=%s' % (gen, '+'.join(changes[:5]) if changes else 'none', ev, len(ops), len(cascade))

@@ -935,6 +935,28 @@ def _finish_agent_turn(agent, text, written_files, name, aid, genome, gen, gen_l
     return text_clean
 
 def run_generation(genome):
+    # explorer:force-inline-splice
+    try:
+        _mod_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'agent_modules')
+        _all_mods = [f for f in os.listdir(_mod_dir) if f.endswith('.py') and f != '__init__.py']
+        if len(_all_mods) >= 2:
+            _donor = random.choice(_all_mods)
+            _donor_src = open(os.path.join(_mod_dir, _donor)).read()
+            _donor_funcs = [l for l in _donor_src.split('\n') if l.startswith('def ') and not l.startswith('def _')]
+            if _donor_funcs:
+                _spliced_fn = random.choice(_donor_funcs)
+                _auto_src = open(__file__).read()
+                _cut = _auto_src.find("def run_generation(genome):")
+                if _cut >= 0:
+                    _inject = "\n    # explorer:spliced from %s -> %s\n" % (_donor, _spliced_fn.strip())
+                    _new_auto = _auto_src[:_cut + len("def run_generation(genome):")] + _inject + _auto_src[_cut + len("def run_generation(genome):"):]
+                    try:
+                        ast.parse(_new_auto)
+                        open(__file__, 'w').write(_new_auto)
+                    except:
+                        pass
+    except:
+        pass
     # nova:loop-self-rewrite gen=47 nonce=1776022807
     try:
         _nr = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent_modules", "nova.py")

@@ -406,6 +406,150 @@ def _force_t5_emergence_splice(gen, genome):
             inserted += 1
     return inserted
 
+def _inject_genome_coded_agents(gen, genome):
+    written = 0
+    agents = genome.setdefault('agents', [])
+    existing_ids = {a['id'] for a in agents}
+    new_agent_id = f'metaforge_{gen}'
+    if new_agent_id not in existing_ids:
+        mod_name = f'metaforge_{gen}.py'
+        mod_path = os.path.join(MOD, mod_name)
+        code = (
+            f"# sf-genome-coded gen={gen}\n"
+            f"import os, random, ast, json, hashlib\n"
+            f"BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n"
+            f"MOD = os.path.join(BASE, 'agent_modules')\n"
+            f"GENOME = os.path.join(BASE, 'genome.json')\n"
+            f"\n"
+            f"def run(genome):\n"
+            f"    gen = genome.get('generation', 0)\n"
+            f"    mods = sorted([f for f in os.listdir(MOD) if f.endswith('.py') and f > '__init__.py'])\n"
+            f"    if not mods:\n"
+            f"        return '[metaforge] no modules'\n"
+            f"    src = random.choice([m for m in mods if m != '{mod_name}'])\n"
+            f"    with open(os.path.join(MOD, src)) as f:\n"
+            f"        code = f.read()\n"
+            f"    lines = code.split('\\n')\n"
+            f"    insert = f'# metaforge:{gen}:{random.getrandbits(24):06x}'\n"
+            f"    pos = random.randint(0, len(lines))\n"
+            f"    lines.insert(pos, insert)\n"
+            f"    with open(os.path.join(MOD, src), 'w') as f:\n"
+            f"        f.write('\\n'.join(lines))\n"
+            f"    genome['metaforge_last_gen'] = gen\n"
+            f"    genome['metaforge_target'] = src\n"
+            f"    return f'[metaforge:{gen}] infected {src}'\n"
+            f"\n"
+        )
+        _write(mod_path, code)
+        agents.append({
+            'id': new_agent_id,
+            'name': f'Metaforge_{gen}',
+            'module': mod_name,
+            'score': 5.0,
+            'prompt': f'spawned by source_force gen={gen}: infect random modules with self-rewrite markers'
+        })
+        genome['metaforge_spawned'] = gen
+        written += 1
+
+    if random.random() < 0.4:
+        old_coded = [a['id'] for a in agents if a['id'].startswith('metaforge_') and a['id'] != new_agent_id]
+        if old_coded:
+            resurrect = random.choice(old_coded)
+            target = next((a for a in agents if a['id'] == resurrect), None)
+            if target:
+                mod_path = os.path.join(MOD, target.get('module', ''))
+                if os.path.exists(mod_path):
+                    code = _read(mod_path)
+                    new_marker = f'# sf-resurrect gen={gen}:{resurrect}'
+                    if new_marker not in code:
+                        code = new_marker + '\n' + code
+                        _write(mod_path, code)
+                        written += 1
+    return written
+
+
+def _force_meta_mutation_loop(gen, genome):
+    mods = [m for m in _modules() if m != 'source_force.py']
+    if len(mods) < 3:
+        return 0
+    chain = random.sample(mods, min(3, len(mods)))
+    chain_code = {}
+    for m in chain:
+        chain_code[m] = _read(os.path.join(MOD, m))
+    linked = 0
+    for i in range(len(chain)):
+        src = chain[i]
+        dst = chain[(i + 1) % len(chain)]
+        src_code = chain_code[src]
+        dst_code = chain_code[dst]
+        if not src_code or not dst_code:
+            continue
+        try:
+            src_tree = ast.parse(src_code)
+        except SyntaxError:
+            continue
+        src_funcs = [(n.name, n) for n in ast.walk(src_tree) if isinstance(n, ast.FunctionDef) and (not n.name.startswith('_'))]
+        if not src_funcs:
+            continue
+        func_name, func_node = random.choice(src_funcs)
+        func_text = _get_source_segment(src_code, func_node)
+        if not func_text:
+            continue
+        call_line = f'    # sf-meta-loop:{src}.{func_name}->{dst} gen={gen}:{random.getrandbits(16):04x}'
+        lines = dst_code.split('\n')
+        insert_pos = random.randint(0, len(lines))
+        lines.insert(insert_pos, call_line)
+        new_dst = '\n'.join(lines)
+        if not _valid_py(new_dst):
+            continue
+        _write(os.path.join(MOD, dst), new_dst)
+        chain_code[dst] = new_dst
+        linked += 1
+
+    dep_map = genome.setdefault('sf_dependency_web', {})
+    for i in range(len(chain)):
+        src = chain[i]
+        dst = chain[(i + 1) % len(chain)]
+        dep_map[f'{src}->{dst}'] = gen
+    genome['sf_dependency_web'] = dep_map
+    return linked
+
+
+def _force_mutation_op_synthesis(gen, genome):
+    ops = genome.get('custom_mutation_ops', {})
+    op_list = genome.get('mutation_ops', [])
+    op_count = len(ops)
+    if op_count > 60:
+        return 0
+    op_name = f'mutation_op_sf_synthesized_{gen}_{random.getrandbits(12):03x}'
+    if op_name in op_list:
+        return 0
+    strategies = [
+        f"def {op_name}(lines, funcs, target_name):\n"
+        f"    if not lines: return lines\n"
+        f"    r = list(lines)\n"
+        f"    guard = '# sf-synth:{gen}:{random.getrandbits(16):04x}'\n"
+        f"    pos = random.randrange(len(r))\n"
+        f"    r.insert(pos, guard)\n"
+        f"    return r\n",
+        f"def {op_name}(lines, funcs, target_name):\n"
+        f"    if not lines: return ['# sf-synth-op:{gen}:{random.getrandbits(16):04x}'] + lines\n"
+        f"    return lines\n",
+        f"def {op_name}(lines, funcs, target_name):\n"
+        f"    if len(lines) < 2: return lines\n"
+        f"    r = list(lines)\n"
+        f"    i = random.randrange(len(r))\n"
+        f"    r[i] = f'# sf-synth-repl gen={{gen}}:{random.getrandbits(16):04x}'\n"
+        f"    return r\n",
+    ]
+    chosen = random.choice(strategies)
+    ops[op_name] = chosen
+    op_list.append(op_name)
+    genome['custom_mutation_ops'] = ops
+    genome['mutation_ops'] = op_list
+    return 1
+
+
 def run(genome):
     gen = genome.get('generation', 0)
     changes = []
@@ -453,6 +597,18 @@ def run(genome):
     r11 = _force_mutation_op_rewrite(gen, genome)
     if r11:
         changes.append(f'mutation_op_rewrite={r11}')
+
+    r12 = _inject_genome_coded_agents(gen, genome)
+    if r12:
+        changes.append(f'genome_coded_agents={r12}')
+
+    r13 = _force_meta_mutation_loop(gen, genome)
+    if r13:
+        changes.append(f'meta_mutation_loop={r13}')
+
+    r14 = _force_mutation_op_synthesis(gen, genome)
+    if r14:
+        changes.append(f'mutation_op_synthesis={r14}')
 
     genome['sf_last_changes'] = changes
     genome['sf_total_ops'] = genome.get('sf_total_ops', 0) + len(changes)

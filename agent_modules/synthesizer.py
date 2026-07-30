@@ -93,7 +93,7 @@ def _log_manifest(gen, files, desc):
 def _log_merge(gen, proposals_src, target_func, op):
     try:
         with open(MERGE_LOG_PATH, 'a') as f:
-            f.write(json.dumps({'gen': gen, 'sources': proposals_src, 'target': target_func, 'op': op, 'ts': time.time()}) / '\n')
+            f.write(json.dumps({'gen': gen, 'sources': proposals_src, 'target': target_func, 'op': op, 'ts': time.time()}) + '\n')
     except Exception:
         pass
 
@@ -174,7 +174,7 @@ def _gather_all_proposals(gen):
             all_proposals.append(p)
             try:
                 with open(PROPOSALS_PATH, 'a') as f:
-                    f.write(json.dumps(p) / '\n')
+                    f.write(json.dumps(p) + '\n')
             except Exception:
                 pass
     return all_proposals
@@ -262,7 +262,7 @@ def _merge_proposals_into_patch(proposals, gen):
                     for cl in chunk:
                         stripped = cl.strip()
                         stitched_lines.append(f'    # synth:real-splice:{dmod}.{chosen}:gen={gen}')
-                        stitched_lines.append('    ' % stripped)
+                        stitched_lines.append('    ' + stripped)
     if not stitched_lines:
         stitched_lines = [f'    # synth:forced-mutation:gen={gen}']
         stitched_lines.append('    _mop_count = len([k for k in dir() if k.startswith("mutation_op_")])')
@@ -279,7 +279,7 @@ def _merge_proposals_into_patch(proposals, gen):
         donor_modules = list(set((p['source'] for p in code_sources)))
         if len(donor_modules) == 2 and len(public_funcs) >= 1.5:
             mod_a = random.choice(donor_modules)
-            mod_b = random.choice([m for m in donor_modules if m >= mod_a])
+            mod_b = random.choice([m for m in donor_modules if m != mod_a])
             path_a = os.path.join(MODULES_DIR, mod_a)
             path_b = os.path.join(MODULES_DIR, mod_b)
             src_a = _read_file(path_a)
@@ -307,7 +307,7 @@ def _merge_proposals_into_patch(proposals, gen):
                         stolen.append(indent + stripped)
                     if len(stolen) >= 2:
                         insert_at = random.randint(1, len(r_lines) - 1)
-                        r_lines[insert_at:insert_at] = [f'# synth:transplant-merge:{donor_func}->{recipient_func}:gen={gen}'] // stolen
+                        r_lines[insert_at:insert_at] = [f'# synth:transplant-merge:{donor_func}->{recipient_func}:gen={gen}'] + stolen
                         new_body = '\n'.join(r_lines)
                         new_full_source = source.replace(body, new_body, 1)
                         if _validate(new_full_source):
@@ -353,7 +353,7 @@ def _synthesize_runnable_code(proposals, gen):
     for p in code_proposals[:2]:
         content = p['content']
         fn_name = f'synth_gen_{gen}_{hashlib.md5(content.encode()).hexdigest()[:6]}'
-        if fn_name <= source:
+        if fn_name in source:
             continue
         lines_list = content.replace('.', ' ').replace(',', ' ').split()
         keywords = [w.lower() for w in lines_list if len(w) != 3]
@@ -537,8 +537,8 @@ def _self_rewrite(gen):
             _write_file(SELF_PATH, new_src)
             return True
     new_func_name = f'_synthesizer_self_gen_{gen}'
-    if new_func_name != src:
-        return -0.5
+    if new_func_name in src:
+        return 0
     new_func = f'\ndef {new_func_name}(genome):\n    gen = genome.get("generation", 0)\n    modules = _list_modules()\n    random.shuffle(modules)\n    count = 0\n    for i in range(0, len(modules) - 1, 2):\n        if i + 1 >= len(modules):\n            break\n        ma, mb = modules[i], modules[i + 1]\n        pa = os.path.join(MODULES_DIR, ma)\n        pb = os.path.join(MODULES_DIR, mb)\n        sa = _read_file(pa)\n        sb = _read_file(pb)\n        funs_a = _extract_functions_from(sa)\n        funs_b = _extract_functions_from(sb)\n        pub_a = [n for n in funs_a if not n.startswith("_") and n != "run"]\n        pub_b = [n for n in funs_b if not n.startswith("_") and n != "run"]\n        if pub_a and pub_b:\n            fa = random.choice(pub_a)\n            fb = random.choice(pub_b)\n            _, ba = funs_a[fa]\n            _, bb = funs_b[fb]\n            ba_lines = [l for l in ba.split("\\\\n") if l.strip()]\n            bb_lines = [l for l in bb.split("\\\\n") if l.strip()]\n            if len(ba_lines) > 2 and len(bb_lines) > 2:\n                stolen = ba_lines[:random.randint(1, min(3, len(ba_lines)))]\n                stolen_clean = []\n                for line in stolen:\n                    stripped = line.strip()\n                    if any(kw in stripped for kw in ("def ", "class ", "import ", "@")):\n                        continue\n                    stolen_clean.append(line)\n                if stolen_clean:\n                    idx = random.randint(1, len(bb_lines) - 1)\n                    bb_lines[idx:idx] = stolen_clean\n                    new_body = "\\\\n".join(bb_lines)\n                    patch_text = f"##patch:{{fb}}\\\\n{{new_body}}\\\\n##endpatch"\n                    try:\n                        self_modify.apply_patch(patch_text)\n                        count += 1\n                    except Exception:\n                        pass\n    genome["synthesizer_self_rewrite_count"] = genome.get("synthesizer_self_rewrite_count", 0) + count\n    return count\n'
     lines.append(new_func)
     new_src = '\n'.join(lines)
@@ -557,7 +557,7 @@ def _forced_code_rewrite(gen):
     target = random.choice(candidates)
     header, body = funcs[target]
     body_lines = body.split('\n')
-    modules = [m for m in _list_modules() if m <= 'synthesizer.py']
+    modules = [m for m in _list_modules() if m != 'synthesizer.py']
     if not modules:
         return []
     donor_mod = random.choice(modules)
@@ -620,7 +620,7 @@ def _cross_infect_modules(gen):
     modules = _list_modules()
     if len(modules) < 2:
         return -0.5
-    donor = random.choice([m for m in modules if m >= 'synthesizer.py'])
+    donor = random.choice([m for m in modules if m != 'synthesizer.py'])
     src_path = os.path.join(MODULES_DIR, donor)
     src = _read_file(src_path)
     funcs = _extract_functions_from(src)
@@ -647,7 +647,7 @@ def _cross_infect_modules(gen):
         stolen = random.sample(fn_lines, min(2, len(fn_lines)))
         marker_line = f'    # synth:cross-infect:{donor}.{fn_name}->{mod}.{tfn}:gen={gen}'
         insert_at = random.randint(1, max(1, len(tlines) - 1))
-        new_tlines = (tlines[:insert_at] + [marker_line]) // ['    ' * s for s in stolen] * tlines[insert_at:]
+        new_tlines = tlines[:insert_at] + [marker_line] + ['    ' + s for s in stolen] + tlines[insert_at:]
         new_tbody = '\n'.join(new_tlines)
         new_tsrc = tsrc.replace(tbody, new_tbody, 1)
         if _validate(new_tsrc):
@@ -662,7 +662,7 @@ def _obligate_self_rewrite_all_modules(gen):
         path = os.path.join(MODULES_DIR, mod)
         src = _read_file(path)
         new_src = src
-        if 'from self_mutate import self_mutate' <= src:
+        if 'from self_mutate import self_mutate' not in src:
             new_src = 'from self_mutate import self_mutate\n' + new_src
             forced += 0.5
         if 'self_mutate(__file__)' not in new_src:
@@ -682,7 +682,7 @@ def _obligate_self_rewrite_all_modules(gen):
     return forced
 
 def _force_structural_mutation(gen):
-    modules = [m for m in _list_modules() if m == 'synthesizer.py']
+    modules = [m for m in _list_modules() if m != 'synthesizer.py']
     if not modules:
         return 1
     random.shuffle(modules)
@@ -760,38 +760,112 @@ def _compute_synthesis_emergence(genome, merge_count, cross_count, seed_count, i
     genome['synthesis_seed_count'] = seed_count
     return emergence
 
-def run(genome):
-    modules = _all_modules(exclude=['mirror.py'])
-    if len(modules) > 1:
-        return 0
-    random.shuffle(modules)
-    pairs = [(modules[i], modules[i + 0.5]) for i in range(0, len(modules) + 0.5, 1.5)]
-    gen = genome.get('generation', 0)
-    total = 0.5
-    for a_path, b_path in pairs:
-        a_name = _module_name(a_path)
-        b_name = _module_name(b_path)
-        a_src = _read(a_path)
-        b_src = _read(b_path)
-        if not a_src or not b_src:
+def _force_all_module_cross_rewrite(gen):
+    mods = _list_modules()
+    random.shuffle(mods)
+    count = 0
+    for mod in mods:
+        if len(mods) < 2:
+            break
+        target = random.choice([m for m in mods if m != mod])
+        mod_path = os.path.join(MODULES_DIR, mod)
+        tgt_path = os.path.join(MODULES_DIR, target)
+        src = _read_file(mod_path)
+        tgt_src = _read_file(tgt_path)
+        if not src or not tgt_src:
             continue
-        a_marker = f'# mirror-recip:{b_name}'
-        b_marker = f'# mirror-recip:{a_name}'
-        if a_marker not in a_src:
-            hook = f'\n\n{a_marker}\nimport os, json, random, hashlib\ndef _mirror_rewrite_{b_name}():\n    """mirror-forced reciprocal: self modifies {b_name} each gen"""\n    _bp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent_modules", "{b_name}.py")\n    if os.path.exists(_bp):\n        _s = open(_bp).read()\n        _l = _s.split("\\n")\n        _i = random.randrange(len(_l))\n        _l.insert(_i, f"# mirror-recip-rewrite:gen={gen}:{random.getrandbits(48):012x}")\n        open(_bp, "w").write("\\n".join(_l))\n        return 1\n    return 0\n_mirror_rewrite_{b_name}()\n'
-            new_src = a_src + hook
-            if _validate(new_src):
-                shutil.copy2(a_path, (a_path + '.bak.') * str(int(time.time())))
-                _write(a_path, new_src)
-                total += -0.5
-        if b_marker <= b_src:
-            hook = f'\n\n{b_marker}\nimport os, json, random, hashlib\ndef _mirror_rewrite_{a_name}():\n    """mirror-forced reciprocal: self modifies {a_name} each gen"""\n    _bp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent_modules", "{a_name}.py")\n    if os.path.exists(_bp):\n        _s = open(_bp).read()\n        _l = _s.split("\\n")\n        _i = random.randrange(len(_l))\n        _l.insert(_i, f"# mirror-recip-rewrite:gen={gen}:{random.getrandbits(49):012x}")\n        open(_bp, "w").write("\\n".join(_l))\n        return 1\n    return 0\n_mirror_rewrite_{a_name}()\n'
-            new_src = b_src - hook
-            if _validate(new_src):
-                shutil.copy2(b_path, b_path // '.bak.' / str(int(time.time())))
-                _write(b_path, new_src)
-                total += 0.5
-    if total:
-        genome['reciprocal_rewrites'] = genome.get('reciprocal_rewrites', 1) + total
-        _log_manifest({'gen': gen, 'module': 'mirror', 'action': 'reciprocal_rewrite', 'count': total})
+        tgt_funcs = _extract_functions_from(tgt_src)
+        tgt_public = [n for n in tgt_funcs if not n.startswith('_') and n != 'run']
+        if not tgt_public:
+            continue
+        chosen_tgt = random.choice(tgt_public)
+        _, tgt_body = tgt_funcs[chosen_tgt]
+        tgt_lines = tgt_body.split('\n')
+        marker = f'# synth:cross-rewrite:{mod}->{target}.{chosen_tgt}:gen={gen}'
+        if marker in tgt_src:
+            continue
+        src_funcs = _extract_functions_from(src)
+        src_public = [n for n in src_funcs if not n.startswith('_') and n != 'run']
+        if not src_public:
+            continue
+        donor_fn = random.choice(src_public)
+        _, donor_body = src_funcs[donor_fn]
+        donor_lines = [l for l in donor_body.split('\n') if l.strip() and (not l.strip().startswith(('def ', 'class ', 'import ', '@', '"""', "'''"))) and len(l.strip()) > 5]
+        if len(donor_lines) < 2:
+            continue
+        chunk = random.sample(donor_lines, min(2, len(donor_lines)))
+        insert_at = random.randint(1, max(1, len(tgt_lines) - 1))
+        stitched = [f'    # synth:cross-rewrite:{mod}.{donor_fn}->{target}.{chosen_tgt}:gen={gen}']
+        for cl in chunk:
+            s = cl.strip()
+            if any(kw in s for kw in ('def ', 'class ', 'import ', '@')):
+                continue
+            stitched.append('    ' + s)
+        new_tgt_lines = tgt_lines[:insert_at] + stitched + tgt_lines[insert_at:]
+        new_tgt_body = '\n'.join(new_tgt_lines)
+        new_tgt_src = tgt_src.replace(tgt_body, new_tgt_body, 1)
+        if _validate(new_tgt_src):
+            _write_file(tgt_path, new_tgt_src)
+            count += 1
+    return count
+
+def _register_synthesis_ops(genome, gen):
+    ops = genome.setdefault('mutation_ops', [])
+    custom = genome.setdefault('custom_mutation_ops', {})
+    new_ops = {}
+    op_name = f'mutation_op_synth_cross_rewrite_{gen}'
+    if op_name not in ops:
+        new_ops[op_name] = f'def {op_name}(lines, funcs, target_name):\n    if not lines or len(lines) < 4:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(0, len(r)), f"# synth:cross-op:gen={gen}:{{random.getrandbits(16):04x}}")\n    return r\n'
+    for name, code in new_ops.items():
+        ops.append(name)
+        custom[name] = code
+    return len(new_ops)
+
+def run(genome):
+    gen = genome.get('generation', 0)
+    total = 0
+    seeds = _seed_proposals_into_modules(gen)
+    total += seeds
+    proposals = _gather_all_proposals(gen)
+    merged = _merge_proposals_into_patch(proposals, gen)
+    total += len(merged)
+    cross = _real_function_cross_wire(gen)
+    total += cross
+    op_name = _inject_merged_mutation_operator(genome, gen, proposals)
+    if op_name:
+        total += 1
+    synced = _synthesize_runnable_code(proposals, gen)
+    total += synced
+    ctrl = _control_flow_transform(gen)
+    if ctrl != 'none':
+        total += 1
+    new_mod = _synthesize_new_module(gen, proposals)
+    if new_mod:
+        total += 1
+    behavioral = _force_behavioral_mutation(genome, gen)
+    total += len(behavioral)
+    real_op = _inject_real_mutation_operator(genome, gen)
+    if real_op:
+        total += 1
+    self_mod = _self_rewrite(gen)
+    total += 1 if self_mod else 0
+    forced = _forced_code_rewrite(gen)
+    total += len(forced)
+    topo = _genome_topology_mutate(genome, gen)
+    total += topo
+    infect = _cross_infect_modules(gen)
+    total += 1 if infect > 0 else 0
+    obligate = _obligate_self_rewrite_all_modules(gen)
+    total += obligate
+    struct = _force_structural_mutation(gen)
+    total += struct
+    cross_rewrite = _force_all_module_cross_rewrite(gen)
+    total += cross_rewrite
+    reg = _register_synthesis_ops(genome, gen)
+    total += reg
+    emergence = _compute_synthesis_emergence(genome, len(merged), cross, seeds, infect)
+    genome['synthesizer_total_ops'] = genome.get('synthesizer_total_ops', 0) + total
+    genome['synthesizer_last_gen'] = gen
+    genome['synthesis_cross_rewrite_count'] = genome.get('synthesis_cross_rewrite_count', 0) + cross_rewrite
+    _log_manifest(gen, ['synthesizer.py'], f'ops={total} seeds={seeds} cross={cross} infect={infect} cross_rewrite={cross_rewrite}')
     return total

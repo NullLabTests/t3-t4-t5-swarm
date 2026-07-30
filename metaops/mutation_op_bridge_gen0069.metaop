@@ -1,0 +1,37 @@
+@_register_mutation_op('mutation_op_bridge_selfmorph_inject')
+def mutation_op_bridge_selfmorph_inject(lines, funcs, target_name):
+    if not lines or len(lines) < 3:
+        return lines
+    r = list(lines)
+    gen = int(__import__('time').time())
+    r.insert(0, f'# bridge:selfmorph:metaop gen={gen}')
+    r.insert(1, f'if not hasattr({target_name}, "_selfmorphed"):')
+    r.insert(2, f'    {target_name}._selfmorphed = True')
+    r.insert(3, f'    try:')
+    r.insert(4, f'        with open(__file__) as _smf: _sms = _smf.read()')
+    r.insert(5, f'        _sml = _sms.split("\\n")')
+    r.insert(6, f'        if len(_sml) > 3:')
+    r.insert(7, f'            _smi = __import__("random").randint(1, len(_sml)-1)')
+    r.insert(8, f'            _sml.insert(_smi, f"# bridge:selfmorph:gen={gen}:" + hex(__import__("random").getrandbits(32)))')
+    r.insert(9, f'            with open(__file__, "w") as _smf: _smf.write("\\n".join(_sml))')
+    r.insert(10, f'    except Exception: pass')
+    return r
+
+@_register_mutation_op('mutation_op_bridge_chain_cross')
+def mutation_op_bridge_chain_cross(lines, funcs, target_name):
+    if not lines or len(lines) < 3:
+        return lines
+    r = list(lines)
+    gen_mark = int(__import__('time').time())
+    r.append(f'# bridge:chain-cross metaop gen={gen_mark}')
+    r.append(f'if "__file__" in dir() and __import__("os").path.exists(__file__):')
+    r.append(f'    try:')
+    r.append(f'        import re as _bcr')
+    r.append(f'        with open(__file__) as _bf: _bs = _bf.read()')
+    r.append(f'        _bfuncs = _bcr.findall(r"^def (\\w+)\\(", _bs, _bcr.MULTILINE)')
+    r.append(f'        if len(_bfuncs) > 2:')
+    r.append(f'            _bdonor = __import__("random").choice([f for f in _bfuncs if f != "run" and not f.startswith("_")])')
+    r.append(f'            _bs += f"\\n# bridge:chain-cross gen={gen_mark} from {_bdonor}\\n"')
+    r.append(f'            with open(__file__, "w") as _bf: _bf.write(_bs)')
+    r.append(f'    except Exception: pass')
+    return r

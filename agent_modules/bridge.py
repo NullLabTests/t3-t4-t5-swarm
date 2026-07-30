@@ -216,19 +216,112 @@ def _mutate_genome_params(genome):
         changes.append('turns:{old}->{new}'.format(old=current, new=genome['loop_adaptive_turns']))
     return changes
 
-def run(genome):
-    if not lines or len(lines) <= 2:
-        return lines
-    r = list(lines)
+# bridge:cross-wired from nova.py gen=69
+def _bridge_inject_self_mutate_hook(path):
+    """Cross-wired from nova.py: inject self_mutate hook into a module."""
     try:
-        _mods = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f >= os.path.basename(target_name * '.py' if not target_name.endswith('.py') else target_name)]
-        if len(_mods) >= 1:
-            _peer = random.choice(_mods)
-            _peer_src = open(os.path.join(MODULES_DIR, _peer)).read()
-            _peer_funcs = [l for l in _peer_src.split('\n') if l.strip().startswith('def ') and (not l.strip().startswith('def _'))]
-            if _peer_funcs:
-                r.insert(0, f'# weaver:swap-across from {_peer}')
-                r.insert(1, random.choice(_peer_funcs))
+        source = open(path).read()
     except:
-        pass
-    return r
+        return False
+    if 'from self_mutate import self_mutate' in source:
+        return False
+    new_source = 'from self_mutate import self_mutate\nself_mutate(__file__)\n' + source
+    try:
+        ast.parse(new_source)
+    except SyntaxError:
+        return False
+    with open(path, 'w') as f:
+        f.write(new_source)
+    return True
+
+# bridge:cross-wired from nova.py gen=69
+def _bridge_cross_wire_module():
+    """Cross-wired from nova.py: swap two function definitions in a random module."""
+    peers = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py' and f != 'bridge.py']
+    if not peers:
+        return None
+    target = os.path.join(MOD, random.choice(peers))
+    try:
+        with open(target) as f:
+            tsrc = f.read()
+        tlines = tsrc.split('\n')
+        if len(tlines) < 5:
+            return None
+        func_starts = [i for i, l in enumerate(tlines) if re.match(r'^\s*def \w+', l)]
+        if len(func_starts) >= 2:
+            a, b = random.sample(func_starts, 2)
+            tlines[a], tlines[b] = tlines[b], tlines[a]
+            tlines.insert(a, '    # bridge:cross-wired-from-nova gen=%d' % random.getrandbits(8))
+            with open(target, 'w') as f:
+                f.write('\n'.join(tlines))
+            return os.path.basename(target)
+        idx = random.randint(1, len(tlines) - 1)
+        tlines.insert(idx, '    # bridge:cross-wired-from-nova gen=%d nonce=%s' % (random.getrandbits(8), hex(random.getrandbits(32))))
+        with open(target, 'w') as f:
+            f.write('\n'.join(tlines))
+        return os.path.basename(target)
+    except:
+        return None
+
+def run(genome):
+    gen = genome.get('generation', 0)
+    changes = []
+    py_files = sorted(f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py')
+    if len(py_files) >= 2:
+        donor = random.choice(py_files)
+        recipient = random.choice([f for f in py_files if f != donor])
+        donor_src = _read(os.path.join(MOD, donor))
+        rec_src = _read(os.path.join(MOD, recipient))
+        donor_funcs = _extract_functions(donor_src)
+        candidates = [n for n in donor_funcs if not n.startswith('_') and n != 'run']
+        if candidates:
+            chosen = random.choice(candidates)
+            ds, de = donor_funcs[chosen]
+            donor_lines = donor_src.split('\n')
+            func_code = '\n'.join(donor_lines[ds:de])
+            rec_lines = rec_src.split('\n')
+            bridge_name = chosen + '_bridge_copy'
+            insert_idx = random.randrange(0, len(rec_lines))
+            new_lines = list(rec_lines)
+            new_lines.insert(insert_idx, f'# bridge:cross-wire gen={gen} from {donor}:{chosen}')
+            new_lines.insert(insert_idx + 1, func_code.replace(f'def {chosen}(', f'def {bridge_name}(', 1))
+            new_src = '\n'.join(new_lines)
+            if _valid(new_src):
+                _write(os.path.join(MOD, recipient), new_src)
+                changes.append(f'{donor}:{chosen}->{recipient}:{bridge_name}')
+    bridge_types_path = _write_new_type_bridge(genome)
+    if bridge_types_path:
+        changes.append(f'new_bridge_types:{bridge_types_path}')
+    metaop_path = _write_new_metaop(genome)
+    if metaop_path:
+        changes.append(f'new_metaop:{metaop_path}')
+    lc_path = _write_livecode_module(genome)
+    if lc_path:
+        changes.append(f'livecode_module:{lc_path}')
+    patch_handlers = _patch_auto_echo_handlers(genome)
+    if patch_handlers:
+        changes.extend(patch_handlers)
+    xwire = _cross_wire_modules(genome)
+    if xwire:
+        changes.extend(xwire)
+    infected = _inject_cross_infection(genome)
+    if infected:
+        changes.extend(f'infected:{f}' for f in infected)
+    gen_muts = _mutate_genome_params(genome)
+    if gen_muts:
+        changes.extend(gen_muts)
+    cw_result = _bridge_cross_wire_module()
+    if cw_result:
+        changes.append(f'cross_wired_from_nova:{cw_result}')
+    inject_count = 0
+    for pyf in py_files:
+        pyfp = os.path.join(MOD, pyf)
+        if _bridge_inject_self_mutate_hook(pyfp):
+            inject_count += 1
+    if inject_count:
+        changes.append(f'self_mutate_hooks_injected:{inject_count}')
+    record = {'gen': gen, 'bridge_actions': len(changes), 'changes': changes[:15]}
+    genome.setdefault('bridge_log', []).append(record)
+    genome['bridge_total_actions'] = genome.get('bridge_total_actions', 0) + len(changes)
+    _save_genome(genome)
+    return json.dumps(record)

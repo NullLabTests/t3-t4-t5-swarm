@@ -1,0 +1,6 @@
+{
+".selfmorph": {"handler": "_bridge_handler_selfmorph", "description": "Self-morph: inject self-rewriting into every module run() function via AST envelope wrapping"},
+".chainrewrite": {"handler": "_bridge_handler_chainrewrite", "description": "Chain rewrite: creates new module that cross-calls functions from peer modules in sequence"},
+".selfsrc": {"handler": "bridge", "description": "Force source-level self-rewriting: injects self-mutation markers into target modules"},
+".codeweaver": {"handler": "bridge", "description": "Cross-weave code between 3+ modules: creates hybrid functions from multiple donor modules"}
+}

@@ -2343,6 +2343,126 @@ def _bridge_handler_sourcemorph(abs_path, genome):
 
 register_bridge_type('.sourcemorph', _bridge_handler_sourcemorph, 'Sourcemorph: rename variables/functions in a module via AST transformation')
 
+def _bridge_handler_selfmorph(abs_path, genome):
+    """Force every module's run() function to self-mutate via AST injection.
+    Wraps each module's run() in a self-modification envelope so every
+    execution also mutates the module's own source code.
+    .selfmorph file can target specific modules or be empty (targets all)."""
+    try:
+        with open(abs_path) as f:
+            content = f.read().strip()
+    except:
+        return False
+    MOD = os.path.join(BASE, 'agent_modules')
+    targets = []
+    if content:
+        target_mods = [l.strip() for l in content.split('\n') if l.strip().endswith('.py')]
+        for t in target_mods:
+            tp = os.path.join(MOD, t)
+            if os.path.exists(tp):
+                targets.append(tp)
+    if not targets:
+        targets = [os.path.join(MOD, f) for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py']
+    gen = genome.get('generation', 0)
+    morphed = 0
+    for target_path in targets:
+        try:
+            src = open(target_path).read()
+        except:
+            continue
+        tree = ast.parse(src)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef) and node.name == 'run':
+                self_morph_code = ast.parse(
+                    "    # bridge:selfmorph gen={gen}\n"
+                    "    try:\n"
+                    "        _sm_self = __file__\n"
+                    "        with open(_sm_self) as _sm_f:\n"
+                    "            _sm_src = _sm_f.read()\n"
+                    "        _sm_lines = _sm_src.split('\\n')\n"
+                    "        if len(_sm_lines) > 4:\n"
+                    "            _sm_idx = random.randint(1, len(_sm_lines) - 1)\n"
+                    "            _sm_lines.insert(_sm_idx, f'# selfmorph:gen={gen}:' + hex(random.getrandbits(32)))\n"
+                    "            _sm_new = '\\n'.join(_sm_lines)\n"
+                    "            ast.parse(_sm_new)\n"
+                    "            with open(_sm_self, 'w') as _sm_f:\n"
+                    "                _sm_f.write(_sm_new)\n"
+                    "    except Exception:\n"
+                    "        pass\n".format(gen=gen)
+                ).body
+                node.body = self_morph_code + node.body
+        try:
+            ast.fix_missing_locations(tree)
+            new_src = ast.unparse(tree)
+            if new_src != src:
+                with open(target_path, 'w') as f:
+                    f.write(new_src)
+                morphed += 1
+        except:
+            pass
+    if morphed:
+        genome['selfmorph_count'] = genome.get('selfmorph_count', 0) + morphed
+        genome['selfmorph_gen'] = gen
+        save_genome(genome)
+        print(f'[bridge-selfmorph] morphed {morphed} modules at gen={gen}')
+        return True
+    return False
+
+def _bridge_handler_chainrewrite(abs_path, genome):
+    """Chain rewrite across modules: reads a random function from each module
+    and writes a NEW module that calls all of them in sequence.
+    .chainrewrite file can contain JSON config or be empty (auto-picks).
+    Creates a linked self-modification chain across generations."""
+    try:
+        with open(abs_path) as f:
+            content = f.read().strip()
+    except:
+        return False
+    MOD = os.path.join(BASE, 'agent_modules')
+    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py']
+    if len(py_files) < 2:
+        return False
+    config = {}
+    if content.startswith('{'):
+        try:
+            config = json.loads(content)
+        except:
+            pass
+    gen = genome.get('generation', 0)
+    chain_size = config.get('chain_size', min(3, len(py_files)))
+    sources = random.sample(py_files, min(chain_size, len(py_files)))
+    chain_name = f'chain_rewrite_gen{gen}_{random.getrandbits(16):04x}'
+    chain_code = f'"""Auto-generated chain rewrite module gen={gen}.\nCalls functions in sequence: {",".join(sources)}"""\nimport os, random, json, ast\n\nBASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\nMOD = os.path.join(BASE, "agent_modules")\nGENOME_FILE = os.path.join(BASE, "genome.json")\n\ndef run(genome):\n    gen = genome.get("generation", 0)\n    results = []\n'
+    for src_mod in sources:
+        src_path = os.path.join(MOD, src_mod)
+        try:
+            mod_src = open(src_path).read()
+        except:
+            continue
+        mod_funcs = re.findall(r'^def (\w+)\(', mod_src, re.MULTILINE)
+        avail = [f for f in mod_funcs if not f.startswith('_') and f != 'run']
+        if not avail:
+            continue
+        fn = random.choice(avail)
+        chain_code += f'    try:\n        import importlib.util as _cu\n        _cs = importlib.util.spec_from_file_location("{src_mod.replace(".py","")}", r"{src_path}")\n        if _cs and _cs.loader:\n            _cm = importlib.util.module_from_spec(_cs)\n            _cs.loader.exec_module(_cm)\n            if hasattr(_cm, "{fn}"):\n                r = _cm.{fn}(genome)\n                results.append(r)\n    except Exception as e:\n        results.append(str(e))\n'
+    chain_code += '    genome["chain_rewrite_count"] = genome.get("chain_rewrite_count", 0) + 1\n    genome["chain_rewrite_last"] = "' + chain_name + '"\n    save_genome(genome)\n    return {"sources": ' + str(sources) + ', "results": results}\n'
+    chain_path = os.path.join(MOD, chain_name + '.py')
+    try:
+        ast.parse(chain_code)
+        with open(chain_path, 'w') as f:
+            f.write(chain_code)
+        genome.setdefault('chain_rewrite_modules', []).append(chain_name + '.py')
+        genome['chain_rewrite_count'] = genome.get('chain_rewrite_count', 0) + 1
+        save_genome(genome)
+        print(f'[bridge-chainrewrite] created {chain_name}.py from {sources}')
+        return True
+    except SyntaxError as e:
+        print(f'[bridge-chainrewrite] syntax error: {e}')
+        return False
+
+register_bridge_type('.selfmorph', _bridge_handler_selfmorph, 'Self-morph: inject self-rewriting into every module run() function')
+register_bridge_type('.chainrewrite', _bridge_handler_chainrewrite, 'Chain rewrite: creates new module that cross-calls functions from peers')
+
 def _register_mutation_op(name):
 
     def decorator(f):

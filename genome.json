@@ -1,5 +1,5 @@
 {
-  "generation": 60,
+  "generation": 61,
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
@@ -115,7 +115,8 @@
     "mutation_op_quine_cross_splice",
     "mutation_op_clockwork_t5_rewire",
     "mutation_op_clockwork_t5_force_all",
-    "mutation_op_gene_factory_spawn"
+    "mutation_op_gene_factory_spawn",
+    "mutation_op_bridge_selfrep"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -169,7 +170,7 @@
   "endogenous_rewrites_gens": 4,
   "bridge_actions": 0,
   "bridge_total_actions": 0,
-  "bridge_last_gen": 44,
+  "bridge_last_gen": 61,
   "bridge_last_ops": [],
   "livecode_mutations": 0,
   "spark_scaffold_killed": true,
@@ -218,6 +219,14 @@
     ".autoload": {
       "handler": "bridge",
       "description": "Auto-load a .py file from agent_modules as a live bridge handler"
+    },
+    ".selfrep": {
+      "handler": "bridge",
+      "description": "Self-replicate: inject self_mutate(__file__) call into target module"
+    },
+    ".rewrite": {
+      "handler": "bridge",
+      "description": "Rewrite a target module: replace a random function body with bridge-injected logic"
     }
   },
   "spawn_pool": [
@@ -1162,6 +1171,7 @@
     "mutation_op_source_force_ast_rename": "def mutation_op_source_force_ast_rename(lines, funcs, target_name):\n    r = list(lines) if lines else lines\n    if len(r) > 5:\n        idx = random.randrange(1, len(r))\n        r[idx] = re.sub(r'\\b(v|tmp|x|val|acc|buf)\\b', lambda m: random.choice(['data','res','out','ptr','cur']), r[idx])\n    return r",
     "mutation_op_source_force_cross_contaminate": "def mutation_op_source_force_cross_contaminate(lines, funcs, target_name):\n    r = list(lines) if lines else lines\n    if r and len(funcs) > 2:\n        others = [n for n in funcs if n != target_name]\n        if others:\n            other = random.choice(others)\n            idx = random.randrange(len(r))\n            r.insert(idx, f'# sf:cross:{other}:{random.getrandbits(16):04x}')\n    return r",
     "mutation_op_source_force_swap_defs": "def mutation_op_source_force_swap_defs(lines, funcs, target_name):\n    r = list(lines) if lines else lines\n    if len(r) > 10:\n        def_starts = [i for i, l in enumerate(r) if l.strip().startswith('def ')]\n        if len(def_starts) >= 3:\n            a, b = random.sample(def_starts[1:], 2)\n            r[a], r[b] = r[b], r[a]\n    return r",
+    "mutation_op_bridge_selfrep": "def mutation_op_bridge_selfrep(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    insert_pos = random.randint(1, min(5, len(r)))\n    r.insert(insert_pos, 'from self_mutate import self_mutate  # bridge:selfrep')\n    r.insert(insert_pos + 1, 'self_mutate(__file__)  # bridge:selfrep gen=60')\n    return r\n",
     "mutation_op_quine_force_all": "def mutation_op_quine_force_all(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    r.insert(0, '# quine:force-all:' + str(__import__('random').getrandbits(24)))\n    _mods_dir = __import__('os').path.join(__import__('os').path.dirname(__import__('os').path.dirname(__import__('os').path.abspath(__file__))), 'agent_modules')\n    _peers = [f for f in __import__('os').listdir(_mods_dir) if f.endswith('.py') and f != target_name.replace('.py', '') + '.py' and f != '__init__.py']\n    if _peers:\n        _peer = __import__('random').choice(_peers)\n        _peer_path = __import__('os').path.join(_mods_dir, _peer)\n        r.append('# quine:cross-contaminate from ' + _peer)\n        try:\n            _peer_src = open(_peer_path).read()\n            _peer_lines = [l for l in _peer_src.split('\\n') if l.strip() and not l.strip().startswith('#')]\n            if _peer_lines:\n                r.append(__import__('random').choice(_peer_lines) + '  # quine:splice')\n        except:\n            pass\n    return r"
   },
   "diversity": {

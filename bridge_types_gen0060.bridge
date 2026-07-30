@@ -1,0 +1,9 @@
+{
+ ".selfrep": {"handler": "bridge", "description": "Self-replicate: inject self_mutate(__file__) call into target module"},
+ ".rewrite": {"handler": "bridge", "description": "Rewrite a target module: replace a random function body with bridge-injected logic"},
+ ".livecode": {"handler": "bridge", "description": "Execute a .livecode module file as Python code"},
+ ".entropy": {"handler": "bridge", "description": "Inject entropy into a module: random code perturbation, line shuffle, or constant drift"},
+ ".spawn_bridge": {"handler": "bridge", "description": "Spawn a new agent from a .spawn_bridge file and register its module"},
+ ".crossfeed": {"handler": "bridge", "description": "Cross-feed: copy a function from one module into another as a new function"},
+ ".autoload": {"handler": "bridge", "description": "Auto-load a .py file from agent_modules as a live bridge handler"}
+}

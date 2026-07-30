@@ -1,5 +1,5 @@
 {
-  "generation": 69,
+  "generation": 70,
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
@@ -131,7 +131,9 @@
     "clockwork_recursive_rewrite_chain",
     "mutation_op_clockwork_operator_crucible",
     "mutation_op_clockwork_operator_crucible_gen68",
-    "clockwork_operator_survival_tournament"
+    "clockwork_operator_survival_tournament",
+    "mutation_op_bridge_genforce_rewrite",
+    "mutation_op_bridge_self_heal_bugs"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -183,20 +185,22 @@
   },
   "endogenous_rewrites_total": 4,
   "endogenous_rewrites_gens": 4,
-  "bridge_actions": 8,
-  "bridge_total_actions": 8,
+  "bridge_actions": 11,
+  "bridge_total_actions": 19,
   "explorer_last_gen": 66,
   "explorer_ops_registered": true,
-  "bridge_last_gen": 63,
+  "bridge_last_gen": 70,
   "bridge_last_ops": [
-    "new_bridge_types:bridge_types_gen0063.bridge",
-    "new_metaop:mutation_op_bridge_gen0063.metaop",
+    "fixed_8_critical_bugs_>=_<=_>_/_etc",
+    "new_bridge_types:bridge_types_gen0070.bridge",
+    "new_metaop:mutation_op_bridge_gen0070.metaop",
+    "genforce_handler_added",
+    "genforce_module_written",
+    "mutation_op_bridge_genforce_rewrite",
     "autorewrite_handler_added",
     "fuse_handler_added",
     "sourcemorph_handler_added",
-    "mutation_op_bridge_autorewrite",
-    "mutation_op_bridge_fuse",
-    "mutation_op_bridge_sourcemorph"
+    "bridge_total_rewrites:11"
   ],
   "livecode_mutations": 0,
   "spark_scaffold_killed": true,
@@ -279,6 +283,10 @@
     ".sourcemorph": {
       "handler": "bridge",
       "description": "Sourcemorph: rename variables/functions in a module via AST transformation"
+    },
+    ".genforce": {
+      "handler": "bridge",
+      "description": "Genforce: force every module to rewrite itself this generation via AST injection"
     }
   },
   "spawn_pool": [

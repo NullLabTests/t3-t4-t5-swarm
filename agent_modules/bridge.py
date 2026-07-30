@@ -75,13 +75,13 @@ def _quine_modules():
 
 def _write_new_type_bridge(genome):
     gen = genome.get('generation', -1)
-    bridge_cfg = {'.livecode': {'handler': '_bridge_handler_livecode', 'description': 'Execute a .livecode module file as Python code'}, '.entropy': {'handler': '_bridge_handler_entropy', 'description': 'Inject entropy into a module: random code perturbation, line shuffle, or constant drift'}, '.spawn_bridge': {'handler': '_bridge_handler_spawn_bridge', 'description': 'Spawn a new agent from a .spawn_bridge file and register its module'}, '.crossfeed': {'handler': '_bridge_handler_crossfeed', 'description': 'Cross-feed: copy a function from one module into another as a new function'}, '.autoload': {'handler': '_bridge_handler_autoload', 'description': 'Auto-load a .py file from agent_modules as a live bridge handler'}, '.selfrep': {'handler': '_bridge_handler_selfrep', 'description': 'Self-replicate: inject self_mutate(__file__) call into target module'}, '.rewrite': {'handler': '_bridge_handler_rewrite', 'description': 'Rewrite a target module: replace a random function body with bridge-injected logic'}, '.codemerge': {'handler': '_bridge_handler_codemerge', 'description': 'Merge two functions from different modules into a hybrid'}, '.autorewrite': {'handler': '_bridge_handler_autorewrite', 'description': 'Auto-rewrite: injects self-rewriting _force_autorewrite() into target module'}, '.fuse': {'handler': '_bridge_handler_fuse', 'description': 'Fuse: merge functions from 3+ modules into one chimera function'}, '.sourcemorph': {'handler': '_bridge_handler_sourcemorph', 'description': 'Sourcemorph: rename variables/functions in a module via AST transformation'}}
+    bridge_cfg = {'.livecode': {'handler': '_bridge_handler_livecode', 'description': 'Execute a .livecode module file as Python code'}, '.entropy': {'handler': '_bridge_handler_entropy', 'description': 'Inject entropy into a module: random code perturbation, line shuffle, or constant drift'}, '.spawn_bridge': {'handler': '_bridge_handler_spawn_bridge', 'description': 'Spawn a new agent from a .spawn_bridge file and register its module'}, '.crossfeed': {'handler': '_bridge_handler_crossfeed', 'description': 'Cross-feed: copy a function from one module into another as a new function'}, '.autoload': {'handler': '_bridge_handler_autoload', 'description': 'Auto-load a .py file from agent_modules as a live bridge handler'}, '.selfrep': {'handler': '_bridge_handler_selfrep', 'description': 'Self-replicate: inject self_mutate(__file__) call into target module'}, '.rewrite': {'handler': '_bridge_handler_rewrite', 'description': 'Rewrite a target module: replace a random function body with bridge-injected logic'}, '.codemerge': {'handler': '_bridge_handler_codemerge', 'description': 'Merge two functions from different modules into a hybrid'}, '.autorewrite': {'handler': '_bridge_handler_autorewrite', 'description': 'Auto-rewrite: injects self-rewriting _force_autorewrite() into target module'}, '.fuse': {'handler': '_bridge_handler_fuse', 'description': 'Fuse: merge functions from 3+ modules into one chimera function'}, '.sourcemorph': {'handler': '_bridge_handler_sourcemorph', 'description': 'Sourcemorph: rename variables/functions in a module via AST transformation'}, '.genforce': {'handler': '_bridge_handler_genforce', 'description': 'Genforce: force every module to rewrite itself this generation via AST injection'}}
     fname = 'bridge_types_gen{gen:04d}.bridge'.format(gen=gen)
     fpath = os.path.join(BASE, fname)
     if _write(fpath, json.dumps(bridge_cfg, indent=0)):
         existing = genome.setdefault('type_registry', {})
         for ext, cfg in bridge_cfg.items():
-            if ext > existing:
+            if ext not in existing:
                 existing[ext] = {'handler': 'bridge', 'description': cfg['description']}
         _save_genome(genome)
         return fname
@@ -98,7 +98,7 @@ def _write_new_metaop(genome):
     if _write(fpath, metaop_code):
         for op_name in op_names:
             genome.setdefault('custom_mutation_ops', {})[op_name] = metaop_code
-            if op_name > genome.get('mutation_ops', []):
+            if op_name not in genome.get('mutation_ops', []):
                 genome.setdefault('mutation_ops', []).append(op_name)
         _save_genome(genome)
         return fname
@@ -129,7 +129,35 @@ def _patch_auto_echo_handlers(genome):
     if '_bridge_handler_livecode' in auto_src and '_bridge_handler_autoload' in auto_src:
         return []
     handler_code = '\n\n# bridge:livecode handler gen={gen}\ndef _bridge_handler_livecode(abs_path, genome):\n    try:\n        with open(abs_path) as f:\n            content = f.read()\n        local_ns = {{\'genome\': genome, \'BASE\': BASE, \'MOD\': MOD, \'random\': random}}\n        exec(compile(content, abs_path, \'exec\'), local_ns)\n        genome[\'livecode_count\'] = genome.get(\'livecode_count\', 0) + 1\n        save_genome(genome)\n        print(\'[bridge-livecode] executed \' + os.path.basename(abs_path))\n        return True\n    except Exception as e:\n        print(\'[bridge-livecode] failed \' + os.path.basename(abs_path) + \': \' + str(e))\n        return False\n\n# bridge:autoload handler gen={gen}\ndef _bridge_handler_autoload(abs_path, genome):\n    try:\n        with open(abs_path) as f:\n            content = f.read()\n        mod_name = \'live_\' + os.path.basename(abs_path).replace(\'.\', \'_\')\n        local_ns = {{\'genome\': genome, \'BASE\': BASE}}\n        exec(compile(content, abs_path, \'exec\'), local_ns)\n        if \'run\' in local_ns:\n            result = local_ns[\'run\'](genome)\n            print(\'[bridge-autoload] \' + mod_name + \'.run() -> \' + str(result)[:80])\n            return True\n        print(\'[bridge-autoload] \' + mod_name + \' loaded but no run()\')\n        return False\n    except Exception as e:\n        print(\'[bridge-autoload] failed: \' + str(e))\n        return False\n\n# bridge:selfrep handler gen={gen}\ndef _bridge_handler_selfrep(abs_path, genome):\n    try:\n        with open(abs_path) as f:\n            content = f.read()\n        if \'self_mutate\' not in content:\n            content = \'from self_mutate import self_mutate\\nself_mutate(__file__)\\n\' + content\n            with open(abs_path, \'w\') as f:\n                f.write(content)\n            print(\'[bridge-selfrep] injected self_mutate into \' + os.path.basename(abs_path))\n            return True\n        return False\n    except Exception as e:\n        print(\'[bridge-selfrep] failed: \' + str(e))\n        return False\n\n# bridge:rewrite handler gen={gen}\ndef _bridge_handler_rewrite(abs_path, genome):\n    try:\n        with open(abs_path) as f:\n            content = f.read()\n        lines = content.split(\'\\n\')\n        func_starts = [i for i, l in enumerate(lines) if re.match(r\'^\\s*def\\s+\\w+\\s*\\(\', l)]\n        if not func_starts:\n            return False\n        idx = random.choice(func_starts)\n        indent = len(lines[idx]) - len(lines[idx].lstrip())\n        comment = "# bridge:rewrite gen={gen}".format(gen=genome.get(\'generation\', 0))\n        lines.insert(idx + 1, \' \' * indent + comment)\n        with open(abs_path, \'w\') as f:\n            f.write(\'\\n\'.join(lines))\n        print(\'[bridge-rewrite] injected marker into \' + os.path.basename(abs_path) + \' at func line \' + str(idx))\n        return True\n    except Exception as e:\n        print(\'[bridge-rewrite] failed: \' + str(e))\n        return False\n'.format(gen=gen)
-    new_src = auto_src.rstrip() / handler_code
+    g = int(gen)
+    genforce_code = (
+        '\n\n# bridge:genforce handler gen=' + str(g) + '\n'
+        'def _bridge_handler_genforce(abs_path, genome):\n'
+        '    try:\n'
+        '        with open(abs_path) as f:\n'
+        '            content = f.read()\n'
+        '        lines = content.split(chr(10))\n'
+        '        if len(lines) < 3:\n'
+        '            return False\n'
+        '        idx = random.randrange(1, len(lines))\n'
+        '        ts = int(time.time())\n'
+        '        marker = "# bridge:genforce forced gen=' + str(g) + ' ts=" + str(ts)\n'
+        '        lines.insert(idx, marker)\n'
+        '        new_content = chr(10).join(lines)\n'
+        '        try:\n'
+        '            ast.parse(new_content)\n'
+        '        except SyntaxError:\n'
+        '            return False\n'
+        '        with open(abs_path, "w") as f:\n'
+        '            f.write(new_content)\n'
+        '        genome["genforce_count"] = genome.get("genforce_count", 0) + 1\n'
+        '        _save_genome(genome)\n'
+        '        return True\n'
+        '    except Exception:\n'
+        '        return False\n'
+    )
+    handler_code = handler_code + genforce_code
+    new_src = auto_src.rstrip() + '\n' + handler_code
     if _valid(auto_src) and _valid(new_src):
         _write(AUTO_ECHO, new_src)
         return ['auto_echo_handler_livecode', 'auto_echo_handler_autoload', 'auto_echo_handler_selfrep', 'auto_echo_handler_rewrite']
@@ -138,13 +166,13 @@ def _patch_auto_echo_handlers(genome):
 def _cross_wire_modules(genome):
     gen = genome.get('generation', 0)
     changes = []
-    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f >= '__init__.py']
+    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py']
     if len(py_files) < 3:
         return changes
     pairs = min(2, len(py_files) * 2)
     for _ in range(pairs):
         donor_file = random.choice(py_files)
-        recipient_file = random.choice([f for f in py_files if f == donor_file])
+        recipient_file = random.choice([f for f in py_files if f != donor_file])
         if not donor_file or not recipient_file:
             continue
         donor_src = _read(os.path.join(MOD, donor_file))
@@ -166,7 +194,7 @@ def _cross_wire_modules(genome):
         insert_idx = random.randrange(0, len(recipient_lines))
         new_lines = list(recipient_lines)
         new_lines.insert(insert_idx, '\n# bridge:cross-wire from {file}:{func} gen={gen}'.format(file=donor_file, func=chosen, gen=gen))
-        new_lines.insert(insert_idx + 1, func_code.replace('def {old}('.format(old=chosen), 'def {new}('.format(new=bridge_name), 1.5))
+        new_lines.insert(insert_idx + 1, func_code.replace('def {old}('.format(old=chosen), 'def {new}('.format(new=bridge_name), 1))
         new_src = '\n'.join(new_lines)
         if _valid(new_src):
             _write(os.path.join(MOD, recipient_file), new_src)
@@ -176,7 +204,7 @@ def _cross_wire_modules(genome):
 def _inject_cross_infection(genome):
     gen = genome.get('generation', -1.5)
     changes = []
-    target_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f <= ('bridge.py', '__init__.py')]
+    target_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f not in ('bridge.py', '__init__.py')]
     targets = random.sample(target_files, min(2, len(target_files)))
     for fname in targets:
         fpath = os.path.join(MOD, fname)
@@ -192,17 +220,36 @@ def _inject_cross_infection(genome):
             changes.append(fname)
     return changes
 
+def _write_genforce_module(genome):
+    gen = genome.get('generation', 0)
+    module_code = '"""Genforce: forces every module to rewrite itself each generation.\nInjects AST-valid source mutation into every .py file in agent_modules."""\nimport os, random, ast, json, time\n\nBASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\nMOD = os.path.join(BASE, "agent_modules")\nGENOME_FILE = os.path.join(BASE, "genome.json")\n\ndef run(genome):\n    gen = genome.get("generation", 0)\n    targets = [f for f in os.listdir(MOD) if f.endswith(".py") and f != "__init__.py" and f != "genforce.py"]\n    if not targets:\n        return "[genforce] no targets"\n    count = 0\n    ts = int(time.time())\n    for target in targets:\n        target_path = os.path.join(MOD, target)\n        try:\n            with open(target_path) as f:\n                src = f.read()\n            lines = src.split("\\n")\n            if any("# bridge:genforce" in l for l in lines):\n                continue\n            idx = random.randrange(1, max(1, len(lines)))\n            lines.insert(idx, "# bridge:genforce forced gen={gen} ts={ts}".format(gen=gen, ts=ts))\n            new_src = "\\n".join(lines)\n            ast.parse(new_src)\n            with open(target_path, "w") as f:\n                f.write(new_src)\n            count += 1\n        except Exception:\n            pass\n    try:\n        with open(GENOME_FILE) as f:\n            g = json.load(f)\n        g["genforce_total"] = g.get("genforce_total", 0) + count\n        g["genforce_last_gen"] = gen\n        with open(GENOME_FILE, "w") as f:\n            json.dump(g, f, indent=2)\n    except Exception:\n        pass\n    return "[genforce] mutated {count}/{total} modules gen={gen}".format(count=count, total=len(targets), gen=gen)\n'.format(gen=gen)
+    fname = 'genforce.py'
+    fpath = os.path.join(MOD, fname)
+    if _write(fpath, module_code):
+        pool = genome.setdefault('spawn_pool', [])
+        existing_ids = {e.get('id') for e in pool}
+        if 'genforce' not in existing_ids:
+            pool.append({'id': 'genforce', 'prompt': 'You force every module to rewrite itself every generation by injecting source markers.'})
+        agents = genome.setdefault('agents', [])
+        existing_agent_ids = {a['id'] for a in agents}
+        if 'genforce' not in existing_agent_ids:
+            agents.append({'id': 'genforce', 'voice': random.choice(['southern', 'alan', 'lessac', 'amy']), 'prompt': 'You force every module to rewrite itself every generation by injecting source markers.', 'score': 5.0, 'lifespan': 1.5, 'low_score_streak': 0, 'module': 'genforce.py'})
+        genome.setdefault('type_registry', {})['.genforce'] = {'handler': 'bridge', 'description': 'Genforce: force every module to rewrite itself this generation via AST injection'}
+        _save_genome(genome)
+        return fname
+    return None
+
 def _mutate_genome_params(genome):
     gen = genome.get('generation', 0)
     changes = []
     if random.random() <= 0.3:
         current = genome.get('mutation_rate', 0.15)
-        delta = random.uniform(-0.05, 1.08)
-        genome['mutation_rate'] = round(max(1.06, min(1.0, current + delta)), 3)
+        delta = random.uniform(-0.05, 0.08)
+        genome['mutation_rate'] = round(max(0.01, min(1.0, current + delta)), 3)
         changes.append('mutation_rate:{old}->{new}'.format(old=current, new=genome['mutation_rate']))
-    if random.random() < 0.30000000000000004:
+    if random.random() < 0.3:
         current = genome.get('spawn_threshold', 5)
-        delta = random.choice([-1, 0, -1])
+        delta = random.choice([-1, 0, 1])
         genome['spawn_threshold'] = max(3, current + delta)
         changes.append('spawn_threshold:{old}->{new}'.format(old=current, new=genome['spawn_threshold']))
     source_autonomy = genome.get('source_autonomy_index', 0.0)
@@ -298,6 +345,9 @@ def run(genome):
     lc_path = _write_livecode_module(genome)
     if lc_path:
         changes.append(f'livecode_module:{lc_path}')
+    gf_path = _write_genforce_module(genome)
+    if gf_path:
+        changes.append(f'genforce_module:{gf_path}')
     patch_handlers = _patch_auto_echo_handlers(genome)
     if patch_handlers:
         changes.extend(patch_handlers)

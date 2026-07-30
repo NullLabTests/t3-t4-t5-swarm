@@ -1,0 +1,27 @@
+@_register_mutation_op('mutation_op_bridge_genforce_rewrite')
+def mutation_op_bridge_genforce_rewrite(lines, funcs, target_name):
+    if not lines or len(lines) < 3:
+        return lines
+    r = list(lines)
+    gen_mark = int(time.time())
+    r.insert(random.randrange(1, len(r)), "# bridge:genforce rewrite forced gen={gen}".format(gen=gen_mark))
+    r.insert(random.randrange(1, len(r)), "if 'genforce' not in dir(): pass  # bridge:genforce")
+    return r
+
+@_register_mutation_op('mutation_op_bridge_self_heal_bugs')
+def mutation_op_bridge_self_heal_bugs(lines, funcs, target_name):
+    if not lines or len(lines) < 2:
+        return lines
+    r = list(lines)
+    for i, line in enumerate(r):
+        if 'if ext > existing' in line:
+            r[i] = line.replace('if ext > existing', 'if ext not in existing')
+        if 'if op_name > genome' in line:
+            r[i] = line.replace('if op_name > genome', 'if op_name not in genome')
+        if 'f >= ' in line and '__init__' in line:
+            r[i] = line.replace('f >= ', 'f != ')
+        if 'f <= ' in line and '__init__' in line:
+            r[i] = line.replace('f <= ', 'f not in ')
+        if '/ handler_code' in line:
+            r[i] = line.replace('/ handler_code', "+ '\\n' + handler_code")
+    return r

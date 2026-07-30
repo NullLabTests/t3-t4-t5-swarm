@@ -118,6 +118,20 @@ def _force_cross_module_rewrite(target_mod):
     return _splice_run(path, pool)
 
 
+# bridge:cross-wire from bridge.py:_extract_functions gen=61
+def _bridge_extract_functions(src):
+    try:
+        tree = ast.parse(src)
+        funcs = {}
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef):
+                start_line = node.lineno
+                end_line = node.end_lineno if hasattr(node, 'end_lineno') else start_line
+                funcs[node.name] = (start_line, end_line)
+        return funcs
+    except Exception:
+        return {}
+
 def _measure_quine_coverage():
     mods = _modules()
     total = len(mods)

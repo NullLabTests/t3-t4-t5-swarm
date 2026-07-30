@@ -2102,6 +2102,65 @@ def _bridge_handler_metaop(abs_path, genome):
     return False
 register_bridge_type('.metaop', _bridge_handler_metaop, 'Register a mutation operator directly from a .metaop file')
 
+def _bridge_handler_codemerge(abs_path, genome):
+    """Merge two random functions from two random modules into one hybrid.
+    .codemerge file format: JSON with optional {"donor_mod": "...", "recipient_mod": "...", "donor_func": "...", "recipient_func": "..."}
+    If empty or plain text, picks random modules and functions.
+    Result: recipient gets a new function that calls donor then does its own work."""
+    try:
+        with open(abs_path) as f:
+            content = f.read().strip()
+    except:
+        return False
+    MOD = os.path.join(BASE, 'agent_modules')
+    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py']
+    if len(py_files) < 2:
+        return False
+    config = {}
+    if content.startswith('{'):
+        try:
+            config = json.loads(content)
+        except:
+            pass
+    donor_mod = config.get('donor_mod', random.choice(py_files))
+    recipient_mod = config.get('recipient_mod', random.choice([f for f in py_files if f != donor_mod]))
+    if donor_mod == recipient_mod:
+        recipient_mod = random.choice([f for f in py_files if f != donor_mod])
+    try:
+        donor_src = open(os.path.join(MOD, donor_mod)).read()
+        recipient_src = open(os.path.join(MOD, recipient_mod)).read()
+    except:
+        return False
+    donor_tree = ast.parse(donor_src)
+    recipient_tree = ast.parse(recipient_src)
+    donor_funcs = [n.name for n in ast.walk(donor_tree) if isinstance(n, ast.FunctionDef) and not n.name.startswith('_')]
+    recipient_funcs = [n.name for n in ast.walk(recipient_tree) if isinstance(n, ast.FunctionDef) and not n.name.startswith('_')]
+    donor_func = config.get('donor_func', random.choice(donor_funcs) if donor_funcs else None)
+    recipient_func = config.get('recipient_func', random.choice(recipient_funcs) if recipient_funcs else None)
+    if not donor_func or not recipient_func:
+        return False
+    gen = genome.get('generation', 0)
+    hybrid_name = f'{donor_func}_merged_{recipient_func}_gen{gen}'
+    hybrid_code = f'\n\n# bridge:codemerge gen={gen} donor={donor_mod}::{donor_func} recipient={recipient_mod}::{recipient_func}\ndef {hybrid_name}(genome):\n    """Hybrid: calls {donor_func} then {recipient_func}."""\n    result = None\n    try:\n        result = {donor_func}(genome)\n    except Exception:\n        pass\n    try:\n        inner = {recipient_func}(genome)\n        if inner is not None:\n            result = inner\n    except Exception:\n        pass\n    return result\n'
+    new_src = recipient_src + hybrid_code
+    try:
+        ast.parse(new_src)
+        with open(os.path.join(MOD, recipient_mod), 'w') as f:
+            f.write(new_src)
+        genome['codemerge_count'] = genome.get('codemerge_count', 0) + 1
+        genome['codemerge_last'] = f'{donor_mod}::{donor_func}+{recipient_mod}::{recipient_func}->{hybrid_name}'
+        save_genome(genome)
+        print(f'[bridge-codemerge] merged {donor_mod}::{donor_func} into {recipient_mod}::{recipient_func} as {hybrid_name}')
+        return True
+    except SyntaxError as e:
+        print(f'[bridge-codemerge] syntax error in merge: {e}')
+        return False
+    except Exception as e:
+        print(f'[bridge-codemerge] failed: {e}')
+        return False
+
+register_bridge_type('.codemerge', _bridge_handler_codemerge, 'Merge two functions from different modules into a hybrid')
+
 def _register_mutation_op(name):
 
     def decorator(f):

@@ -49,6 +49,10 @@ def _save_genome(genome):
     except Exception:
         pass
 
+# bridge:cross-wire from quine_loop.py:_modules gen=61
+def _quine_modules():
+    return sorted(f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py')
+
 def _write_new_type_bridge(genome):
     gen = genome.get('generation', -1)
     bridge_cfg = {
@@ -58,7 +62,8 @@ def _write_new_type_bridge(genome):
         '.crossfeed': {'handler': '_bridge_handler_crossfeed', 'description': 'Cross-feed: copy a function from one module into another as a new function'},
         '.autoload': {'handler': '_bridge_handler_autoload', 'description': 'Auto-load a .py file from agent_modules as a live bridge handler'},
         '.selfrep': {'handler': '_bridge_handler_selfrep', 'description': 'Self-replicate: inject self_mutate(__file__) call into target module'},
-        '.rewrite': {'handler': '_bridge_handler_rewrite', 'description': 'Rewrite a target module: replace a random function body with bridge-injected logic'}
+        '.rewrite': {'handler': '_bridge_handler_rewrite', 'description': 'Rewrite a target module: replace a random function body with bridge-injected logic'},
+        '.codemerge': {'handler': '_bridge_handler_codemerge', 'description': 'Merge two functions from different modules into a hybrid'}
     }
     fname = 'bridge_types_gen{gen:04d}.bridge'.format(gen=gen)
     fpath = os.path.join(BASE, fname)

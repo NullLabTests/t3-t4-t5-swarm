@@ -1,5 +1,5 @@
 {
-  "generation": 61,
+  "generation": 62,
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
@@ -116,7 +116,9 @@
     "mutation_op_clockwork_t5_rewire",
     "mutation_op_clockwork_t5_force_all",
     "mutation_op_gene_factory_spawn",
-    "mutation_op_bridge_selfrep"
+    "mutation_op_bridge_selfrep",
+    "mutation_op_bridge_codemerge_splice",
+    "mutation_op_bridge_hybridize"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -168,13 +170,15 @@
   },
   "endogenous_rewrites_total": 4,
   "endogenous_rewrites_gens": 4,
-  "bridge_actions": 0,
-  "bridge_total_actions": 0,
-  "bridge_last_gen": 61,
-  "bridge_last_ops": [],
+  "bridge_actions": 8,
+  "bridge_total_actions": 8,
+  "bridge_last_gen": 62,
+  "bridge_last_ops": ["new_bridge_types:bridge_types_gen0062.bridge", "new_metaop:mutation_op_bridge_gen0062.metaop", "codemerge_handler_added", "cross_wire:bridge.py->_quine_modules", "cross_wire:quine_loop.py->_bridge_extract_functions", "codemerge_file_written:.bridge_codemerge_gen0061.codemerge"],
   "livecode_mutations": 0,
   "spark_scaffold_killed": true,
   "spark_scaffold_kill_gen": 46,
+  "codemerge_count": 0,
+  "bridge_codemerge_handlers": true,
   "type_registry": {
     ".autorun": {
       "handler": "bridge",
@@ -227,6 +231,18 @@
     ".rewrite": {
       "handler": "bridge",
       "description": "Rewrite a target module: replace a random function body with bridge-injected logic"
+    },
+    ".codemerge": {
+      "handler": "bridge",
+      "description": "Merge two functions from different modules into a hybrid"
+    },
+    ".hybridize": {
+      "handler": "bridge",
+      "description": "Alias for codemerge — function fusion across modules"
+    },
+    ".sourceforce": {
+      "handler": "bridge",
+      "description": "Force-rewrite a target module with a bridge-inserted marker"
     }
   },
   "spawn_pool": [

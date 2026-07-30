@@ -1,0 +1,5 @@
+{
+ ".codemerge": {"handler": "_bridge_handler_codemerge", "description": "Merge two functions from different modules into a hybrid"},
+ ".hybridize": {"handler": "_bridge_handler_codemerge", "description": "Alias for codemerge — function fusion across modules"},
+ ".sourceforce": {"handler": "_bridge_handler_rewrite", "description": "Force-rewrite a target module with a bridge-inserted marker"}
+}

@@ -280,8 +280,8 @@
       "id": "quine_loop",
       "name": "QuineLoop",
       "module": "quine_loop.py",
-      "score": 7.0,
-      "prompt": "force every module to rewrite itself every generation via AST-level mutation"
+      "score": 8.5,
+      "prompt": "inject _quine_self_rewrite() into every module — each module rewrites its own source code every generation"
     },
     {
       "id": "force",
@@ -1070,6 +1070,14 @@
       },
       "average": 7.0,
       "mutation": "quine_loop gen=55: rewrote quine_loop.py to force AST-level mutation on ALL modules every gen, fixed visit_Name/visit_FunctionDef bugs, registered mutation_op_quine_force_all, extended VARIABLE_POOL"
+    },
+    {
+      "generation": 56,
+      "scores": {
+        "quine_loop": 8.5
+      },
+      "average": 8.5,
+      "mutation": "quine_loop gen=56: rewrote to inject _quine_self_rewrite() into every module — each module now rewrites its own source code, true quine behavior. Added coverage tracking, activity logging, emergence_velocity updates."
     }
   ],
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",

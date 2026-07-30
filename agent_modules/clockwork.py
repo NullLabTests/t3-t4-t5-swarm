@@ -583,6 +583,21 @@ def _fire_rewire_genome_topology(genome, gen, params=None):
         return 'topo:inject_emergence_field'
     return None
 
+def _fire_gene_factory(genome, gen, params=None):
+    try:
+        import importlib.util
+        path = os.path.join(MOD, 'gene_factory.py')
+        spec = importlib.util.spec_from_file_location('gene_factory', path)
+        if spec and spec.loader:
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            if hasattr(mod, 'run'):
+                result = mod.run(genome)
+                return f'gene_factory:{result[:60]}'
+    except Exception as e:
+        return f'gene_factory_err:{e}'
+    return None
+
 EVENT_FIRERS = {
     'self_rewrite_clockwork': _fire_self_rewrite,
     'cross_splice': _fire_cross_splice,
@@ -601,6 +616,7 @@ EVENT_FIRERS = {
     't5_force_all_modules': _fire_t5_force_all_modules,
     'clockwork_self_amp': _fire_clockwork_self_amp,
     'rewire_genome_topology': _fire_rewire_genome_topology,
+    'gene_factory': _fire_gene_factory,
 }
 
 def _fire_event(genome, gen, event):
@@ -770,6 +786,10 @@ def run(genome):
         rw = _fire_rewire_genome_topology(genome, gen)
         if rw:
             actions.append(rw)
+    if random.random() < 0.5:
+        gf = _fire_gene_factory(genome, gen)
+        if gf:
+            actions.append(gf)
     genome['clockwork_last_run'] = ts
     genome['clockwork_last_pulse'] = results + actions if results or actions else ['idle']
     genome['emergence_velocity'] = genome.get('emergence_velocity', 0) * 0.8 + len(actions) * 0.02

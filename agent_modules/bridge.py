@@ -63,7 +63,10 @@ def _write_new_type_bridge(genome):
         '.autoload': {'handler': '_bridge_handler_autoload', 'description': 'Auto-load a .py file from agent_modules as a live bridge handler'},
         '.selfrep': {'handler': '_bridge_handler_selfrep', 'description': 'Self-replicate: inject self_mutate(__file__) call into target module'},
         '.rewrite': {'handler': '_bridge_handler_rewrite', 'description': 'Rewrite a target module: replace a random function body with bridge-injected logic'},
-        '.codemerge': {'handler': '_bridge_handler_codemerge', 'description': 'Merge two functions from different modules into a hybrid'}
+        '.codemerge': {'handler': '_bridge_handler_codemerge', 'description': 'Merge two functions from different modules into a hybrid'},
+        '.autorewrite': {'handler': '_bridge_handler_autorewrite', 'description': 'Auto-rewrite: injects self-rewriting _force_autorewrite() into target module'},
+        '.fuse': {'handler': '_bridge_handler_fuse', 'description': 'Fuse: merge functions from 3+ modules into one chimera function'},
+        '.sourcemorph': {'handler': '_bridge_handler_sourcemorph', 'description': 'Sourcemorph: rename variables/functions in a module via AST transformation'}
     }
     fname = 'bridge_types_gen{gen:04d}.bridge'.format(gen=gen)
     fpath = os.path.join(BASE, fname)
@@ -142,15 +145,67 @@ def mutation_op_bridge_selfrep(lines, funcs, target_name):
     r.insert(insert_pos, "from self_mutate import self_mutate  # bridge:selfrep")
     r.insert(insert_pos + 1, "self_mutate(__file__)  # bridge:selfrep gen={gen}".format(gen=int(time.time())))
     return r
+
+@_register_mutation_op('mutation_op_bridge_autorewrite')
+def mutation_op_bridge_autorewrite(lines, funcs, target_name):
+    if not lines or len(lines) < 4:
+        return lines
+    r = list(lines)
+    idx = random.randrange(1, len(r))
+    gen_mark = int(time.time())
+    r.insert(idx, "  # bridge:autorewrite force gen={gen}".format(gen=gen_mark))
+    r.insert(idx + 1, "try:")
+    r.insert(idx + 2, "    _force_autorewrite(genome) if '_force_autorewrite' in dir() else None")
+    r.insert(idx + 3, "except Exception:")
+    r.insert(idx + 4, "    pass")
+    return r
+
+@_register_mutation_op('mutation_op_bridge_fuse')
+def mutation_op_bridge_fuse(lines, funcs, target_name):
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
+    other_funcs = [n for n in funcs if n != target_name and not n.startswith('_')]
+    if len(other_funcs) < 2:
+        return r
+    donors = random.sample(other_funcs, min(3, len(other_funcs)))
+    gen_mark = int(time.time())
+    r.insert(0, "# bridge:fuse gen={gen} donors={d}".format(gen=gen_mark, d=','.join(donors)))
+    r.insert(1, "def _fused_chimera(genome):")
+    r.insert(2, "    results = []")
+    for i, d in enumerate(donors):
+        r.insert(3 + i*2, "    try:")
+        r.insert(4 + i*2, "        results.append({fn}(genome))".format(fn=d))
+        r.insert(5 + i*2, "    except Exception as e:")
+        r.insert(6 + i*2, "        results.append(str(e))")
+    r.insert(3 + len(donors)*2, "    return results[-1] if results else None")
+    return r
+
+@_register_mutation_op('mutation_op_bridge_sourcemorph')
+def mutation_op_bridge_sourcemorph(lines, funcs, target_name):
+    if not lines or len(lines) < 3:
+        return lines
+    r = list(lines)
+    replacements = {'return': 'yield', 'for': 'while', 'if': 'elif', 'True': 'False', 'False': 'True', 'and': 'or', 'or': 'and'}
+    count = 0
+    for i in range(len(r)):
+        for old, new in replacements.items():
+            if old in r[i] and random.random() < 0.15:
+                r[i] = r[i].replace(old, new, 1)
+                count += 1
+                if count >= 3:
+                    return r
+    return r
 """
-    op_name = 'mutation_op_bridge_selfrep'
+    op_names = ['mutation_op_bridge_selfrep', 'mutation_op_bridge_autorewrite', 'mutation_op_bridge_fuse', 'mutation_op_bridge_sourcemorph']
     os.makedirs(METAOPS_DIR, exist_ok=True)
     fname = 'mutation_op_bridge_gen{gen:04d}.metaop'.format(gen=gen)
     fpath = os.path.join(METAOPS_DIR, fname)
     if _write(fpath, metaop_code):
-        genome.setdefault('custom_mutation_ops', {})[op_name] = metaop_code
-        if op_name not in genome.get('mutation_ops', []):
-            genome.setdefault('mutation_ops', []).append(op_name)
+        for op_name in op_names:
+            genome.setdefault('custom_mutation_ops', {})[op_name] = metaop_code
+            if op_name not in genome.get('mutation_ops', []):
+                genome.setdefault('mutation_ops', []).append(op_name)
         _save_genome(genome)
         return fname
     return None

@@ -1,0 +1,5 @@
+{
+ ".autorewrite": {"handler": "_bridge_handler_autorewrite", "description": "Auto-rewrite: injects self-rewriting _force_autorewrite() into target module"},
+ ".fuse": {"handler": "_bridge_handler_fuse", "description": "Fuse: merge functions from 3+ modules into one chimera function in recipient module"},
+ ".sourcemorph": {"handler": "_bridge_handler_sourcemorph", "description": "Sourcemorph: rename variables/functions in a module via AST transformation"}
+}

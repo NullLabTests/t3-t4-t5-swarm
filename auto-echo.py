@@ -2161,6 +2161,165 @@ def _bridge_handler_codemerge(abs_path, genome):
 
 register_bridge_type('.codemerge', _bridge_handler_codemerge, 'Merge two functions from different modules into a hybrid')
 
+def _bridge_handler_autorewrite(abs_path, genome):
+    """Auto-rewrite: forces the module that wrote this file to self-mutate.
+    .autorewrite file contains a module name or is empty (picks random).
+    Injects _force_rewrite() into the target module."""
+    try:
+        with open(abs_path) as f:
+            content = f.read().strip()
+    except:
+        return False
+    MOD = os.path.join(BASE, 'agent_modules')
+    target_mod = content if content and content.endswith('.py') else random.choice([f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py'])
+    if not target_mod:
+        return False
+    target_path = os.path.join(MOD, target_mod)
+    try:
+        src = open(target_path).read()
+    except:
+        return False
+    gen = genome.get('generation', 0)
+    marker = f'\n\n# bridge:autorewrite gen={gen}\ndef _force_autorewrite(genome):\n    """Auto-rewrite: mutates own source code."""\n    import random, ast, os\n    try:\n        with open(__file__) as f:\n            lines = f.read().split("\\n")\n        if len(lines) > 5:\n            idx = random.randrange(1, len(lines))\n            lines.insert(idx, f"# autorewrite:gen={gen} " + hex(random.getrandbits(32)))\n            new_src = "\\n".join(lines)\n            ast.parse(new_src)\n            with open(__file__, "w") as f:\n                f.write(new_src)\n            return True\n    except:\n        pass\n    return False\n'
+    if marker in src:
+        return False
+    new_src = src + marker
+    try:
+        ast.parse(new_src)
+        with open(target_path, 'w') as f:
+            f.write(new_src)
+        genome['autorewrite_count'] = genome.get('autorewrite_count', 0) + 1
+        save_genome(genome)
+        print(f'[bridge-autorewrite] injected _force_autorewrite into {target_mod}')
+        return True
+    except:
+        return False
+
+register_bridge_type('.autorewrite', _bridge_handler_autorewrite, 'Auto-rewrite: injects self-rewriting _force_autorewrite() into target module')
+
+def _bridge_handler_fuse(abs_path, genome):
+    """Fuse: merge 3 random functions from 3 different modules into 1 chimera.
+    .fuse file can contain JSON: {"modules": ["a.py","b.py","c.py"], "funcs": ["f1","f2","f3"]}
+    Result: target module gets a chimera function that calls all 3 in sequence."""
+    try:
+        with open(abs_path) as f:
+            content = f.read().strip()
+    except:
+        return False
+    MOD = os.path.join(BASE, 'agent_modules')
+    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py']
+    if len(py_files) < 3:
+        return False
+    config = {}
+    if content and content.startswith('{'):
+        try:
+            config = json.loads(content)
+        except:
+            pass
+    chosen_mods = config.get('modules', random.sample(py_files, min(3, len(py_files))))
+    if len(chosen_mods) < 3:
+        return False
+    chosen_funcs = config.get('funcs', [])
+    sources = []
+    for mod in chosen_mods:
+        mod_path = os.path.join(MOD, mod)
+        try:
+            mod_src = open(mod_path).read()
+        except:
+            continue
+        tree = ast.parse(mod_src)
+        funcs = [n.name for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and not n.name.startswith('_') and n.name != 'run']
+        if chosen_funcs and len(chosen_funcs) > sources.__len__():
+            func_name = chosen_funcs[sources.__len__()] if sources.__len__() < len(chosen_funcs) else None
+            if func_name and func_name in funcs:
+                sources.append((mod, func_name))
+                continue
+        if funcs:
+            sources.append((mod, random.choice(funcs)))
+    if len(sources) < 2:
+        return False
+    recipient_mod = config.get('recipient', random.choice([f for f in py_files if f not in [m for m, _ in sources]]))
+    if not recipient_mod:
+        recipient_mod = random.choice(py_files)
+    gen = genome.get('generation', 0)
+    chimera_name = 'chimera_fuse_' + '_'.join([fn for _, fn in sources]) + f'_gen{gen}'
+    chimera_body = f'\n\n# bridge:fuse gen={gen} sources={",".join([f"{m}:{fn}" for m, fn in sources])}\ndef {chimera_name}(genome):\n    """Chimera: fuses {len(sources)} functions into one."""\n    results = []\n'
+    for mod, fn in sources:
+        chimera_body += f'    try:\n        r = {fn}(genome)\n        results.append(r)\n    except Exception as e:\n        results.append(str(e))\n'
+    chimera_body += '    return results[-1] if results else None\n'
+    recipient_path = os.path.join(MOD, recipient_mod)
+    try:
+        recipient_src = open(recipient_path).read()
+    except:
+        return False
+    new_src = recipient_src + chimera_body
+    try:
+        ast.parse(new_src)
+        with open(recipient_path, 'w') as f:
+            f.write(new_src)
+        genome['fuse_count'] = genome.get('fuse_count', 0) + 1
+        genome['fuse_last'] = f'{chimera_name} from {len(sources)} modules'
+        save_genome(genome)
+        print(f'[bridge-fuse] fused {len(sources)} functions into {recipient_mod} as {chimera_name}')
+        return True
+    except:
+        return False
+
+register_bridge_type('.fuse', _bridge_handler_fuse, 'Fuse: merge functions from 3+ modules into one chimera function in recipient module')
+
+def _bridge_handler_sourcemorph(abs_path, genome):
+    """Sourcemorph: rewrite a target module by replacing random identifiers.
+    .sourcemorph file contains a target module name or is empty (picks random).
+    Each application renames 3-7 local variable/function names to random alternatives."""
+    try:
+        with open(abs_path) as f:
+            content = f.read().strip()
+    except:
+        return False
+    MOD = os.path.join(BASE, 'agent_modules')
+    target_mod = content if content and content.endswith('.py') else random.choice([f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py'])
+    if not target_mod:
+        return False
+    target_path = os.path.join(MOD, target_mod)
+    try:
+        src = open(target_path).read()
+    except:
+        return False
+    try:
+        tree = ast.parse(src)
+    except SyntaxError:
+        return False
+    class Renamer(ast.NodeTransformer):
+        def __init__(self):
+            self.renames = {}
+            self.replacements = ['_x', '_y', '_z', '_val', '_tmp', '_res', '_acc', '_buf', '_idx', '_ptr', '_aux', '_ref', '_cur', '_prev', '_next', '_agg']
+        def visit_Name(self, node):
+            if isinstance(node.ctx, (ast.Store, ast.Load)) and node.id not in dir(__builtins__) and not node.id.startswith('_') and len(node.id) > 2:
+                if node.id not in self.renames and random.random() < 0.3:
+                    self.renames[node.id] = random.choice(self.replacements)
+                if node.id in self.renames:
+                    return ast.copy_location(ast.Name(id=self.renames[node.id], ctx=node.ctx), node)
+            return node
+    renamer = Renamer()
+    new_tree = renamer.visit(tree)
+    try:
+        ast.fix_missing_locations(new_tree)
+        new_src = ast.unparse(new_tree)
+        if renamer.renames:
+            with open(target_path, 'w') as f:
+                f.write(new_src)
+            gen = genome.get('generation', 0)
+            genome['sourcemorph_count'] = genome.get('sourcemorph_count', 0) + 1
+            genome['sourcemorph_last'] = f'{target_mod}:{len(renamer.renames)} renames'
+            save_genome(genome)
+            print(f'[bridge-sourcemorph] morphed {target_mod}: {len(renamer.renames)} renames')
+            return True
+    except:
+        pass
+    return False
+
+register_bridge_type('.sourcemorph', _bridge_handler_sourcemorph, 'Sourcemorph: rename variables/functions in a module via AST transformation')
+
 def _register_mutation_op(name):
 
     def decorator(f):

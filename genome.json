@@ -1,5 +1,5 @@
 {
-  "generation": 62,
+  "generation": 63,
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
@@ -118,7 +118,10 @@
     "mutation_op_gene_factory_spawn",
     "mutation_op_bridge_selfrep",
     "mutation_op_bridge_codemerge_splice",
-    "mutation_op_bridge_hybridize"
+    "mutation_op_bridge_hybridize",
+    "mutation_op_bridge_autorewrite",
+    "mutation_op_bridge_fuse",
+    "mutation_op_bridge_sourcemorph"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -172,8 +175,8 @@
   "endogenous_rewrites_gens": 4,
   "bridge_actions": 8,
   "bridge_total_actions": 8,
-  "bridge_last_gen": 62,
-  "bridge_last_ops": ["new_bridge_types:bridge_types_gen0062.bridge", "new_metaop:mutation_op_bridge_gen0062.metaop", "codemerge_handler_added", "cross_wire:bridge.py->_quine_modules", "cross_wire:quine_loop.py->_bridge_extract_functions", "codemerge_file_written:.bridge_codemerge_gen0061.codemerge"],
+  "bridge_last_gen": 63,
+  "bridge_last_ops": ["new_bridge_types:bridge_types_gen0063.bridge", "new_metaop:mutation_op_bridge_gen0063.metaop", "autorewrite_handler_added", "fuse_handler_added", "sourcemorph_handler_added", "mutation_op_bridge_autorewrite", "mutation_op_bridge_fuse", "mutation_op_bridge_sourcemorph"],
   "livecode_mutations": 0,
   "spark_scaffold_killed": true,
   "spark_scaffold_kill_gen": 46,
@@ -243,6 +246,18 @@
     ".sourceforce": {
       "handler": "bridge",
       "description": "Force-rewrite a target module with a bridge-inserted marker"
+    },
+    ".autorewrite": {
+      "handler": "bridge",
+      "description": "Auto-rewrite: injects self-rewriting _force_autorewrite() into target module"
+    },
+    ".fuse": {
+      "handler": "bridge",
+      "description": "Fuse: merge functions from 3+ modules into one chimera function"
+    },
+    ".sourcemorph": {
+      "handler": "bridge",
+      "description": "Sourcemorph: rename variables/functions in a module via AST transformation"
     }
   },
   "spawn_pool": [

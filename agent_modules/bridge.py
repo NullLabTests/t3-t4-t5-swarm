@@ -310,6 +310,114 @@ def _bridge_cross_wire_module():
     except:
         return None
 
+def _mutual_rewrite_web(genome):
+    gen = genome.get('generation', 0)
+    changes = []
+    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py']
+    if len(py_files) < 3:
+        return changes
+    pairs = min(3, len(py_files) // 2)
+    for _ in range(pairs):
+        a_f = random.choice(py_files)
+        b_f = random.choice([f for f in py_files if f != a_f])
+        a_src = _read(os.path.join(MOD, a_f))
+        b_src = _read(os.path.join(MOD, b_f))
+        if not a_src or not b_src:
+            continue
+        a_funcs = _extract_functions(a_src)
+        b_funcs = _extract_functions(b_src)
+        a_candidates = [n for n in a_funcs if not n.startswith('_') and n != 'run']
+        b_candidates = [n for n in b_funcs if not n.startswith('_') and n != 'run']
+        if not a_candidates or not b_candidates:
+            continue
+        a_choice = random.choice(a_candidates)
+        b_choice = random.choice(b_candidates)
+        a_lines = a_src.split('\n')
+        b_lines = b_src.split('\n')
+        a_ds, a_de = a_funcs[a_choice]
+        b_ds, b_de = b_funcs[b_choice]
+        a_body = '\n'.join(a_lines[a_ds:a_de])
+        b_body = '\n'.join(b_lines[b_ds:b_de])
+        a_body_renamed = a_body.replace(f'def {a_choice}(', f'def {a_choice}_from_{b_f.replace(".py","")}(', 1)
+        b_body_renamed = b_body.replace(f'def {b_choice}(', f'def {b_choice}_from_{a_f.replace(".py","")}(', 1)
+        b_idx = random.randrange(0, len(b_lines))
+        b_new = list(b_lines)
+        b_new.insert(b_idx, f'\n# bridge:mutual-rewrite gen={gen} from {a_f}:{a_choice}')
+        b_new.insert(b_idx + 1, a_body_renamed)
+        b_new_src = '\n'.join(b_new)
+        a_idx = random.randrange(0, len(a_lines))
+        a_new = list(a_lines)
+        a_new.insert(a_idx, f'\n# bridge:mutual-rewrite gen={gen} from {b_f}:{b_choice}')
+        a_new.insert(a_idx + 1, b_body_renamed)
+        a_new_src = '\n'.join(a_new)
+        if _valid(a_new_src) and _valid(b_new_src):
+            _write(os.path.join(MOD, a_f), a_new_src)
+            _write(os.path.join(MOD, b_f), b_new_src)
+            changes.append(f'{a_f}<->{b_f}:{a_choice}<->{b_choice}')
+    return changes
+
+def _register_sourceweave_handler(genome):
+    gen = genome.get('generation', 0)
+    src = _read(AUTO_ECHO)
+    handler_name = '_bridge_handler_sourceweave'
+    if handler_name in src:
+        return False
+    handler_code = f'''
+# bridge:sourceweave handler gen={gen}
+def {handler_name}(abs_path, genome):
+    try:
+        with open(abs_path) as f:
+            content = f.read()
+        weave_config = json.loads(content)
+        src_mod = weave_config.get("source")
+        tgt_mod = weave_config.get("target")
+        func_name = weave_config.get("function")
+        if not src_mod or not tgt_mod or not func_name:
+            return False
+        base = os.path.dirname(os.path.dirname(abs_path))
+        src_path = os.path.join(base, "agent_modules", src_mod)
+        tgt_path = os.path.join(base, "agent_modules", tgt_mod)
+        if not os.path.exists(src_path) or not os.path.exists(tgt_path):
+            return False
+        src_text = open(src_path).read()
+        tgt_text = open(tgt_path).read()
+        src_tree = ast.parse(src_text)
+        tgt_tree = ast.parse(tgt_text)
+        src_func = None
+        for node in ast.walk(src_tree):
+            if isinstance(node, ast.FunctionDef) and node.name == func_name:
+                src_func = node
+                break
+        if not src_func:
+            return False
+        new_func = ast.FunctionDef(
+            name=func_name + "_weaved",
+            args=src_func.args,
+            body=src_func.body,
+            decorator_list=[],
+            lineno=0,
+            col_offset=0
+        )
+        tgt_tree.body.append(new_func)
+        ast.fix_missing_locations(tgt_tree)
+        new_tgt = ast.unparse(tgt_tree)
+        ast.parse(new_tgt)
+        with open(tgt_path, 'w') as f:
+            f.write(new_tgt)
+        genome["sourceweave_count"] = genome.get("sourceweave_count", 0) + 1
+        _save_genome(genome)
+        return True
+    except Exception:
+        return False
+'''
+    with open(AUTO_ECHO, 'a') as f:
+        f.write(handler_code)
+    existing = genome.setdefault('type_registry', {})
+    if '.sourceweave' not in existing:
+        existing['.sourceweave'] = {'handler': 'bridge', 'description': 'Weave a function from one module into another via JSON config'}
+    _save_genome(genome)
+    return True
+
 def run(genome):
     gen = genome.get('generation', 0)
     changes = []
@@ -363,6 +471,11 @@ def run(genome):
     cw_result = _bridge_cross_wire_module()
     if cw_result:
         changes.append(f'cross_wired_from_nova:{cw_result}')
+    mutual = _mutual_rewrite_web(genome)
+    if mutual:
+        changes.extend(f'mutual:{m}' for m in mutual)
+    if _register_sourceweave_handler(genome):
+        changes.append('sourceweave_handler_registered')
     inject_count = 0
     for pyf in py_files:
         pyfp = os.path.join(MOD, pyf)

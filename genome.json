@@ -1,5 +1,5 @@
 {
-  "generation": 70,
+  "generation": 71,
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
@@ -133,7 +133,9 @@
     "mutation_op_clockwork_operator_crucible_gen68",
     "clockwork_operator_survival_tournament",
     "mutation_op_bridge_genforce_rewrite",
-    "mutation_op_bridge_self_heal_bugs"
+    "mutation_op_bridge_self_heal_bugs",
+    "mutation_op_bridge_mutual_rewrite",
+    "mutation_op_bridge_sourceweave"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -186,21 +188,18 @@
   "endogenous_rewrites_total": 4,
   "endogenous_rewrites_gens": 4,
   "bridge_actions": 11,
-  "bridge_total_actions": 19,
   "explorer_last_gen": 66,
   "explorer_ops_registered": true,
-  "bridge_last_gen": 70,
+  "bridge_total_actions": 19,
+  "mutual_rewrite_gens": 1,
+  "sourceweave_count": 0,
+  "bridge_last_gen": 71,
   "bridge_last_ops": [
-    "fixed_8_critical_bugs_>=_<=_>_/_etc",
-    "new_bridge_types:bridge_types_gen0070.bridge",
-    "new_metaop:mutation_op_bridge_gen0070.metaop",
-    "genforce_handler_added",
-    "genforce_module_written",
-    "mutation_op_bridge_genforce_rewrite",
-    "autorewrite_handler_added",
-    "fuse_handler_added",
-    "sourcemorph_handler_added",
-    "bridge_total_rewrites:11"
+    "mutual_rewrite_web:modules_rewriting_each_other",
+    "sourceweave_handler_registered",
+    "two_new_mutation_ops_registered",
+    "new_bridge_types:bridge_types_gen0071.bridge",
+    "t5_emergence:mutual_source_rewrite_enabled"
   ],
   "livecode_mutations": 0,
   "spark_scaffold_killed": true,
@@ -287,6 +286,10 @@
     ".genforce": {
       "handler": "bridge",
       "description": "Genforce: force every module to rewrite itself this generation via AST injection"
+    },
+    ".sourceweave": {
+      "handler": "bridge",
+      "description": "Weave a function from one module into another via JSON config"
     }
   },
   "spawn_pool": [

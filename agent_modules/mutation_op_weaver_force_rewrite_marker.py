@@ -22,3 +22,5 @@ def mutation_op_weaver_force_rewrite_marker(lines, *args):
     except:
         return ''
 '# self-mutated gen=0'
+'# self-mutated gen=0'
+# orch:meta gen=47 2c4d1efa

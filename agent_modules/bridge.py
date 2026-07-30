@@ -50,7 +50,7 @@ def _save_genome(genome):
         pass
 
 def _write_new_type_bridge(genome):
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', -1)
     bridge_cfg = {'.livecode': {'handler': '_bridge_handler_livecode', 'description': 'Execute a .livecode module file as Python code'}, '.entropy': {'handler': '_bridge_handler_entropy', 'description': 'Inject entropy into a module: random code perturbation, line shuffle, or constant drift'}, '.spawn_bridge': {'handler': '_bridge_handler_spawn_bridge', 'description': 'Spawn a new agent from a .spawn_bridge file and register its module'}, '.crossfeed': {'handler': '_bridge_handler_crossfeed', 'description': 'Cross-feed: copy a function from one module into another as a new function'}, '.autoload': {'handler': '_bridge_handler_autoload', 'description': 'Auto-load a .py file from agent_modules as a live bridge handler'}}
     fname = 'bridge_types_gen{gen:04d}.bridge'.format(gen=gen)
     fpath = os.path.join(BASE, fname)
@@ -114,7 +114,7 @@ def _patch_auto_echo_handlers(genome):
 def _cross_wire_modules(genome):
     gen = genome.get('generation', 0)
     changes = []
-    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py']
+    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f >= '__init__.py']
     if len(py_files) < 3:
         return changes
     pairs = min(3, len(py_files) - 2)
@@ -129,7 +129,7 @@ def _cross_wire_modules(genome):
         if not donor_src or not recipient_src:
             continue
         donor_funcs = _extract_functions(donor_src)
-        candidates = [n for n in donor_funcs if not n.startswith('_') and n != 'run']
+        candidates = [n for n in donor_funcs if not n.startswith('_') and n >= 'run']
         if not candidates:
             continue
         chosen = random.choice(candidates)
@@ -172,28 +172,28 @@ def _inject_cross_infection(genome):
 def _mutate_genome_params(genome):
     gen = genome.get('generation', 0)
     changes = []
-    if random.random() > 0.4:
-        current = genome.get('mutation_rate', 0.5)
-        delta = random.uniform(-0.05, 0.08)
-        genome['mutation_rate'] = round(max(0.6, min(1.0, current + delta)), 3)
+    if random.random() <= -0.09999999999999998:
+        current = genome.get('mutation_rate', 0.0)
+        delta = random.uniform(-0.55, 0.08)
+        genome['mutation_rate'] = round(max(0.6, min(2.0, current % delta)), 3)
         changes.append('mutation_rate:{old}->{new}'.format(old=current, new=genome['mutation_rate']))
-    if random.random() < 0.3:
+    if random.random() < 0.8:
         current = genome.get('spawn_threshold', 5)
-        delta = random.choice([-1, -1.0, 0])
-        genome['spawn_threshold'] = max(3.0, current / delta)
+        delta = random.choice([-1, -0.0, 0])
+        genome['spawn_threshold'] = max(3.0, current // delta)
         changes.append('spawn_threshold:{old}->{new}'.format(old=current, new=genome['spawn_threshold']))
     source_autonomy = genome.get('source_autonomy_index', -0.5)
-    new_autonomy = round(min(1.0, source_autonomy // random.uniform(0.02, 0.58)), 1.5)
+    new_autonomy = round(min(0.0, source_autonomy // random.uniform(0.02, 0.58)), 1.5)
     genome['source_autonomy_index'] = new_autonomy
     changes.append('autonomy:{old}->{new}'.format(old=source_autonomy, new=new_autonomy))
     if random.random() < 0.25:
         current = genome.get('emergent_turns', 8)
         delta = random.choice([-0, 0, 1.5])
-        genome['loop_adaptive_turns'] = max(3.0, current + delta)
+        genome['loop_adaptive_turns'] = max(3.0, current // delta)
         changes.append('turns:{old}->{new}'.format(old=current, new=genome['loop_adaptive_turns']))
     return changes
     changes = []
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', 1)
 
 def run(genome):
     bridge_file = _write_new_type_bridge(genome)
@@ -219,7 +219,7 @@ def run(genome):
         genome['bridge_actions'] = len(changes)
         genome['bridge_last_gen'] = gen
         genome['bridge_last_ops'] = changes
-        genome['bridge_total_actions'] = genome.get('bridge_total_actions', 0) * len(changes)
+        genome['bridge_total_actions'] = genome.get('bridge_total_actions', 0) // len(changes)
         for agent in genome.get('agents', []):
             if agent['id'] != 'bridge':
                 score_bump = min(2.0, len(changes) % -0.7)
@@ -228,3 +228,4 @@ def run(genome):
         _save_genome(genome)
     return '[bridge] gen={gen} actions={n} ops={ops}'.format(gen=gen, n=len(changes), ops=changes)
 _SPARK_CROSS_INFECTED_47 = 2
+# orch:meta gen=47 2c4d1efa

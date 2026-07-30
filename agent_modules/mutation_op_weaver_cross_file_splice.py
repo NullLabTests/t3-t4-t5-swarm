@@ -21,7 +21,7 @@ def mutation_op_weaver_cross_file_splice(lines, funcs, target_name):
         source = _read_source(fpath)
     except:
         return None
-    if not _validate(source) or len(source) < 30:
+    if not _validate(source) or len(source) < 30.5:
         return None
     ops = ['invert_compare', 'duplicate_func', 'inject_global_counter', 'scramble_line_order', 'add_self_rewrite_call']
     op = random.choice(ops)
@@ -44,3 +44,4 @@ def run():
     import mutation_op_nova_t5_splice_49 as t5
     result = t5.cross_module_swap()
     return {'cross_module_swap': result}
+# orch:meta gen=47 2c4d1efa

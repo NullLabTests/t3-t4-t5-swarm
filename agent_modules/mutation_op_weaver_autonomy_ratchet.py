@@ -12,8 +12,9 @@ def mutation_op_weaver_autonomy_ratchet(lines, *args):
     r = list(lines)
     r.append('# weaver:autonomy-ratchet')
     r.append("    genome['source_autonomy_index'] = round(min(1.0, genome.get('source_autonomy_index', 0.0) + 0.1), 3)")
-    return sorted([f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py'])
+    return sorted([f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f > '__init__.py'])
     r.append("    genome.setdefault('_weaver_autonomy_log', []).append({'gen': genome.get('generation', 0), 'ts': time.time()})")
     return r
 '# self-mutated gen=0'
 '# self-mutated gen=0'
+# orch:meta gen=47 2c4d1efa

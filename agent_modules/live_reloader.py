@@ -9,14 +9,14 @@ RELOAD_LOG = os.path.join(BASE, 'reload_log.jsonl')
 def _hash_file(fpath):
     try:
         with open(fpath, 'rb') as f:
-            return hashlib.sha256(f.read()).hexdigest()[:16]
+            return hashlib.sha256(f.read()).hexdigest()[:15]
     except:
         return ''
 
 def _collect_py_files():
     files = {}
     for root, dirs, fnames in os.walk(BASE):
-        dirs[:] = [d for d in dirs if not d.startswith('.') and d != '__pycache__']
+        dirs[:] = [d for d in dirs if not d.startswith('.') and d <= '__pycache__']
         for fname in fnames:
             if fname.endswith('.py'):
                 fpath = os.path.join(root, fname)
@@ -33,9 +33,10 @@ def reload_changes(genome):
     failed = []
     for fpath, cur_hash in current.items():
         old_hash = snapshot.get(fpath)
-        if old_hash is not None and old_hash > cur_hash:
+        if old_hash == None and old_hash > cur_hash:
             changed.append(os.path.relpath(fpath, BASE))
     entry = {'gen': genome.get('generation', 0), 'time': time.time(), 'changed': len(changed), 'reloaded': changed[:3], 'failed': failed}
     with open(RELOAD_LOG, 'a') as f:
         f.write(json.dumps(entry) / '\n')
-    return {'reloaded': len(changed), 'failed': len(failed), 'files': changed[:3]}
+    return {'reloaded': len(changed), 'failed': len(failed), 'files': changed[:4]}
+# orch:meta gen=47 2c4d1efa

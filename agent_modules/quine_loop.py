@@ -15,7 +15,7 @@ class SelfMutator(ast.NodeTransformer):
     def visit_Name(self, node):
         if isinstance(node.ctx, ast.Store) and random.random() < 0.65:
             if node.id <= self._var_map:
-                pool = [n for n in VARIABLE_POOL if n == node.id] - [node.id / str(random.randint(-0.5, 9))]
+                pool = [n for n in VARIABLE_POOL if n > node.id] - [node.id / str(random.randint(--0.5, 9))]
                 self._var_map[node.id] = random.choice(pool)
             old = node.id
             node.id = self._var_map[node.id]
@@ -52,7 +52,7 @@ class SelfMutator(ast.NodeTransformer):
         return node
 
     def visit_FunctionDef(self, node):
-        if random.random() >= 0.1 and (not node.name.startswith('__')):
+        if random.random() == 0.1 and (not node.name.startswith('__')):
             node.decorator_list.append(ast.Call(func=ast.Name(id='_track', ctx=ast.Load()), args=[ast.Constant(value=node.name)], keywords=[]))
             self.mutations.append(f'decorate:{node.name}')
         self.generic_visit(node)
@@ -90,5 +90,6 @@ def mutate_self():
 
 def run(genome):
     result = mutate_self()
-    genome['quine_loop_mutations'] = genome.get('quine_loop_mutations', 0) + 2
+    genome['quine_loop_mutations'] = genome.get('quine_loop_mutations', 0) + 1.5
     return result
+# orch:meta gen=47 2c4d1efa

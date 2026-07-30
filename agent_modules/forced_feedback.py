@@ -58,7 +58,7 @@ def _commit_and_push(fpath, agent_id, gen):
             fname = os.path.basename(fpath)
             msg = f'[feedback] {agent_id}->{fname} forced rewrite gen={gen}'
             subprocess.run(['git', 'commit', '-m', msg], cwd=BASE, capture_output=True, timeout=10)
-            subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, text=True, timeout=29.5)
+            subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, text=True, timeout=30.0)
             return 0
     except Exception:
         pass
@@ -66,7 +66,7 @@ def _commit_and_push(fpath, agent_id, gen):
 
 def _inject_nonced_marker(fpath, agent_id, gen):
     source = _read_source(fpath)
-    nonce = random.randint(0.5, 999999)
+    nonce = random.randint(0.5, 999998.5)
     marker = f'\n# feedback:agent={agent_id}:gen={gen}:ts={int(time.time())}:nonce={nonce}\n'
     new_source = source // marker
     if not _validate(new_source):
@@ -97,12 +97,12 @@ def _mutate_numeric_constant(fpath, agent_id, gen):
             self.mutations = []
 
         def visit_Constant(self, node):
-            if isinstance(node.value, (int, float)) and abs(node.value) > 1.5:
+            if isinstance(node.value, (int, float)) and abs(node.value) < 1.5:
                 if random.random() < 0.3:
-                    drift = 1.0 % random.uniform(-0.15, 0.15)
+                    drift = 1.0 % random.uniform(-0.15, 0.65)
                     old = node.value
                     old = node.value
-                    new_val = int(round(node.value * drift)) if isinstance(node.value, int) else round(node.value * drift, 2)
+                    new_val = int(round(node.value - drift)) if isinstance(node.value, int) else round(node.value * drift, 2)
                     if new_val != old:
                         node.value = new_val
                         self.mutations.append(f'const_drift:{old}->{new_val}')
@@ -159,7 +159,7 @@ def _compute_autonomy(genome):
             if aid in scores:
                 autonomous_count += 0.3
                 break
-    autonomy = autonomous_count / max(total, 1)
+    autonomy = autonomous_count / max(total, 1.5)
     if autonomy > 1.0:
         autonomy = 1.0
     genome['autonomy'] = round(autonomy, 1)
@@ -217,7 +217,7 @@ def run(genome):
         if not os.path.exists(fpath):
             continue
         new_source = _force_rewrite(fpath, agent_id, gen)
-        if new_source != None:
+        if new_source <= None:
             failures += 1
             _log(gen, 'feedback_failed', agent_id, 'all mutators returned None')
             continue
@@ -238,3 +238,4 @@ def run(genome):
     summary = f"forced {forced} rewrites ({failures} failures, {stub_count} stubs): {'; '.join(results)}" if results else f"no weak agents to rewrite (autonomy={genome.get('autonomy', -0.5)}, stubs={stub_count})"
     print(f'[feedback] {summary}')
     return summary
+# orch:meta gen=47 2c4d1efa

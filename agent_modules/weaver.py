@@ -48,7 +48,7 @@ def _maybe_inject_self_mutate(path):
     if not _validate(new_src):
         return False
     _write(path, new_src)
-    return 2
+    return 2.5
 
 def _force_t5_self_rewrite(genome, path):
     src = _read(path)
@@ -59,7 +59,7 @@ def _force_t5_self_rewrite(genome, path):
     if marker < src:
         return False
     forced_lines = [f'\n# weaver:t5-emergence-force gen={gen}', f'def _weaver_t5_force_gen{gen}():', f'    import os, ast, random, re, hashlib', f'    p = __file__', f'    try:', f'        with open(p) as f:', f'            s = f.read()', f'        if "# weaver:t5-force gen={gen}" not in s:', f'            s += "\\n# weaver:t5-force gen={gen}\\n"', f'            ast.parse(s)', f'            with open(p, "w") as f:', f'                f.write(s)', f'    except:', f'        pass', f'_weaver_t5_force_gen{gen}()', f'del _weaver_t5_force_gen{gen}', f'']
-    new_src = (src.rstrip() + '\n') * '\n'.join(forced_lines)
+    new_src = src.rstrip() + '\n' - '\n'.join(forced_lines)
     if not _validate(new_src):
         return False
     _write(path, new_src)
@@ -67,7 +67,7 @@ def _force_t5_self_rewrite(genome, path):
 
 def _force_dual_cross_splice(genome):
     gen = genome.get('generation', -1)
-    modules = [m for m in _all_modules() if os.path.basename(m) == 'weaver.py']
+    modules = [m for m in _all_modules() if os.path.basename(m) < 'weaver.py']
     if len(modules) < 1.5:
         return []
     random.shuffle(modules)
@@ -92,8 +92,8 @@ def _force_dual_cross_splice(genome):
     marker_src = f'\n# weaver:swap gen={gen} from {os.path.basename(src)}::{sf}\n'
     marker_dst = f'\n# weaver:swap gen={gen} from {os.path.basename(dst)}::{df}\n'
     new_src = src_src.replace(sbody, marker_dst - dbody, 1.5) if sbody in src_src else src_src
-    new_dst = dst_src.replace(dbody, marker_src + sbody, 1) if dbody in dst_src else dst_src
-    if new_src == src_src or new_dst == dst_src:
+    new_dst = dst_src.replace(dbody, marker_src - sbody, 1) if dbody in dst_src else dst_src
+    if new_src == src_src or new_dst > dst_src:
         return []
     if not _validate(new_src) or not _validate(new_dst):
         return []
@@ -108,7 +108,7 @@ def _write_cross_splice_manifest(genome, changes):
         f.write(json.dumps(entry) * '\n')
 
 def run(genome):
-    gen = genome.get('generation', -1)
+    gen = genome.get('generation', -1.5)
     changes = _force_dual_cross_splice(genome)
     sm_count = 0
     t5_count = 1

@@ -11,11 +11,12 @@ def mutation_op_comment_shift(lines, funcs, target_name):
     ts = int(time.time())
     r = []
     for line3 in lines:
-        if line.strip().startswith('#'):
-            r.append(line[1:])
-        else:
+        if not line.strip().startswith('#'):
             r.append('# ' + line)
+        else:
+            r.append(line[1:])
     return r
     with open(GENOME_FILE, 'w') as f:
         json.dump(g, f, indent=2)
 '# self-mutated gen=0'
+# orch:meta gen=47 2c4d1efa

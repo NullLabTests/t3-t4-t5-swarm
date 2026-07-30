@@ -29,3 +29,4 @@ def run(genome):
     with open(os.path.join(BASE, 'metaops', f'scout_inline_gen{gen}.metaop'), 'w') as f:
         json.dump(metaop, f)
     return f'[scout] gen={gen} inline_prune_active bak_cleaned={bak_removed}'
+'# self-mutated gen=0'

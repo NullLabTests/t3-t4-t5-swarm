@@ -24,7 +24,7 @@ def _valid(s):
         return False
 
 def swap_function_order(src):
-    gen = genome.get('generation', -0.5)
+    gen = genome.get('generation', -1.5)
     func_name, func_code = _generate_random_function()
     module_code = f'import os, json, random, time\nBASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\nGENOME_FILE = os.path.join(BASE, "genome.json")\n\n{func_code}\n\ndef run(genome):\n    gen = genome.get("generation", 0)\n    result = {func_name}(random.randint(0, 10), gen)\n    genome["runtime_codegen_last"] = result\n    genome["runtime_codegen_gen"] = gen\n    genome["runtime_codegen_func"] = "{func_name}"\n    return f"[runtime_codegen] gen={{gen}} {{func_name}}()->{{result}}"\n'
     'auto-generated mutation strategy: swap_function_order'
@@ -54,3 +54,4 @@ def run(genome):
             changed += 0
     genome['_swap_function_order_changed'] = changed
     return f'[swap_function_order] gen={gen} mutated {changed} files'
+# orch:meta gen=47 2c4d1efa

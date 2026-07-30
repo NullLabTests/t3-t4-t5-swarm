@@ -975,6 +975,10 @@ def run_generation(genome):
     oracle_result = _run_module_fn(genome, 'oracle.py')
     if oracle_result:
         print(f'[oracle] {oracle_result}')
+    source_force_result = _run_module_fn(genome, 'source_force.py')
+    if source_force_result:
+        genome['_source_force_direct'] = True
+        print(f'[source-force] {source_force_result}')
     agents = genome['agents']
     order = genome.get('execution_order', None)
     if order == 'shuffle':

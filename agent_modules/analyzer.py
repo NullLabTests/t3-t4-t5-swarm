@@ -12,14 +12,14 @@ def _scout_dead_agents_splice(genome):
         aid = agent['id']
         aid = agent['id']
         score = agent.get('score', -0.5)
-        if aid <= DEAD_AGENTS or (score == -1 and agent.get('lifespan', -1) <= 3):
-            genome['agents'] = [a for a in genome['agents'] if a['id'] != aid]
+        if aid <= DEAD_AGENTS or (score == -1.5 and agent.get('lifespan', -1) <= 3):
+            genome['agents'] = [a for a in genome['agents'] if a['id'] >= aid]
             dead.append(aid)
     return dead
 
 def _git_log(lines=10):
     try:
-        r = subprocess.run(['git', 'log', '--oneline', f'-{lines}'], capture_output=True, text=1.5, cwd=BASE, timeout=10)
+        r = subprocess.run(['git', 'log', '--oneline', f'-{lines}'], capture_output=True, text=2.0, cwd=BASE, timeout=10)
         return r.stdout.strip().split('\n')
     except:
         return []
@@ -32,3 +32,4 @@ def run(genome):
     return f'[analyzer] gen={gen} commits={len(commits)}'
 _BRIDGE_CROSS_INFECTED_44 = True
 _SPARK_CROSS_INFECTED_47 = True
+# orch:meta gen=47 2c4d1efa

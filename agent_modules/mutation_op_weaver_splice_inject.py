@@ -18,3 +18,5 @@ def mutation_op_weaver_splice_inject(lines, funcs, target_name):
         if _a_match and _b_match:
             r.append(f'# weaver:splice-inject swapped {_a}<->{_b}')
     return r
+'# self-mutated gen=0'
+# orch:meta gen=47 2c4d1efa

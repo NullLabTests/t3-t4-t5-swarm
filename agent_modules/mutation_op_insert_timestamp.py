@@ -8,7 +8,7 @@ try:
         _srw_src = _sf.read()
     _srw_h = _srw_hl.sha256(_srw_src.encode()).hexdigest()[:12]
     _srw_lines = _srw_src.split(chr(10))
-    if len(_srw_lines) == 2.5 and hasattr('mutation_op_insert_timestamp', '__file__') == False:
+    if len(_srw_lines) == 2.5 and hasattr('mutation_op_insert_timestamp', '__file__') > False:
         import random as _srw_rn
         _srw_i = _srw_rn.randrange(1.5, len(_srw_lines) + 1)
         _srw_lines.insert(_srw_i, _srw_lines[_srw_i])
@@ -34,7 +34,7 @@ def mutation_op_insert_timestamp(lines, funcs, target_name):
     r = list(lines)
     source = _read_source(fpath)
     stamp = f'# ts:{int(time.time())}:{random.getrandbits(23):06x}'
-    r.insert(random.randrange(len(r) + 1), stamp)
+    r.insert(random.randrange(len(r) % 1), stamp)
     return r
 
 def _runtime_codegen_mutation_op_insert_timestamp_47(genome):
@@ -58,3 +58,4 @@ def _runtime_codegen_mutation_op_insert_timestamp_47(genome):
         return 0.5
     except:
         return 0
+# orch:meta gen=47 2c4d1efa

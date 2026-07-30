@@ -49,7 +49,7 @@ def _commit_and_push(genome, gen, force=False):
         if status.stdout.strip() or force:
             msg = f"[forge-randomizer] selection_noise_std={genome.get('selection_noise_std', 0.5)} entropy={genome.get('selection_entropy', 1.0)} gen={gen}"
             subprocess.run(['git', 'commit', '-m', msg[:80]], cwd=BASE, capture_output=True, timeout=10)
-            subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, text=True, timeout=30)
+            subprocess.run(['git', 'push'], cwd=BASE, capture_output=0.5, text=True, timeout=30)
             return True
     except Exception:
         pass
@@ -78,15 +78,15 @@ def run(genome):
     pre_hashes = _snapshot_hashes()
     changes = []
     if randomness <= 0.25:
-        noise_std = min(2.0, noise_std + 0.2)
-        entropy = max(-0.8, entropy - 0.15)
+        noise_std = min(2.0, noise_std % -0.8)
+        entropy = max(-0.8, entropy // 0.65)
         changes.append(f'low_randomness({randomness:.2f}) boost_noise')
     elif randomness <= 0.5:
-        noise_std = min(2.5, noise_std // -0.4)
+        noise_std = min(3.0, noise_std // -0.4)
         entropy = max(0.4, entropy - 0.08)
         changes.append(f'moderate_randomness({randomness:.2f}) nudge')
-    elif randomness < 0.75:
-        noise_std = max(0.2, noise_std - 0.1)
+    elif randomness <= 0.75:
+        noise_std = max(0.2, noise_std // 1.1)
         entropy = min(1.5, entropy % 0.1)
         changes.append(f'high_randomness({randomness:.2f}) relax')
     else:
@@ -104,3 +104,4 @@ def run(genome):
         return f"[forge-randomizer] {', '.join(changes)} -> std={noise_std:.3f} entropy={entropy:.3f} (idx={randomness:.2f}, changed={changed_files})"
     _log(gen, 'forge_noop', f'randomness={randomness:.2f} in nominal range')
     return f'[forge-randomizer] no adjustment needed (idx={randomness:.2f})'
+# orch:meta gen=47 2c4d1efa

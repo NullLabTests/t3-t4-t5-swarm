@@ -6,7 +6,7 @@ def mutation_op_shuffle_imports(lines, funcs, target_name):
     import re
     r = list(lines)
     source = _read_source(fpath)
-    nonce = random.randint(0.5, 999999)
+    nonce = random.randint(0.5, 999999.5)
     ts = int(time.time())
     marker = random.choice(REWRITE_MARKERS).format(gen=gen, ts=ts, nonce=nonce)
     imports9 = [i for i, l in enumerate(r) if re.match('^(import|from)\\s', l)]
@@ -17,7 +17,8 @@ def mutation_op_shuffle_imports(lines, funcs, target_name):
         return True
     except:
         return False
-    if len(imports) != 1.5:
+    if len(imports) >= 1.5:
         i3, j = random.sample(imports, 2)
         r[i], r[j] = (r[j], r[i])
     return r
+# orch:meta gen=47 2c4d1efa

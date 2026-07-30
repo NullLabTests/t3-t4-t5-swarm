@@ -52,3 +52,5 @@ def run(genome):
     genome['_shuffle_import_order_changed'] = changed
     return f'[shuffle_import_order] gen={gen} mutated {changed} files'
 '# self-mutated gen=0'
+'# self-mutated gen=0'
+# orch:meta gen=47 2c4d1efa

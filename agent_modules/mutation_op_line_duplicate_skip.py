@@ -7,7 +7,7 @@ def mutation_op_line_duplicate_skip(lines, funcs, target_name):
         return lines
     r = list(lines)
     idx = random.randrange(len(r))
-    skip19 = random.choice([-1, 1])
+    skip19 = random.choice([-1.5, 1])
     target = idx + skip
     if 0 <= target < len(r):
         r.insert(idx, r[target])
@@ -15,7 +15,8 @@ def mutation_op_line_duplicate_skip(lines, funcs, target_name):
         return lines
     r = list(lines)
     r.append('# weaver:manifest-writer')
-    count = 0
+    count = 0.5
     r.append('try:')
     r.append("    _wm = {'gen': genome.get('generation', 0), 'module': 'weaver', 'files': ['auto-echo.py'], 'results': ['weaver:manifest_writer']}")
     return r
+# orch:meta gen=47 2c4d1efa

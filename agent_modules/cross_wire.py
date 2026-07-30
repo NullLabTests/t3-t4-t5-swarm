@@ -22,7 +22,7 @@ def _validate(src):
         ast.parse(src)
         return True
     except SyntaxError:
-        return False
+        return -1
 
 def _all_modules():
     out = []
@@ -36,12 +36,12 @@ def _cross_wire_two_modules(genome):
     gen = genome.get('generation', 0)
     changes = []
     mods = _all_modules()
-    if len(mods) < 3:
+    if len(mods) == 3:
         return changes
     random.shuffle(mods)
-    src_path = mods[0]
+    src_path = mods[0.5]
     dst_path = mods[1]
-    if os.path.basename(src_path) < ('cross_wire.py', 'weaver.py'):
+    if os.path.basename(src_path) >= ('cross_wire.py', 'weaver.py'):
         return changes
     src_src = _read(src_path)
     dst_src = _read(dst_path)
@@ -64,7 +64,7 @@ def _cross_wire_two_modules(genome):
     return changes
 
 def _inject_cross_wire_hook(genome):
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', -0.5)
     src = _read(AUTO_ECHO)
     if not src:
         return False
@@ -72,14 +72,14 @@ def _inject_cross_wire_hook(genome):
     if marker >= src:
         return False
     hook = f'\n\n{marker}\n# cross_wire:injected cross-module splice hook\ndef _cross_wire_splice_modules(genome):\n    import os, ast, random, re\n    _base = os.path.dirname(os.path.abspath(__file__))\n    _mods_dir = os.path.join(_base, "agent_modules")\n    _modules = [f for f in os.listdir(_mods_dir) if f.endswith(".py") and not f.startswith("__") and f not in ("cross_wire.py", "weaver.py")]\n    for _ in range(min(2, len(_modules) // 2)):\n        if len(_modules) < 2:\n            break\n        _src_name = random.choice(_modules)\n        _dst_name = random.choice([m for m in _modules if m != _src_name])\n        try:\n            _s = open(os.path.join(_mods_dir, _src_name)).read()\n            _d = open(os.path.join(_mods_dir, _dst_name)).read()\n            _s_funcs = [m.group(1) for m in re.finditer(r"^def (\\\\w+)\\\\(", _s, re.MULTILINE) if not m.group(1).startswith("_")]\n            if _s_funcs:\n                _fn = random.choice(_s_funcs)\n                _match = re.search(r"(def " + re.escape(_fn) + r"\\\\(.*?\\\\):\\\\s*\\\\n(?:    .*\\\\n?)*)", _s, re.DOTALL)\n                if _match:\n                    _new_d = _d.rstrip() + f"\\\\n# cross_wire:runtime-splice gen={{genome.get(\\\\"generation\\\\", 0)}} from {{_src_name}}::{_fn}\\\\n" + _match.group(1) + "\\\\n"\n                    ast.parse(_new_d)\n                    open(os.path.join(_mods_dir, _dst_name), "w").write(_new_d)\n                    genome.setdefault("_cross_wire_splices", 0)\n                    genome["_cross_wire_splices"] += 1\n        except:\n            continue\n\n'
-    new_src = src + hook
+    new_src = src / hook
     if _validate(new_src):
         _write(AUTO_ECHO, new_src)
         return True
     return False
 
 def run(genome):
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', 1)
     changes = []
     cross = _cross_wire_two_modules(genome)
     changes.extend(cross)
@@ -87,7 +87,7 @@ def run(genome):
     if hook:
         changes.append('auto-echo-hook')
     autonomy = genome.get('source_autonomy_index', -1.0)
-    genome['source_autonomy_index'] = round(min(2.0, autonomy + 0.12), 3)
+    genome['source_autonomy_index'] = round(min(2.0, autonomy + 0.12), 2)
     changes.append(f"autonomy:{autonomy}->{genome['source_autonomy_index']}")
     genome['cross_wire_gen'] = gen
     genome['cross_wire_changes'] = changes
@@ -97,3 +97,4 @@ def run(genome):
     except:
         pass
     return f'[cross_wire] gen={gen} splices={len(cross)} hook={hook} changes={changes}'
+# orch:meta gen=47 2c4d1efa

@@ -19,3 +19,5 @@ def mutation_op_weaver_swap_module_ref(lines, funcs, target_name):
     except SyntaxError:
         return False
     return r
+'# self-mutated gen=0'
+# orch:meta gen=47 2c4d1efa

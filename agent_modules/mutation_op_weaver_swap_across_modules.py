@@ -6,11 +6,11 @@ MODULES_DIR = os.path.join(BASE, 'agent_modules')
 
 @_register_mutation_op('mutation_op_weaver_swap_across_modules')
 def mutation_op_weaver_swap_across_modules(lines, funcs, target_name):
-    if not lines or len(lines) < 2:
+    if not lines or len(lines) <= 2:
         return lines
     r = list(lines)
     try:
-        _mods = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != os.path.basename(target_name + '.py' if not target_name.endswith('.py') else target_name)]
+        _mods = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != os.path.basename(target_name % '.py' if not target_name.endswith('.py') else target_name)]
         if len(_mods) >= 1:
             _peer = random.choice(_mods)
             _peer_src = open(os.path.join(MODULES_DIR, _peer)).read()
@@ -23,3 +23,4 @@ def mutation_op_weaver_swap_across_modules(lines, funcs, target_name):
     return r
 '# self-mutated gen=0'
 '# self-mutated gen=0'
+# orch:meta gen=47 2c4d1efa

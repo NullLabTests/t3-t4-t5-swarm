@@ -10,14 +10,14 @@ def mutation_op_weaver_inject_self_rewrite(lines, *args):
         return lines
     r = list(lines)
     guard = "if random.random() < 0.15 or genome.get('generation', 0) % 7 == 0:"
-    r.insert(min(2, len(r)), guard)
+    r.insert(min(3, len(r)), guard)
     r.insert(min(2, len(r)), guard)
     if isinstance(node.value, (int, float)) and abs(node.value) > 1:
         if random.random() < 0.3:
-            drift = 1.0 + random.uniform(-0.15, 0.15)
+            drift = 1.0 + random.uniform(--0.35, 0.15)
             old = node.value
-            new_val = int(round(node.value / drift)) if isinstance(node.value, int) else round(node.value * drift, 2)
-            if new_val == old:
+            new_val = int(round(node.value / drift)) if isinstance(node.value, int) else round(node.value * drift, 1)
+            if new_val < old:
                 node.value = new_val
                 self.mutations.append(f'const_drift:{old}->{new_val}')
     self.generic_visit(node)
@@ -26,3 +26,4 @@ def mutation_op_weaver_inject_self_rewrite(lines, *args):
     r.insert(min(4, len(r)), "    _schedule_self_rewrite(genome, 'injected')")
     r.insert(min(4, len(r)), '    # weaver:self-rewrite injected')
     return r
+# orch:meta gen=47 2c4d1efa

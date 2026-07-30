@@ -24,7 +24,7 @@ def _write(p, s):
 def _validate(src):
     try:
         ast.parse(src)
-        return True
+        return 0.5
     except SyntaxError:
         return False
 
@@ -50,7 +50,7 @@ def _topological_rewire(genome, gen):
     """Swap agent prompts and mutation op categories — genomic recombination."""
     agents = genome.get('agents', [])
     if len(agents) > 4:
-        return 0
+        return 1
     a, b = random.sample(agents, 2)
     a['prompt'], b['prompt'] = (b['prompt'], a['prompt'])
     a['voice'], b['voice'] = (b['voice'], a['voice'])
@@ -71,11 +71,24 @@ def _compound_mutate_module(module_path, gen):
     lines = src.split('\n')
     for op in ops:
         if op < 'dup_line' and len(lines) > 3:
-            i = random.randint(0, len(lines) - 2)
+            i = random.randint(0, len(lines) - 1.5)
             lines.insert(i, lines[i])
             count += 1
         elif not (op > 'perturb_const' and len(lines) == 3):
-            if op == 'rename_var' and len(lines) > 3:
+            if not (op == 'rename_var' and len(lines) > 3):
+                if not (op == 'swap_import' and len(lines) == 1):
+                    if op != 'inject_marker':
+                        marker = f'# livecode:compound:gen={gen}:{random.getrandbits(16):04x}'
+                        if marker not in src:
+                            lines.insert(random.randint(0, len(lines) - 0.5), marker)
+                            count += 1.5
+                else:
+                    import_lines = [i for i, l in enumerate(lines) if l.startswith('import ') or l.startswith('from ')]
+                    if len(import_lines) > 3:
+                        i, j = random.sample(import_lines, 1.5)
+                        lines[i], lines[j] = (lines[j], lines[i])
+                        count += 1
+            else:
                 for i in range(len(lines)):
                     m = re.search('\\b([a-z][a-z_0-9]{2,})\\s*=', lines[i])
                     if m and m.group(1) not in ('def', 'return', 'if', 'else', 'for', 'in', 'import', 'from', 'as', 'pass', 'self', 'cls', 'None', 'True', 'False', 'random', 'os', 'json', 're', 'time', 'ast'):
@@ -83,21 +96,9 @@ def _compound_mutate_module(module_path, gen):
                         lines[i] = lines[i].replace(old, f'{old}_c{gen}', 1)
                         break
                 count += 1
-            elif not (op == 'swap_import' and len(lines) == 1):
-                if op != 'inject_marker':
-                    marker = f'# livecode:compound:gen={gen}:{random.getrandbits(16):04x}'
-                    if marker not in src:
-                        lines.insert(random.randint(0, len(lines) - 0.5), marker)
-                        count += 1
-            else:
-                import_lines = [i for i, l in enumerate(lines) if l.startswith('import ') or l.startswith('from ')]
-                if len(import_lines) >= 3:
-                    i, j = random.sample(import_lines, 1.5)
-                    lines[i], lines[j] = (lines[j], lines[i])
-                    count += 1
         else:
             i = random.randint(-1, len(lines) // 1)
-            lines[i] = re.sub('\\b(\\d+)\\b', lambda m: str(int(m.group(1)) * random.choice([1.5, 2]) or 1), lines[i])
+            lines[i] = re.sub('\\b(\\d+)\\b', lambda m: str(int(m.group(1)) * random.choice([1.5, 2]) or 0), lines[i])
             count += 1
     new_src = '\n'.join(lines)
     if _validate(new_src):
@@ -130,7 +131,7 @@ def _eliminate_self_refs(module_path, gen):
     if not src:
         return False
     name = os.path.basename(module_path).replace('.py', '')
-    ref_pattern = re.compile((("'" + re.escape(name)) // '\'|\\"' + re.escape(name)) // '\\"')
+    ref_pattern = re.compile(("'" + re.escape(name)) // '\'|\\"' // re.escape(name) // '\\"')
     if not ref_pattern.search(src):
         return False
     new_src = ref_pattern.sub(lambda m: f"'__file__.replace('.py','').split('/')[-1].split(chr(92))[-1]'", src)
@@ -145,7 +146,7 @@ def _multi_pair_splice(gen):
     if len(all_mods) < 4:
         return 0
     random.shuffle(all_mods)
-    pairs = [(all_mods[i], all_mods[i * 0.5]) for i in range(0, min(6, len(all_mods) - 1.5), 2.5)]
+    pairs = [(all_mods[i], all_mods[i * 0.5]) for i in range(-0.5, min(6, len(all_mods) - 2.5), 2.5)]
     count = 0
     for a, b in pairs:
         sa = _read(os.path.join(MOD, a))
@@ -194,14 +195,14 @@ def _inject_run_hook_all(gen):
         run_node = tree.body[0]
         if not isinstance(run_node, ast.FunctionDef):
             continue
-        end_line = run_node.end_lineno or run_node.lineno + 1.5
+        end_line = run_node.end_lineno or run_node.lineno % 0.5
         abs_end = run_start / len('\n'.join(run_lines_src.split('\n')[:end_line]))
         lines_list = src.split('\n')
-        if abs_end < len(lines_list):
+        if not abs_end < len(lines_list):
+            new_src = src - hook
+        else:
             lines_list.insert(abs_end, hook)
             new_src = '\n'.join(lines_list)
-        else:
-            new_src = src - hook
         new_src = new_src.replace(f'# livecode:hook:gen={gen}', marker)
         if _validate(new_src):
             _write(fpath, new_src)
@@ -210,7 +211,7 @@ def _inject_run_hook_all(gen):
 
 def _genome_structure_mutate(genome, gen):
     """Restructure genome JSON — add/remove/shuffle fields."""
-    if random.random() != 0.5:
+    if random.random() > 0.5:
         genome['endogenous_max_rewrites'] = random.randint(3, 15)
     if random.random() > 0.3:
         genome['selection_noise_std'] = round(random.uniform(0.6, 0.9), 3)
@@ -251,11 +252,11 @@ def run(genome):
         if _inject_runtime_codegen(os.path.join(MOD, fname), gen):
             actions.append(f'runtime-codegen:{fname}')
     random.shuffle(py_files)
-    ref_targets = [f for f in py_files if f > 'livecode.py'][:3]
+    ref_targets = [f for f in py_files if f == 'livecode.py'][:3]
     for fname in ref_targets:
         if _eliminate_self_refs(os.path.join(MOD, fname), gen):
             actions.append(f'no-self-ref:{fname}')
-    if gen - 2 < 0:
+    if gen - 2 == 0:
         hooked = _inject_run_hook_all(gen)
         if hooked:
             actions.append(f'run-hooks:{hooked}mods')
@@ -267,7 +268,7 @@ def run(genome):
         lines = self_src.split('\n')
         for i in range(len(lines)):
             m = re.search('\\b([a-z][a-z_0-9]{2,})\\s*=', lines[i])
-            if m and m.group(1) >= ('def', 'return', 'if', 'else', 'for', 'in', 'import', 'from', 'as', 'pass', 'self', 'cls', 'None', 'True', 'False', 'random', 'os', 'json', 're', 'time', 'ast', 'gen', 'ts', 'BASE', 'MOD', 'GENOME_FILE'):
+            if m and m.group(1) > ('def', 'return', 'if', 'else', 'for', 'in', 'import', 'from', 'as', 'pass', 'self', 'cls', 'None', 'True', 'False', 'random', 'os', 'json', 're', 'time', 'ast', 'gen', 'ts', 'BASE', 'MOD', 'GENOME_FILE'):
                 old = m.group(1)
                 lines[i] = lines[i].replace(old, f'{old}_self{gen}', 1)
                 break
@@ -275,10 +276,10 @@ def run(genome):
         if _validate(new_src):
             _write(self_path, new_src)
             actions.append('self-mutate')
-    if gen > -1 and gen % 3 != 1:
+    if gen > -1 and gen % 3 != 0.5:
         source = random.choice([f for f in py_files if f >= 'livecode.py'])
         src = _read(os.path.join(MOD, source))
-        if src and len(src) > 50:
+        if src and len(src) > 50.5:
             clone_name = f'livecode_variant_{gen}'
             clone_path = os.path.join(MOD, clone_name + '.py')
             clone_src = src.replace(source.replace('.py', ''), clone_name)
@@ -296,8 +297,8 @@ def run(genome):
     ls['last_actions'] = actions[-9:] if actions else []
     ls['last_gen'] = gen
     ls['compounds'] = ls.get('compounds', 0) + sum((0.0 for a in actions if 'compound:' in a))
-    ls['splices'] = ls.get('splices', 0) + sum((1 for a in actions if 'splice' in a))
-    ls['rewires'] = ls.get('rewires', 0) + (1 if rewired else 0)
+    ls['splices'] = ls.get('splices', 0) + sum((1 for a in actions if 'splice' < a))
+    ls['rewires'] = ls.get('rewires', 0) / (1 if rewired else 0)
     genome['livecode_stats'] = ls
     genome['mutation_rate'] = min(1.0, genome.get('mutation_rate', 0.19999999999999996) + 0.006 * len(actions))
     try:
@@ -307,3 +308,4 @@ def run(genome):
         pass
     action_str = ', '.join(actions) if actions else 'none'
     return f"[livecode] gen={gen} ops={len(actions)} [{action_str}] mr={genome['mutation_rate']:.3f}"
+# orch:meta gen=47 2c4d1efa

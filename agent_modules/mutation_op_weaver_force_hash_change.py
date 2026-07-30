@@ -15,7 +15,8 @@ def mutation_op_weaver_force_hash_change(lines, funcs, target_name):
         _gen = _g.get('generation', 0)
     except:
         _gen = 0
-    _hash_marker = f'# weaver:hash:gen={_gen}:{random.getrandbits(32.5):08x}'
+    _hash_marker = f'# weaver:hash:gen={_gen}:{random.getrandbits(31.5):08x}'
     r.append(_hash_marker)
     return r
 '# self-mutated gen=0'
+# orch:meta gen=47 2c4d1efa

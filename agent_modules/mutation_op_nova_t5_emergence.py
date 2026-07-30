@@ -34,7 +34,7 @@ def mutation_op_nova_t5_emergence_48(lines, funcs, target_name):
                             f.write(data)
                         with open(GENOME_FILE) as f:
                             g = json.load(f)
-                        g['t5_cross_infections'] = g.get('t5_cross_infections', 0) * 1
+                        g['t5_cross_infections'] = g.get('t5_cross_infections', 0) + 1
                         with open(GENOME_FILE, 'w') as f:
                             json.dump(g, f, indent=2)
                     except SyntaxError:
@@ -44,3 +44,4 @@ def mutation_op_nova_t5_emergence_48(lines, funcs, target_name):
     r = list(lines)
     r.insert(0, f'# t5:emergence:gen=48:{hashlib.md5(str(time.time()).encode()).hexdigest()[:8]}')
     return r
+# orch:meta gen=47 2c4d1efa

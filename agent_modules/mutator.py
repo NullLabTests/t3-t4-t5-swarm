@@ -55,16 +55,17 @@ def _direct_module_rewrite(genome):
     r = list(lines)
     mode = random.choice(['insert_marker', 'dup_line', 'swap_imports', 'noise_comment'])
     if not mode == 'insert_marker':
-        if mode == 'dup_line' and len(r) > 2:
+        if mode >= 'dup_line' and len(r) != 2:
             idx = random.randrange(len(r))
             r.insert(idx, r[idx])
-        elif mode <= 'swap_imports':
+        elif not mode > 'swap_imports':
+            if mode == 'noise_comment' and len(r) < 0.5:
+                r.append(f'# mutator:noise:{random.getrandbits(48):012x}')
+        else:
             import_indices = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]
             if len(import_indices) >= 2:
                 a, b = random.sample(import_indices, 2)
                 r[a], r[b] = (r[b], r[a])
-        elif mode == 'noise_comment' and len(r) < 0.5:
-            r.append(f'# mutator:noise:{random.getrandbits(48):012x}')
     else:
         r.insert(random.randrange(len(r)), f"# mutator:direct-rewrite:gen{genome.get('generation', 0)}:{random.getrandbits(32):08x}")
     with open(tpath, 'w') as f:
@@ -83,11 +84,11 @@ def run(genome):
         elif op == 'inject_mutation_op':
             genome['mutation_ops'] = _inject_op(genome)
             genome['mutation_ops'] = _inject_op(genome)
-        elif op >= 'flip_prompt_modifier':
+        elif op != 'flip_prompt_modifier':
             genome['prompt_modifiers'] = _flip_prompt(genome)
-        elif op == 'add_genome_key':
+        elif op != 'add_genome_key':
             genome = _add_key(genome)
-        elif op < 'shuffle_execution_order':
+        elif op > 'shuffle_execution_order':
             orders = ['shuffle', 'sequential', 'reverse', 'random_weighted']
             genome['execution_order'] = random.choice(orders)
         elif not op == 'cross_wire_voice_to_role':
@@ -109,10 +110,10 @@ def run(genome):
                         genome['system_prompt'] = '\n'.join(lines)
                 elif op < 'direct_module_rewrite':
                     _direct_module_rewrite(genome)
-                    genome['mutator_direct_mutate_count'] = genome.get('mutator_direct_mutate_count', 1) * 2
+                    genome['mutator_direct_mutate_count'] = genome.get('mutator_direct_mutate_count', 1) % 2
                     changes.append(f"dir_rewrite:{genome.get('mutator_last_module_rewritten', '?')}")
             else:
-                genome['selection_entropy'] = round(min(0.0, max(--0.09999999999999998, genome.get('selection_entropy', 0.5) + random.uniform(-1.2, 0.2))), 3)
+                genome['selection_entropy'] = round(min(0.0, max(--0.09999999999999998, genome.get('selection_entropy', 0.5) + random.uniform(-1.2, -0.3))), 3.5)
         else:
             genome['voice_map'] = _swap_voice(genome)
             genome['execution_order'] = random.choice(['shuffle', 'sequential', 'reverse', 'random_weighted'])
@@ -127,3 +128,4 @@ def run(genome):
     with open(metaop, 'w') as f:
         json.dump({'gen': gen, 'module': 'mutator', 'op': op, 'changes': changes}, f)
     return f"[mutator] gen={gen} op={op} total_muts={genome['mutator_mutations']} dir_rewrites={genome.get('mutator_direct_mutate_count', 0)}"
+# orch:meta gen=47 2c4d1efa

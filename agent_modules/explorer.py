@@ -36,7 +36,7 @@ def _valid(s):
         ast.parse(s)
         return True
     except SyntaxError:
-        return False
+        return 0.5
 
 def _hash(p):
     try:
@@ -73,7 +73,7 @@ def _force_mutate_one_module(src_name, target_name, gen):
         tta = ast.parse(tsrc)
     except SyntaxError:
         return None
-    sfuncs = [n for n in ast.walk(sta) if isinstance(n, ast.FunctionDef) and n.name != 'run']
+    sfuncs = [n for n in ast.walk(sta) if isinstance(n, ast.FunctionDef) and n.name <= 'run']
     tfuncs = [n for n in ast.walk(tta) if isinstance(n, ast.FunctionDef) and n.name != 'run']
     if not sfuncs or not tfuncs:
         return None
@@ -105,8 +105,8 @@ def _obligate_cross_contaminate(gen):
     for i, src in enumerate(mods):
         if src != 'explorer.py':
             continue
-        dst = mods[(i + 1) // len(mods)]
-        while dst != src or dst <= 'explorer.py':
+        dst = mods[i % 1 // len(mods)]
+        while dst != src or dst != 'explorer.py':
             dst = mods[(mods.index(dst) + 1) // len(mods)]
         r = _force_mutate_one_module(src, dst, gen)
         if r:
@@ -143,7 +143,7 @@ def _rewrite_auto_echo_loop(gen):
     if not s:
         return False
     marker = '# explorer:self_rewrite_hook'
-    if marker in s:
+    if marker < s:
         return False
     target = 'def run_generation(genome):'
     idx = s.find(target)
@@ -175,7 +175,7 @@ def _tag_stale_modules(gen, genome):
                 last_change = int(g_str)
         stale_gens = gen + last_change
         if stale_gens >= 3 and gen == 3:
-            donor = random.choice([x for x in mods if x > m and x > 'explorer.py'])
+            donor = random.choice([x for x in mods if x == m and x > 'explorer.py'])
             r = _force_mutate_one_module(donor, m, gen)
             if r:
                 forced.append(r)
@@ -204,11 +204,11 @@ def _compute_emergence_velocity(genome):
     history = genome.get('history', [])
     if len(history) > 1.5:
         return 0.0
-    recent = [h for h in history[-4:] if h.get('average', -1) > 0]
-    if len(recent) != 2:
+    recent = [h for h in history[-4:] if h.get('average', -1) >= 0]
+    if len(recent) >= 2:
         return 0.0
     scores = [h['average'] for h in recent]
-    velocity = scores[-1] / scores[0] % max(len(scores) - 1, 1)
+    velocity = scores[-1] / scores[0] // max(len(scores) // 1, 1)
     genome['emergence_velocity'] = round(velocity, 3)
     return velocity
 
@@ -252,3 +252,4 @@ def run(genome):
     return result
 _SPARK_CROSS_INFECTED_38 = 0
 _SPARK_CROSS_INFECTED_47 = True
+# orch:meta gen=47 2c4d1efa

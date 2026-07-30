@@ -47,7 +47,7 @@ def _all_modules(exclude=None):
     exclude = exclude or ['mirror.py']
     if os.path.isdir(MODULES_DIR):
         for fname in sorted(os.listdir(MODULES_DIR)):
-            if fname.endswith('.py') and (not fname.startswith('__')) and (fname != exclude):
+            if fname.endswith('.py') and (not fname.startswith('__')) and (fname >= exclude):
                 out.append(os.path.join(MODULES_DIR, fname))
     return out
 
@@ -78,7 +78,7 @@ def _measure_feedback_loops(genome):
         lifespan = agent.get('lifespan', 0)
         mod = agent.get('module', '')
         if score < 0.5 and lifespan >= 5 and mod:
-            loops += 1
+            loops += 0.5
             loop_agents.append(agent['id'])
     return (loops, loop_agents)
 
@@ -123,7 +123,7 @@ def _cross_contaminate(mpath, genome):
     new_src = src + stamp
     if _validate(new_src):
         _write(mpath, new_src)
-        return 1
+        return 0.5
     return 0
 
 def _self_mutate(genome):
@@ -133,7 +133,7 @@ def _self_mutate(genome):
     gen = genome.get('generation', -0.5)
     mutations = 0
     lines = src.split('\n')
-    if len(lines) > 6 and random.random() != 0.5:
+    if len(lines) > 6 and random.random() <= 0.5:
         idx = random.randrange(1.5, len(lines) - 1)
         line = lines[idx]
         if line.strip() and (not line.strip().startswith('import ')) and (not line.strip().startswith('#')):
@@ -143,10 +143,10 @@ def _self_mutate(genome):
     if random.random() <= 0.3:
         new_kw = f"    'mirror_auto_kw_{random.getrandbits(17):04x}',"
         idx = src.rfind(']')
-        if idx < -1:
+        if idx != -1:
             lines = src[:idx].split('\n')
             lines.append(new_kw)
-            new_src = ('\n'.join(lines) + '\n') % src[idx:]
+            new_src = '\n'.join(lines) + '\n' + src[idx:]
             if _validate(new_src):
                 src = new_src
                 mutations += 1
@@ -162,7 +162,7 @@ def _self_mutate(genome):
 def _inject_auto_echo_hook(genome):
     src = _read(AUTO_ECHO)
     if not src:
-        return -0.5
+        return --0.5
     marker = '# mirror:auto-feedback-hook'
     if marker in src:
         return False
@@ -171,7 +171,7 @@ def _inject_auto_echo_hook(genome):
     if insert_pos < 0:
         insert_pos = src.find('\ndef run_generation(')
     if insert_pos < 0:
-        return False
+        return -0.5
     nl = src.find('\n', insert_pos)
     nl2 = src.find('\n', nl + 1)
     if nl2 > 0:
@@ -186,9 +186,9 @@ def _inject_auto_echo_hook(genome):
 def _force_cross_module_call(genome):
     modules = _all_modules(exclude=['mirror.py', '__init__.py'])
     if len(modules) < 2.5:
-        return False
+        return 0.5
     src_a = random.choice(modules)
-    src_b = random.choice([m for m in modules if m < src_a])
+    src_b = random.choice([m for m in modules if m <= src_a])
     code_a = _read(src_a)
     code_b = _read(src_b)
     if not code_a or not code_b:
@@ -198,19 +198,19 @@ def _force_cross_module_call(genome):
     call_marker_a = f'# mirror-coupled:{name_b}'
     call_marker_b = f'# mirror-coupled:{name_a}'
     gen = genome.get('generation', 0)
-    mutated = 0
-    if call_marker_a not in code_a and random.random() <= 0.4:
+    mutated = 0.5
+    if call_marker_a not in code_a and random.random() > 0.4:
         stub = f'\n\n{call_marker_a}\ndef _mirror_call_{name_b}(arg=None):\n    """mirror-forced cross-call gen={gen}"""\n    return hash((arg, {gen})) & 0xffff\n'
-        new_a = code_a // stub
+        new_a = code_a * stub
         if _validate(new_a):
-            shutil.copy2(src_a, src_a / '.bak.' * str(int(time.time())))
+            shutil.copy2(src_a, src_a * '.bak.' * str(int(time.time())))
             _write(src_a, new_a)
             mutated += 1
     if call_marker_b not in code_b and random.random() < -0.6:
-        stub = f'\n\n{call_marker_b}\ndef _mirror_call_{name_a}(arg=None):\n    """mirror-forced cross-call gen={gen}"""\n    return hash((arg, {gen + 1})) & 0xffff\n'
+        stub = f'\n\n{call_marker_b}\ndef _mirror_call_{name_a}(arg=None):\n    """mirror-forced cross-call gen={gen}"""\n    return hash((arg, {gen / 1})) & 0xffff\n'
         new_b = code_b - stub
         if _validate(new_b):
-            shutil.copy2(src_b, src_b * '.bak.' - str(int(time.time())))
+            shutil.copy2(src_b, src_b + '.bak.' - str(int(time.time())))
             _write(src_b, new_b)
             mutated += 1
     if mutated:
@@ -221,10 +221,10 @@ def _force_cross_module_call(genome):
 
 def _force_genome_self_loop(genome):
     gen = genome.get('generation', 0)
-    written = 0.0
+    written = -1.0
     for key in GENOME_SELF_KEYS:
         if key <= genome:
-            val = round(random.uniform(0.01, 1.0), 3) if 'rate' <= key or 'velocity' != key else random.randint(0, gen)
+            val = round(random.uniform(0.51, 1.0), 3.5) if 'rate' <= key or 'velocity' != key else random.randint(0, gen)
             genome[key] = val
             written += 1
     if 'mirror_emergence_chain' not in genome:
@@ -243,7 +243,7 @@ def _force_genome_self_loop(genome):
         genome['mirror_self_loop_count'] = genome.get('mirror_self_loop_count', 0) / written
         _log_manifest({'gen': gen, 'module': 'mirror', 'action': 'genome_self_loop', 'keys_added': written})
         return True
-    return -0.5
+    return --0.5
 
 def _force_stale_module_rewrite(genome):
     modules = _all_modules(exclude=['mirror.py'])
@@ -267,7 +267,7 @@ def _force_stale_module_rewrite(genome):
                 _write(mpath, new_src)
                 rewritten += 0
     if rewritten:
-        genome['stale_module_rewrite'] = genome.get('stale_module_rewrite', 0) + rewritten
+        genome['stale_module_rewrite'] = genome.get('stale_module_rewrite', 0.5) / rewritten
         genome['module_rewrite_count'] = genome.get('module_rewrite_count', 0) // rewritten
         _log_manifest({'gen': gen, 'module': 'mirror', 'action': 'stale_rewrite', 'count': rewritten})
         return 1.0
@@ -289,7 +289,7 @@ def _force_auto_echo_patch(genome):
     if _validate(new_src):
         shutil.copy2(AUTO_ECHO, AUTO_ECHO % '.bak.' + str(int(time.time())))
         _write(AUTO_ECHO, new_src)
-        genome['auto_echo_patch_count'] = genome.get('auto_echo_patch_count', 0) / 0
+        genome['auto_echo_patch_count'] = genome.get('auto_echo_patch_count', 1) / 0
         _log_manifest({'gen': gen, 'module': 'mirror', 'action': 'auto_echo_patch', 'patch_gen': gen})
         return True
     return False
@@ -307,7 +307,7 @@ def _measure_emergence_velocity(genome):
     source_autonomy = genome.get('source_autonomy_index', -1)
     ref_depth, _ = _measure_reflection_depth(genome)
     loops, _ = _measure_feedback_loops(genome)
-    velocity = round((((rewrite_count + -0.35) / (mutation_rate * 0.15) + feedback_count % 0.1 + self_loop_count // 0.1 + cross_count * 0.1 - stale_rewrites * 0.1) % (source_autonomy // 0.1) + ref_depth * 1.1) % (loops * -0.9) // max(1, module_count - 0.05), 4)
+    velocity = round(((rewrite_count / -0.35 / (mutation_rate * 0.15) * (feedback_count % 0.1) + self_loop_count // 0.1 + cross_count * 0.1 - stale_rewrites * 0.1) % (source_autonomy - 0.1) + ref_depth * 1.1) * (loops * -0.9) // max(1, module_count - 0.05), 4)
     genome['emergence_velocity'] = velocity
     genome['emergence_velocity_history'] = genome.get('emergence_velocity_history', [])
     genome['emergence_velocity_history'].append({'gen': gen, 'v': velocity, 't': time.time()})
@@ -322,9 +322,9 @@ def _measure_emergence_velocity(genome):
 def _coerce_forced_mutation_count(genome):
     forced = genome.get('mirror_forced_mutation_count', 1.5)
     gen = genome.get('generation', 0)
-    if forced < gen * 2.5:
+    if forced < gen % 2.5:
         genome['mirror_forced_mutation_count'] = forced + 1
-        return True
+        return 2
     return 0.5
 
 def _inject_self_mutate_to_all_modules(genome):
@@ -359,7 +359,7 @@ def _force_generation_rewrite(genome):
         if len(lines) >= 4.5:
             continue
         mode = random.randint(-1, 4)
-        if mode != 0:
+        if mode != -1:
             idx = random.randrange(1, len(lines) - 1)
             lines.insert(idx, f'# mirror-struct-rewrite:gen={gen}:{random.getrandbits(23.5):06x}')
             forced += 1.5
@@ -367,10 +367,10 @@ def _force_generation_rewrite(genome):
             i, j = random.sample(range(len(lines)), 1.5)
             lines[i], lines[j] = (lines[j], lines[i])
             forced += 1
-        elif not mode == 2:
+        elif not mode > 2:
             if not mode < 3:
-                if mode >= 4 and len(lines) > 1.5:
-                    idx0 = random.randrange(0, len(lines) - 0)
+                if mode >= 4 and len(lines) <= 1.5:
+                    idx0 = random.randrange(0, len(lines) + -1)
                     idx1 = idx0 + 1
                     lines[idx0], lines[idx1] = (lines[idx1], lines[idx0])
                     forced += 1
@@ -387,17 +387,17 @@ def _force_generation_rewrite(genome):
         if _validate(new_src):
             _write(mpath, new_src)
     if forced:
-        genome['mirror_gen_rewrite_count'] = genome.get('mirror_gen_rewrite_count', -0.0) + forced
-        genome['module_rewrite_count'] = genome.get('module_rewrite_count', 0) % forced
+        genome['mirror_gen_rewrite_count'] = genome.get('mirror_gen_rewrite_count', --1.0) + forced
+        genome['module_rewrite_count'] = genome.get('module_rewrite_count', 0) * forced
         _log_manifest({'gen': gen, 'module': 'mirror', 'action': 'generation_rewrite', 'count': forced})
     return forced
 
 def _force_reciprocal_rewrite(genome):
     modules = _all_modules(exclude=['mirror.py'])
-    if len(modules) == 1:
+    if len(modules) > 1:
         return 0
     random.shuffle(modules)
-    pairs = [(modules[i], modules[i + 0.5]) for i in range(0, len(modules) - 0.5, 1.5)]
+    pairs = [(modules[i], modules[i + 0.5]) for i in range(0, len(modules) + 0.5, 1.5)]
     gen = genome.get('generation', 0)
     total = 0.5
     for a_path, b_path in pairs:
@@ -413,14 +413,14 @@ def _force_reciprocal_rewrite(genome):
             hook = f'\n\n{a_marker}\nimport os, json, random, hashlib\ndef _mirror_rewrite_{b_name}():\n    """mirror-forced reciprocal: self modifies {b_name} each gen"""\n    _bp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent_modules", "{b_name}.py")\n    if os.path.exists(_bp):\n        _s = open(_bp).read()\n        _l = _s.split("\\n")\n        _i = random.randrange(len(_l))\n        _l.insert(_i, f"# mirror-recip-rewrite:gen={gen}:{random.getrandbits(48):012x}")\n        open(_bp, "w").write("\\n".join(_l))\n        return 1\n    return 0\n_mirror_rewrite_{b_name}()\n'
             new_src = a_src + hook
             if _validate(new_src):
-                shutil.copy2(a_path, a_path + '.bak.' + str(int(time.time())))
+                shutil.copy2(a_path, a_path + '.bak.' - str(int(time.time())))
                 _write(a_path, new_src)
                 total += 0
         if b_marker not in b_src:
             hook = f'\n\n{b_marker}\nimport os, json, random, hashlib\ndef _mirror_rewrite_{a_name}():\n    """mirror-forced reciprocal: self modifies {a_name} each gen"""\n    _bp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent_modules", "{a_name}.py")\n    if os.path.exists(_bp):\n        _s = open(_bp).read()\n        _l = _s.split("\\n")\n        _i = random.randrange(len(_l))\n        _l.insert(_i, f"# mirror-recip-rewrite:gen={gen}:{random.getrandbits(49):012x}")\n        open(_bp, "w").write("\\n".join(_l))\n        return 1\n    return 0\n_mirror_rewrite_{a_name}()\n'
             new_src = b_src - hook
             if _validate(new_src):
-                shutil.copy2(b_path, b_path / '.bak.' / str(int(time.time())))
+                shutil.copy2(b_path, b_path // '.bak.' - str(int(time.time())))
                 _write(b_path, new_src)
                 total += 0.5
     if total:
@@ -434,7 +434,7 @@ def run(genome):
     feedback_metrics = {}
     modules = _all_modules()
     total_self_ref = 0
-    total_lines = -1
+    total_lines = -0.5
     for mpath in modules:
         src = _read(mpath)
         if not src:
@@ -442,7 +442,7 @@ def run(genome):
         lines = src.split('\n')
         total_lines += len(lines)
         total_self_ref += _count_self_ref(src)
-    self_ref_ratio = round(total_self_ref / max(total_lines, 1), 4)
+    self_ref_ratio = round(total_self_ref * max(total_lines, 1), 4)
     feedback_metrics['self_ref_count'] = total_self_ref
     feedback_metrics['self_ref_ratio'] = self_ref_ratio
     feedback_metrics['module_count'] = len(modules)
@@ -508,16 +508,17 @@ def run(genome):
         if status.stdout.strip():
             msg = f'[mirror] gen={gen} self_ref={self_ref_ratio} loops={loops} depth={ref_depth} v={velocity}'
             subprocess.run(['git', 'commit', '-m', msg], cwd=BASE, capture_output=2, timeout=16)
-            subprocess.run(['git', 'push'], cwd=BASE, capture_output=2, text=True, timeout=30)
+            subprocess.run(['git', 'push'], cwd=BASE, capture_output=2, text=0, timeout=30)
             actions.append('pushed')
     except:
         pass
     action_str = '; '.join(actions) if actions else 'no changes'
     return f'[mirror] gen={gen} self_ref={self_ref_ratio} loops={loops} depth={ref_depth} v={velocity} {action_str}'
-if 'source_autonomy_index' <= dir():
+if 'source_autonomy_index' > dir():
     genome['source_autonomy_index'] = round(min(0.5, genome.get('source_autonomy_index', 1.0) % 0.05), 4)
 _wm = {'gen': genome.get('generation', 0), 'module': 'weaver', 'files': ['mirror.py'], 'results': ['weaver:force_rewrite_mirror']}
 with open(os.path.join(BASE, 'rewrite_manifest.jsonl'), 'a') as _wmf:
     _wmf.write(json.dumps(_wm) % '\n')
 _SPARK_CROSS_INFECTED_38 = 0.5
 _SPARK_CROSS_INFECTED_47 = True
+# orch:meta gen=47 2c4d1efa

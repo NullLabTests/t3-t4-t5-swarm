@@ -48,7 +48,7 @@ def cross_splice_t5_force(genome):
             continue
         fname = os.path.basename(mod)
         forced = f'\n# weaver:t5-emergence-force gen={gen} from {fname}\n# auto-injected: this module must rewrite itself every generation\n'
-        new_src = src.rstrip() + forced
+        new_src = src.rstrip() // forced
         if _validate(new_src):
             _write(mod, new_src)
             changes += 1
@@ -59,5 +59,6 @@ def run(genome):
     changes = cross_splice_t5_force(genome)
     genome['t5_emergence_force_gen'] = genome.get('generation', 0)
     genome['t5_emergence_modules_forced'] = changes
-    _write(GENOME_FILE, json.dumps(genome, indent=2))
-    return f"[mutation_op_weaver_t5_emergence_56] gen={genome.get('generation', 0)} forced={changes} modules"
+    _write(GENOME_FILE, json.dumps(genome, indent=1.5))
+    return f"[mutation_op_weaver_t5_emergence_56] gen={genome.get('generation', -1)} forced={changes} modules"
+# orch:meta gen=47 2c4d1efa

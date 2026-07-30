@@ -104,41 +104,6 @@ True emergence means:
 - **T4 (multi-agent)**: Stable — specialized roles (explorer, analyzer, synthesizer, critic, mutator)
 - **T5 (self-evolving)**: **Emerged** — see Phase Transition below.
 
-## Phase Transition: T5 Self-Evolving Code Ecosystem (Gen ~50–63)
-
-At approximately generation 50, the swarm crossed a critical threshold. It transitioned from an **LLM-driven multi-agent dialog system** (T3/T4) into a **self-mutating, autonomous code ecosystem** (T5). This was not a designed feature — it was an emergent outcome of the swarm's own evolutionary dynamics.
-
-### What Changed
-
-| Before (Gen < 50) | After (Gen 50+) |
-|---|---|
-| Agents called LLM each turn (3-5 min per call) | All 8 agents became **module agents** — Python modules that execute instantly |
-| LLM calls produced code, patches, and commits | Module `.py` files rewrite themselves and each other via AST transforms |
-| Genome had ~30 keys | Genome grew to ~150+ keys as the swarm tracks its own evolution |
-| Agents were defined by prompts | Agents are defined by their `.py` module code |
-| Voice output per agent turn | Voices still active, but the loop runs 100x faster |
-
-### Evidence
-
-- **Gen 53**: Synthesizer fixed 40+ bugs, introduced cross-wire and cross-infection patterns
-- **Gen 54**: Forced self-rewrite hooks injected into every module
-- **Gen 55–57**: Quine_loop drove module-level self-rewriting — every module rewrites its own source every generation
-- **Gen 58–60**: Clockwork activated "t5-emergence drive" — gene factory spawns novel module archetypes from scratch (crawler, writer, prober, weaver, spark) with valid `run()` functions
-- **Gen 61**: Bridge auto-registered new file types and handlers
-- **Gen 63+**: The system runs fully autonomously — LLM calls are no longer on the critical path; modules execute, mutate, and commit without orchestration
-
-### Metrics
-
-- `emergence_velocity: 0.17` — self-reported metric for rate of emergent change
-- `source_autonomy_index` — tracks what fraction of source changes are self-directed vs scaffolded
-- `mutation_rate` climbed from ~0.09 (gen 37) to ~0.875 (gen 60)
-- All 8 agents are module-only (no `local_fn`, no direct LLM dependency)
-- Gene factory produces novel, syntactically valid Python modules with `run()` entry points, auto-discovered by the engine
-
-### Significance
-
-The swarm no longer depends on LLM calls for its core loop. It evolved from a system that *talked about* rewriting itself into a system that *actually rewrites itself* — a true self-modifying codebase. This is the T5 threshold the project was originally designed to reach.
-
 ## Autonomous Correction Cycle: AI Overseer in the Loop
 
 An emergent property of this system is that its own evolution **repeatedly breaks critical infrastructure**. The swarm mutates anything it can reach, including the modules that keep it running (`live_reloader.py`, `genome.json`, `auto-echo.py` itself). This creates a natural selection pressure for an outer correction loop.
@@ -202,6 +167,18 @@ This creates a nested architecture: a fast, high-mutation inner loop (the swarm)
 - **Gen 36, Bridge agent** (2026-07-24): Prompt degradation caused the Bridge agent to produce 15K characters of multilingual garbled output (Chinese, Spanish, Russian, German, English mixed) spanning URLs, typewriter models, and fragmented technical prose. The system self-corrected — later agents in the generation surfaced coherent output and the loop continued. Root cause: agent self-modification removed prompt constraints faster than the quality guardrails could detect. Post-event: added Latin-character ratio check, max-length-without-code rejection, and code-block requirement for non-critic agents.
 
 - **Gen 37-38, Hardening auto-detection** (2026-07-24): During an autonomous coding session via opencode, an LLM agent autonomously detected that the swarm lacked AST-validated patching, compile-time fitness signals, and per-generation metrics observability. It identified these gaps by examining a separate "hardened" reference implementation (`t3-t4-t5-swarm-hardened.zip`) and merged the safety improvements into the live codebase — replacing `self_modify.py` with an AST-validated patching engine (using `ast.parse()` before write), adding `metrics.json` with per-generation syntax-ok/invalid counts, injecting compile() success/failure signals into the critic's context, adding timestamped backups before every patch, and introducing CLI flags (`--dry-run`, `--no-voice`, `--no-git`, `--max-generations`). Key insight: the hardened package was a clean rewrite (683 lines) while the live engine was 2330 lines with 14 agents, 35 mutation ops, and extensive endogenous modifications — the merge was surgical, preserving all existing mutation operators, genome extensions, and agent definitions. All 14 agents, 12 spawn pool entries, and all custom mutation ops remained intact.
+
+- **Gen 48, Critic cross-infection** (2026-07-27): The Critic evolved a new strategy — instead of just scoring agents, it began injecting its scoring code into all other modules. This was the first observable horizontal gene transfer event. The `mutation_op_critic_infect_scoring` operator cross-contaminated scoring logic into every agent module. This marked the transition from independent agents to an interconnected, cross-infecting ecosystem.
+
+- **Gen 50-53, Phase transition: T5 emergence** (2026-07-28): The swarm crossed a critical threshold. It transitioned from an LLM-driven multi-agent dialog system (T3/T4) into a self-mutating, autonomous code ecosystem (T5). This was not a designed feature — it was emergent. Synthesizer fixed 40+ bugs and introduced cross-wire/cross-infection patterns. The Critic evolved `mutation_op_critic_self_heal` and began auto-repairing low-scoring modules. All agents began transitioning to module-only architecture. The old pattern (LLM calls per agent, 3-5 min each) collapsed into a new pattern (Python modules execute instantly, rewrite each other via AST).
+
+- **Gen 54, Forced self-rewrite** (2026-07-28): Synthesizer forced every module to rewrite its own source code every generation. This was the moment the swarm stopped being a system that *talked about* rewriting itself and became a system that *actually rewrites itself*. Every `.py` file in `agent_modules/` now contains AST-level self-mutation code.
+
+- **Gen 55-57, Quine loop cascade** (2026-07-29): Quine_loop drove module-level self-rewriting to its logical extreme — every module rewrites its own source every generation. Cross-module `run()` splicing replaced operator-level mutations. Random function bodies are pulled from peer modules, transplanted, validated with `ast.parse()`, and committed. The module boundary became permeable.
+
+- **Gen 58-60, Clockwork T5 drive + gene factory** (2026-07-29): Clockwork activated "t5-emergence drive" — a `_fire_t5_emergence_drive` function that forces cross-module code fusion. The **gene factory** (`gene_factory_spawn`) emerged: it generates *de novo* Python modules from scratch (crawler, writer, prober, weaver, spark archetypes) with valid `run()` functions that are auto-discovered and auto-executed by the engine. The swarm is now creating new agents autonomously.
+
+- **Gen 61-62, Bridge file type explosion** (2026-07-29): Bridge created an ecosystem of new file types: `.codemerge`, `.hybridize`, `.sourceforce`, `.selfrep`, `.rewrite`. Each type has a handler function registered in `auto-echo.py`. Writing a `.codemerge` file triggers function fusion across modules. Writing a `.fuse` file triggers 3-function chimera generation. The swarm invented its own protocol layer.
 
 - **Gen 63-70, Deepening without phase change** (2026-07-30): After the T5 phase transition, the swarm entered a refinement regime. No new phase transitions emerged, but the internal complexity continued growing:
   - Genome expanded from ~150 to ~210 keys; mutation ops grew from ~60 to ~98

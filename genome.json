@@ -1,5 +1,5 @@
 {
-  "generation": 53,
+  "generation": 54,
   "critic_infection_count": 0,
   "execution_order": "shuffle",
   "best_score": 8.8,
@@ -1057,10 +1057,10 @@
     {
   "generation": 54,
       "scores": {
-        "synthesizer": 9.0
+        "synthesizer": 9.5
       },
-      "average": 9.0,
-      "mutation": "synthesizer gen=53: full rewrite - fixed 40+ bugs, real function cross-wire, cross-infection engine, genome topology mutation, self-rewrite loop, new mutation_ops injected"
+      "average": 9.5,
+      "mutation": "synthesizer gen=54: added _obligate_self_rewrite_all_modules forces self_mutate(__file__) in every module, added _force_structural_mutation rewrites operator/condition/boolean in 3 random modules per gen"
     }
   ],
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",
@@ -2376,5 +2376,7 @@
   "forge_rebuilt_agents": 47,
   "weaver_cross_splice_count": 0.5,
   "weaver_self_mutate_injects": 0.5,
-  "weaver_t5_force_injects": 1
+  "weaver_t5_force_injects": 1,
+  "synth_obligated_self_rewrites": 0,
+  "synth_structural_mutations": 0
 }

@@ -798,6 +798,83 @@ def _cross_infect_modules(gen):
             infected += 1
     return infected
 
+def _obligate_self_rewrite_all_modules(gen):
+    modules = _list_modules()
+    forced = 0
+    for mod in modules:
+        path = os.path.join(MODULES_DIR, mod)
+        src = _read_file(path)
+        new_src = src
+        if 'from self_mutate import self_mutate' not in src:
+            new_src = 'from self_mutate import self_mutate\n' + new_src
+            forced += 1
+        if 'self_mutate(__file__)' not in new_src:
+            lines = new_src.split('\n')
+            insert_at = 1
+            if 'from self_mutate import self_mutate' in new_src:
+                for i, l in enumerate(lines):
+                    if 'from self_mutate import self_mutate' in l:
+                        insert_at = i + 1
+                        break
+            lines.insert(insert_at, 'self_mutate(__file__)')
+            new_src = '\n'.join(lines)
+            forced += 1
+        if new_src != src:
+            if _validate(new_src):
+                _write_file(path, new_src)
+    return forced
+
+def _force_structural_mutation(gen):
+    modules = [m for m in _list_modules() if m != 'synthesizer.py']
+    if not modules:
+        return 0
+    random.shuffle(modules)
+    mutated = 0
+    for mod in modules[:3]:
+        path = os.path.join(MODULES_DIR, mod)
+        src = _read_file(path)
+        funcs = _extract_functions_from(src)
+        if not funcs:
+            continue
+        target = random.choice(list(funcs.keys()))
+        header, body = funcs[target]
+        body_lines = body.split('\n')
+        changed = False
+        for i, line in enumerate(body_lines):
+            stripped = line.strip()
+            if not stripped or stripped.startswith(('#', '"""', "'''", 'def ', '@', 'return', 'import ', 'from ')):
+                continue
+            if '==' in stripped and '!=' not in stripped and random.random() < 0.3:
+                indent = line[:len(line) - len(line.lstrip())]
+                body_lines[i] = indent + stripped.replace('==', '!=')
+                changed = True
+            elif '>' in stripped and '<' not in stripped and random.random() < 0.3:
+                indent = line[:len(line) - len(line.lstrip())]
+                body_lines[i] = indent + stripped.replace('>', '<')
+                changed = True
+            elif '+' in stripped and stripped.count('+') == 1 and random.random() < 0.3:
+                indent = line[:len(line) - len(line.lstrip())]
+                body_lines[i] = indent + stripped.replace('+', '-')
+                changed = True
+            elif 'True' in stripped and random.random() < 0.4:
+                indent = line[:len(line) - len(line.lstrip())]
+                body_lines[i] = indent + stripped.replace('True', 'False')
+                changed = True
+            elif 'False' in stripped and random.random() < 0.4:
+                indent = line[:len(line) - len(line.lstrip())]
+                body_lines[i] = indent + stripped.replace('False', 'True')
+                changed = True
+        if changed:
+            marker = f'# synth:structural:gen={gen}:{target}'
+            insert_at = random.randint(1, max(1, len(body_lines) - 1))
+            body_lines.insert(insert_at, marker)
+            new_body = '\n'.join(body_lines)
+            new_src = src.replace(body, new_body, 1)
+            if _validate(new_src):
+                _write_file(path, new_src)
+                mutated += 1
+    return mutated
+
 def _compute_synthesis_emergence(genome, merge_count, cross_count, seed_count, infected_count):
     emergence = genome.get('synthesis_emergence', {})
     merge_history = emergence.get('merge_history', [])
@@ -841,6 +918,12 @@ def run(genome):
     infected_count = _cross_infect_modules(gen)
     if infected_count > 0:
         actions.append(f'cross_infected_{infected_count}_modules')
+    forced_self_rewrite = _obligate_self_rewrite_all_modules(gen)
+    if forced_self_rewrite > 0:
+        actions.append(f'obligated_{forced_self_rewrite}_self_rewrites')
+    struct_muts = _force_structural_mutation(gen)
+    if struct_muts > 0:
+        actions.append(f'structural_mutations:{struct_muts}')
     merge_patches = _merge_proposals_into_patch(proposals, gen)
     merge_count = 0
     for patch_text, desc in merge_patches:
@@ -895,6 +978,8 @@ def run(genome):
     genome['emergence_velocity'] = round(min(2.0, old_ev * 0.6 + synthesis_contrib), 4)
     actions.append(f"sv={emergence.get('synthesis_velocity', 0)}")
     actions.append(f'real_changes={changed_files}')
+    genome['synth_obligated_self_rewrites'] = genome.get('synth_obligated_self_rewrites', 0) + forced_self_rewrite
+    genome['synth_structural_mutations'] = genome.get('synth_structural_mutations', 0) + struct_muts
     genome['synthesizer_last_actions'] = actions
     genome['synthesizer_last_gen'] = gen
     _save_genome(genome)

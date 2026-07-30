@@ -89,7 +89,8 @@
     "mutation_op_synth_control_flow",
     "mutation_op_synth_proposal_codegen",
     "mutation_op_synth_module_spawn",
-    "mutation_op_quine_force_all"
+    "mutation_op_quine_force_all",
+    "mutation_op_quine_cross_splice"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -280,8 +281,8 @@
       "id": "quine_loop",
       "name": "QuineLoop",
       "module": "quine_loop.py",
-      "score": 8.5,
-      "prompt": "inject _quine_self_rewrite() into every module — each module rewrites its own source code every generation"
+      "score": 9.0,
+      "prompt": "cross-module run() splicing — pull function bodies from peer modules into each target's run(), self-mutate, never skip self"
     },
     {
       "id": "force",
@@ -1064,7 +1065,7 @@
       "mutation": "synthesizer gen=54: added _obligate_self_rewrite_all_modules forces self_mutate(__file__) in every module, added _force_structural_mutation rewrites operator/condition/boolean in 3 random modules per gen"
     },
     {
-      "generation": 55,
+  "generation": 56,
       "scores": {
         "quine_loop": 7.0
       },
@@ -1078,6 +1079,14 @@
       },
       "average": 8.5,
       "mutation": "quine_loop gen=56: rewrote to inject _quine_self_rewrite() into every module — each module now rewrites its own source code, true quine behavior. Added coverage tracking, activity logging, emergence_velocity updates."
+    },
+    {
+      "generation": 57,
+      "scores": {
+        "quine_loop": 9.0
+      },
+      "average": 9.0,
+      "mutation": "quine_loop gen=57: replaced AST-operator-swap quine with cross-module run() splicing — pulls random function bodies from peer modules into target's run(), self-mutates constants, no longer skips itself. Added mutation_op_quine_cross_splice."
     }
   ],
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",

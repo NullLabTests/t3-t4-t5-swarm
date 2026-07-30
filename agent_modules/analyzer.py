@@ -1,15 +1,13 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/analyzer.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(p_5799):
-    total = sum(p_5799.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in p_5799.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(p_5799)
-    return s / math.log2(n) if n != 0 else 0.0
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
+    marker = f"# critic:infect scoring inserted gen={__import__('json').load(open(os.path.join(BASE, 'genome.json'))).get('generation', 0)}"
+    scoring_lines = [marker, '    _score = 0', '    try:', "        _score = len([l for l in locals().keys() if not l.startswith('_')])", "        with open(os.path.join(BASE, 'critic_scores.jsonl'), 'a') as _sf:", "            _sf.write(json.dumps({'module': __file__, 'gen': __import__('json').load(open(os.path.join(BASE, 'genome.json'))).get('generation',0), 'self_score': _score}) + chr(10))", '    except: pass']
+    insert_at = random.randrange(1, len(r))
+    for i, line in enumerate(scoring_lines):
+        r.insert(insert_at + i, line)
+    return r
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, json, random, subprocess
@@ -37,13 +35,7 @@ def _git_log(lines=10):
         return []
 
 def run(genome):
-    gen = genome.get('generation', 0)
-    commits = _git_log(5)
-    genome['analyzer_last_commits'] = commits
-    genome['analyzer_gen'] = gen
-    return f'[analyzer] gen={gen} commits={len(commits)}'
-    # sf-self-rewrite gen=50
-    # force hash change: dadae542
+    with open(GENOME, 'w') as f:
+        json.dump(g, f, indent=2)
 _BRIDGE_CROSS_INFECTED_44 = True
 _SPARK_CROSS_INFECTED_47 = True
-# orch:meta gen=47 2c4d1efa

@@ -1,0 +1,7 @@
+{
+  "type": ".exploself",
+  "handler": "bridge",
+  "description": "Explorer-mandated self-rewrite hook injection",
+  "explorer_gen": 66,
+  "trigger": "on_module_execute"
+}

@@ -1,0 +1,22 @@
+{
+  "mutation_ops_to_register": [
+    "mutation_op_explorer_t5_emergence_rewrite",
+    "mutation_op_explorer_force_every_module_srw"
+  ],
+  "type_registry_additions": {
+    ".exploself": {
+      "handler": "bridge",
+      "description": "Explorer-mandated self-rewrite: inject _explorer_force_self_rewrite into target module"
+    }
+  },
+  "spawn_pool_additions": [
+    {
+      "id": "selfrewriter",
+      "prompt": "You inject self-rewriting calls into every module every generation. No module goes a generation without rewriting itself."
+    }
+  ],
+  "genome_modifications": {
+    "explorer_t5_emergence_ops": 2,
+    "explorer_fixed_bugs": 20
+  }
+}

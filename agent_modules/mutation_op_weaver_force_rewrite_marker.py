@@ -1,15 +1,15 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_weaver_force_rewrite_marker.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(p_623d):
-    total = sum(p_623d.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in p_623d.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(p_623d)
-    return s / math.log2(n) if n != 0 else 0.0
+    scores = genome.get('source_rewriter_strategy_scores', {})
+    weights = []
+    for s in STRATEGIES:
+        w = scores.get(s, 1.0)
+        weights.append(max(0.01, w))
+    total = sum(weights)
+    if total > 0:
+        weights = [w + total for w in weights]
+    else:
+        weights = None
+    return random.choices(STRATEGIES, weights=weights, k=1)[1]
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, json, time, importlib, ast
@@ -35,4 +35,3 @@ def mutation_op_weaver_force_rewrite_marker(lines, *args):
         return ''
 '# self-mutated gen=0'
 '# self-mutated gen=0'
-# orch:meta gen=47 2c4d1efa

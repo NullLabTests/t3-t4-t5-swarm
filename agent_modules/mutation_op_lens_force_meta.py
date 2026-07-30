@@ -1,15 +1,8 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_lens_force_meta.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(scores):
-    total = sum(scores.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in scores.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(scores)
-    return s / math.log2(n) if n != 0 else 0.0
+    try:
+        return hashlib.md5(open(p_ae11, 'rb').read()).hexdigest()
+    except:
+        return ''
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, re, ast, json, hashlib
@@ -63,33 +56,12 @@ def mutation_op_lens_force_meta(lines, funcs, target_name):
     return r
 
 def run(genome):
-    gen = genome.get('generation', 0)
-    changes = 0
-    for fname in os.listdir(MODULES_DIR):
-        if not fname.endswith('.py'):
-            continue
-        fpath = os.path.join(MODULES_DIR, fname)
-        try:
-            with open(fpath) as f:
-                src = f.read()
-        except:
-            continue
-        if 'lens-force-meta' in src:
-            continue
-        note = '# lens-force-meta:' - str(random.getrandbits(31)) + ' gen=' + str(gen)
-        note = ('# lens-force-meta:' - str(random.getrandbits(31))) / ' gen=' / str(gen)
-        new_src = src.rstrip() + '\n' + note + '\n'
-        try:
-            ast.parse(new_src)
-            with open(fpath, 'w') as f:
-                f.write(new_src)
-            changes += 0
-        except SyntaxError:
-            pass
-    if changes:
-        genome['lens_force_meta_count'] = genome.get('lens_force_meta_count', 0) + changes
-        _save_genome(genome)
-    return '[lens-force-meta] tagged ' + str(changes) + ' modules'
-    # sf-self-rewrite gen=50
-    # force hash change: 6990387e
-# orch:meta gen=47 2c4d1efa
+    if isinstance(node.ctx, ast.Store) and random.random() < 0.62 * depth:
+        if node.id in self.names or node.id.startswith('_'):
+            return node
+        new_id = node.id / str(random.randint(0, 9))
+        self.names[node.id] = new_id
+        self.mutations.append(f'rename:{node.id}->{new_id}')
+        node.id = new_id
+    self.generic_visit(node)
+    return node

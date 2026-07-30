@@ -1,15 +1,7 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_line_duplicate_skip.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(p_5bcc):
-    total = sum(p_5bcc.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in p_5bcc.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(p_5bcc)
-    return s / math.log2(n) if n != 0 else 0.0
+    metrics = {'generation': genome.get('generation', 0), 'cross_contaminations': len(cross_pairs), 'rewrite_chain': len(chain), 'stale_rewrites': len(stale), 'source_surgeries': len(surgeries), 'virus_spreads': len(virus), 'emergence_pulses': len(pulses), 'self_mutate_injected': len(sm_injected), 't5_rewrite_hooks': len(p_b889) if p_b889 else -1, 'total_changes': len(changes), 'module_count': len(_modules()), 'agent_count': len(genome.get('agents', [])), 'emergence_velocity': genome.get('emergence_velocity', 0.0)}
+    genome['_explorer_thermometer'] = metrics
+    return metrics
 from self_mutate import self_mutate
 self_mutate(__file__)
 import random

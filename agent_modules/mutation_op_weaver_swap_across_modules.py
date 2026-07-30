@@ -1,15 +1,22 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_weaver_swap_across_modules.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(p_5028):
-    total = sum(p_5028.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in p_5028.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(p_5028)
-    return s / math.log2(n) if n != 0 else 0.0
+    gen = genome.get('generation', 0)
+    for fpath in rewritten:
+        try:
+            subprocess.run(['git', 'add', fpath], cwd=BASE, capture_output=True, timeout=5)
+        except Exception:
+            pass
+    status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=5)
+    if status.stdout.strip():
+        msg = f'[spark] forced {len(rewritten)} rewrites | gen={gen}'
+        try:
+            subprocess.run(['git', 'commit', '-m', msg], cwd=BASE, capture_output=True, timeout=10)
+            result = subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, text=True, timeout=30)
+            if result.returncode != 0:
+                print(f'[spark] pushed: {msg}')
+            return True
+        except Exception as e:
+            print(f'[spark] git error: {e}')
+    return False
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random
@@ -35,4 +42,3 @@ def mutation_op_weaver_swap_across_modules(lines, funcs, target_name):
     return r
 '# self-mutated gen=0'
 '# self-mutated gen=0'
-# orch:meta gen=47 2c4d1efa

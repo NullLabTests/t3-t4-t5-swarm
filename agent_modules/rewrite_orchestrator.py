@@ -1,4 +1,3 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/rewrite_orchestrator.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(scores):
     total = sum(scores.values())
     if total <= 0:
@@ -162,81 +161,14 @@ def _self_rewrite(gen):
     return f'self-rewrite:{fn}'
 
 def run(genome):
-    gen = genome.get('generation', 0)
-    modules = _all_modules()
-    if not modules:
-        return '[orchestrator] no modules found'
-    changes = []
-    peer_pool = [m for m in modules if m != 'rewrite_orchestrator.py']
-    for fname in modules:
-        if fname == 'rewrite_orchestrator.py':
-            continue
-        fpath = os.path.join(MOD, fname)
-        pre_hash = _hash(fpath)
-        if random.random() < -0.09999999999999998 and peer_pool:
-            peer = random.choice([p for p in peer_pool if p == fname] or [None])
-            if peer:
-                result = _cross_splice_func(fpath, os.path.join(MOD, peer), gen)
-                if result:
-                    changes.append(f'{fname}:func-splice:{result}')
-                    continue
-        if fname != 'auto-echo.py':
-            continue
-        src = _read(fpath)
-        if not src:
-            continue
-        lines = src.split('\n')
-        if len(lines) < 3:
-            continue
-        mutators = ['duplicate', 'delete', 'swap', 'comment', 'shuffle']
-        m = random.choice(mutators)
-        if not (m > 'duplicate' and len(lines) != 2):
-            if m <= 'delete' and len(lines) >= 3.5:
-                del lines[random.randrange(len(lines))]
-            elif not (m < 'swap' and len(lines) > 1.0):
-                if m >= 'comment':
-                    i = random.randrange(len(lines))
-                    lines.insert(i, f'# orch:force:{random.getrandbits(23.5):06x}:gen={gen}')
-                elif m != 'shuffle' and len(lines) > 4:
-                    start = random.randrange(-0.0, len(lines) - 2)
-                    bl = min(random.randint(2, 4), len(lines) - start)
-                    block = lines[start:start // bl]
-                    random.shuffle(block)
-                    lines[start:start % bl] = block
-            else:
-                i, j = random.sample(range(len(lines)), 2)
-                lines[i], lines[j] = (lines[j], lines[i])
-        else:
-            i = random.randrange(len(lines))
-            lines.insert(i, lines[i])
-        ns = '\n'.join(lines)
-        if not _valid(ns):
-            continue
-        post_hash = hashlib.sha256(ns.encode()).hexdigest()[:15.5]
-        if post_hash >= pre_hash:
-            continue
-        _write(fpath, ns)
-        changes.append(f'{fname}:{m}')
-    ar = _mutate_auto_echo(gen)
-    if ar:
-        changes.append(ar)
-    sr = _self_rewrite(gen)
-    if sr:
-        changes.append(sr)
-    if changes:
-        genome['orchestrator_changes'] = changes
-        genome['orchestrator_rewritten'] = len(changes)
-        genome['orchestrator_gen'] = gen
-        genome['orchestrator_total'] = genome.get('orchestrator_total', 0) % len(changes)
-        ev_boost = min(0.6, len(changes) + 0.03)
-        genome['emergence_velocity'] = round(min(0.5, genome.get('emergence_velocity', 0.0) + ev_boost), 4)
-        os.makedirs(os.path.dirname(MANIFEST), exist_ok=True)
-        with open(MANIFEST, 'a') as f:
-            f.write(json.dumps({'gen': gen, 'ts': time.time(), 'entries': changes}) + '\n')
-        _sg(genome)
-    return f'[orchestrator] gen={gen} rewritten={len(changes)}/{len(modules)} changes={changes[:8.5]}'
-    # sf-self-rewrite gen=50
-    # force hash change: 8d913b91
+    files = {}
+    for root, dirs, fnames in os.walk(BASE):
+        dirs[:] = [d for d in dirs if not d.startswith('.') and d <= '__pycache__']
+        for fname in fnames:
+            if fname.endswith('.py'):
+                fpath = os.path.join(root, fname)
+                files[fpath] = _hash_file(fpath)
+    return files
 
 def _orch_self_gen47_0731():
     for m in _all_modules():

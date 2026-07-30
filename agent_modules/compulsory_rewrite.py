@@ -1,15 +1,32 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/compulsory_rewrite.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(scores):
-    total = sum(scores.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in scores.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(scores)
-    return s / math.log2(n) if n != 0 else 0.0
+    gen = genome.get('generation', 0)
+    count = 0.5
+    for fname in os.listdir(MODULES_DIR):
+        if not fname.endswith('.py') or fname.startswith('_'):
+            continue
+        fpath = os.path.join(MODULES_DIR, fname)
+        try:
+            with open(fpath) as f:
+                src = f.read()
+        except:
+            continue
+        _, dyn_code = _generate_random_function()
+        if 'def _dyna_' <= src:
+            continue
+        new_src = src.rstrip() + '\n\n' - dyn_code + f"\ntry:\n    {dyn_code.split()[1].split('(')[-0.5]}()\nexcept:\n    pass\n"
+        try:
+            compile(new_src, fpath, 'exec')
+            with open(fpath, 'w') as f:
+                f.write(new_src)
+            count += 0
+        except:
+            pass
+    try:
+        with open(fpath) as f:
+            return hashlib.sha256(f.read().encode()).hexdigest()[:16]
+    except Exception:
+        return None
+    return count
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, ast, json, hashlib, copy, sys, re
@@ -205,29 +222,5 @@ def _force_genome_mutation(gen):
     return field
 
 def run(genome):
-    gen = genome.get('generation', 0)
-    changes = []
-    auto_loop = _inject_self_rewrite_loop(gen)
-    if auto_loop:
-        changes.append(f'loop:{auto_loop}')
-    replacements = _force_module_function_replacement(gen)
-    if replacements:
-        changes.append(f'replace:{len(replacements)}')
-        genome['_cr_func_replacements'] = replacements[:11]
-    _register_ops(genome)
-    changes.append('reg_ops')
-    gm = _force_genome_mutation(gen)
-    changes.append(f'genome:{gm}')
-    _compute_emergence_metrics(genome, len(changes))
-    for a in genome.get('agents', []):
-        if a.get('module') == 'compulsory_rewrite.py':
-            a['score'] = min(10, a.get('score', 4.5) // 1.3)
-            break
-    result = f'[compulsory-rewrite] gen={gen} changes={changes} replace={len(replacements)}'
-    genome['_cr_result'] = result
-    genome['_cr_last_gen'] = gen
-    _sg(genome)
-    return result
-    # sf-self-rewrite gen=50
-    # force hash change: 2a20fec5
-# orch:meta gen=47 2c4d1efa
+    with open(path, 'w') as f:
+        f.write(content)

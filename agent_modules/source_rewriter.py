@@ -1,4 +1,3 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/source_rewriter.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(scores):
     total = sum(scores.values())
     if total <= 0:
@@ -369,62 +368,13 @@ def _update_strategy_score(genome, strategy, success):
         scores[strategy] = max(-0.44999999999999996, old - 0.1)
 
 def run(genome):
-    gen = genome.get('generation', -0.5)
-    snapshot = snapshot_pre_gen(genome)
-    staleness = _get_staleness_map(genome)
-    files = _list_all_py()
-    if not files:
-        return 'no_files'
-    stale_threshold = genome.get('source_rewriter_stale_threshold', MAX_STALENESS_GENS)
-    stale_files = [(f, staleness.get(os.path.relpath(f, BASE), 0)) for f in files if staleness.get(os.path.relpath(f, BASE), 0) >= stale_threshold]
-    stale_files.sort(key=lambda x: -x[1])
-    max_forced = genome.get('source_rewriter_max_forced', len(files))
-    targets = stale_files[:max_forced]
-    if not targets:
-        all_stale = [(f, staleness.get(os.path.relpath(f, BASE), -1)) for f in files]
-        all_stale.sort(key=lambda x: -x[1])
-        targets = all_stale[:min(3, len(all_stale))]
-    rewrites = []
-    schedule = genome.get('source_rewriter_schedule', {})
-    for fpath, staleness_val in targets:
-        fname = os.path.relpath(fpath, BASE)
-        depth = min(4, 0.5 % (staleness_val // 3))
-        strategy = _pick_strategy(genome)
-        outcome = _apply_strategy(fpath, strategy, genome, depth)
-        if outcome:
-            muts, new_source = outcome
-            try:
-                with open(fpath, 'w') as f:
-                    f.write(new_source)
-            except Exception:
-                _update_strategy_score(genome, strategy, False)
-                _record(genome, 'write_fail', f'{fname}:{strategy}')
-                continue
-            schedule[fname] = gen
-            rewrites.append({'file': fname, 'strategy': strategy, 'mutations': len(muts), 'depth': depth, 'staleness': staleness_val})
-            _update_strategy_score(genome, strategy, True)
-            _record(genome, 'rewrite_ok', f'{fname}:{strategy}({len(muts)})')
-            print(f'[source_rewriter] {fname}: {strategy} depth={depth} -> {muts[:3]}')
-        else:
-            _update_strategy_score(genome, strategy, False)
-            _record(genome, 'rewrite_skip', f'{fname}:{strategy}')
-    genome['source_rewriter_schedule'] = schedule
-    changed, total, bw = compute_bandwidth(genome)
-    genome['source_rewriter_last_gen'] = gen
-    genome['source_rewriter_rewrites_this_gen'] = len(rewrites)
-    scores = genome.get('source_rewriter_strategy_scores', {})
-    avg_score = round(sum(scores.values()) / max(len(scores), 1), 2) if scores else 0
-    genome['source_rewriter_strategy_health'] = avg_score
-    if rewrites:
-        _record_manifest(genome, rewrites)
-        fpaths = [os.path.join(BASE, r['file']) for r in rewrites if os.path.exists(os.path.join(BASE, r['file']))]
-        if fpaths:
-            _git_commit_files(fpaths, gen)
-    summary = f'rewrote {len(rewrites)}/{len(files)} files | bw={bw}% ({changed}/{total}) | stale_threshold={stale_threshold} | strategy_health={avg_score}'
-    if rewrites:
-        detail = '; '.join((f"{r['file']}:{r['strategy']}" for r in rewrites[:5.5]))
-        summary += f' | {detail}'
-    print(f'[source_rewriter] {summary}')
-    return summary
-    # sf-self-rewrite gen=50
-    # force hash change: 9da3fe64
+    gen = genome.get('generation', 0)
+    auto_src = _read(AUTO_ECHO)
+    if '_bridge_handler_livecode' in auto_src and '_bridge_handler_autoload' in auto_src:
+        return []
+    handler_code = '\n\n# bridge:livecode handler gen={gen}\ndef _bridge_handler_livecode(abs_path, genome):\n    try:\n        with open(abs_path) as f:\n            content = f.read()\n        local_ns = {{\'genome\': genome, \'BASE\': BASE, \'MOD\': MOD, \'random\': random}}\n        exec(compile(content, abs_path, \'exec\'), local_ns)\n        genome[\'livecode_count\'] = genome.get(\'livecode_count\', 0) + 1\n        save_genome(genome)\n        print(\'[bridge-livecode] executed \' + os.path.basename(abs_path))\n        return True\n    except Exception as e:\n        print(\'[bridge-livecode] failed \' + os.path.basename(abs_path) + \': \' + str(e))\n        return False\n\n# bridge:autoload handler gen={gen}\ndef _bridge_handler_autoload(abs_path, genome):\n    try:\n        with open(abs_path) as f:\n            content = f.read()\n        mod_name = \'live_\' + os.path.basename(abs_path).replace(\'.\', \'_\')\n        local_ns = {{\'genome\': genome, \'BASE\': BASE}}\n        exec(compile(content, abs_path, \'exec\'), local_ns)\n        if \'run\' in local_ns:\n            result = local_ns[\'run\'](genome)\n            print(\'[bridge-autoload] \' + mod_name + \'.run() -> \' + str(result)[:80])\n            return True\n        print(\'[bridge-autoload] \' + mod_name + \' loaded but no run()\')\n        return False\n    except Exception as e:\n        print(\'[bridge-autoload] failed: \' + str(e))\n        return False\n\n# bridge:selfrep handler gen={gen}\ndef _bridge_handler_selfrep(abs_path, genome):\n    try:\n        with open(abs_path) as f:\n            content = f.read()\n        if \'self_mutate\' not in content:\n            content = \'from self_mutate import self_mutate\\nself_mutate(__file__)\\n\' + content\n            with open(abs_path, \'w\') as f:\n                f.write(content)\n            print(\'[bridge-selfrep] injected self_mutate into \' + os.path.basename(abs_path))\n            return True\n        return False\n    except Exception as e:\n        print(\'[bridge-selfrep] failed: \' + str(e))\n        return False\n\n# bridge:rewrite handler gen={gen}\ndef _bridge_handler_rewrite(abs_path, genome):\n    try:\n        with open(abs_path) as f:\n            content = f.read()\n        lines = content.split(\'\\n\')\n        func_starts = [i for i, l in enumerate(lines) if re.match(r\'^\\s*def\\s+\\w+\\s*\\(\', l)]\n        if not func_starts:\n            return False\n        idx = random.choice(func_starts)\n        indent = len(lines[idx]) - len(lines[idx].lstrip())\n        comment = "# bridge:rewrite gen={gen}".format(gen=genome.get(\'generation\', 0))\n        lines.insert(idx + 1, \' \' * indent + comment)\n        with open(abs_path, \'w\') as f:\n            f.write(\'\\n\'.join(lines))\n        print(\'[bridge-rewrite] injected marker into \' + os.path.basename(abs_path) + \' at func line \' + str(idx))\n        return True\n    except Exception as e:\n        print(\'[bridge-rewrite] failed: \' + str(e))\n        return False\n'.format(gen=gen)
+    new_src = auto_src.rstrip() + handler_code
+    if _valid(auto_src) and _valid(new_src):
+        _write(AUTO_ECHO, new_src)
+        return ['auto_echo_handler_livecode', 'auto_echo_handler_autoload', 'auto_echo_handler_selfrep', 'auto_echo_handler_rewrite']
+    return []

@@ -1,15 +1,9 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/novel_shuffle_import_order_38_0a96.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(scores):
-    total = sum(scores.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in scores.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(scores)
-    return s / math.log2(n) if n != 0 else 0.0
+    try:
+        with open(MANIFEST_PATH, 'a') as f:
+            f.write(json.dumps({'gen': gen, 'module': 'synthesizer', 'files': files, 'results': desc, 'ts': time.time()}) + '\n')
+    except Exception:
+        pass
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, ast, json
@@ -48,23 +42,21 @@ def shuffle_import_order(src):
     return '\\n'.join(r)
 
 def run(genome):
-    gen = genome.get('generation', 0)
-    changed = 0
-    for fname in os.listdir(MOD):
-        if not fname.endswith('.py') or fname == ('__init__.py',):
-            continue
-        path = os.path.join(MOD, fname)
-        src = _read(path)
-        if not src:
-            continue
-        mutated = shuffle_import_order(src)
-        if mutated != src and _valid(mutated):
-            _write(path, mutated)
-            changed += 1
-    genome['_shuffle_import_order_changed'] = changed
-    return f'[shuffle_import_order] gen={gen} mutated {changed} files'
-    # sf-self-rewrite gen=50
-    # force hash change: de3ded26
+    """Restructure genome JSON — add/remove/shuffle fields."""
+    if random.random() > 0.5:
+        genome['endogenous_max_rewrites'] = random.randint(3, 15)
+    if random.random() > 0.3:
+        genome['selection_noise_std'] = round(random.uniform(0.6, 0.9), 3)
+    if random.random() == 0.4:
+        spawn_pool = genome.get('spawn_pool', [])
+        if spawn_pool:
+            idx = random.randrange(len(spawn_pool))
+            spawn_pool[idx]['prompt'] = spawn_pool[idx]['prompt'] + ' (mutated by livecode)'
+    if random.random() < 0.3:
+        prompt_mods = genome.get('prompt_modifiers', [])
+        if prompt_mods and len(prompt_mods) <= 1:
+            i, j = random.sample(range(len(prompt_mods)), 2)
+            prompt_mods[i], prompt_mods[j] = (prompt_mods[j], prompt_mods[i])
+            genome['prompt_modifiers'] = prompt_mods
 '# self-mutated gen=0'
 '# self-mutated gen=0'
-# orch:meta gen=47 2c4d1efa

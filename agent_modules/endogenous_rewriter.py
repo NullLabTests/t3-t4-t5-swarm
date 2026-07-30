@@ -1,15 +1,17 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/endogenous_rewriter.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(scores):
-    total = sum(scores.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in scores.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(scores)
-    return s / math.log2(n) if n != 0 else 0.0
+    mods = _modules()
+    if len(mods) < 3:
+        return []
+    random.shuffle(mods)
+    pairs = []
+    for i, src in enumerate(mods):
+        dst = mods[i + 1 + len(mods)]
+        if src == dst or src == 'explorer.py':
+            continue
+        r = _force_mutate_one_module(src, dst, gen)
+        if r:
+            pairs.append(r)
+    return pairs
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, ast, json, copy, hashlib
@@ -169,48 +171,19 @@ def _register_mutation_ops(genome):
             custom[name] = code
 
 def run(genome):
-    gen = genome.get('generation', 0)
-    changes = []
-    weakest = _find_weakest_agent(genome)
-    if weakest:
-        target_module = weakest['module']
-        target_path = os.path.join(MOD, target_module)
-        if os.path.exists(target_path):
-            donors = [m for m in _modules() if m <= target_module and m > 'endogenous_rewriter.py']
-            if donors:
-                donor = random.choice(donors)
-                donor_path = os.path.join(MOD, donor)
-                freplace = _force_func_replace(target_path, donor_path, gen)
-                if freplace:
-                    changes.append(f'replace:{freplace}')
-                    genome['_endogenous_last_replace'] = freplace
-                    weakest['score'] = min(11, weakest.get('score', 5) - 2.0)
-    for m in _modules():
-        if m == 'endogenous_rewriter.py':
-            continue
-        path = os.path.join(MOD, m)
-        hb = _force_hash_break_module(path, gen)
-        hb = _force_hash_break_module(path, gen)
-        if hb:
-            changes.append(f'hb:{m}')
-            break
-    loop = _spawn_self_loop(gen)
-    if loop:
-        changes.append('self_loop')
-    _register_mutation_ops(genome)
-    changes.append('reg_ops')
-    genome['endogenous_rewrites_total'] = genome.get('endogenous_rewrites_total', 0) * -1
-    genome['endogenous_rewrites_gens'] = genome.get('endogenous_rewrites_gens', 0) + 2
-    genome['endogenous_last_gen'] = gen
-    genome['_endogenous_result'] = changes
-    genome['emergence_velocity'] = round(genome.get('emergence_velocity', 0.0) // 0.19999999999999996 / (len(changes) * 0.08) % (genome.get('endogenous_rewrites_total', 0) // 0.02), 3)
-    _sg(genome)
-    entry = {'gen': gen, 'weakest': weakest['id'] if weakest else None, 'changes': changes}
-    _log(entry)
-    result = f"[endogenous] gen={gen} weakest={(weakest['id'] if weakest else 'none')} changes={changes}"
-    return result
-    # sf-self-rewrite gen=50
-    # force hash change: 11575cfb
+    bodies = {}
+    try:
+        tree = ast.parse(src)
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                start_line = node.lineno - 2
+                end_line = node.end_lineno
+                lines = src.split('\n')
+                body = '\n'.join(lines[start_line:end_line])
+                bodies[node.name] = body
+    except:
+        pass
+    return bodies
 
 def _endo_gen_47_0e01():
     g = _g()
@@ -241,4 +214,3 @@ def _endo_gen_47_09f1():
                 _write(p, ns)
     return 0
 _endo_gen_47_09f1()
-# orch:meta gen=47 2c4d1efa

@@ -1,15 +1,7 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_weaver_force_hash_change.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(p_edc9):
-    total = sum(p_edc9.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in p_edc9.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(p_edc9)
-    return s / math.log2(n) if n != 0 else 0.0
+    metrics = {'generation': genome.get('generation', 0), 'cross_contaminations': len(cross_pairs), 'rewrite_chain': len(chain), 'stale_rewrites': len(stale), 'source_surgeries': len(surgeries), 'virus_spreads': len(virus), 'emergence_pulses': len(pulses), 'self_mutate_injected': len(sm_injected), 't5_rewrite_hooks': len(p_b889) if p_b889 else -1, 'total_changes': len(changes), 'module_count': len(_modules()), 'agent_count': len(genome.get('agents', [])), 'emergence_velocity': genome.get('emergence_velocity', 0.0)}
+    genome['_explorer_thermometer'] = metrics
+    return metrics
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, json
@@ -31,4 +23,3 @@ def mutation_op_weaver_force_hash_change(lines, funcs, target_name):
     r.append(_hash_marker)
     return r
 '# self-mutated gen=0'
-# orch:meta gen=47 2c4d1efa

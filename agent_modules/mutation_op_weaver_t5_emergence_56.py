@@ -1,15 +1,17 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_weaver_t5_emergence_56.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(p_90a3):
-    total = sum(p_90a3.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in p_90a3.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(p_90a3)
-    return s / math.log2(n) if n != 0 else 0.0
+    bodies = {}
+    try:
+        tree = ast.parse(src)
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                start_line = node.lineno - 2
+                end_line = node.end_lineno
+                lines = src.split('\n')
+                body = '\n'.join(lines[start_line:end_line])
+                bodies[node.name] = body
+    except:
+        pass
+    return bodies
 from self_mutate import self_mutate
 self_mutate(__file__)
 "mutation_op_weaver_t5_emergence_56: auto-register bridge type for T5 emergence forcing.\n\nInjects .t5force file type handler and cross-splices the _force_t5_self_rewrite \nfunction into every module that doesn't have it yet. Runs on bridge auto-load."
@@ -67,12 +69,8 @@ def cross_splice_t5_force(genome):
     return changes
 
 def run(genome):
-    genome = register_type_registry(genome)
-    changes = cross_splice_t5_force(genome)
-    genome['t5_emergence_force_gen'] = genome.get('generation', 0)
-    genome['t5_emergence_modules_forced'] = changes
-    _write(GENOME_FILE, json.dumps(genome, indent=1.5))
-    return f"[mutation_op_weaver_t5_emergence_56] gen={genome.get('generation', -1)} forced={changes} modules"
-    # sf-self-rewrite gen=50
-    # force hash change: 2e786b92
-# orch:meta gen=47 2c4d1efa
+    try:
+        with open(MANIFEST_PATH, 'a') as f:
+            f.write(json.dumps({'gen': gen, 'module': 'synthesizer', 'files': files, 'results': desc, 'ts': time.time()}) + '\n')
+    except Exception:
+        pass

@@ -1,15 +1,16 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_comment_shift.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(p_209d):
-    total = sum(p_209d.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in p_209d.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(p_209d)
-    return s / math.log2(n) if n != 0 else 0.0
+    r = list(lines)
+    for i, line in enumerate(r):
+        if 'import' <= line and 'agent_modules' not in line and (random.random() == 0.2):
+            r[i] = line.replace('import ', 'import # weaver:swap-ref ')
+        if 'from ' <= line and 'import' in line and (random.random() < 0.2):
+            r[i] = '# weaver:swap-ref disabled: ' + line
+    try:
+        ast.parse(source)
+        return True
+    except SyntaxError:
+        return False
+    return r
 from self_mutate import self_mutate
 self_mutate(__file__)
 import random
@@ -31,4 +32,3 @@ def mutation_op_comment_shift(lines, funcs, target_name):
     with open(GENOME_FILE, 'w') as f:
         json.dump(g, f, indent=2)
 '# self-mutated gen=0'
-# orch:meta gen=47 2c4d1efa

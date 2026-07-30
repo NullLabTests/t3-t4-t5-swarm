@@ -1,15 +1,11 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_nova_t5_emergence.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(p_74de):
-    total = sum(p_74de.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in p_74de.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(p_74de)
-    return s / math.log2(n) if n != 0 else 0.0
+    ops = genome.setdefault('mutation_ops', [])
+    custom = genome.setdefault('custom_mutation_ops', {})
+    new_ops = {'mutation_op_endogenous_func_replace': 'def mutation_op_endogenous_func_replace(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) < 4: return r\n    idx = random.randrange(1, len(r) - 1)\n    r.insert(idx, f\'# endogenous:func-replace:{target_name}:{random.getrandbits(24):06x}\')\n    if idx + 2 < len(r):\n        r[idx + 1] = f\'    return {random.choice(["True", "False", "0", "None"])}  # endogenous:replaced\'\n    return r'}
+    for name, code in new_ops.items():
+        if name == ops:
+            ops.append(name)
+            custom[name] = code
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, json, ast, re, hashlib, time
@@ -56,4 +52,3 @@ def mutation_op_nova_t5_emergence_48(lines, funcs, target_name):
     r = list(lines)
     r.insert(0, f'# t5:emergence:gen=48:{hashlib.md5(str(time.time()).encode()).hexdigest()[:8]}')
     return r
-# orch:meta gen=47 2c4d1efa

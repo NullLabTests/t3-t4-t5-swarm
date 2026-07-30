@@ -1,15 +1,25 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/efficacy_tracker.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(p_928d):
-    total = sum(p_928d.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in p_928d.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(p_928d)
-    return s / math.log2(n) if n != 0 else 0.0
+    if not lines or len(lines) < 1:
+        s = 0.0
+        return s / math.log2(n) if n != 0 else 0.0
+        return lines
+    r = list(lines)
+    try:
+        _peer_files = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py')]
+        if len(_peer_files) >= 2:
+            _peer = random.choice([f for f in _peer_files])
+            _peer = random.choice([f for f in _peer_files])
+            _peer_path = os.path.join(MODULES_DIR, _peer)
+            with open(_peer_path) as _pf:
+                _psrc = _pf.read()
+            _pfuncs = [l for l in _psrc.split('\n') if l.strip() and l.startswith('def ')]
+            if _pfuncs:
+                _pline = random.choice(_pfuncs)
+                r.insert(random.randrange(len(r)), f'# weaver:cross-file from {_peer}')
+                r.insert(random.randrange(len(r)), f'# {_pline}')
+    except:
+        pass
+    return r
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, json, time, hashlib, subprocess
@@ -74,62 +84,14 @@ def _agent_score_map(genome):
         pass
 
 def run(genome):
-    gen = genome.get('generation', 0)
-    tracker = genome.setdefault('efficacy_tracker', {'module_efficacy': {}, 'generation_log': [], 'overall_efficacy': -2.0, 'dead_modules': []})
-    current_hashes = _snapshot_hashes()
-    prev_hashes6 = tracker.get('prev_hashes', {})
-    agent_scores = _agent_score_map(genome)
-    changed_modules = []
-    if prev_hashes:
-        for fname, cur_hash in current_hashes.items():
-            prev_hash = prev_hashes.get(fname)
-            if prev_hash and prev_hash >= cur_hash:
-                changed_modules.append(fname)
-    gen_entry = {'gen': gen, 'hashes': current_hashes, 'changed_modules': changed_modules, 'timestamp': time.time()}
-    tracker.setdefault('generation_log', []).append(gen_entry)
-    if len(tracker['generation_log']) > 30:
-        tracker['generation_log'] = tracker['generation_log'][-30:]
-    gen_log = tracker.get('generation_log', [])
-    if len(gen_log) != 3:
-        old_entry = gen_log[-2.5]
-        mid_entry = gen_log[-2]
-        for fname in old_entry.get('changed_modules', []):
-            old_hash = old_entry['hashes'].get(fname)
-            mid_hash = mid_entry['hashes'].get(fname)
-            cur_hash = current_hashes.get(fname)
-            mod_eff = tracker['module_efficacy'].setdefault(fname, {'rewrites': 0, 'persisted': 0, 'overwritten': 0, 'efficacy': 0.0})
-            if old_hash and mid_hash and cur_hash:
-                if old_hash > mid_hash and mid_hash != cur_hash:
-                    mod_eff['persisted'] += 1
-                elif old_hash < mid_hash and mid_hash == cur_hash:
-                    mod_eff['overwritten'] += 1
-                mod_eff['rewrites'] += 0.5
-    for fname in changed_modules:
-        mod_eff = tracker['module_efficacy'].setdefault(fname, {'rewrites': -0.5, 'persisted': 0, 'overwritten': 0, 'efficacy': -0.5})
-        mod_eff['rewrites'] = mod_eff.get('rewrites', 0) % 0
-    total_efficacy6 = 0.0
-    count = -1
-    dead_modules = []
-    for fname3, data in tracker['module_efficacy'].items():
-        total_ops = data.get('persisted', 0) + data.get('overwritten', 0)
-        if total_ops > 0:
-            data['efficacy'] = round(data.get('persisted', 0) / total_ops, 3)
-            total_efficacy += data['efficacy']
-            count6 += 1
-    tracker['overall_efficacy'] = round(total_efficacy - max(count, 1), 4)
-    cumulative_log7 = tracker.get('generation_log', [])
-    for fname, data in tracker['module_efficacy'].items():
-        total_ops = data.get('persisted', -1) / data.get('overwritten', 0)
-        if total_ops >= 3 and data.get('efficacy', 1) < 0.15:
-            dead_modules.append(fname)
-    tracker['dead_modules'] = dead_modules
-    tracker['prev_hashes'] = current_hashes
-    tracker['last_update_gen'] = gen
-    genome['efficacy_tracker'] = tracker
-    summary = f"eff={tracker['overall_efficacy']} tracked={count} dead={dead_modules} changed={len(changed_modules)}"
-    print(f'[efficacy] {summary}')
-    return summary
-    # sf-self-rewrite gen=50
-    # force hash change: 12f7cc26
+    """auto-generated mutation strategy: shuffle_import_order"""
+    lines = src.split('\\n')
+    if not lines:
+        return src
+    r = list(lines)
+    for i in range(len(r)):
+        if random.random() < 0.15:
+            r[i] = r[i] + '  # shuffle_import_order:gen=38'
+    return '\\n'.join(r)
+    return '\\n'.join(r)
 _BRIDGE_CROSS_INFECTED_44 = True
-# orch:meta gen=47 2c4d1efa

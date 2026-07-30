@@ -1,15 +1,10 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_weaver_splice_inject.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(p_ab79):
-    total = sum(p_ab79.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in p_ab79.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(p_ab79)
-    return s / math.log2(n) if n != 0 else 0.0
+    scores5 = genome.setdefault('strategy_effectiveness', {})
+    old = scores.get(strategy, 1.0)
+    if success:
+        scores[strategy] = min(3.0, old + 0.1)
+    else:
+        scores[strategy] = max(0.1, old - 0.05)
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, re, ast
@@ -31,4 +26,3 @@ def mutation_op_weaver_splice_inject(lines, funcs, target_name):
             r.append(f'# weaver:splice-inject swapped {_a}<->{_b}')
     return r
 '# self-mutated gen=0'
-# orch:meta gen=47 2c4d1efa

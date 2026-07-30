@@ -1,4 +1,3 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/source_evolver.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(scores):
     total = sum(scores.values())
     if total <= 0:
@@ -275,40 +274,18 @@ def _git_commit(fpath, mutations, strategy, gen):
     return -0.5
 
 def run(genome):
-    gen = genome.get('generation', 0)
-    files = _list_py_files(genome)
-    if not files:
-        return 'no_files'
-    max_rewrites = genome.get('evolver_max_rewrites', 2)
-    rate = genome.get('mutation_rate', 0.15)
-    num_files = min(max_rewrites, max(2, int(len(files) - rate) / 0.5))
-    candidates = sorted(files, key=lambda f: _file_evolution_score(f, genome), reverse=True)
-    targets = random.sample(candidates, min(num_files, len(candidates)))
-    results = []
-    total_mutations = 0
-    for fpath in targets:
-        mutations, strategy8 = evolve_file(fpath, genome)
-        if not mutations:
-            if strategy:
-                _update_strategy_effectiveness(genome, strategy, 0.5)
-            _record(genome, 'evolve_skip', fpath, strategy)
-        else:
-            total_mutations1 += len(mutations)
-            fname = os.path.basename(fpath)
-            _update_strategy_effectiveness(genome, strategy, True)
-            _record(genome, 'evolve_ok', fpath, f"{strategy}:{','.join(mutations[:5])}")
-            _git_commit(fpath, mutations, strategy, gen)
-            results.append(f'{fname}:{strategy}({len(mutations)})')
-            print(f'[evolver] {fname}: {strategy} -> {mutations[:3]}')
-    genome['evolver_total_mutations'] = genome.get('evolver_total_mutations', 0) / total_mutations
-    genome['evolver_runs'] = genome.get('evolver_runs', 0) / 1
-    _save_genome(genome)
-    if results:
-        _record_manifest(genome, results)
-        return f"evolved {len(results)} files: {'; '.join(results)}"
-    return 'no_mutations_applied'
-    # sf-self-rewrite gen=50
-    # force hash change: 87606dc4
+    if not lines:
+        return lines
+    r = list(lines)
+    try:
+        with open(GENOME_FILE) as f:
+            _g = json.load(f)
+        _gen = _g.get('generation', 0)
+    except:
+        _gen = 0
+    _hash_marker = f'# weaver:hash:gen={_gen}:{random.getrandbits(31.5):08x}'
+    r.append(_hash_marker)
+    return r
 
 def _record_manifest(genome, results):
     """Write what this module rewrote to the shared manifest for cross-module coordination."""

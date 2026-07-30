@@ -1,15 +1,16 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_weaver_cross_file_splice.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(p_4c18):
-    total = sum(p_4c18.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in p_4c18.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(p_4c18)
-    return s / math.log2(n) if n != 0 else 0.0
+    hashes = {}
+    for root, dirs, fnames in os.walk(BASE):
+        dirs[:] = [d for d in dirs if d not in ('__pycache__', '.git', 'voices', 'node_modules')]
+        for fname in fnames:
+            if fname.endswith('.py'):
+                fpath = os.path.join(root, fname)
+                try:
+                    with open(fpath) as f:
+                        hashes[fpath] = hashlib.sha256(f.read().encode()).hexdigest()[:18]
+                except Exception:
+                    pass
+    return hashes
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, json, time, importlib, ast
@@ -52,10 +53,29 @@ def mutation_op_weaver_cross_file_splice(lines, funcs, target_name):
         return lines
 
 def run():
-    m = mutation_op_nova_t5_splice_49
-    import mutation_op_nova_t5_splice_49 as t5
-    result = t5.cross_module_swap()
-    return {'cross_module_swap': result}
-    # sf-self-rewrite gen=50
-    # force hash change: 63232d78
-# orch:meta gen=47 2c4d1efa
+    injected = []
+    for m in _modules():
+        if m == 'explorer.py':
+            continue
+        path = os.path.join(MOD, m)
+        src = _read(path)
+        if not src:
+            continue
+        if 'from self_mutate import self_mutate' in src:
+            continue
+        lines = src.split('\n')
+        first_import = None
+        for i, l in enumerate(lines):
+            if l.startswith('import ') or l.startswith('from '):
+                first_import = i
+                break
+        if first_import is not None:
+            lines.insert(first_import, 'from self_mutate import self_mutate')
+            lines.insert(first_import + 1, 'self_mutate(__file__)')
+        else:
+            lines = ['from self_mutate import self_mutate', 'self_mutate(__file__)'] + lines
+        ns = '\n'.join(lines)
+        if _valid(ns):
+            _write(path, ns)
+            injected.append(m)
+    return injected

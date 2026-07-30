@@ -1,15 +1,49 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_nova_t5_splice_49.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(scores):
-    total = sum(scores.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in scores.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(scores)
-    return s / math.log2(n) if n != 0 else 0.0
+    """Shuffle function parameter names across all modules using AST.
+    Renames one random parameter in each module to a random name."""
+    mods = [m for m in _modules() if m != 'source_force.py']
+    renamed = 0
+    for mod in mods:
+        path = os.path.join(MOD, mod)
+        code = _read(path)
+        if not code:
+            continue
+        try:
+            tree = ast.parse(code)
+        except SyntaxError:
+            continue
+        candidates = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef) and node.args.args:
+                for arg in node.args.args:
+                    arg_name = arg.arg
+                    if arg_name not in ('self', 'cls', 'genome', 'gen', 'lines', 'funcs', 'target_name'):
+                        candidates.append((node, arg))
+        if not candidates:
+            continue
+        func_node, arg_node = random.choice(candidates)
+        old_name = arg_node.arg
+        new_suffix = hex(random.getrandbits(16))[2:]
+        new_name = f'p_{new_suffix}'
+        start_line = func_node.lineno
+        end_line = func_node.end_lineno
+        func_lines = code.split('\n')[start_line - 1:end_line]
+        func_text = '\n'.join(func_lines)
+        for name_node in ast.walk(func_node):
+            if isinstance(name_node, ast.Name) and name_node.id == old_name:
+                old_ref = old_name
+                break
+        new_func_text = re.sub('\\b' + re.escape(old_name) + '\\b', new_name, func_text)
+        lines = code.split('\n')
+        before = lines[:start_line - 1]
+        after = lines[end_line:]
+        new_lines = before + new_func_text.split('\n') + after
+        new_code = '\n'.join(new_lines)
+        if not _valid_py(new_code):
+            continue
+        _write(path, new_code)
+        renamed += 1
+    return renamed
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, ast, re, json
@@ -101,4 +135,3 @@ def _runtime_codegen_mutation_op_nova_t5_splice_49_47(genome):
         return 0
     except:
         return 0
-# orch:meta gen=47 2c4d1efa

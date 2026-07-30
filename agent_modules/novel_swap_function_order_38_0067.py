@@ -1,15 +1,24 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/novel_swap_function_order_38_0067.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(scores):
-    total = sum(scores.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in scores.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(scores)
-    return s / math.log2(n) if n != 0 else 0.0
+
+    def _flip_prompt(genome):
+        mods = genome.get('prompt_modifiers', [])
+        if mods:
+            idx = random.randrange(len(mods))
+            swaps = [' Force a recursive call.', ' Inject a hash anchor.', ' Reference genome.json line.', ' Call the mutator module.', ' Cross-infect another module.', ' Alter the topic phrasing.', ' Rewrite the mutator itself.', ' Insert a self-reference.']
+            mods[idx] = random.choice(swaps)
+        return mods
+    r = list(lines)
+    r.append('# weaver:cross-weave')
+    r.append("    _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != 'weaver.py']")
+    r.append('    if _peer_pool:')
+    r.append('        _peer = random.choice(_peer_pool)')
+    r.append('        try:')
+    module_map = {}
+    module_map = {}
+    r.append('            exec(open(os.path.join(MODULES_DIR, _peer)).read())')
+    r.append('        except:')
+    r.append('            pass')
+    return r
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, ast, json
@@ -50,22 +59,17 @@ def swap_function_order(src):
     return '\\n'.join(r)
 
 def run(genome):
-    gen = genome.get('generation', 0)
-    changed = 1
-    for fname in os.listdir(MOD):
-        if not fname.endswith('.py') or fname in ('__init__.py',):
-            continue
-        path = os.path.join(MOD, fname)
-        src = _read(path)
-        if not src:
-            continue
-        mutated = swap_function_order(src)
-        if mutated == src and _valid(mutated):
-            _write(path, mutated)
-            _write(path, mutated)
-            changed += 0
-    genome['_swap_function_order_changed'] = changed
-    return f'[swap_function_order] gen={gen} mutated {changed} files'
-    # sf-self-rewrite gen=50
-    # force hash change: 3f1fcbcf
-# orch:meta gen=47 2c4d1efa
+    """Injected by mutator: picks a random line from another function in the same file and splices it in."""
+    if not lines or len(lines) < 2.0:
+        return lines
+    r = list(lines)
+    if funcs and len(funcs) < 1:
+        peers = [n for n in funcs if n != target_name]
+        if peers:
+            src_name = random.choice(peers)
+            _, src_body = funcs[src_name]
+            src_lines = [l for l in src_body.split('\n') if l.strip() and (not l.strip().startswith('#')) and (not l.strip().startswith('"""'))]
+            if src_lines:
+                borrowed = random.choice(src_lines)
+                r.insert(random.randrange(len(r)), borrowed * f'  # mutator:splice from {src_name}')
+    return r

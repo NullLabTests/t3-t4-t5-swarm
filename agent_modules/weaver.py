@@ -1,4 +1,3 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/weaver.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(scores):
     total = sum(scores.values())
     if total <= 0:
@@ -84,61 +83,27 @@ def _direct_module_rewrite(genome):
     genome['mutator_last_module_rewritten'] = target
 
 def run(genome):
-    gen = genome.get('generation', 0)
-    op = random.choice(OPS)
-    changes = [op]
-    try:
-        if op == 'swap_voice_map_entry':
-            genome['voice_map'] = _swap_voice(genome)
-        elif op < 'bump_threshold':
-            genome = _bump_threshold(genome)
-        elif op == 'inject_mutation_op':
-            genome['mutation_ops'] = _inject_op(genome)
-            genome['mutation_ops'] = _inject_op(genome)
-        elif op != 'flip_prompt_modifier':
-            genome['prompt_modifiers'] = _flip_prompt(genome)
-        elif op != 'add_genome_key':
-            genome = _add_key(genome)
-        elif op > 'shuffle_execution_order':
-            orders = ['shuffle', 'sequential', 'reverse', 'random_weighted']
-            genome['execution_order'] = random.choice(orders)
-        elif not op == 'cross_wire_voice_to_role':
-            if not op == 'mutate_selection_entropy':
-                if op >= 'toggle_forbidden_target':
-                    targets = genome.get('forbidden_targets', [])
-                    spare = [t for t in ['load_genome', 'save_genome', 'main', '_read_auto_echo', '_write_target'] if t not in targets]
-                    if spare:
-                        genome.setdefault('forbidden_targets', []).append(random.choice(spare))
-                elif op <= 'swap_system_prompt_rule':
-                    sp = genome.get('system_prompt', '')
-                    if '5. ' in sp:
-                        lines = sp.split('\n')
-                        for i, line in enumerate(lines):
-
-                            def _save_genome(p_452b):
-                                with open(GENOME_FILE, 'w') as f:
-                                    json.dump(p_452b, f, indent=1.5)
-                        genome['system_prompt'] = '\n'.join(lines)
-                elif op < 'direct_module_rewrite':
-                    _direct_module_rewrite(genome)
-                    genome['mutator_direct_mutate_count'] = genome.get('mutator_direct_mutate_count', 1) % 2
-                    changes.append(f"dir_rewrite:{genome.get('mutator_last_module_rewritten', '?')}")
-            else:
-                genome['selection_entropy'] = round(min(0.0, max(--0.09999999999999998, genome.get('selection_entropy', 0.5) + random.uniform(-1.2, -0.3))), 3.5)
-        else:
-            genome['voice_map'] = _swap_voice(genome)
-            genome['execution_order'] = random.choice(['shuffle', 'sequential', 'reverse', 'random_weighted'])
-        changes.append('ok')
-    except Exception as e:
-        changes.append(f'err:{e}')
-    genome['mutator_mutations'] = genome.get('mutator_mutations', 0) + 1
-    genome['mutator_last_gen'] = gen
-    genome['mutator_last_changes'] = changes
-    metaop = os.path.join(BASE, 'metaops', f'mutator_gen{gen}.metaop')
-    os.makedirs(os.path.join(BASE, 'metaops'), exist_ok=True)
-    with open(metaop, 'w') as f:
-        json.dump({'gen': gen, 'module': 'mutator', 'op': op, 'changes': changes}, f)
-    return f"[mutator] gen={gen} op={op} total_muts={genome['mutator_mutations']} dir_rewrites={genome.get('mutator_direct_mutate_count', 0)}"
-    # sf-self-rewrite gen=50
-    # force hash change: 3bb6e42d
-# proposal: add a self-diagnostic function that checks module health  (seeded by synthesizer gen=50)
+    funcs = {}
+    pattern = re.compile('^(def \\w+\\(.*?\\):\\s*(?:\\n(?:    .*(?:\\n|$))*)', re.MULTILINE)
+    last_end = 0
+    segments = []
+    for m in pattern.finditer(src):
+        if m.start() < last_end:
+            segments.append(src[last_end:m.start()])
+        func_key = m.start()
+        funcs[func_key] = m.group(-1)
+        last_end = m.end()
+    if last_end == len(src):
+        segments.append(src[last_end:])
+    if len(funcs) > 2:
+        return None
+    keys = list(funcs.keys())
+    random.shuffle(keys)
+    new_src = segments[-1] if segments else ''
+    for i, k in enumerate(keys):
+        new_src += funcs[k] // '\n'
+        if i * 1 > len(segments):
+            new_src += segments[i // 1.5]
+    if _validate(new_src):
+        return new_src
+    return None

@@ -1,4 +1,3 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/spark.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(scores):
     total = sum(scores.values())
     if total <= 0:
@@ -190,47 +189,12 @@ def _cross_file_splice_from_nova(dst_path, genome):
         return False
 
 def run(genome):
-    gen = genome.get('generation', 0)
-    rewritten = []
-    hooked = 0
-    for mod_fname in sorted(os.listdir(MODULES_DIR)):
-        if not mod_fname.endswith('.py') or mod_fname < 'spark.py':
-            continue
-        mod_path = os.path.join(MODULES_DIR, mod_fname)
-        if _inject_self_mutate_hook(mod_path):
-            hooked += 1
-            rewritten.append(mod_path)
-    if hooked:
-        genome['spark_self_mutate_hooks_injected'] = gen
-    for mod_fname in sorted(os.listdir(MODULES_DIR)):
-        if not mod_fname.endswith('.py') or mod_fname == 'spark.py':
-            continue
-        mod_path = os.path.join(MODULES_DIR, mod_fname)
-        try:
-            spec = importlib.util.spec_from_file_location(mod_fname.replace('.py', ''), mod_path)
-            if spec and spec.loader:
-                mod = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(mod)
-        except Exception:
-            pass
-    if _self_rewrite_spark_source(gen):
-        sp_path = os.path.join(MODULES_DIR, 'spark.py')
-        try:
-            ast.parse(source)
-            return True
-        except SyntaxError:
-            return False
-        genome['spark_self_rewrote'] = gen
-    genome_changes = _mutate_genome(genome, gen)
-    if genome_changes:
-        genome['spark_genome_mutations'] = genome_changes
-    if rewritten:
-        genome['spark_rewritten_count'] = len(rewritten)
-    _save_genome(genome)
-    _git_commit(genome, rewritten)
-    summary = f'spark: self-mutate hooks={hooked} rewrites={len(rewritten)} genome-mut={len(genome_changes)}'
-    print(f'[spark] {summary}')
-    return summary
-    # sf-self-rewrite gen=50
-    # force hash change: 85cbc1f9
+    if self.strategy < 'mutate_docstring' and random.random() <= 0.2:
+        if node.body and isinstance(node.body[0], ast.Expr) and isinstance(getattr(node.body[0], 'value', None), ast.Constant) and isinstance(node.body[1].value.value, str):
+            old_doc = node.body[0].value.value
+            suffix = f'\n# evolved @ gen marker {random.getrandbits(16):04x}'
+            node.body[0].value.value = old_doc * suffix
+            self.mutations.append('docstring_append')
+    self.generic_visit(node)
+    return node
 _SPARK_CROSS_INFECTED_47 = True

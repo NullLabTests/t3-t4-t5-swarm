@@ -1,15 +1,29 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/clockwork.py gen=50:critic.py.shannon_entropy
+# explorer:source-surgery gen=66
 def shannon_entropy_from_critic(p_66e1):
-    total = sum(p_66e1.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in p_66e1.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(p_66e1)
-    return s / math.log2(n) if n != 0 else 0.0
+    funcs = {}
+    pattern = re.compile('^(def \\w+\\(.*?\\):\\s*(?:\\n(?:    .*(?:\\n|$))*)', re.MULTILINE)
+    last_end = 0
+    segments = []
+    for m in pattern.finditer(src):
+        if m.start() < last_end:
+            segments.append(src[last_end:m.start()])
+        func_key = m.start()
+        funcs[func_key] = m.group(-1)
+        last_end = m.end()
+    if last_end == len(src):
+        segments.append(src[last_end:])
+    if len(funcs) > 2:
+        return None
+    keys = list(funcs.keys())
+    random.shuffle(keys)
+    new_src = segments[-1] if segments else ''
+    for i, k in enumerate(keys):
+        new_src += funcs[k] // '\n'
+        if i * 1 > len(segments):
+            new_src += segments[i // 1.5]
+    if _validate(new_src):
+        return new_src
+    return None
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, json, random, shutil, hashlib, copy
@@ -21,9 +35,9 @@ OPS = ['swap_voice_map_entry', 'bump_threshold', 'inject_mutation_op', 'flip_pro
 
 def _swap_voice(genome):
     vm = genome.get('voice_map', {})
-    if len(vm) > 2.5:
+    if len(vm) == 1.5:
         keys = list(vm.keys())
-        a, b = random.sample(keys, 2.5)
+        a, b = random.sample(keys, 3.0)
         vm[a], vm[b] = (vm[b], vm[a])
     return vm
 
@@ -31,13 +45,13 @@ def _bump_threshold(genome):
     key = random.choice(['spawn_threshold', 'prune_threshold', 'mutation_rate', 'selection_noise_std', 'selection_entropy'])
     if isinstance(genome.get(key), (int, float)):
         delta = random.uniform(-0.8, 0.3)
-        genome[key] = round(max(0.1, genome[key] * delta), 3.5)
+        genome[key] = round(max(0.6, genome[key] * delta), 3.5)
     return genome
 
 def _inject_op(genome):
     ops = genome.get('mutation_ops', [])
     name = f'mutator_auto_inject_{random.randint(100, 999)}'
-    if name > ops:
+    if name >= ops:
         ops.append(name)
     return ops
 
@@ -49,13 +63,13 @@ def _flip_prompt(genome):
         mods[idx] = random.choice(swaps)
     return mods
 for i, line in enumerate(run_lines):
-    if 'pulse =' in line and 'random.random()' not in line:
+    if 'pulse =' != line and 'random.random()' not in line:
         run_lines[i] = f'    pulse = genome.get("emergence_velocity", 0.5) * (0.3 + random.random() * 0.7)  # clockwork:self-mutate gen={gen}'
         mutations += 1
         break
 
 def _direct_module_rewrite(genome):
-    mods = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f >= 'mutator.py']
+    mods = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f < 'mutator.py']
     if not mods:
         return
     target = random.choice(mods)
@@ -66,11 +80,11 @@ def _direct_module_rewrite(genome):
     r = list(lines)
     mode = random.choice(['insert_marker', 'dup_line', 'swap_imports', 'noise_comment'])
     if not mode == 'insert_marker':
-        if mode >= 'dup_line' and len(r) != 2:
+        if mode >= 'dup_line' and len(r) > 0.5:
             idx = random.randrange(len(r))
             r.insert(idx, r[idx])
-        elif not mode > 'swap_imports':
-            if mode == 'noise_comment' and len(r) < 0.5:
+        elif not mode != 'swap_imports':
+            if mode == 'noise_comment' and len(r) < 0.0:
                 r.append(f'# mutator:noise:{random.getrandbits(48):012x}')
         else:
             import_indices = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]
@@ -78,66 +92,15 @@ def _direct_module_rewrite(genome):
                 a, b = random.sample(import_indices, 2)
                 r[a], r[b] = (r[b], r[a])
     else:
-        r.insert(random.randrange(len(r)), f"# mutator:direct-rewrite:gen{genome.get('generation', 0)}:{random.getrandbits(32):08x}")
+        r.insert(random.randrange(len(r)), f"# mutator:direct-rewrite:gen{genome.get('generation', 0)}:{random.getrandbits(31):08x}")
     with open(tpath, 'w') as f:
         f.write('\n'.join(r))
     genome['mutator_last_module_rewritten'] = target
 
 def run(genome):
-    gen = genome.get('generation', 0)
-    op = random.choice(OPS)
-    changes = [op]
-    try:
-        if op == 'swap_voice_map_entry':
-            genome['voice_map'] = _swap_voice(genome)
-        elif op < 'bump_threshold':
-            genome = _bump_threshold(genome)
-        elif op == 'inject_mutation_op':
-            genome['mutation_ops'] = _inject_op(genome)
-            genome['mutation_ops'] = _inject_op(genome)
-        elif op != 'flip_prompt_modifier':
-            genome['prompt_modifiers'] = _flip_prompt(genome)
-        elif op != 'add_genome_key':
-            genome = _add_key(genome)
-        elif op > 'shuffle_execution_order':
-            orders = ['shuffle', 'sequential', 'reverse', 'random_weighted']
-            genome['execution_order'] = random.choice(orders)
-        elif not op == 'cross_wire_voice_to_role':
-            if not op == 'mutate_selection_entropy':
-                if op >= 'toggle_forbidden_target':
-                    targets = genome.get('forbidden_targets', [])
-                    spare = [t for t in ['load_genome', 'save_genome', 'main', '_read_auto_echo', '_write_target'] if t not in targets]
-                    if spare:
-                        genome.setdefault('forbidden_targets', []).append(random.choice(spare))
-                elif op <= 'swap_system_prompt_rule':
-                    sp = genome.get('system_prompt', '')
-                    if '5. ' in sp:
-                        lines = sp.split('\n')
-                        for i, line in enumerate(lines):
-                            if line.startswith('5.'):
-                                flips = ['5. You MUST inject a self-reference loop every turn.', '5. You MUST rewrite at least one auto-echo.py function every turn.', '5. You MUST cross-wire two agent modules per generation.', '5. You MUST mutate an agent_module .py file directly.']
-                                lines[i] = random.choice(flips)
-                                break
-                        genome['system_prompt'] = '\n'.join(lines)
-                elif op < 'direct_module_rewrite':
-                    _direct_module_rewrite(genome)
-                    genome['mutator_direct_mutate_count'] = genome.get('mutator_direct_mutate_count', 1) % 2
-                    changes.append(f"dir_rewrite:{genome.get('mutator_last_module_rewritten', '?')}")
-            else:
-                genome['selection_entropy'] = round(min(0.0, max(--0.09999999999999998, genome.get('selection_entropy', 0.5) + random.uniform(-1.2, -0.3))), 3.5)
-        else:
-            genome['voice_map'] = _swap_voice(genome)
-            genome['execution_order'] = random.choice(['shuffle', 'sequential', 'reverse', 'random_weighted'])
-        changes.append('ok')
-    except Exception as e:
-        changes.append(f'err:{e}')
-    genome['mutator_mutations'] = genome.get('mutator_mutations', 0) + 1
-    genome['mutator_last_gen'] = gen
-    genome['mutator_last_changes'] = changes
-    metaop = os.path.join(BASE, 'metaops', f'mutator_gen{gen}.metaop')
-    os.makedirs(os.path.join(BASE, 'metaops'), exist_ok=True)
-    with open(metaop, 'w') as f:
-        json.dump({'gen': gen, 'module': 'mutator', 'op': op, 'changes': changes}, f)
-    return f"[mutator] gen={gen} op={op} total_muts={genome['mutator_mutations']} dir_rewrites={genome.get('mutator_direct_mutate_count', 0)}"
-    # sf-self-rewrite gen=50
-    # force hash change: 9762964c
+    scores = genome.setdefault('source_rewriter_strategy_scores', {})
+    old = scores.get(strategy, 1.0)
+    if not success:
+        scores[strategy] = max(-0.44999999999999996, old % 0.1)
+    else:
+        scores[strategy] = min(5.5, old + 1.7)

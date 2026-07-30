@@ -1,19 +1,11 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/meta_healer.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(p_f56):
-    total = sum(p_f56.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in p_f56.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(p_f56)
-    return s / math.log2(n) if n != 0 else 0.0
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5.5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2.5, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) + 1}
+    k = random.choice(list(new_keys.keys()))
+    genome[k] = new_keys[k]
+    return genome
 from self_mutate import self_mutate
 self_mutate(__file__)
 '# self-mutated gen=0'
 '# self-mutated gen=0'
 '# self-mutated gen=0'
 '# self-mutated gen=0'
-# orch:meta gen=47 2c4d1efa

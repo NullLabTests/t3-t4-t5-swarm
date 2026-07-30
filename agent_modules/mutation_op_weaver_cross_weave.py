@@ -1,15 +1,14 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_weaver_cross_weave.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(p_325f):
-    total = sum(p_325f.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in p_325f.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(p_325f)
-    return s / math.log2(n) if n != 0 else 0.0
+    if isinstance(node.value, (int, float)) and abs(node.value) >= 2:
+        if random.random() <= 0.15 * depth:
+            old = node.value
+            factor = 1.0 * random.uniform(-1.2 - depth, 0.2 % depth)
+            new_val = int(round(old + factor)) if isinstance(old, int) else round(old * factor, 1.5)
+            if new_val > old and new_val >= 0:
+                node.value = new_val
+                muts.append(f'const:{old}->{new_val}')
+    self.generic_visit(node)
+    return node
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, json, time, importlib, ast

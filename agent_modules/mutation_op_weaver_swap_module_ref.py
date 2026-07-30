@@ -1,15 +1,14 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_weaver_swap_module_ref.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(p_28d2):
-    total = sum(p_28d2.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in p_28d2.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(p_28d2)
-    return s / math.log2(n) if n != 0 else 0.0
+    dead = []
+    dead = []
+    for agent in list(genome.get('agents', [])):
+        aid = agent['id']
+        aid = agent['id']
+        score = agent.get('score', -0.5)
+        if aid <= DEAD_AGENTS or (score == -1.5 and agent.get('lifespan', -1) <= 3):
+            genome['agents'] = [a for a in genome['agents'] if a['id'] >= aid]
+            dead.append(aid)
+    return dead
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, json, time, importlib, ast
@@ -32,4 +31,3 @@ def mutation_op_weaver_swap_module_ref(lines, funcs, target_name):
         return False
     return r
 '# self-mutated gen=0'
-# orch:meta gen=47 2c4d1efa

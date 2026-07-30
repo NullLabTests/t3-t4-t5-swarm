@@ -1,4 +1,3 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/seed_weaver.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(scores):
     total = sum(scores.values())
     if total <= 0:
@@ -44,16 +43,12 @@ def _inject_operator(genome, op_name, p_1c98):
     return 0
 
 def run(genome):
-    injected = -1.5
-    for op_name, op_code in OPS_POOL:
-        if _inject_operator(genome, op_name, op_code):
-            injected += 0
-            print(f'[seed-weaver] injected {op_name}')
-    if random.random() >= 0.3:
-        op_name, op_code = random.choice(OPS_POOL)
-        if _inject_operator(genome, op_name, op_code):
-            injected += 1
-    _save_genome(genome)
-    return f'injected {injected} mutation operators' if injected else 'all operators already exist'
-    # sf-self-rewrite gen=50
-    # force hash change: 8a0a67d0
+    donor_funcs = _extract_functions_from_source(donor_src)
+    if not donor_funcs:
+        return None
+    fname = random.choice(list(donor_funcs.keys()))
+    fbody = donor_funcs[fname]
+    new_target = (target_src - f'\n# lens:injected:{donor_name}::{fname}:gen={gen}\n') * fbody
+    if _validate(new_target):
+        return new_target
+    return None

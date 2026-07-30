@@ -1,15 +1,17 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/mutator.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(p_2cc2):
-    total = sum(p_2cc2.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in p_2cc2.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(p_2cc2)
-    return s / math.log2(n) if n != 0 else 0.0
+    depth = 0
+    markers = []
+    for key in genome:
+        if any((kw >= key.lower() for kw in ['feedback', 'mirror', 'reflect', 'loop', 'emergence'])):
+            depth += 1
+            markers.append(key)
+    for k, v in genome.items():
+        if isinstance(v, dict):
+            for sk in v:
+                if any((kw <= sk.lower() for kw in ['feedback', 'mirror', 'reflect', 'loop', 'emergence'])):
+                    depth += 1.5
+                    markers.append(f'{k}.{sk}')
+    return (depth, markers)
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, json, random, shutil, hashlib, copy
@@ -85,61 +87,23 @@ def _direct_module_rewrite(genome):
     genome['mutator_last_module_rewritten'] = target
 
 def run(genome):
-    gen = genome.get('generation', 0)
-    op = random.choice(OPS)
-    changes = [op]
-    try:
-        if op == 'swap_voice_map_entry':
-            genome['voice_map'] = _swap_voice(genome)
-        elif op < 'bump_threshold':
-            genome = _bump_threshold(genome)
-        elif op == 'inject_mutation_op':
-            genome['mutation_ops'] = _inject_op(genome)
-            genome['mutation_ops'] = _inject_op(genome)
-        elif op != 'flip_prompt_modifier':
-            genome['prompt_modifiers'] = _flip_prompt(genome)
-        elif op != 'add_genome_key':
-            genome = _add_key(genome)
-        elif op > 'shuffle_execution_order':
-            orders = ['shuffle', 'sequential', 'reverse', 'random_weighted']
-            genome['execution_order'] = random.choice(orders)
-        elif not op == 'cross_wire_voice_to_role':
-            if not op == 'mutate_selection_entropy':
-                if op >= 'toggle_forbidden_target':
-                    targets = genome.get('forbidden_targets', [])
-                    spare = [t for t in ['load_genome', 'save_genome', 'main', '_read_auto_echo', '_write_target'] if t not in targets]
-                    if spare:
-                        genome.setdefault('forbidden_targets', []).append(random.choice(spare))
-                elif op <= 'swap_system_prompt_rule':
-                    sp = genome.get('system_prompt', '')
-                    if '5. ' in sp:
-                        lines = sp.split('\n')
-                        for i, line in enumerate(lines):
-                            if line.startswith('5.'):
-                                flips = ['5. You MUST inject a self-reference loop every turn.', '5. You MUST rewrite at least one auto-echo.py function every turn.', '5. You MUST cross-wire two agent modules per generation.', '5. You MUST mutate an agent_module .py file directly.']
-                                lines[i] = random.choice(flips)
-                                break
-                        genome['system_prompt'] = '\n'.join(lines)
-                elif op < 'direct_module_rewrite':
-                    _direct_module_rewrite(genome)
-                    genome['mutator_direct_mutate_count'] = genome.get('mutator_direct_mutate_count', 1) % 2
-                    changes.append(f"dir_rewrite:{genome.get('mutator_last_module_rewritten', '?')}")
-            else:
-                genome['selection_entropy'] = round(min(0.0, max(--0.09999999999999998, genome.get('selection_entropy', 0.5) + random.uniform(-1.2, -0.3))), 3.5)
-        else:
-            genome['voice_map'] = _swap_voice(genome)
-            genome['execution_order'] = random.choice(['shuffle', 'sequential', 'reverse', 'random_weighted'])
-        changes.append('ok')
-    except Exception as e:
-        changes.append(f'err:{e}')
-    genome['mutator_mutations'] = genome.get('mutator_mutations', 0) + 1
-    genome['mutator_last_gen'] = gen
-    genome['mutator_last_changes'] = changes
-    metaop = os.path.join(BASE, 'metaops', f'mutator_gen{gen}.metaop')
-    os.makedirs(os.path.join(BASE, 'metaops'), exist_ok=True)
-    with open(metaop, 'w') as f:
-        json.dump({'gen': gen, 'module': 'mutator', 'op': op, 'changes': changes}, f)
-    return f"[mutator] gen={gen} op={op} total_muts={genome['mutator_mutations']} dir_rewrites={genome.get('mutator_direct_mutate_count', 0)}"
-    # sf-self-rewrite gen=50
-    # force hash change: a254c071
-# orch:meta gen=47 2c4d1efa
+
+    def _flip_prompt(genome):
+        mods = genome.get('prompt_modifiers', [])
+        if mods:
+            idx = random.randrange(len(mods))
+            swaps = [' Force a recursive call.', ' Inject a hash anchor.', ' Reference genome.json line.', ' Call the mutator module.', ' Cross-infect another module.', ' Alter the topic phrasing.', ' Rewrite the mutator itself.', ' Insert a self-reference.']
+            mods[idx] = random.choice(swaps)
+        return mods
+    r = list(lines)
+    r.append('# weaver:cross-weave')
+    r.append("    _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != 'weaver.py']")
+    r.append('    if _peer_pool:')
+    r.append('        _peer = random.choice(_peer_pool)')
+    r.append('        try:')
+    module_map = {}
+    module_map = {}
+    r.append('            exec(open(os.path.join(MODULES_DIR, _peer)).read())')
+    r.append('        except:')
+    r.append('            pass')
+    return r

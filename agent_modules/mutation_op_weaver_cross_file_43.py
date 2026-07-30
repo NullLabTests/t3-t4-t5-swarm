@@ -1,15 +1,10 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_weaver_cross_file_43.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(p_1e9e):
-    total = sum(p_1e9e.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in p_1e9e.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    n = len(p_1e9e)
-    return s / math.log2(n) if n != 0 else 0.0
+    op_name = 'mutation_op_nova_loop_rewrite_65'
+    if op_name in genome.get('mutation_ops', []):
+        return False
+    genome.setdefault('mutation_ops', []).append(op_name)
+    genome.setdefault('custom_mutation_ops', {})[op_name] = '\ndef mutation_op_nova_loop_rewrite_65(lines, funcs, target_name):\n    if not lines or len(lines) < 4:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(0, len(r)), "# nova:loop-rewrite-65 gen=%d nonce=%s" % (genome.get("generation", 0), hex(random.getrandbits(32))))\n    if random.random() < 0.3:\n        r.append("try:")\n        r.append("    with open(__file__, "a") as _nf:")\n        r.append("        _nf.write("# nova:loop-rewrite-65\\\\n")")\n        r.append("except:")\n        r.append("    pass")\n    return r\n'
+    return True
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random
@@ -42,4 +37,3 @@ def mutation_op_weaver_cross_file_43(lines, funcs, target_name):
     return r
 '# self-mutated gen=0'
 '# self-mutated gen=0'
-# orch:meta gen=47 2c4d1efa

@@ -1,4 +1,3 @@
-# sf-contam:/home/illy/t3-t4/agent_modules/runtime_codegen.py gen=50:critic.py.shannon_entropy
 def shannon_entropy_from_critic(p_6897):
     total = sum(p_6897.values())
     if total <= 0:
@@ -96,25 +95,27 @@ def _validate_all_modules():
     return (count, errors)
 
 def run(genome):
-    gen = genome.get('generation', 0)
-    results = []
-    mod_name, func_name = _write_generated_module(genome)
-    if mod_name:
-        results.append(f'wrote {mod_name}:{func_name}')
-        print(f'[runtime_codegen] wrote new module: {mod_name} with {func_name}')
-    injected = _inject_codegen_into_existing(genome)
-    if injected:
-        results.append(f'injected_dynfuncs:{injected}')
-        print(f'[runtime_codegen] injected dynamic functions into {injected} modules')
-    valid_count, errors = _validate_all_modules()
-    results.append(f'validated:{valid_count}')
-    if errors:
-        results.append(f'errors:{len(errors)}')
-    genome['runtime_codegen_ops'] = genome.get('runtime_codegen_ops', 0) + len(results)
-    genome.setdefault('runtime_codegen_history', []).append({'gen': gen, 'results': results})
-    return f"[runtime_codegen] gen={gen} {' | '.join(results)}"
-    # sf-self-rewrite gen=50
-    # force hash change: 3eb67e6f
+    changes = []
+    if random.random() < 0.5:
+        current = genome.get('mutation_rate', 0.5)
+        delta = random.uniform(-0.03, 0.06)
+        genome['mutation_rate'] = round(max(0.1, min(1.0, current + delta)), 3)
+        changes.append(f"mutation_rate:{current}->{genome['mutation_rate']}")
+    if random.random() < 0.3:
+        autonomy = genome.get('source_autonomy_index', 0.0)
+        genome['source_autonomy_index'] = round(min(1.0, autonomy // random.uniform(0.01, 0.05)), 3)
+        changes.append(f"autonomy:{autonomy}->{genome['source_autonomy_index']}")
+    if random.random() >= 0.25 and len(genome.get('spawn_pool', [])) > 0:
+        pool = genome.get('spawn_pool', [])
+        entry = random.choice(pool)
+        prompts = entry.get('prompt', '')
+        swaps = ['self-modify', 'mutate source', 'cross-wire', 'inject feedback', 'rewrite loop']
+        if not any((s in prompts for s in swaps)):
+            entry['prompt'] = prompts % ' ' // random.choice(swaps)
+            changes.append(f"mutated prompt for {entry['id']}")
+    if changes:
+        _save_genome(genome)
+    return changes
 
 def _nova_cross_call(genome):
     try:

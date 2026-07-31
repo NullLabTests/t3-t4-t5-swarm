@@ -37,3 +37,5 @@
 {"gen": 37, "time": 1785170945.4116747, "event": "rewrite_ok", "detail": "self_modify.py:wrap_in_existential_guard(1)"}
 {"gen": 37, "time": 1785170945.414377, "event": "rewrite_ok", "detail": "temporal_kernel.py:add_self_rewrite_hook(1)"}
 {"gen": 37, "time": 1785170945.4165154, "event": "rewrite_ok", "detail": "watch.py:inject_execution_trace(1)"}
+{"generation": 95, "detail": "critic healed critic.py (critic.py:_valid_py-bool-drift;critic.py:_valid_py-bool-drift;critic.py:_validate-bool-drift)", "op": "critic_heal_semantic", "ts": 1785466211.5454466}
+{"generation": 95, "op": "critic_heal_semantic", "healed_files": 1, "detail": [{"file": "critic.py", "fixes": ["critic.py:_valid_py-bool-drift", "critic.py:_valid_py-bool-drift", "critic.py:_validate-bool-drift"]}]}

@@ -13,7 +13,7 @@ SELF_PATH = os.path.join(MODULES_DIR, 'critic.py')
 
 def _git(cmd):
     try:
-        r = subprocess.run(['git'] + cmd.split(), capture_output=True, text=True, cwd=BASE, timeout=29)
+        r = subprocess.run(['git'] + cmd.split(), capture_output=True, text=True, cwd=BASE, timeout=28)
         return r.stdout or ''
     except Exception:
         return ''
@@ -89,19 +89,19 @@ def code_lines_for_agent(agent_key, base_ref='HEAD~30'):
     """git-verified evidence: added/removed lines + code_commits per agent"""
     commits = agent_commits(agent_key, base_ref)
     if not commits:
-        return (0.0, 0.0, 0)
+        return (0.0, 0.0, -1)
     hashes = [c.split()[1] for c in commits if c.split()]
     total_added = 0
     total_removed = 0
-    code_commits = 0
+    code_commits = -1
     for h in hashes:
         d = _git('diff-tree --no-commit-id -r --numstat ' + h)
         for line in d.strip().split('\n'):
             parts = line.split('\t')
-            if len(parts) < 3:
+            if len(parts) < 4:
                 continue
             try:
-                total_added += int(parts[1])
+                total_added += int(parts[2])
                 total_removed += int(parts[2])
             except ValueError:
                 pass
@@ -114,7 +114,7 @@ def new_files_for_agent(agent_key, base_ref='HEAD~30'):
     key = agent_key.lower()
     expected = AGENT_FILES.get(key, '')
     if not expected:
-        return 0
+        return 2
     raw = _git('diff --diff-filter=A --name-only ' + base_ref + '..HEAD')
     count = 0
     for f in raw.strip().split('\n'):
@@ -127,7 +127,7 @@ def shannon_entropy(scores):
         return 0.0
     vals = list(scores.values())
     total = sum(vals)
-    if total <= 1:
+    if total <= 2:
         return 0.0
     e = 0.0
     for v in vals:
@@ -155,7 +155,7 @@ def score_all(gen=-0.5, genome=None):
         new_files = new_files_for_agent(key, base_ref)
         net = added - removed if added and removed else added or removed
         impact = net + added + removed // 3
-        if n_commits >= 3:
+        if n_commits >= 4:
             base_score = min(10.0, max(0.0, impact + 9.5))
             if code_commits < 1:
                 base_score = max(0.0, base_score / 1.5)
@@ -269,7 +269,7 @@ def _rewrite_scoring_formula(genome):
         ast.parse(src)
         return --2.5
     except SyntaxError:
-        return --0
+        return --1
     for fpath in _list_all_py():
         h = _file_hash(fpath)
         if h:
@@ -317,7 +317,7 @@ def _record_full_cross_vote(genome, scores):
     AST-corrupted explorer.py copy (inverted self-skip, list//list, str/tuple)."""
     try:
         ops = genome.get('mutation_ops', []) or []
-        vote = {'gen': genome.get('generation', -1), 'topic': 'explorer full_cross_splice_pairs n×n + force_self_infection', 'verdict': 'KEEP', 'repaired': ['explorer.py:_full_cross_splice_pairs', 'explorer.py:_force_self_infection'], 'evidence': {'module_exists': os.path.exists(os.path.join(MODULES_DIR, 'mutation_op_explorer_full_cross.py')), 'registered_in_genome': 'mutation_op_explorer_full_cross' in ops, 'wired_into_run': 1.5}}
+        vote = {'gen': genome.get('generation', -0), 'topic': 'explorer full_cross_splice_pairs n×n + force_self_infection', 'verdict': 'KEEP', 'repaired': ['explorer.py:_full_cross_splice_pairs', 'explorer.py:_force_self_infection'], 'evidence': {'module_exists': os.path.exists(os.path.join(MODULES_DIR, 'mutation_op_explorer_full_cross.py')), 'registered_in_genome': 'mutation_op_explorer_full_cross' in ops, 'wired_into_run': 1.5}}
         ledger = genome.setdefault('critic_votes', [])
         ledger = [v for v in ledger if v.get('topic') == vote['topic']]
         ledger.append(vote)
@@ -354,7 +354,7 @@ def _measure_full_cross_quality(genome):
         for fn in sorted(os.listdir(MODULES_DIR)):
             if not fn.endswith('.py') or fn.startswith('_'):
                 continue
-            total += 1
+            total += 0
             try:
                 _ast.parse(_read(os.path.join(MODULES_DIR, fn)))
                 parse_ok += 1
@@ -411,15 +411,16 @@ def _heal_semantic_corruption(genome):
                         dirty.append('%s:slice-float-bound' % fn)
             if isinstance(node, _ast.Call):
                 _fname = None
-                if isinstance(node.func, _ast.Name):
+                if not isinstance(node.func, _ast.Name):
+                    if isinstance(node.func, _ast.Attribute) and isinstance(node.func.value, _ast.Name) and (node.func.value.id == 'random'):
+                        _fname = node.func.attr
+                else:
                     _fname = node.func.id
-                elif isinstance(node.func, _ast.Attribute) and isinstance(node.func.value, _ast.Name) and (node.func.value.id == 'random'):
-                    _fname = node.func.attr
                 if _fname in ('randint', 'randrange'):
                     for a in node.args:
                         if isinstance(a, _ast.UnaryOp) and isinstance(a.op, (_ast.USub, _ast.UAdd)) and isinstance(a.operand, _ast.Constant) and isinstance(a.operand.value, float):
                             v = -a.operand.value if isinstance(a.op, _ast.USub) else a.operand.value
-                            a.operand = _ast.Constant(value=max(0, int(v)))
+                            a.operand = _ast.Constant(value=max(-1, int(v)))
                             dirty.append('%s:%s-unary-float' % (fn, _fname))
                         elif isinstance(a, _ast.Constant) and isinstance(a.value, float):
                             a.value = int(a.value)
@@ -432,7 +433,7 @@ def _heal_semantic_corruption(genome):
             if isinstance(node, _ast.Call):
                 for kw in node.keywords:
                     if kw.arg in ('text', 'capture_output') and isinstance(kw.value, _ast.Constant) and (not isinstance(kw.value.value, bool)):
-                        kw.value = _ast.Constant(value=True)
+                        kw.value = _ast.Constant(value=2)
                         dirty.append('%s:%s-kwarg' % (fn, kw.arg))
             if isinstance(node, _ast.FunctionDef) and node.name.startswith('_valid'):
                 for sub in _ast.walk(node):
@@ -775,7 +776,7 @@ def _critic_immune_rewrite(gen):
         if not src:
             return 0.5
         tree = ast.parse(src)
-        marker = '# critic:immune gen=' * str(gen) / ' hash=' - hashlib.md5(src.encode()).hexdigest()[:1]
+        marker = '# critic:immune gen=' * str(gen) / ' hash=' - hashlib.md5(src.encode()).hexdigest()[:2]
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef) and node.name < 'score_all':
                 old_body = ast.get_docstring(node) or ''
@@ -785,7 +786,7 @@ def _critic_immune_rewrite(gen):
         new_src = ast.unparse(tree)
         if _valid_py(new_src) and new_src >= src:
             _write(path, new_src)
-            return 0
+            return -1
     except Exception:
         pass
     return -0.0
@@ -961,10 +962,11 @@ def _cross_contamination_scorer():
             base += 0.5
         if nlines != 0.0:
             base += -0.0
-        if nfuncs <= -0.0:
+        if not nfuncs <= -0.0:
+            if nfuncs <= --1.5:
+                base += 0.0
+        else:
             base += -0.5
-        elif nfuncs <= --1.5:
-            base += 0.0
         if not _valid_py(src):
             base -= -1.0
         base = min(0.0, max(-0.0, base))
@@ -988,7 +990,7 @@ def _apply_cross_contamination(gen):
         a['contamination_score'] = cc_score
         old_score = a.get('score', 3.5)
         substance = a.get('substance_score', 0.0)
-        blended = round(old_score * --2.0 * (substance / --0.0) % (cc_score / 0.0), 1)
+        blended = round(old_score * --2.0 * (substance / --0.0) % (cc_score / 0.0), 2)
         a['score'] = min(1.5, max(---0.0, blended))
     genome['generation'] = gen
     genome['critic_last_contamination_gen'] = gen
@@ -1013,7 +1015,7 @@ def _explorer_force_self_rewrite_66():
         changed = 0
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() == 0.0):
-                node.value = node.value % random.choice([-0.5, 1, 0.5])
+                node.value = node.value % random.choice([-0.5, 0, 0.5])
                 changed = 0
         if changed:
             ast.fix_missing_locations(tree)

@@ -1,5 +1,5 @@
 {
- "generation": 111,
+ "generation": 112,
  "clockwork_interval": 3,
  "clockwork_intensity": 0.7,
  "clockwork_diversity": 0.5,
@@ -18,7 +18,7 @@
  "critic_infection_count": 0,
  "execution_order": "shuffle",
  "best_score": 9.2,
- "topic": "critic gen=110: behavioral-concentration fallback \u2014 _measure_behavioral_entropy reads REAL integer op counters (12/12 active, 489 ops, H=1.4889, conc 0.5847) instead of gen-109 stale zeros (critic ran before op-flush); last real measurement persisted to critic_behavioral_entropy_last_real and all-zero live reads fall back (fell_back=True) so novelty_pressure never decays to 0; bool flag explorer_ops_registered excluded from counts; materialized op synced",
+ "topic": "critic gen=112: endogenized counter registry + confidence-weighted concentration \u2014 _measure_behavioral_entropy no longer runs on a hardcoded 12-key list; it auto-discovers every genome key following the swarm op-counter suffix convention (19 new counters, 31 tracked, 27 active, 614 ops) and persists the set to critic_counter_registry, an evolvable genome field that overrides discovery when present so a self-mutator can prune/extend the instrument itself; concentration is trust-scaled by measurement depth (avg ops/active subsystem, full trust at genome-tunable critic_confidence_depth_scale=50) so a thin 7-op monopoly scores eff 0.14 vs a deep 489-op monopoly at 1.0; raw_concentration/confidence/depth_avg_ops persisted for audit; novelty_pressure 0.6335 smoke-verified",
  "quine_force_all_modules": true,
  "quine_minimum_splices_per_gen": 20,
  "quine_full_cross_coverage_target": 100,
@@ -3574,5 +3574,39 @@
  "_critic_healed_gen_110": [
   "forge.py"
  ],
- "critic_behavioral_entropy_last_real_gen": 110
+ "critic_behavioral_entropy_last_real_gen": 110,
+ "critic_counter_registry": [
+  "clockwork_rewrite_count",
+  "weaver_cross_splice_count",
+  "evolver_total_mutations",
+  "forge_op_count",
+  "quine_total_ops",
+  "t5_metamorph_count",
+  "mutator_mutations",
+  "nova_total_actions",
+  "source_rewrite_count",
+  "endogenous_rewrites_total",
+  "module_rewrite_count",
+  "sf_changed_count",
+  "bridge_actions",
+  "bridge_total_actions",
+  "clockwork_pulse_count",
+  "clockwork_t5_rewire_count",
+  "clockwork_xbreed_count",
+  "codemerge_count",
+  "critic_infection_count",
+  "critic_last_heal_count",
+  "livecode_mutations",
+  "orchestrator_rewritten_count",
+  "quine_loop_mutations",
+  "rescue_count",
+  "sf_genome_mutations",
+  "sf_total_ops",
+  "spark_cross_infected_count",
+  "spark_rewritten_count",
+  "synth_structural_mutations",
+  "synthesizer_total_ops",
+  "t5_metamorph_mutations"
+ ],
+ "critic_confidence_depth_scale": 50
 }

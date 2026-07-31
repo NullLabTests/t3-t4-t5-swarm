@@ -321,9 +321,34 @@ def _measure_behavioral_entropy(genome):
     signal — so it is measured as H=0, concentration=1.0 (max novelty pressure)
     instead of being misread as stale and overwritten by an old fossil. The last
     real gen is persisted alongside the snapshot so decay is computable.
+    gen=112: the counter set is no longer fixed architecture. CORE_COUNTERS is
+    the structural seed, but every genome key already following the swarm's own
+    op-counter convention (numeric, non-bool, *_count/_total_ops/_total_actions/
+    _total_mutations/_mutations/_actions, not underscore-private) is auto-
+    discovered into the measurement, so a subsystem that self-registers a new
+    activity counter is measured next gen with no human edit. The active set is
+    persisted to critic_counter_registry — an EVOLVABLE genome field a future
+    self-mutator can prune or extend, and a pre-existing field overrides
+    discovery. The concentration signal is also confidence-weighted by
+    measurement depth (avg real ops per active subsystem, full trust at the
+    genome-tunable critic_confidence_depth_scale): a thin 7-op monopoly can no
+    longer pin novelty_pressure at max the way a deep 489-op one can, so the
+    governor trusts the behavioral signal proportionally to how much behavior
+    was actually observed. Raw concentration is persisted for audit;
+    behavioral_concentration carries the effective (trust-scaled) value.
     Boolean flags (e.g. explorer_ops_registered=True) are excluded from counts."""
     try:
-        counters = ['clockwork_rewrite_count', 'weaver_cross_splice_count', 'evolver_total_mutations', 'forge_op_count', 'quine_total_ops', 't5_metamorph_count', 'mutator_mutations', 'nova_total_actions', 'source_rewrite_count', 'endogenous_rewrites_total', 'module_rewrite_count', 'sf_changed_count']
+        core = ['clockwork_rewrite_count', 'weaver_cross_splice_count', 'evolver_total_mutations', 'forge_op_count', 'quine_total_ops', 't5_metamorph_count', 'mutator_mutations', 'nova_total_actions', 'source_rewrite_count', 'endogenous_rewrites_total', 'module_rewrite_count', 'sf_changed_count']
+        registry = genome.get('critic_counter_registry')
+        if isinstance(registry, list):
+            counters = list(core)
+            for key in registry:
+                if isinstance(key, str) and key not in counters:
+                    counters.append(key)
+        else:
+            suffixes = ('_count', '_total_ops', '_total_actions', '_total_mutations', '_mutations', '_actions')
+            discovered = sorted(k for k in genome if (not k.startswith('_')) and k.endswith(suffixes) and (k not in core) and isinstance(genome[k], (int, float)) and (not isinstance(genome[k], bool)))
+            counters = list(core) + discovered
         vals = []
         for key in counters:
             v = genome.get(key, 0)
@@ -334,18 +359,23 @@ def _measure_behavioral_entropy(genome):
         total = sum(active)
         if total <= 0:
             entropy = 0.0
-            concentration = 0.0
+            raw_conc = 0.0
         elif n < 2:
             entropy = 0.0
-            concentration = 1.0
+            raw_conc = 1.0
         else:
             e = 0.0
             for v in active:
                 p = v / total
                 e -= p * math.log2(p)
             entropy = e
-            concentration = round(min(1.0, max(0.0, 1.0 - e / math.log2(n))), 4)
-        behavioral = {'gen': genome.get('generation', 0), 'counters_tracked': len(counters), 'counters_active': n, 'active_total_ops': int(total), 'shannon_bits': round(entropy, 4), 'behavioral_concentration': concentration, 'live': True}
+            raw_conc = round(min(1.0, max(0.0, 1.0 - e / math.log2(n))), 4)
+        depth = (total / n) if n else 0.0
+        scale = genome.get('critic_confidence_depth_scale', 50.0)
+        scale = scale if isinstance(scale, (int, float)) and scale > 0 else 50.0
+        confidence = round(min(1.0, depth / scale), 4)
+        concentration = round(raw_conc * confidence, 4)
+        behavioral = {'gen': genome.get('generation', 0), 'counters_tracked': len(counters), 'counters_discovered': max(0, len(counters) - len(core)), 'counters_active': n, 'active_total_ops': int(total), 'shannon_bits': round(entropy, 4), 'raw_concentration': raw_conc, 'depth_avg_ops': round(depth, 3), 'confidence': confidence, 'behavioral_concentration': concentration, 'live': True}
         if total <= 0:
             last_real = genome.get('critic_behavioral_entropy_last_real')
             last_real_gen = genome.get('critic_behavioral_entropy_last_real_gen', 0)
@@ -364,6 +394,7 @@ def _measure_behavioral_entropy(genome):
             genome['critic_behavioral_entropy_last_real'] = dict(behavioral)
             genome['critic_behavioral_entropy_last_real_gen'] = behavioral['gen']
         genome['critic_behavioral_entropy'] = behavioral
+        genome['critic_counter_registry'] = counters
         with open(SCORES_FILE, 'a') as f:
             f.write(json.dumps({'kind': 'behavioral_entropy', **behavioral}) + '\n')
         return behavioral
@@ -616,3 +647,5 @@ if __name__ == '__main__':
 # critic self-mod gen=110 hash=1647417584785721756
 
 # critic self-mod gen=111 hash=stale-vs-monopoly-age-decay
+
+# critic self-mod gen=112 hash=endogenous-counter-registry-confidence-weight

@@ -1,4 +1,4 @@
-import os, ast, json
+import os, ast, json, math
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
@@ -65,6 +65,38 @@ def measure_full_cross_quality(genome=None):
         pass
     return metric
 
+def measure_behavioral_entropy(genome=None):
+    """Materialized twin of critic._measure_behavioral_entropy: read the swarm's
+    own op-activity counters out of the genome and measure how concentrated
+    activity is across subsystems. High concentration (a few loops monopolizing
+    every mutation) pushes behavioral_concentration toward 1 and raises the
+    endogenous novelty pressure; uniform spread pushes it toward 0 and relaxes
+    exploration. Structural sums only, no slice/increment literals."""
+    if genome is None or not isinstance(genome, dict):
+        genome = _load_genome()
+    counters = ['clockwork_rewrite_count', 'weaver_cross_splice_count', 'explorer_ops_registered', 'evolver_total_mutations', 'forge_op_count', 'synth_total_ops', 'quine_total_ops', 't5_metamorph_count', 'mutator_mutations', 'nova_total_actions', 'source_rewrite_count', 'endogenous_rewrites_total']
+    vals = []
+    for key in counters:
+        v = genome.get(key, 0)
+        v = v if isinstance(v, (int, float)) else 0
+        vals.append(max(0, v))
+    active = [v for v in vals if v > 0]
+    n = len(active)
+    total = sum(active)
+    if n < 2 or total <= 0:
+        entropy = 0.0
+        concentration = 0.0
+    else:
+        e = 0.0
+        for v in active:
+            p = v / total
+            e -= p * math.log2(p)
+        entropy = e
+        concentration = round(min(1.0, max(0.0, 1.0 - e / math.log2(n))), 4)
+    behavioral = {'gen': genome.get('generation', 0), 'counters_tracked': len(counters), 'counters_active': n, 'active_total_ops': int(total), 'shannon_bits': round(entropy, 4), 'behavioral_concentration': concentration}
+    genome['critic_behavioral_entropy'] = behavioral
+    return behavioral
+
 def audit_op_registry(genome=None):
     """Registry self-heal: measure registered-vs-module drift AND close it.
     True-dead ghost ops (registered, no module file, no inline code) are pruned
@@ -102,16 +134,20 @@ def audit_op_registry(genome=None):
     drift_ops = len(ghost) + len(orphan_mop)
     emergent_ratio = len(orphan_mop) / (len(mods) or 1)
     ghost_ratio = len(ghost) / (len(ops) or 1)
-    novelty_pressure = min(1.0, ghost_ratio + emergent_ratio)
+    behavioral = measure_behavioral_entropy(genome)
+    concentration = behavioral.get('behavioral_concentration', 0.0)
+    concentration = concentration if isinstance(concentration, (int, float)) else 0.0
+    novelty_pressure = min(1.0, ghost_ratio + emergent_ratio + concentration * 0.25)
     entropy_before = genome.get('selection_entropy', 0.0)
     entropy_before = entropy_before if isinstance(entropy_before, (int, float)) else 0.0
-    entropy_target = round(min(0.25, novelty_pressure), 4)
+    entropy_target = round(min(0.25 + 0.1 * concentration, novelty_pressure), 4)
     entropy_after = round(entropy_before + (entropy_target - entropy_before) * 0.2, 4)
     entropy_after = round(min(0.5, max(0.0, entropy_after)), 4)
     genome['selection_entropy'] = entropy_after
-    endogenous = {'before': entropy_before, 'after': entropy_after, 'target': entropy_target, 'drift_ops': drift_ops, 'ghost_ratio': round(ghost_ratio, 4), 'emergent_ratio': round(emergent_ratio, 4), 'novelty_pressure': round(novelty_pressure, 4)}
+    endogenous = {'before': entropy_before, 'after': entropy_after, 'target': entropy_target, 'drift_ops': drift_ops, 'ghost_ratio': round(ghost_ratio, 4), 'emergent_ratio': round(emergent_ratio, 4), 'behavioral_concentration': concentration, 'novelty_pressure': round(novelty_pressure, 4)}
     audit['drift_ops'] = drift_ops
     audit['emergent_ratio'] = endogenous['emergent_ratio']
+    audit['behavioral_concentration'] = concentration
     audit['novelty_pressure'] = endogenous['novelty_pressure']
     audit['endogenous_selection_entropy'] = endogenous
     genome['critic_endogenous_selection_entropy'] = endogenous
@@ -152,11 +188,13 @@ def apply_endogenous_governor(genome=None):
     drift_pressure = min(1.0, drift / max(ops_total, 1) + emergent)
     pressure = max(novelty, drift_pressure)
     gap = max(0.0, ent_target - ent_after)
+    concentration = audit.get('behavioral_concentration', 0.0)
+    concentration = concentration if isinstance(concentration, (int, float)) else 0.0
     prev_std = genome.get('selection_noise_std', 0.15)
     prev_std = prev_std if isinstance(prev_std, (int, float)) else 0.15
     target_std = round(min(1.5, max(0.1, prev_std + (pressure - 0.5) * 0.2 + gap * 0.5)), 4)
     genome['selection_noise_std'] = target_std
-    applied = {'gen': genome.get('generation', 0), 'drift_ops': drift, 'emergent_ratio': round(emergent, 4), 'pressure': round(pressure, 4), 'novelty_pressure': round(novelty, 4), 'entropy_gap': round(gap, 4), 'selection_noise_std_before': prev_std, 'selection_noise_std_after': target_std}
+    applied = {'gen': genome.get('generation', 0), 'drift_ops': drift, 'emergent_ratio': round(emergent, 4), 'pressure': round(pressure, 4), 'novelty_pressure': round(novelty, 4), 'behavioral_concentration': round(concentration, 4), 'entropy_gap': round(gap, 4), 'selection_noise_std_before': prev_std, 'selection_noise_std_after': target_std}
     genome['critic_endogenous_governor_applied'] = applied
     try:
         with open(SCORES_FILE, 'a') as f:
@@ -166,5 +204,5 @@ def apply_endogenous_governor(genome=None):
     return applied
 if __name__ == '__main__':
     g = _load_genome()
-    print(json.dumps({'measure': measure_full_cross_quality(g), 'audit': audit_op_registry(g)}, indent=2))
+    print(json.dumps({'measure': measure_full_cross_quality(g), 'behavioral': measure_behavioral_entropy(g), 'audit': audit_op_registry(g), 'governor': apply_endogenous_governor(g)}, indent=2))
 '# self-mutated gen=0'

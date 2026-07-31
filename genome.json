@@ -1,5 +1,5 @@
 {
-  "generation": 108,
+  "generation": 109,
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
@@ -18,7 +18,7 @@
   "critic_infection_count": 0,
   "execution_order": "shuffle",
   "best_score": 9.2,
-  "topic": "critic gen=108: noise governor coupled to SAME measured novelty_pressure as entropy governor (critic_endogenous_selection_entropy), + entropy-gap term gap*0.5 so under-target entropy raises selection_noise_std faster; two feedback loops can no longer diverge; synced materialized op",
+  "topic": "critic gen=109: novelty pressure now ENDOGENOUS to behavior — new _measure_behavioral_entropy reads the swarm's own op-activity counters and feeds behavioral_concentration into novelty_pressure (ghost_ratio + emergent_ratio + concentration*0.25) and the entropy target ceiling (0.25+0.1*conc), so a monopolized mutation loop raises exploration and uniform spread relaxes it; materialized op synced; fixed 0.25 ceiling no longer absolute",
   "quine_force_all_modules": true,
   "quine_minimum_splices_per_gen": 20,
   "quine_full_cross_coverage_target": 100,
@@ -3487,5 +3487,14 @@
     "novelty_pressure_source": "critic_endogenous_selection_entropy",
     "gap_term": "gap*0.5",
     "coherence": "noise governor pressure = max(novelty, drift_pressure)"
+  },
+  "critic_behavioral_entropy": {
+    "gen": 109,
+    "counters_tracked": 12,
+    "counters_active": 0,
+    "active_total_ops": 0,
+    "shannon_bits": 0.0,
+    "behavioral_concentration": 0.0,
+    "source": "measured live each gen by critic._measure_behavioral_entropy; feeds novelty_pressure"
   }
 }

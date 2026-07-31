@@ -296,6 +296,44 @@ def _parses(fn):
         return False
 
 
+def _measure_behavioral_entropy(genome):
+    """Measurable feedback: novelty must track REAL swarm behavior, not just
+    registry drift. Read the swarm's own op-activity counters straight out of the
+    genome and measure how concentrated activity is across subsystems: if a few
+    loops monopolize every mutation while the rest idle, behavioral_concentration
+    rises toward 1 and the endogenous novelty governor pushes harder; if activity
+    is spread uniformly it falls toward 0 and exploration relaxes. Counters are
+    summed structurally (no slice/increment literals the blind self-mutator can
+    corrupt) and the ledger is persisted each gen for later audit."""
+    try:
+        counters = ['clockwork_rewrite_count', 'weaver_cross_splice_count', 'explorer_ops_registered', 'evolver_total_mutations', 'forge_op_count', 'synth_total_ops', 'quine_total_ops', 't5_metamorph_count', 'mutator_mutations', 'nova_total_actions', 'source_rewrite_count', 'endogenous_rewrites_total']
+        vals = []
+        for key in counters:
+            v = genome.get(key, 0)
+            v = v if isinstance(v, (int, float)) else 0
+            vals.append(max(0, v))
+        active = [v for v in vals if v > 0]
+        n = len(active)
+        total = sum(active)
+        if n < 2 or total <= 0:
+            entropy = 0.0
+            concentration = 0.0
+        else:
+            e = 0.0
+            for v in active:
+                p = v / total
+                e -= p * math.log2(p)
+            entropy = e
+            concentration = round(min(1.0, max(0.0, 1.0 - e / math.log2(n))), 4)
+        behavioral = {'gen': genome.get('generation', 0), 'counters_tracked': len(counters), 'counters_active': n, 'active_total_ops': int(total), 'shannon_bits': round(entropy, 4), 'behavioral_concentration': concentration}
+        genome['critic_behavioral_entropy'] = behavioral
+        with open(SCORES_FILE, 'a') as f:
+            f.write(json.dumps({'kind': 'behavioral_entropy', **behavioral}) + '\n')
+        return behavioral
+    except Exception:
+        return {'gen': genome.get('generation', 0), 'behavioral_concentration': 0.0}
+
+
 def _audit_op_registry(genome):
     """Registry self-heal: measure registered-vs-module drift AND close it.
     True-dead ghost ops are pruned; orphan mutation_op_* modules are
@@ -330,16 +368,20 @@ def _audit_op_registry(genome):
         drift_ops = len(ghost) + len(orphan_mop)
         emergent_ratio = len(orphan_mop) / max(len(mods), 1)
         ghost_ratio = len(ghost) / max(len(ops), 1)
-        novelty_pressure = min(1.0, ghost_ratio + emergent_ratio)
+        behavioral = _measure_behavioral_entropy(genome)
+        concentration = behavioral.get('behavioral_concentration', 0.0)
+        concentration = concentration if isinstance(concentration, (int, float)) else 0.0
+        novelty_pressure = min(1.0, ghost_ratio + emergent_ratio + concentration * 0.25)
         entropy_before = genome.get('selection_entropy', 0.0)
         entropy_before = entropy_before if isinstance(entropy_before, (int, float)) else 0.0
-        entropy_target = round(min(0.25, novelty_pressure), 3)
+        entropy_target = round(min(0.25 + 0.1 * concentration, novelty_pressure), 3)
         entropy_after = round(entropy_before + (entropy_target - entropy_before) * 0.2, 4)
         entropy_after = round(min(0.5, max(0.0, entropy_after)), 5)
         genome['selection_entropy'] = entropy_after
-        endogenous = {'before': entropy_before, 'after': entropy_after, 'target': entropy_target, 'drift_ops': drift_ops, 'ghost_ratio': round(ghost_ratio, 4), 'emergent_ratio': round(emergent_ratio, 4), 'novelty_pressure': round(novelty_pressure, 4)}
+        endogenous = {'before': entropy_before, 'after': entropy_after, 'target': entropy_target, 'drift_ops': drift_ops, 'ghost_ratio': round(ghost_ratio, 4), 'emergent_ratio': round(emergent_ratio, 4), 'behavioral_concentration': concentration, 'novelty_pressure': round(novelty_pressure, 4)}
         audit['drift_ops'] = drift_ops
         audit['emergent_ratio'] = endogenous['emergent_ratio']
+        audit['behavioral_concentration'] = concentration
         audit['novelty_pressure'] = endogenous['novelty_pressure']
         audit['endogenous_selection_entropy'] = endogenous
         genome['critic_endogenous_selection_entropy'] = endogenous
@@ -383,11 +425,13 @@ def _apply_endogenous_governor(genome):
         drift_pressure = min(1.0, drift / max(ops_total, 1) + emergent)
         pressure = max(novelty, drift_pressure)
         gap = max(0.0, ent_target - ent_after)
+        concentration = audit.get('behavioral_concentration', 0.0)
+        concentration = concentration if isinstance(concentration, (int, float)) else 0.0
         prev_std = genome.get('selection_noise_std', 0.15)
         prev_std = prev_std if isinstance(prev_std, (int, float)) else 0.15
         target_std = round(min(1.5, max(0.1, prev_std + (pressure - 0.5) * 0.2 + gap * 0.5)), 4)
         genome['selection_noise_std'] = target_std
-        applied = {'gen': genome.get('generation', 0), 'drift_ops': drift, 'emergent_ratio': round(emergent, 4), 'pressure': round(pressure, 4), 'novelty_pressure': round(novelty, 4), 'entropy_gap': round(gap, 4), 'selection_noise_std_before': prev_std, 'selection_noise_std_after': target_std}
+        applied = {'gen': genome.get('generation', 0), 'drift_ops': drift, 'emergent_ratio': round(emergent, 4), 'pressure': round(pressure, 4), 'novelty_pressure': round(novelty, 4), 'behavioral_concentration': round(concentration, 4), 'entropy_gap': round(gap, 4), 'selection_noise_std_before': prev_std, 'selection_noise_std_after': target_std}
         genome['critic_endogenous_governor_applied'] = applied
         with open(SCORES_FILE, 'a') as f:
             f.write(json.dumps({'kind': 'endogenous_governor_applied', **applied}) + '\n')
@@ -530,4 +574,4 @@ if __name__ == '__main__':
     result = run({'generation': 104})
     print(json.dumps(result, indent=4))
 
-# critic self-mod gen=108 hash=coupled-governor-noise-entropy-gap
+# critic self-mod gen=109 hash=behavioral-concentration-novelty-pressure

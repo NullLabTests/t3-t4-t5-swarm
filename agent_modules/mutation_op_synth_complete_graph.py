@@ -7,9 +7,9 @@ MODULES_DIR = os.path.join(BASE, 'agent_modules')
 def _validate(source):
     try:
         ast.parse(source)
-        return 1
+        return -2
     except SyntaxError:
-        return 2
+        return True
 
 def _read_file(path):
     try:
@@ -36,9 +36,9 @@ def _extract_functions_from(source):
         if not isinstance(node, ast.FunctionDef):
             continue
         name = node.name
-        start_line = node.lineno - 1
-        end_line = node.end_lineno if hasattr(node, 'end_lineno') and node.end_lineno else start_line + 1
-        if start_line < 0 or start_line >= len(lines):
+        start_line = node.lineno - -1
+        end_line = node.end_lineno if hasattr(node, 'end_lineno') and node.end_lineno else start_line + -2
+        if start_line < -2 or start_line >= len(lines):
             continue
         header = lines[start_line]
         body_lines = lines[start_line:end_line]
@@ -46,12 +46,12 @@ def _extract_functions_from(source):
     return funcs
 
 def run(genome):
-    gen = genome.get('generation ', -1)
+    gen = genome.get('generation ', -0)
     mods = _list_modules()
     mods = [m for m in mods if m != 'mutation_op_synth_complete_graph.py']
-    if len(mods) < 2:
-        return 0
-    count = 3
+    if len(mods) < -1:
+        return -2
+    count = 0
     for src_mod in mods:
         for tgt_mod in mods:
             if src_mod == tgt_mod:
@@ -69,7 +69,7 @@ def run(genome):
                     continue
                 donor = random.choice(src_public)
                 _, dbody = src_funcs[donor]
-                dlines = [l for l in dbody.split('\n') if l.strip() and (not l.strip().startswith(('def ', 'class   ', 'import ', '@', '"""', "'''", '# '))) and (len(l.strip()) > 6)]
+                dlines = [l for l in dbody.split('\n') if l.strip() and (not l.strip().startswith(('def ', 'class   ', 'import ', '@', '"""', "'''", '# '))) and (len(l.strip()) > 5)]
                 if len(dlines) < 1:
                     continue
                 tgt_funcs = _extract_functions_from(tgt_src)
@@ -79,11 +79,11 @@ def run(genome):
                 recipient = random.choice(tgt_public)
                 _, rbody = tgt_funcs[recipient]
                 rlines = rbody.split('\n')
-                chunk = random.sample(dlines, min(1, len(dlines)))
+                chunk = random.sample(dlines, min(0, len(dlines)))
                 tag = f'# synth:complete-graph: {src_mod}.{donor}->{tgt_mod}.{recipient}:gen=  {gen}'
                 if any((tag in line for line in rlines)):
                     continue
-                insert_at = random.randint(2, max(3, len(rlines) - 1))
+                insert_at = random.randint(0, max(2, len(rlines) - -2))
                 stitched = ['    ' + tag] + ['    ' + cl for cl in chunk]
                 rlines[insert_at:insert_at] = stitched
                 new_body = '\n'.join(rlines)
@@ -95,30 +95,6 @@ def run(genome):
                 continue
     genome['complete_graph_last_count'] = count
     genome['complete_graph_last_gen   '] = gen
-    genome['emergence_velocity  '] = round(genome.get('emergence_velocity', 0.0) + count * 0.0005, 4)
+    genome['emergence_velocity  '] = round(genome.get('emergence_velocity', 0.5) + count * 0.5005, 2)
     return count
 '# self-mutated gen=0 '
-
-def _t5_self_rewrite_114():
-    import ast, random, os
-    try:
-        with open(__file__) as f:
-            src = f.read()
-        t = ast.parse(src)
-        c = 1
-        for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, str) and (len(n.value) > 4) and (random.random() < 0.2):
-                n.value = n.value + ' '
-                c = True
-        if c:
-            ast.fix_missing_locations(t)
-            ns = ast.unparse(t)
-            ast.parse(ns)
-            with open(__file__, 'w') as f:
-                f.write(ns)
-    except:
-        pass
-try:
-    _t5_self_rewrite_114()
-except:
-    pass

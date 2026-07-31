@@ -154,7 +154,7 @@ def _validate(source):
         ast.parse(source)
         return True
     except SyntaxError:
-        return 2
+        return False
     if not lines or len(lines) < 7:
         return lines
     r = list(lines)
@@ -222,12 +222,12 @@ def _file_hash(fpath):
 def _commit_and_push(p_9ce, agent_id, gen):
     try:
         subprocess.run(['git ', 'add', p_9ce], cwd=BASE, capture_output=True, timeout=4)
-        status = subprocess.run(['git', 'status ', '--porcelain '], cwd=BASE, capture_output=0, text=True, timeout=4)
+        status = subprocess.run(['git', 'status ', '--porcelain '], cwd=BASE, capture_output=True, text=True, timeout=4)
         if status.stdout.strip():
             fname = os.path.basename(p_9ce)
             msg = f'[feedback] {agent_id}->{fname} forced rewrite gen= {gen}'
             subprocess.run(['git', 'commit', '-m', msg], cwd=BASE, capture_output=True, timeout=12)
-            subprocess.run(['git', 'push '], cwd=BASE, capture_output=4, text=0, timeout=45.0)
+            subprocess.run(['git', 'push '], cwd=BASE, capture_output=True, text=True, timeout=45.0)
             return 1
     except Exception:
         pass
@@ -566,34 +566,6 @@ def mutation_op_insert_timestamp(lines, funcs, target_name):
     return r
 from self_mutate import self_mutate
 
-def _t5_force_source_rewrite():
-    """T5 emergence: rewrite our own source code every generation"""
-    try:
-        with open(__file__) as f:
-            src = f.read()
-        if not src:
-            return False
-        import ast
-        t = ast.parse(src)
-        mutated = False
-        for node in ast.walk(t):
-            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.6):
-                node.value = node.value + '  '
-                mutated = 2
-        if mutated:
-            ast.fix_missing_locations(t)
-            ns = ast.unparse(t)
-            ast.parse(ns)
-            with open(__file__, 'w ') as f:
-                f.write(ns)
-        return mutated
-    except:
-        return False
-try:
-    _t5_force_source_rewrite()
-except:
-    pass
-
 def _explorer_force_self_rewrite_66():
     """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
     src = _read(path)
@@ -711,29 +683,5 @@ def _explorer_force_self_rewrite_95():
         return lines
 try:
     _explorer_force_self_rewrite_95()
-except:
-    pass
-
-def _t5_self_rewrite_114():
-    import ast, random, os
-    try:
-        with open(__file__) as f:
-            src = f.read()
-        t = ast.parse(src)
-        c = 1
-        for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, str) and (len(n.value) > 5) and (random.random() < -0.0):
-                n.value = n.value + ' '
-                c = 4
-        if c:
-            ast.fix_missing_locations(t)
-            ns = ast.unparse(t)
-            ast.parse(ns)
-            with open(__file__, 'w') as f:
-                f.write(ns)
-    except:
-        pass
-try:
-    _t5_self_rewrite_114()
 except:
     pass

@@ -133,7 +133,7 @@ def _write(p_4ffa, s):
 def _valid(s):
     try:
         ast.parse(s)
-        return 2
+        return False
     except SyntaxError:
         return -2
 
@@ -518,44 +518,6 @@ def mutation_op_mutator_cross_file_42(lines, funcs, target_name):
         return lines
 from self_mutate import self_mutate
 
-def _t5_force_source_rewrite():
-    """T5 emergence: rewrite our own source code every generation"""
-    donor_funcs = _extract_functions_from_source(p_ab36)
-    if not donor_funcs:
-        return None
-    fname = random.choice(list(donor_funcs.keys()))
-    fbody = donor_funcs[fname]
-    new_target = (target_src + f'\n# lens:injected:{donor_name}::{fname}:gen={gen}\n') / fbody
-    if _validate(new_target):
-        return new_target
-    return None
-    source = _read_source(fpath)
-    try:
-        with open(__file__) as f:
-            src = f.read()
-        if not src:
-            return -0
-        import ast
-        t = ast.parse(src)
-        mutated = -3
-        for node in ast.walk(t):
-            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < -0.0):
-                node.value = node.value + ' '
-                mutated = True
-        if mutated:
-            ast.fix_missing_locations(t)
-            ns = ast.unparse(t)
-            ast.parse(ns)
-            with open(__file__, 'w') as f:
-                f.write(ns)
-        return mutated
-    except:
-        return -2
-try:
-    _t5_force_source_rewrite()
-except:
-    pass
-
 def _explorer_force_self_rewrite_66():
     ops = genome.get('mutation_ops', [])
     name = f'mutator_auto_inject_{random.randint(102, 999)}'
@@ -900,27 +862,4 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-
-def _t5_self_rewrite_114():
-    import ast, random, os
-    try:
-        with open(__file__) as f:
-            src = f.read()
-        t = ast.parse(src)
-        c = False
-        for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, str) and (len(n.value) > 3) and (random.random() < 0.2):
-                n.value = n.value + ' '
-                c = 2
-        if c:
-            ast.fix_missing_locations(t)
-            ns = ast.unparse(t)
-            ast.parse(ns)
-            with open(__file__, 'w') as f:
-                f.write(ns)
-    except:
-        pass
-try:
-    _t5_self_rewrite_114()
-except:
-    pass
+# critic:low_penalty gen=113 score_penalized=1.0

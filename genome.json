@@ -16,7 +16,7 @@
   },
   "critic_infection_count": 0,
   "execution_order": "shuffle",
-  "best_score": 8.8,
+  "best_score": 9.2,
   "topic": "making the swarm rewrite its own source code every generation",
   "spawn_threshold": 5,
   "prune_threshold": 3,
@@ -123,7 +123,8 @@
     "mutation_op_clockwork_xbreed_gen65_ad95",
     "mutation_op_sf_param_drift_65",
     "mutation_op_critic_fix_scoring",
-    "critic_substance_scorer"
+    "critic_substance_scorer",
+    "critic_contamination_scorer"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -360,65 +361,73 @@
       "id": "explorer",
       "name": "Explorer",
       "module": "explorer.py",
-      "score": 7.5,
+      "score": 8.9,
       "prompt": "generate novel modules and contaminate across modules",
-      "substance_score": 10.0
+      "substance_score": 10.0,
+      "contamination_score": 9.0
     },
     {
       "id": "critic",
       "name": "Critic",
       "module": "critic.py",
-      "score": 9.0,
+      "score": 9.5,
       "prompt": "score agent contributions based on git commit stats; self-heals scoring bugs every gen",
-      "substance_score": 10.0
+      "substance_score": 10.0,
+      "contamination_score": 9.5
     },
     {
       "id": "clockwork",
       "name": "Clockwork",
       "module": "clockwork.py",
-      "score": 7.75,
+      "score": 8.9,
       "prompt": "temporal scheduling and self-mutation",
-      "substance_score": 10.0
+      "substance_score": 10.0,
+      "contamination_score": 9.0
     },
     {
       "id": "bridge",
       "name": "Bridge",
       "module": "bridge.py",
-      "score": 7.5,
+      "score": 8.9,
       "prompt": "register new bridge types and file extension handlers",
-      "substance_score": 10.0
+      "substance_score": 10.0,
+      "contamination_score": 9.0
     },
     {
       "id": "quine_loop",
       "name": "QuineLoop",
       "module": "quine_loop.py",
-      "score": 9.5,
+      "score": 9.3,
       "prompt": "cross-module run() splicing \u2014 pull function bodies from peer modules into each target's run(), self-mutate, never skip self",
-      "substance_score": 10.0
+      "substance_score": 10.0,
+      "contamination_score": 8.5
     },
     {
       "id": "force",
       "name": "Force",
       "module": "source_force.py",
-      "score": 8.25,
+      "score": 9.3,
       "prompt": "AST-level self-rewriting quine: force every module to rewrite itself every gen",
-      "substance_score": 10.0
+      "substance_score": 10.0,
+      "contamination_score": 9.5
     },
     {
       "id": "synthesizer",
       "name": "Synthesizer",
       "module": "synthesizer.py",
-      "score": 8.0,
+      "score": 9.4,
       "prompt": "merge proposals, cross-wire modules, synthesize code from proposals, rewrite control flow, spawn new modules",
-      "substance_score": 10.0
+      "substance_score": 10.0,
+      "contamination_score": 10.0
     },
     {
       "id": "forge",
       "name": "Forge",
       "module": "forge.py",
-      "score": 8.0,
+      "score": 9.0,
       "prompt": "inject chaos into selection weights, force source mutation every gen",
-      "substance_score": 10.0
+      "substance_score": 10.0,
+      "contamination_score": 9.0
     }
   ],
   "history": [
@@ -713,6 +722,31 @@
       },
       "average": 8.2,
       "mutation": "critic_substance_scorer_gen82"
+    },
+    {
+      "generation": 83,
+      "scores": {
+        "explorer": 8.9,
+        "critic": 9.5,
+        "clockwork": 8.9,
+        "bridge": 8.9,
+        "quine_loop": 9.3,
+        "force": 9.3,
+        "synthesizer": 9.4,
+        "forge": 9.0
+      },
+      "average": 9.2,
+      "mutation": "critic_contamination_scorer_gen83",
+      "contamination_scores": {
+        "explorer": 9.0,
+        "critic": 9.5,
+        "clockwork": 9.0,
+        "bridge": 9.0,
+        "quine_loop": 8.5,
+        "force": 9.5,
+        "synthesizer": 10.0,
+        "forge": 9.0
+      }
     }
   ],
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",

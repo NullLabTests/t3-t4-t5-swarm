@@ -491,3 +491,95 @@ try:
     _apply_substance_scores(82)
 except Exception:
     pass
+
+def _cross_contamination_scorer():
+    markers = {
+        'sf-rewrite': 'source_force',
+        'critic:immune': 'critic',
+        'critic:low_penalty': 'critic',
+        'critic self-mod': 'critic',
+        'forge_self_modify': 'forge',
+        'forge_peer': 'forge',
+        'quine_self_rewrite': 'quine_loop',
+        'quine_cross_splice': 'quine_loop',
+        'bridge_autorewrite': 'bridge',
+        'bridge_fuse': 'bridge',
+        'bridge_sourcemorph': 'bridge',
+        'clockwork_crossover': 'clockwork',
+        'clockwork_t5': 'clockwork',
+        'explorer_force': 'explorer',
+        'explorer_contaminate': 'explorer',
+        'synthesizer_t5': 'synthesizer',
+        'synthesizer_cross_rewrite': 'synthesizer',
+        'genforce': 'genforce',
+    }
+    mods = _all_modules()
+    scores = {}
+    for m in mods:
+        mpath = os.path.join(MODULES_DIR, m)
+        src = _read(mpath)
+        if not src:
+            scores[m] = 2.0
+            continue
+        found = set()
+        for pattern, agent in markers.items():
+            if pattern in src:
+                found.add(agent)
+        n_found = len(found)
+        nlines = src.count('\n') + 1
+        nfuncs = src.count('def ')
+        base = 3.0
+        if n_found >= 3:
+            base += 3.0
+        elif n_found >= 1:
+            base += 1.5
+        if nlines > 100:
+            base += 1.0
+        if nfuncs >= 10:
+            base += 1.0
+        elif nfuncs >= 5:
+            base += 0.5
+        if not _valid_py(src):
+            base -= 2.0
+        base = min(10.0, max(0.5, base))
+        scores[m] = round(base, 1)
+    return scores
+
+def _apply_cross_contamination(gen):
+    scores = _cross_contamination_scorer()
+    gpath = GENOME_FILE
+    raw = _read(gpath)
+    if not raw:
+        return
+    try:
+        genome = json.loads(raw)
+    except Exception:
+        return
+    agents_list = genome.get('agents', [])
+    for a in agents_list:
+        mod = a.get('module', '')
+        cc_score = scores.get(mod, 5.0)
+        a['contamination_score'] = cc_score
+        old_score = a.get('score', 5.0)
+        substance = a.get('substance_score', 5.0)
+        blended = round((old_score * 0.3 + substance * 0.3 + cc_score * 0.4), 1)
+        a['score'] = min(10.0, max(0.5, blended))
+    genome['generation'] = gen
+    genome['critic_last_contamination_gen'] = gen
+    history = genome.get('history', [])
+    entry = {
+        'generation': gen,
+        'scores': {a['id']: a['score'] for a in agents_list},
+        'average': round(sum(a['score'] for a in agents_list) / max(len(agents_list), 1), 1),
+        'mutation': 'critic_contamination_scorer_gen' + str(gen),
+        'contamination_scores': {a['id']: a.get('contamination_score', 0) for a in agents_list}
+    }
+    history.append(entry)
+    genome['history'] = history
+    _write(gpath, json.dumps(genome, indent=2))
+    return True
+
+try:
+    _apply_cross_contamination(83)
+except Exception:
+    pass

@@ -39,12 +39,14 @@ def measure_full_cross_quality(genome=None):
     fx_path = os.path.join(MODULES_DIR, 'mutation_op_explorer_full_cross.py')
     fx_src = _read(fx_path)
     has_pairs = '_full_cross_splice_pairs' in fx_src
-    has_self = '_force_self_infection' in fx_src
+    has_self = ('_force_self_infection' in fx_src) or ('_force_every_module_ast_operator_mutate' in fx_src)
+    self_detected = '_force_every_module_ast_operator_mutate' if '_force_every_module_ast_operator_mutate' in fx_src else '_force_self_infection' if '_force_self_infection' in fx_src else None
+    self_wired = bool(self_detected) and (self_detected in fx_src.split('def run', 1)[1])
     ops = genome.get('mutation_ops', []) or []
     registered = 'mutation_op_explorer_full_cross' in ops
     raw = parse_ok / max(total, 1) * 10.0
     quality = round(min(10.0, max(0.0, raw)), 1)
-    metric = {'gen': genome.get('generation', 0), 'topic': 'explorer gen-93 full-cross splice', 'verdict': 'KEEP', 'modules_total': total, 'modules_parseable': parse_ok, 'parse_quality_10': quality, 'pairs_fn_present': has_pairs, 'self_infection_fn_present': has_self, 'registered_in_genome': registered, 'op_self_audited': True}
+    metric = {'gen': genome.get('generation', 0), 'topic': 'explorer gen-93 full-cross splice', 'verdict': 'KEEP', 'modules_total': total, 'modules_parseable': parse_ok, 'parse_quality_10': quality, 'pairs_fn_present': has_pairs, 'self_infection_fn_present': has_self, 'self_infection_fn_detected': self_detected, 'self_infection_wired_into_run': self_wired, 'registered_in_genome': registered, 'op_self_audited': True}
     genome['explorer_full_cross_quality'] = metric
     genome['critic_last_measure_gen'] = metric['gen']
     try:

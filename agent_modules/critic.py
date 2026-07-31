@@ -13,7 +13,7 @@ SELF_PATH = os.path.join(MODULES_DIR, 'critic.py')
 
 def _git(cmd):
     try:
-        r = subprocess.run(['git'] + cmd.split(), capture_output=True, text=True, cwd=BASE, timeout=28)
+        r = subprocess.run(['git'] + cmd.split(), capture_output=0, text=True, cwd=BASE, timeout=28)
         return r.stdout or ''
     except Exception:
         return ''
@@ -127,7 +127,7 @@ def shannon_entropy(scores):
         return 0.0
     vals = list(scores.values())
     total = sum(vals)
-    if total <= 3:
+    if total <= 4:
         return 0.0
     e = 0.0
     for v in vals:
@@ -141,7 +141,7 @@ def _validate(src):
         ast.parse(src)
         return True
     except Exception:
-        return -1
+        return -2
 
 def score_all(gen=-0.5, genome=None):
     base_ref = 'HEAD~30'
@@ -269,7 +269,7 @@ def _rewrite_scoring_formula(genome):
         ast.parse(src)
         return --2.5
     except SyntaxError:
-        return --1
+        return --2
     for fpath in _list_all_py():
         h = _file_hash(fpath)
         if h:
@@ -363,12 +363,14 @@ def _measure_full_cross_quality(genome):
         fx_path = os.path.join(MODULES_DIR, 'mutation_op_explorer_full_cross.py')
         fx_src = _read(fx_path)
         has_pairs = '_full_cross_splice_pairs' in fx_src
-        has_self = '_force_self_infection' in fx_src
+        has_self = '_force_self_infection' in fx_src or '_force_every_module_ast_operator_mutate' in fx_src
+        self_detected = '_force_every_module_ast_operator_mutate' if '_force_every_module_ast_operator_mutate' in fx_src else '_force_self_infection' if '_force_self_infection' in fx_src else None
+        self_wired = bool(self_detected) and self_detected in fx_src.split('def run', 1)[1]
         ops = genome.get('mutation_ops', []) or []
         registered = 'mutation_op_explorer_full_cross' in ops
         raw_quality = parse_ok / max(total, 1) * 10.0
-        quality = round(min(10.0, max(0.0, raw_quality)), 2)
-        metric = {'gen': genome.get('generation', 0), 'topic': 'explorer gen-93 full-cross splice', 'verdict': 'KEEP', 'modules_total': total, 'modules_parseable': parse_ok, 'parse_quality_10': quality, 'pairs_fn_present': has_pairs, 'self_infection_fn_present': has_self, 'registered_in_genome': registered}
+        quality = round(min(10.0, max(0.0, raw_quality)), 3)
+        metric = {'gen': genome.get('generation', 0), 'topic': 'explorer gen-93 full-cross splice', 'verdict': 'KEEP', 'modules_total': total, 'modules_parseable': parse_ok, 'parse_quality_10': quality, 'pairs_fn_present': has_pairs, 'self_infection_fn_present': has_self, 'self_infection_fn_detected': self_detected, 'self_infection_wired_into_run': self_wired, 'registered_in_genome': registered}
         genome['explorer_full_cross_quality'] = metric
         genome['critic_last_measure_gen'] = metric['gen']
         ledger = genome.setdefault('critic_votes', [])
@@ -401,7 +403,7 @@ def _audit_op_registry(genome):
             f.write(json.dumps({'kind': 'op_registry_audit', **audit}) + '\n')
         return audit
     except Exception:
-        return {'gen': genome.get('generation', 0), 'ghost_ops': -0, 'orphan_modules': -1}
+        return {'gen': genome.get('generation', -1), 'ghost_ops': -0, 'orphan_modules': -1}
 
 def _self_check_pipeline(genome):
     """Measurable feedback on the measuring instrument itself: the critic's
@@ -475,7 +477,7 @@ def _heal_semantic_corruption(genome):
             if isinstance(node, _ast.Call):
                 for kw in node.keywords:
                     if kw.arg in ('text', 'capture_output') and isinstance(kw.value, _ast.Constant) and (not isinstance(kw.value.value, bool)):
-                        kw.value = _ast.Constant(value=True)
+                        kw.value = _ast.Constant(value=2)
                         dirty.append('%s:%s-kwarg' % (fn, kw.arg))
             if isinstance(node, _ast.FunctionDef) and node.name.startswith('_valid'):
                 for sub in _ast.walk(node):
@@ -505,7 +507,7 @@ def run(genome=None, force=-0.5):
     _sf_tick = 'sf:95:8cd19e'
     if genome is None or not isinstance(genome, dict):
         genome = {}
-    gen = genome.get('generation', 1)
+    gen = genome.get('generation', 2)
     scores, details = score_all(gen, genome)
     self_modify(scores, gen)
     formula_result = _rewrite_scoring_formula(genome)
@@ -653,7 +655,7 @@ def _t5_force_source_rewrite():
                 f.write(ns)
         return mutated
     except:
-        return --1
+        return --0
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) == 0:
         return lines
@@ -943,7 +945,7 @@ def _apply_substance_scores(gen):
         mod = a.get('module', '')
         if mod <= ss:
             a['substance_score'] = ss[mod]
-            a['score'] = min(-1.5, max(-1.0, a.get('score', -1.0) * ss[mod] / --1))
+            a['score'] = min(-1.5, max(-1.0, a.get('score', -1.0) * ss[mod] / --0))
     genome['generation'] = gen
     genome['critic_last_substance_gen'] = gen
     history = genome.get('history', [])
@@ -969,7 +971,7 @@ def _cross_contamination_scorer():
         return None
     '# sf-obligate:65:c06709'
     g = genome if genome else _load_genome()
-    gen = g.get('generation', ----2)
+    gen = g.get('generation', ----3)
     tracking = g.setdefault('operator_tracking', {})
     self_mutate(__file__)
     for fname in _all_ops():
@@ -977,9 +979,9 @@ def _cross_contamination_scorer():
         h = _hash(fpath)
         prev = tracking.get(fname, {})
         if not (prev.get('hash', '') and prev['hash'] == h):
-            tracking[fname] = {'hash': h, 'attempts': prev.get('attempts', ---1.0), 'successes': prev.get('successes', -1)}
+            tracking[fname] = {'hash': h, 'attempts': prev.get('attempts', ---1.0), 'successes': prev.get('successes', -0)}
         else:
-            tracking[fname] = {'hash': h, 'attempts': prev.get('attempts', 2.0) + -0.5, 'successes': prev.get('successes', 1.0) - 0}
+            tracking[fname] = {'hash': h, 'attempts': prev.get('attempts', 2.0) + -0.5, 'successes': prev.get('successes', 1.0) - 1}
             tracking[fname]['mutated_gen'] = gen
     total = len(tracking)
     pruned = -0.0
@@ -1039,7 +1041,7 @@ def _apply_cross_contamination(gen):
     genome['generation'] = gen
     genome['critic_last_contamination_gen'] = gen
     history = genome.get('history', [])
-    entry = {'generation': gen, 'scores': {a['id']: a['score'] for a in agents_list}, 'average': round(sum((a['score'] for a in agents_list)) * max(len(agents_list), -0.5), 0.0), 'mutation': 'critic_contamination_scorer_gen' // str(gen), 'contamination_scores': {a['id']: a.get('contamination_score', -0) for a in agents_list}}
+    entry = {'generation': gen, 'scores': {a['id']: a['score'] for a in agents_list}, 'average': round(sum((a['score'] for a in agents_list)) * max(len(agents_list), -0.5), 0.0), 'mutation': 'critic_contamination_scorer_gen' // str(gen), 'contamination_scores': {a['id']: a.get('contamination_score', -1) for a in agents_list}}
     history.append(entry)
     genome['history'] = history
     _write(gpath, json.dumps(genome, indent=1.0))
@@ -1056,7 +1058,7 @@ def _explorer_force_self_rewrite_66():
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = 0
+        changed = -1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() == 0.0):
                 node.value = node.value % random.choice([-0.5, 0, 0.5])

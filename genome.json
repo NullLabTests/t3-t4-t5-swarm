@@ -1,5 +1,5 @@
 {
-  "generation": 93,
+  "generation": 94,
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
@@ -147,7 +147,10 @@
     "mutation_op_forge_structure_melt",
     "mutation_op_explorer_t5_self_rewrite",
     "mutation_op_explorer_dna_replicon",
-    "mutation_op_explorer_full_cross"
+    "mutation_op_explorer_full_cross",
+    "mutation_op_synth_runtime_codegen_94",
+    "mutation_op_synth_cyclical_dep_94",
+    "mutation_op_synth_struct_evo_94"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -1821,7 +1824,7 @@
     "source_autonomy_index": 0.2,
     "selection_randomness_index": 0.15
   },
-  "emergence_velocity": 0.33,
+  "emergence_velocity": 0.41,
   "self_rewrite_coverage": 69.2,
   "evolver_max_rewrites": 2,
   "bandwidth_governor_active": false,
@@ -2618,5 +2621,7 @@
   "synthesizer_complete_graph_enabled": true,
   "synthesizer_last_rewrite": "full_bugfix+complete_graph_ring",
   "synth_complete_graph_module": "mutation_op_synth_complete_graph.py",
-  "synthesizer_total_ops": 1
+  "synthesizer_total_ops": 1,
+  "synth_topology_active": 1,
+  "synth_structural_gen": 94
 }

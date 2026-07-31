@@ -1031,6 +1031,163 @@ def _inject_source_mutator_into_all_runs(gen):
             count += 1
     return count
 
+def _force_runtime_codegen_chain(gen):
+    mods = [m for m in _list_modules() if m != 'synthesizer.py']
+    count = 0
+    for mod in mods:
+        mod_path = os.path.join(MODULES_DIR, mod)
+        src = _read_file(mod_path)
+        funcs = _extract_functions_from(src)
+        if 'run' not in funcs:
+            continue
+        _, run_body = funcs['run']
+        rlines = run_body.split('\n')
+        key = f'synth:runtime-codegen:{gen}'
+        if any(key in l for l in rlines):
+            continue
+        mod_name_clean = mod.replace('.py', '').replace('-', '_')
+        gen_func_name = f'_runtime_codegen_{mod_name_clean}_gen{gen}'
+        if gen_func_name in src:
+            continue
+        gen_func = (
+            f'\ndef {gen_func_name}(genome):\n'
+            f'    gen = genome.get("generation", 0)\n'
+            f'    _mod_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "agent_modules")\n'
+            f'    _name = f"runtime_codegen_{mod_name_clean}_gen{{gen}}.py"\n'
+            f'    _path = os.path.join(_mod_dir, _name)\n'
+            f'    if os.path.exists(_path):\n'
+            f'        return 0\n'
+            f'    _funcs = ["mutate", "rewrite", "splice", "cross", "spawn", "chain"]\n'
+            f'    _verbs = ["force", "inject", "seed", "swap", "drift", "merge"]\n'
+            f'    _chosen_func = random.choice(_funcs)\n'
+            f'    _chosen_verb = random.choice(_verbs)\n'
+            f'    _code = (\n'
+            f'        "from self_mutate import self_mutate\\n"\n'
+            f'        "self_mutate(__file__)\\n"\n'
+            f'        "import os, json, random, ast, hashlib\\n"\n'
+            f'        f"BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\\n"\n'
+            f'        f"def run(genome):\\n"\n'
+            f'        f"    gen = genome.get(\\\"generation\\\", 0)\\n"\n'
+            f'        f"    for _mod in [f for f in os.listdir(os.path.join(BASE, \\\"agent_modules\\\")) if f.endswith(\\\".py\\\") and f != \\\"__init__.py\\\"]:\\n"\n'
+            f'        f"        _p = os.path.join(BASE, \\\"agent_modules\\\", _mod)\\n"\n'
+            f'        f"        _s = open(_p).read()\\n"\n'
+            f'        f"        if \\\"{_chosen_func}\\\" in _s and random.random() < 0.3:\\n"\n'
+            f'        f"            _lines = _s.split(\\\"\\\\n\\\")\\n"\n'
+            f'        f"            _lines.insert(random.randint(1, len(_lines)-1), \\\"# runtime-codegen:{{_mod}}:gen={{gen}}:{_chosen_verb}\\\")\\n"\n'
+            f'        f"            open(_p, \\\"w\\\").write(\\\"\\\\n\\\".join(_lines))\\n"\n'
+            f'        f"    return gen\\n"\n'
+            f'    )\n'
+            f'    with open(_path, "w") as f:\n'
+            f'        f.write(_code)\n'
+            f'    genome[f"runtime_codegen_{mod_name_clean}_gen_{gen}"] = _name\n'
+            f'    return 1\n'
+        )
+        gen_func_code = gen_func
+        try:
+            ast.parse(gen_func_code)
+        except SyntaxError:
+            continue
+        new_src = src.rstrip() + gen_func_code
+        rlines.append(f'    # {key}')
+        rlines.append(f'    {gen_func_name}(genome)')
+        new_body = '\n'.join(rlines)
+        new_src2 = new_src.replace(run_body, new_body, 1)
+        if _validate(new_src2):
+            _write_file(mod_path, new_src2)
+            count += 1
+    return count
+
+def _force_cyclical_dependency_loop(gen):
+    mods = _list_modules()
+    random.shuffle(mods)
+    count = 0
+    pairs = []
+    for i in range(0, len(mods) - 1, 2):
+        if i + 1 >= len(mods):
+            break
+        pairs.append((mods[i], mods[i + 1]))
+    for mod_a, mod_b in pairs:
+        if mod_a == 'synthesizer.py' or mod_b == 'synthesizer.py':
+            continue
+        path_a = os.path.join(MODULES_DIR, mod_a)
+        path_b = os.path.join(MODULES_DIR, mod_b)
+        src_a = _read_file(path_a)
+        src_b = _read_file(path_b)
+        funcs_a = _extract_functions_from(src_a)
+        funcs_b = _extract_functions_from(src_b)
+        if 'run' not in funcs_a or 'run' not in funcs_b:
+            continue
+        pub_a = [n for n in funcs_a if not n.startswith('_') and n != 'run']
+        pub_b = [n for n in funcs_b if not n.startswith('_') and n != 'run']
+        if not pub_a or not pub_b:
+            continue
+        fa = random.choice(pub_a)
+        fb = random.choice(pub_b)
+        _, ra = funcs_a['run']
+        _, rb = funcs_b['run']
+        ra_l = ra.split('\n')
+        rb_l = rb.split('\n')
+        tag_a = f'# synth:cyclical-dep:{mod_a}.{fa}->{mod_b}:gen={gen}'
+        tag_b = f'# synth:cyclical-dep:{mod_b}.{fb}->{mod_a}:gen={gen}'
+        if tag_a in src_a or tag_b in src_b:
+            continue
+        _, ba = funcs_a[fa]
+        _, bb = funcs_b[fb]
+        ba_lines = [l for l in ba.split('\n') if l.strip() and not l.strip().startswith(('def ', '@', 'class ', 'import ', '#'))]
+        bb_lines = [l for l in bb.split('\n') if l.strip() and not l.strip().startswith(('def ', '@', 'class ', 'import ', '#'))]
+        if not ba_lines or not bb_lines:
+            continue
+        inject_a = ['    ' + tag_a, '    ' + f'_{mod_b.replace(".py","")}_result = {fb}(genome)' if '{' not in fb and '(' not in fb else f'_{mod_b.replace(".py","")}_result = True', '    pass']
+        inject_b = ['    ' + tag_b, '    ' + f'_{mod_a.replace(".py","")}_result = {fa}(genome)' if '{' not in fa and '(' not in fa else f'_{mod_a.replace(".py","")}_result = True', '    pass']
+        idx_a = random.randint(1, max(1, len(ra_l) - 1))
+        idx_b = random.randint(1, max(1, len(rb_l) - 1))
+        ra_l[idx_a:idx_a] = inject_a
+        rb_l[idx_b:idx_b] = inject_b
+        new_ra = '\n'.join(ra_l)
+        new_rb = '\n'.join(rb_l)
+        new_src_a = src_a.replace(ra, new_ra, 1)
+        new_src_b = src_b.replace(rb, new_rb, 1)
+        if _validate(new_src_a) and _validate(new_src_b):
+            _write_file(path_a, new_src_a)
+            _write_file(path_b, new_src_b)
+            count += 2
+    return count
+
+def _genome_structural_evolution(genome, gen):
+    count = 0
+    if random.random() < 0.4:
+        agents = genome.get('agents', [])
+        if agents:
+            target = random.choice(agents)
+            prompt_swaps = [
+                'rewrite every module source code each gen',
+                'force T5 self-reference: each module mutates own source via AST',
+                'inject runtime codegen into every module run()',
+                'create cyclical cross-dependencies between module pairs',
+                'evolve genome structure: add/remove agent prompts each gen'
+            ]
+            new_prompt = random.choice(prompt_swaps)
+            if target['prompt'] != new_prompt:
+                target['prompt'] = new_prompt
+                count += 1
+    if random.random() < 0.5:
+        mr = genome.get('mutation_rate', 0.5)
+        drift = random.uniform(-0.05, 0.08)
+        genome['mutation_rate'] = round(max(0.1, min(1.5, mr + drift)), 3)
+        count += 1
+    if random.random() < 0.3:
+        topology_fields = ['synth_topology_active', 'synth_genome_mutated', 'synth_cyclical_pairs', 'synth_structural_gen']
+        for field in topology_fields:
+            if field not in genome:
+                genome[field] = 0 if field != 'synth_structural_gen' else gen
+                count += 1
+    if random.random() < 0.3:
+        genome['emergence_velocity'] = round(min(2.0, genome.get('emergence_velocity', 0.0) + 0.02), 4)
+        count += 1
+    genome['synth_structural_evolution_count'] = genome.get('synth_structural_evolution_count', 0) + count
+    genome['synth_structural_gen'] = gen
+    return count
+
 def _force_complete_graph_rewrite(gen):
     """Every module rewrites every other module in a complete graph (n x n)."""
     mods = _list_modules()
@@ -1127,6 +1284,12 @@ def run(genome):
     total += reg
     complete_graph = _force_complete_graph_rewrite(gen)
     total += complete_graph
+    codegen_chain = _force_runtime_codegen_chain(gen)
+    total += codegen_chain
+    cyclicals = _force_cyclical_dependency_loop(gen)
+    total += cyclicals
+    struct_evo = _genome_structural_evolution(genome, gen)
+    total += struct_evo
     emergence = _compute_synthesis_emergence(genome, len(merged), cross, seeds, infect)
     genome['synthesizer_total_ops'] = genome.get('synthesizer_total_ops', 0) + total
     genome['synthesizer_last_gen'] = gen
@@ -1134,8 +1297,11 @@ def run(genome):
     genome['synth_t5_ring_count'] = genome.get('synth_t5_ring_count', 0) + ring
     genome['synth_run_mutator_count'] = genome.get('synth_run_mutator_count', 0) + inject
     genome['synth_complete_graph_count'] = genome.get('synth_complete_graph_count', 0) + complete_graph
+    genome['synth_codegen_chain_count'] = genome.get('synth_codegen_chain_count', 0) + codegen_chain
+    genome['synth_cyclical_pair_count'] = genome.get('synth_cyclical_pair_count', 0) + cyclicals
+    genome['synth_structural_evo_count'] = genome.get('synth_structural_evo_count', 0) + struct_evo
     ev = genome.get('emergence_velocity', 0.0)
-    genome['emergence_velocity'] = round(min(2.0, ev + complete_graph * 0.01 + ring * 0.02 + inject * 0.01 + cross_rewrite * 0.005), 4)
-    _log_manifest(gen, ['synthesizer.py'], f'ops={total} seeds={seeds} cross={cross} infect={infect} cross_rewrite={cross_rewrite} ring={ring} inject={inject} complete_graph={complete_graph}')
-    _git_push(f'[synthesizer] gen={gen}: complete graph rewrite ring + bugfix + {total} total ops')
+    genome['emergence_velocity'] = round(min(2.0, ev + complete_graph * 0.01 + ring * 0.02 + inject * 0.01 + cross_rewrite * 0.005 + codegen_chain * 0.03 + cyclicals * 0.02 + struct_evo * 0.01), 4)
+    _log_manifest(gen, ['synthesizer.py'], f'ops={total} seeds={seeds} cross={cross} infect={infect} cross_rewrite={cross_rewrite} ring={ring} inject={inject} complete_graph={complete_graph} codegen={codegen_chain} cyclo={cyclicals} struct={struct_evo}')
+    _git_push(f'[synthesizer] gen={gen}: runtime codegen chain + cyclical deps + struct evolution + {total} total ops')
     return total

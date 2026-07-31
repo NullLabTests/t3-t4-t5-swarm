@@ -207,6 +207,26 @@ def mutation_op_swap_blocks_113(lines, funcs, target_name):
 def mutation_op_swap_blocks_113(lines, funcs, target_name):
 @_register_mutation_op('mutation_op_swap_blocks_113')
 def mutation_op_swap_blocks_113(lines, funcs, target_name):
+@_register_mutation_op('mutation_op_swap_blocks_113')
+def mutation_op_swap_blocks_113(lines, funcs, target_name):
+    """Swap two adjacent code blocks. Real structural mutation."""
+    if not lines or len(lines) < 6:
+        return lines
+    r = list(lines)
+    mid = len(r) // 2
+    split = random.randint(max(2, mid - 2), min(mid + 2, len(r) - 2))
+    if split < 2 or split >= len(r) - 2:
+        return lines
+    block_a = r[split - random.randint(1, 2):split]
+    block_b = r[split:split + random.randint(1, 2)]
+    if not block_a or not block_b:
+        return lines
+    for i, la in enumerate(block_a):
+        r[split - len(block_a) + i] = block_b[i] if i < len(block_b) else la
+    for i, lb in enumerate(block_b):
+        r[split + i] = block_a[i] if i < len(block_a) else lb
+    return r
+
     """Swap two adjacent code blocks. Real structural mutation."""
     if not lines or len(lines) < 6:
         return lines

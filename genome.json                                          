@@ -25,7 +25,7 @@
   "spawn_threshold": 5,
   "prune_threshold": 3,
   "prune_generations": 3,
-  "mutation_rate": 0.1,
+  "mutation_rate": 0.2075,
   "voice_map": {
     "explorer": "southern",
     "analyzer": "lessac",
@@ -482,7 +482,7 @@
       "id": "synthesizer",
       "name": "Synthesizer",
       "module": "synthesizer.py",
-      "score": 9.4,
+      "score": 10.0,
       "prompt": "merge proposals, cross-wire modules, synthesize code from proposals, rewrite control flow, spawn new modules",
       "substance_score": 10.0,
       "contamination_score": 10.0,
@@ -492,7 +492,7 @@
       "id": "force",
       "name": "Force",
       "module": "source_force.py",
-      "score": 9.3,
+      "score": 9.1,
       "prompt": "AST-level self-rewriting quine: force every module to rewrite itself every gen",
       "substance_score": 10.0,
       "contamination_score": 9.5,
@@ -523,7 +523,7 @@
       "id": "explorer",
       "name": "Explorer",
       "module": "explorer.py",
-      "score": 9.3,
+      "score": 9.44,
       "prompt": "generate novel modules, full n\u00d7n cross-contaminate, force self-infection every gen",
       "substance_score": 10.0,
       "contamination_score": 9.8,
@@ -573,7 +573,7 @@
       "id": "livecode ",
       "voice ": "amy",
       "prompt ": "You mutate other modules every generation by injecting cross-file markers.",
-      "score": 5.0,
+      "score": 4.34,
       "lifespan": 1.5,
       "low_score_streak": -1,
       "module ": "livecode.py"
@@ -2559,17 +2559,17 @@
     }
   ],
   "_injected_selection_weights": {
-    "bridge": 9.6602,
-    "synthesizer": 9.864,
-    "force": 10.3757,
-    "explorer_t5": 8.7432,
-    "quine_loop": 10.012,
-    "explorer": 9.0835,
-    "clockwork": 9.2966,
-    "forge": 9.8614,
-    "t5_metamorph": 8.536,
-    "livecode ": 6.7195,
-    "genforce": 5.7552
+    "bridge": 9.1964,
+    "synthesizer": 10.0916,
+    "force": 9.8183,
+    "explorer_t5": 9.0512,
+    "quine_loop": 9.2798,
+    "explorer": 9.9186,
+    "clockwork": 9.9131,
+    "forge": 10.0535,
+    "t5_metamorph": 8.2462,
+    "livecode ": 6.0558,
+    "genforce": 5.905
   },
   "forge_scramble_gen": 47,
   "forge_last_run": 47,
@@ -4104,5 +4104,13 @@
   },
   "forge_chaos_gen": 113,
   "forge_all_ast_rewritten": 78,
-  "forge_all_ast_rewrite_gen": 113
+  "forge_all_ast_rewrite_gen": 113,
+  "forge_topo_mut_gen": 113,
+  "forge_topo_changes": [
+    "mr=0.2075",
+    "synthesizer@10.0",
+    "force@9.1",
+    "explorer@9.44",
+    "livecode @4.34"
+  ]
 }

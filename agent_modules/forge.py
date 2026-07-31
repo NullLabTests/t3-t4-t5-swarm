@@ -270,7 +270,7 @@ def _inject_runtime_self_modify_hook(genome):
             results.append(mod)
     if results:
         genome['forge_hook_infected'] = results
-        genome['forge_hook_gen'] = gen
+        genome['forge_hook_gen'] = genome.get('generation', 0)
         _save(genome)
     return results
 

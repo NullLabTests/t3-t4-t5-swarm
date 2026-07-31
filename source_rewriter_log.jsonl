@@ -227,3 +227,7 @@
 {"generation": 208, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785518177.2855225}
 {"generation": 208, "op": "critic_heal_semantic", "healed_files": 2, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg"]}]}
 {"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 208, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785518295.3909123}
+{"generation": 208, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785518298.0363274}
+{"generation": 208, "op": "critic_heal_semantic", "healed_files": 2, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}

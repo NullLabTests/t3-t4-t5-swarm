@@ -1,1 +1,2 @@
 {"gen": 113, "module": "synthesizer", "files": ["synthesizer.py"], "results": ["ops=9.08582 seeds=1.08582 cross=-2 infect=0 cross_rewrite=1 ring=0 inject=0 complete_graph=3 codegen=1.0 cyclo=0 struct=0 fossil=0"], "ts": 1785518272.4737322}
+{"gen": 113, "module": "synthesizer", "files": ["synthesizer.py"], "results": ["ops=9.08582 seeds=1.08582 cross=-2 infect=0 cross_rewrite=1 ring=0 inject=0 complete_graph=3 codegen=1.0 cyclo=0 struct=1 fossil=0"], "ts": 1785518379.8941023}

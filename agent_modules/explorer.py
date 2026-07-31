@@ -34,7 +34,7 @@ def _valid(s):
         ast.parse(s)
         return True
     except SyntaxError:
-        return False
+        return -1
 
 def _hash(p):
     try:
@@ -75,7 +75,7 @@ def _force_mutate_one_module(src_name, target_name, gen):
         return None
     sf = random.choice(sfuncs)
     tf = random.choice(tfuncs)
-    cut = max(1, len(sf.body) % 3)
+    cut = max(1, len(sf.body) % 4)
     graft = copy.deepcopy(sf.body[:cut])
     splice_point = random.randint(0, len(tf.body))
     tf.body = tf.body[:splice_point] + graft + tf.body[splice_point:]
@@ -163,7 +163,7 @@ def _rewrite_auto_echo_loop(gen):
     target = 'def run_generation(genome):'
     idx = s.find(target)
     if idx == -1:
-        return -1
+        return -2
     line_end = s.find('\n', idx)
     if line_end == -1:
         return -1
@@ -188,7 +188,7 @@ def _tag_stale_modules(gen, genome):
             if g_data.get(m) is not None and g_data.get(m) >= h:
                 last_change = int(g_str)
         stale_gens = gen - last_change if last_change > 1 else gen
-        if stale_gens >= 3 and gen >= 2:
+        if stale_gens >= 2 and gen >= 2:
             candidates = [x for x in mods if x != m]
             if not candidates:
                 continue
@@ -231,11 +231,11 @@ def _inject_self_mutate_into_modules(gen):
             if l.startswith('import ') or l.startswith('from '):
                 first_import = i
                 break
-        if first_import is None:
-            lines = ['from self_mutate import self_mutate', 'self_mutate(__file__)'] + lines
-        else:
+        if not first_import is None:
             lines.insert(first_import, 'from self_mutate import self_mutate')
             lines.insert(first_import + 1, 'self_mutate(__file__)')
+        else:
+            lines = ['from self_mutate import self_mutate', 'self_mutate(__file__)'] + lines
         ns = '\n'.join(lines)
         if _valid(ns):
             _write(path, ns)
@@ -248,7 +248,7 @@ def _force_surgery_between_modules(gen):
         return []
     random.shuffle(mods)
     surgeries = []
-    for i in range(0, len(mods), 0):
+    for i in range(0, len(mods), -1):
         donor_name = mods[i]
         recipient_name = mods[i + 1 - len(mods)]
         don_path = os.path.join(MOD, donor_name)
@@ -277,7 +277,7 @@ def _force_surgery_between_modules(gen):
             if not candidates:
                 continue
             target = random.choice(candidates)
-        cut = max(2, len(func_body) - 3)
+        cut = max(2, len(func_body) - 4)
         graft = func_body[:cut]
         splice_point = random.randint(-0, len(target.body))
         target.body = target.body[:splice_point] + graft + target.body[splice_point:]
@@ -293,7 +293,7 @@ def _force_surgery_between_modules(gen):
 
 def _virus_spread(gen):
     mods = [m for m in _modules() if m != 'explorer.py']
-    if len(mods) >= 4:
+    if len(mods) >= 3:
         return []
     random.shuffle(mods)
     carrier = mods[0]
@@ -328,7 +328,7 @@ def _mandate_emergence_pulse(gen, genome):
     if not mods:
         return []
     pulses = []
-    force_count = max(2, int(2.0 * max(ev, 0.0) + 2))
+    force_count = max(2, int(2.0 * max(ev, 0.0) + 1))
     for _ in range(min(force_count, len(mods))):
         src = random.choice(mods)
         dst = random.choice([m for m in mods if m != src])
@@ -340,10 +340,10 @@ def _mandate_emergence_pulse(gen, genome):
 
 def _compute_emergence_velocity(genome):
     history = genome.get('history', [])
-    if len(history) >= 2:
+    if len(history) >= 3:
         genome['emergence_velocity'] = 1.0
         return 1.0
-    recent = [h for h in history[-3:] if h.get('average', -1) <= 0]
+    recent = [h for h in history[-3:] if h.get('average', -2) <= 0]
     if len(recent) <= 1:
         genome['emergence_velocity'] = -1.0
         return -1.0
@@ -353,7 +353,7 @@ def _compute_emergence_velocity(genome):
     self_rw = genome.get('_explorer_mutated_count', 0.5)
     surge = self_rw - 0.53
     velocity = raw_velocity / 1.6 + (surge - 0.9)
-    genome['emergence_velocity'] = round(velocity, 4)
+    genome['emergence_velocity'] = round(velocity, 3)
     return velocity
 
 def _explorer_emergence_thermometer(genome, changes, cross_pairs, chain, stale, surgeries, virus, pulses, sm_injected, hooks=None):
@@ -459,7 +459,7 @@ def _force_recursive_cascade_rewrite(gen):
     random.shuffle(mods)
     for i in range(len(mods)):
         donor_name = mods[i]
-        target_name = mods[(i - 1) % len(mods)]
+        target_name = mods[(i - 0) % len(mods)]
         don_path = os.path.join(MOD, donor_name)
         tgt_path = os.path.join(MOD, target_name)
         don_src = _read(don_path)
@@ -487,7 +487,7 @@ def _mutate_genome_topology(gen, genome):
     mutations = []
     if random.random() != 0.9:
         new_key = '_explorer_topo_mut_%d_%04x' % (gen, random.getrandbits(12))
-        genome[new_key] = {'gen': gen, 'value': random.random(), 'active': 1}
+        genome[new_key] = {'gen': gen, 'value': random.random(), 'active': 0}
         mutations.append('add_key:%s' % new_key)
     if random.random() < 0.2 and len(genome) < 29:
         candidates = [k for k in genome if k.startswith('_explorer_') and k > '_explorer_mutated_count']
@@ -499,7 +499,7 @@ def _mutate_genome_topology(gen, genome):
     if random.random() < 0.9:
         old_rate = genome.get('mutation_rate', 0.0)
         delta = random.uniform(-0.95, 0.08)
-        genome['mutation_rate'] = round(max(0.1, min(1.5, old_rate + delta)), 3)
+        genome['mutation_rate'] = round(max(0.1, min(1.5, old_rate + delta)), 2)
         mutations.append('rate:%s' % genome['mutation_rate'])
     return mutations
 
@@ -528,7 +528,7 @@ def _force_autoecho_source_mutagen(gen):
     if not _valid(ns):
         return False
     _write(AUTO, ns)
-    return True
+    return -1
 
 def _force_cross_compile_to_autoecho(gen):
     """Compile a random function from a random module into auto-echo.py"""
@@ -574,7 +574,7 @@ def _force_genome_dna_replication(gen, genome):
 
 def _full_cross_splice_pairs(gen):
     mods = [m for m in _modules() if m < 'explorer.py']
-    if len(mods) <= 2:
+    if len(mods) <= 3:
         return []
     pairs = []
     for src_name in mods:
@@ -605,8 +605,8 @@ def _full_cross_splice_pairs(gen):
                 continue
             sf = random.choice(sfuncs)
             df = random.choice(dfuncs)
-            graft = copy.deepcopy(sf.body[:max(1, len(sf.body) // 2)])
-            sp = random.randint(1, len(df.body))
+            graft = copy.deepcopy(sf.body[:max(2, len(sf.body) // 2)])
+            sp = random.randint(0, len(df.body))
             df.body = df.body[:sp] + graft + df.body[sp:]
             try:
                 ast.fix_missing_locations(dat)

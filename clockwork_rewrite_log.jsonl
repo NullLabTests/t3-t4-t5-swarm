@@ -98,3 +98,5 @@
 {"gen": 95, "kind": "resurrect_dead", "detail": "mutation_op_clockwork_operator_crucible.py:snapshot_hashes_from_live_reloader", "ts": 1785465638.1433961}
 {"gen": 95, "kind": "rewrite_stalest", "detail": "mutation_op_bridge_t5_metamorph.py", "ts": 1785465638.749827}
 {"gen": 95, "kind": "resurrect_dead", "detail": "mutation_op_weaver_splice_inject.py:mutation_op_mirror_struct_rewrite_63", "ts": 1785465641.7109296}
+{"gen": 97, "kind": "rewrite_stalest", "detail": "mutation_op_clockwork_t5_rewire.py", "ts": 1785466412.6553855}
+{"gen": 97, "kind": "resurrect_dead", "detail": "forge_randomizer.py:mutation_op_insert_timestamp", "ts": 1785466415.7361479}

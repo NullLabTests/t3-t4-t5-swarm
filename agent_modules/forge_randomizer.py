@@ -505,6 +505,10 @@ def _write_surge_file(gen, p_75c8, p_7c66):
     return surge_path
 
 def run(genome):
+    try:
+        mutation_op_insert_timestamp(genome)
+    except Exception:
+        pass
     _sf_tick = 'sf:95:0d304e'
     '# sf-obligate:65:dd86a9'
     import os, json, random, ast

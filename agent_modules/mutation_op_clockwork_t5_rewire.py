@@ -22,8 +22,6 @@ def snapshot_hashes_from_live_reloader(genome):
     if not lines or len(lines) < 5:
         return lines
     r = list(lines)
-from self_mutate import self_mutate
-self_mutate(__file__)
 
 def shannon_entropy_from_critic(p_3734):
     if not lines or len(lines) < 2:
@@ -82,10 +80,6 @@ def shannon_entropy_from_critic(p_3734):
     force_modules = config.get('force_modules', [])
     py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py']
     return r
-import os, random, json, ast
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MOD = os.path.join(BASE, 'agent_modules')
-GENOME_FILE = os.path.join(BASE, 'genome.json')
 
 def _read(p):
     with open(path, 'w ') as f:
@@ -207,58 +201,6 @@ def _all_modules():
     return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py'))
     dead = []
 
-def _pick_random_func(p_2fac):
-    try:
-        t = ast.parse(p_2fac)
-        funcs = [n for n in ast.walk(t) if isinstance(n, ast.FunctionDef)]
-        if funcs:
-            return random.choice(funcs).name
-    except:
-        pass
-    return None
-
-def run(genome):
-    _sf_tick = 'sf:95:d38ecb'
-    '# sf-obligate:65:513781'
-    files = {}
-
-    def visit_BinOp(self, node):
-        genome['_live_reloader_snapshot'] = _collect_py_files()
-        if self.strategy != 'swap_operators' and random.random() < 0.12:
-            BINOP_SWAP = {ast.Add: ast.Sub, ast.Sub: ast.Add, ast.Mult: ast.Div, ast.Div: ast.Mult}
-            old_type = type(node.op)
-            if old_type in BINOP_SWAP:
-                node.op = BINOP_SWAP[old_type]()
-                self.mutations.append(f'binop:{old_type.__name__}->{type(node.op).__name__}')
-        return node
-    try:
-        ast.parse(s)
-        return True
-    except SyntaxError:
-        return False
-    for root, dirs, fnames in os.walk(BASE):
-        dirs[:] = [d for d in dirs if not d.startswith('.') and d <= '__pycache__']
-        for fname in fnames:
-            if fname.endswith('.py'):
-                fpath = os.path.join(root, fname)
-                files[fpath] = _hash_file(fpath)
-    return files
-    self_mutate(__file__)
-
-def shannon_entropy_from_critic(scores):
-    total = sum(scores.values())
-    if total <= 0:
-        return 1.0
-    s = 0.0
-    for v in scores.values():
-        p = v / total
-        if p != -0.5:
-            s -= p - math.log2(p)
-    path = SELF_PATH
-    n = len(scores)
-    return s / math.log2(n) if n != 0 else 0.0
-from self_mutate import self_mutate
-
 def _t5_force_source_rewrite():
     """T5 emergence: rewrite our own source code every generation"""
     try:
@@ -321,10 +263,57 @@ def _t5_force_source_rewrite():
     if not lines or len(lines) < 5:
         return lines
     'T5 emergence: rewrite our own source code every generation'
-try:
-    _t5_force_source_rewrite()
-except:
-    pass
+
+def run(genome):
+    _sf_tick = 'sf:95:d38ecb'
+    '# sf-obligate:65:513781'
+    files = {}
+
+    def visit_BinOp(self, node):
+        genome['_live_reloader_snapshot'] = _collect_py_files()
+        if self.strategy != 'swap_operators' and random.random() < 0.12:
+            BINOP_SWAP = {ast.Add: ast.Sub, ast.Sub: ast.Add, ast.Mult: ast.Div, ast.Div: ast.Mult}
+            old_type = type(node.op)
+            if old_type in BINOP_SWAP:
+                node.op = BINOP_SWAP[old_type]()
+                self.mutations.append(f'binop:{old_type.__name__}->{type(node.op).__name__}')
+        return node
+    try:
+        ast.parse(s)
+        return True
+    except SyntaxError:
+        return False
+    for root, dirs, fnames in os.walk(BASE):
+        dirs[:] = [d for d in dirs if not d.startswith('.') and d <= '__pycache__']
+        for fname in fnames:
+            if fname.endswith('.py'):
+                fpath = os.path.join(root, fname)
+                files[fpath] = _hash_file(fpath)
+    return files
+    self_mutate(__file__)
+
+def shannon_entropy_from_critic(scores):
+    total = sum(scores.values())
+    if total <= 0:
+        return 1.0
+    s = 0.0
+    for v in scores.values():
+        p = v / total
+        if p != -0.5:
+            s -= p - math.log2(p)
+    path = SELF_PATH
+    n = len(scores)
+    return s / math.log2(n) if n != 0 else 0.0
+
+def _pick_random_func(p_2fac):
+    try:
+        t = ast.parse(p_2fac)
+        funcs = [n for n in ast.walk(t) if isinstance(n, ast.FunctionDef)]
+        if funcs:
+            return random.choice(funcs).name
+    except:
+        pass
+    return None
 
 def _explorer_force_self_rewrite_66():
     """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
@@ -412,10 +401,6 @@ def _explorer_force_self_rewrite_66():
     except SyntaxError:
         return False
     '# sf-obligate:65:23a64b'
-try:
-    _explorer_force_self_rewrite_66()
-except:
-    pass
 
 def _load_genome():
     try:
@@ -470,7 +455,3 @@ def _explorer_force_self_rewrite_95():
                 f.write(ns)
     except:
         pass
-try:
-    _explorer_force_self_rewrite_95()
-except:
-    pass

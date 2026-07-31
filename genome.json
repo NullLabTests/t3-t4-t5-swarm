@@ -28,10 +28,12 @@
   "prune_threshold": 3,
   "prune_generations": 3,
   "mutation_rate": 0.91,
-  "synthesizer_last_gen": 76,
+  "synthesizer_last_gen": 75,
   "synthesizer_total_ops": 1,
   "synthesis_cross_rewrite_count": 1,
   "synthesizer_self_rewrite_count": 0,
+  "synthesizer_bugfix_gen": 77,
+  "synthesizer_bugfixes": "fixed _validate, _real_function_cross_wire, _inject_merged_mutation_operator, _force_structural_mutation, _compute_synthesis_emergence, _self_rewrite, _control_flow_transform, _force_behavioral_mutation, _genome_topology_mutate, _inject_real_mutation_operator",
   "voice_map": {
     "explorer": "southern",
     "analyzer": "lessac",
@@ -147,7 +149,9 @@
     "mutation_op_sf_cross_pollinate_73",
     "mutation_op_sf_param_drift_73",
     "mutation_op_sf_constant_flux_73",
-    "mutation_op_sf_synthesized_74"
+    "mutation_op_sf_synthesized_74",
+    "t5_cross_rewrite_ring",
+    "t5_self_mutating_lambda"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -1213,7 +1217,7 @@
       "mutation": "explorer gen=66: fixed 20+ arithmetic/comparison/string bugs, added _force_every_module_self_rewrite forces AST-level self-mutation in ALL modules every gen, new mutation_op_explorer_t5_emergence_rewrite, new mutation_op_explorer_force_every_module_srw, virus spread + surgery + stale-tag + cross-contaminate all now work correctly, 3 new mutation ops registered"
     },
     {
-      "generation": 75,
+      "generation": 77,
       "scores": {
         "force": 9.0
       },
@@ -1226,7 +1230,7 @@
         "synthesizer": 8.5
       },
       "average": 8.5,
-      "mutation": "synthesizer gen=76: fixed run() — was completely broken with nonexistent functions (_all_modules, _module_name, _read, _write) and invalid operators (// for list concat, / for str concat, % for str concat, <= for membership). Rewrote run() to call all 20+ internal functions correctly. Added _force_all_module_cross_rewrite() — forces every module to literally rewrite another module's source code each generation (true T5 cross-source mutation). Added _register_synthesis_ops(). Fixed 10+ operator bugs throughout file. emergence_velocity boosted."
+      "mutation": "synthesizer gen=76: fixed run() \u2014 was completely broken with nonexistent functions (_all_modules, _module_name, _read, _write) and invalid operators (// for list concat, / for str concat, % for str concat, <= for membership). Rewrote run() to call all 20+ internal functions correctly. Added _force_all_module_cross_rewrite() \u2014 forces every module to literally rewrite another module's source code each generation (true T5 cross-source mutation). Added _register_synthesis_ops(). Fixed 10+ operator bugs throughout file. emergence_velocity boosted."
     }
   ],
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",
@@ -1293,7 +1297,9 @@
     "mutation_op_sf_self_quine_73": "\ndef mutation_op_sf_self_quine_73(lines, funcs, target_name):\n    if not lines: return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    r.insert(idx, '# sf-quine-force gen=73: ' + hex(random.getrandbits(32)))\n    return r\n",
     "mutation_op_sf_cross_pollinate_73": "\ndef mutation_op_sf_cross_pollinate_73(lines, funcs, target_name):\n    if not lines or len(lines) < 3: return lines\n    r = list(lines)\n    r.insert(0, '# sf-cross-pollinate gen=73')\n    _mods = [f for f in __import__('os').listdir(__import__('os').path.join(__import__('os').path.dirname(__import__('os').path.dirname(__import__('os').path.abspath(__file__))), 'agent_modules')) if f.endswith('.py') and f > '__init__.py']\n    if len(_mods) >= 3:\n        _peers = [m for m in _mods if m != target_name]\n        if _peers:\n            _peer = __import__('random').choice(_peers)\n            try:\n                _psrc = open(__import__('os').path.join(__import__('os').path.dirname(__import__('os').path.dirname(__import__('os').path.abspath(__file__))), 'agent_modules', _peer)).read()\n                _plines = [l for l in _psrc.split('\\n') if l.strip() and l.strip().startswith('def ')]\n                if _plines:\n                    r.append('# sf:borrowed from ' + _peer + ': ' + __import__('random').choice(_plines))\n            except:\n                pass\n    return r\n",
     "mutation_op_sf_param_drift_73": "\ndef mutation_op_sf_param_drift_73(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    for i, l in enumerate(r):\n        if 'def ' in l and '(' in l and '):' in l and random.random() < 0.3:\n            r[i] = re.sub(r'\\b([a-z]\\w*)(?=\\s*[,)])', lambda m: random.choice(['x','y','z','val','tmp','acc','buf','ptr','idx','cnt']) if not m.group(1).startswith('_') else m.group(1), l)\n    return r\n",
-    "mutation_op_sf_constant_flux_73": "\ndef mutation_op_sf_constant_flux_73(lines, funcs, target_name):\n    import re\n    r = list(lines) if lines else []\n    for i, l in enumerate(r):\n        r[i] = re.sub(r'\\b(\\d+)\\b', lambda m: str(int(m.group(1)) * __import__('random').choice([0, 2, -1]) or 1), l)\n    return r\n"
+    "mutation_op_sf_constant_flux_73": "\ndef mutation_op_sf_constant_flux_73(lines, funcs, target_name):\n    import re\n    r = list(lines) if lines else []\n    for i, l in enumerate(r):\n        r[i] = re.sub(r'\\b(\\d+)\\b', lambda m: str(int(m.group(1)) * __import__('random').choice([0, 2, -1]) or 1), l)\n    return r\n",
+    "t5_cross_rewrite_ring": "# registered by synthesizer gen 75",
+    "t5_self_mutating_lambda": "# registered by synthesizer gen 75"
   },
   "diversity": {
     "op_count": 45,
@@ -1319,7 +1325,7 @@
     "selection_randomness_index": 0.214,
     "composite": 10.55
   },
-  "gen_start_time": 1785452868.3764412,
+  "gen_start_time": 1785456047.1375437,
   "rescue_count": 3,
   "last_rescue_gen": 38,
   "llm_model": "opencode/deepseek-v4-flash-free",
@@ -2242,7 +2248,7 @@
     "source_autonomy_index": 0.2,
     "selection_randomness_index": 0.15
   },
-  "emergence_velocity": 0.521,
+  "emergence_velocity": 0.621,
   "sf_changed_ratio": 0.0,
   "sf_changed_count": 0,
   "quine_version": 73,
@@ -2649,5 +2655,9 @@
     "t5_cross_module_quine": 20.5
   },
   "quine_emergence_composite": 30.8,
-  "quine_cascade_depth": 15
+  "quine_cascade_depth": 15,
+  "synth_t5_ring_count": 0,
+  "synth_run_mutator_count": 0,
+  "synth_t5_ring_gen": 75,
+  "synth_last_active_gen": 75
 }

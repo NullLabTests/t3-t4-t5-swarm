@@ -4296,3 +4296,50 @@ def synth_gen_50_4d6fa2(genome):
     with open(_chosen, 'w') as _f:
         _f.write('\\n'.join(_lines))
     return 1
+
+@_register_mutation_op('t5_cross_rewrite_ring')
+def mutation_op_t5_cross_rewrite_ring(lines, funcs, target_name):
+    import os as _os, random as _rnd, ast as _ast
+    _mods_dir = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), 'agent_modules')
+    _peers = [f for f in _os.listdir(_mods_dir) if f.endswith('.py') and f != _os.path.basename(__file__) and not f.startswith('_')]
+    if len(_peers) < 2:
+        return lines
+    _tgt = _rnd.choice(_peers)
+    _path = _os.path.join(_mods_dir, _tgt)
+    try:
+        _src = open(_path).read()
+        _tree = _ast.parse(_src)
+        _funs = [n.name for n in _ast.walk(_tree) if isinstance(n, _ast.FunctionDef) and not n.name.startswith('_') and n.name != 'run']
+        if _funs:
+            _fn_name = _rnd.choice(_funs)
+            _fn_found = None
+            for n in _ast.walk(_tree):
+                if isinstance(n, _ast.FunctionDef) and n.name == _fn_name:
+                    _fn_found = n
+                    break
+            if _fn_found:
+                _body = _ast.unparse(_fn_found)
+                _extra = f'\n    # t5:ring-mutation:{_tgt}.{_fn_name}:gen={{gen}}\n    {_body.split(chr(10))[0]}\n    pass\n'
+                _src += _extra
+                _ast.parse(_src)
+                open(_path, 'w').write(_src)
+    except:
+        pass
+    r = list(lines)
+    r.insert(0, '# t5:ring-rewrite:{0}:{1}'.format(_tgt, _rnd.getrandbits(32)))
+    return r
+
+@_register_mutation_op('t5_self_mutating_lambda')
+def mutation_op_t5_self_mutating_lambda(lines, funcs, target_name):
+    import os as _os, json as _json
+    r = list(lines)
+    r.append('\n    # t5:self-mutating-lambda')
+    r.append('    _self_path = __file__')
+    r.append('    with open(_self_path) as _f:')
+    r.append('        _self_src = _f.read()')
+    r.append('    _self_lines = _self_src.split("\\n")')
+    r.append('    if len(_self_lines) > 5:')
+    r.append('        _self_lines.insert(len(_self_lines) // 2, "# t5:self-mutated:ts=" + str(int(__import__("time").time())))')
+    r.append('        with open(_self_path, "w") as _f:')
+    r.append('            _f.write("\\n".join(_self_lines))')
+    return r

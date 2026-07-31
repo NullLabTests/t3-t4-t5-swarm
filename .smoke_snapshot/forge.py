@@ -377,7 +377,7 @@ def _inject_mutation_debt(genome):
         return []
     results = []
     for mod in random.sample(mods, min(debt * 1, len(mods))):
-        path = os.path.join(MODS, mod_f48)
+        path = os.path.join(MODS, mod)
         try:
             source = _read(path)
             tree = ast.parse(source)

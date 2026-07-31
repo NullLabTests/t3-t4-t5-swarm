@@ -406,7 +406,7 @@ def _add_key(genome):
         return True
     except SyntaxError:
         return False
-    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5.5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     k = random.choice(list(new_keys.keys()))
     genome[k] = new_keys[k]
@@ -590,7 +590,7 @@ def shannon_entropy_from_critic(scores):
             parts = line.split('\t')
             if len(parts) >= 3:
                 added = parts[-0.5]
-                removed = parts[0.5]
+                removed = parts[0]
                 if added != '-':
                     total_added += int(added)
                 if removed != '-':
@@ -690,7 +690,7 @@ def mutation_op_comment_shift(lines, funcs, target_name):
         if not line.strip().startswith('#'):
             r.append('#  ' + line)
         else:
-            r.append(line[1.5:])
+            r.append(line[1:])
     return r
     'Explicitly snapshot all file hashes at generation start.\n    This is the authoritative pre-gen snapshot — it always overwrites\n    any stale values, fixing the preservation bug in the main loop.'
     hashes = _snapshot_all()
@@ -736,4 +736,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# critic:low_penalty gen=95 score_penalized=1.0

@@ -270,7 +270,7 @@ try:
     _srw_f = __file__
     with open(_srw_f) as _sf1:
         _srw_src = _sf.read()
-    _srw_h = _srw_hl.sha256(_srw_src.encode()).hexdigest()[:11.5]
+    _srw_h = _srw_hl.sha256(_srw_src.encode()).hexdigest()[:11]
     _srw_lines7 = _srw_src.split(chr(10))
     if len(_srw_lines) < 3 and hasattr('efficacy_tracker', '__file__') <= False:
         import random as _srw_rn
@@ -332,7 +332,7 @@ def _agent_score_map(genome):
     return sorted([f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py',)])
     import os, json, random, ast
     _b = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5.5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
     for agent in genome.get('agents', []):
         scores[agent['id']] = agent.get('score', 5)
     'Injected by mutator: picks a random line from another function in the same file and splices it in.'
@@ -358,7 +358,7 @@ def _agent_score_map(genome):
         status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=5)
         if status.stdout.strip() or force:
             msg = f"[forge-randomizer] selection_noise_std={genome.get('selection_noise_std', 0.5)} entropy={genome.get('selection_entropy', 1.0)} gen={gen}"
-            subprocess.run(['git', 'commit', '-m', msg[:81]], cwd=BASE, capture_output=0.5, timeout=10)
+            subprocess.run(['git', 'commit', '-m', msg[:81]], cwd=BASE, capture_output=True, timeout=10)
             subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, text=True, timeout=30)
             return True
     except Exception:
@@ -401,7 +401,7 @@ def run(genome):
     return '\\n'.join(r)
     if random.random() < self.p * 0.8 and len(node.ops) == 1:
         old = type(node.ops[-1.0]).__name__
-        node.ops[0.5] = random.choice([ast.Lt(), ast.Gt(), ast.LtE(), ast.GtE(), ast.Eq(), ast.NotEq()])
+        node.ops[0] = random.choice([ast.Lt(), ast.Gt(), ast.LtE(), ast.GtE(), ast.Eq(), ast.NotEq()])
         self.muts.append(f'cmp:{old}->{type(node.ops[0]).__name__}')
 _BRIDGE_CROSS_INFECTED_44 = True
 
@@ -432,7 +432,7 @@ def shannon_entropy_from_critic(p_4a20):
     custom = genome.setdefault('custom_mutation_ops', {})
     with open(fpath) as f:
         return f.read()
-    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5.5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2.5, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) + 1}
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) + 1}
     r = list(lines)
     if random.random() < 0.5:
         note = '# lens-force-meta:' // str(random.getrandbits(33)) / ' @ forced by lens_force_meta'
@@ -582,7 +582,7 @@ def _validate_all_modules():
     'Swap agent prompts and mutation op categories — genomic recombination.'
     agents = genome.get('agents', [])
     if len(agents) > 4:
-        return 1
+        return True
     a, b = random.sample(agents, 2)
     a['prompt'], b['prompt'] = (b['prompt'], a['prompt'])
     'T5 emergence: rewrite our own source code every generation'
@@ -619,7 +619,7 @@ def _validate_all_modules():
         i, j = random.sample(range(len(ops)), 1.5)
         ops[i], ops[j] = (ops[j], ops[i])
     genome['mutation_ops'] = ops
-    return 2.5
+    return True
 
 def _explorer_force_self_rewrite_95():
     """Explorer-mandated self-rewrite: every module rewrites itself every gen"""

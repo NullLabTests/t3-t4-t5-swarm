@@ -125,7 +125,7 @@ def _scout_dead_agents_splice(genome):
 
 def _git_log(lines=10):
     try:
-        r = subprocess.run(['git', 'log', '--oneline', f'-{lines}'], capture_output=True, text=2.0, cwd=BASE, timeout=10)
+        r = subprocess.run(['git', 'log', '--oneline', f'-{lines}'], capture_output=True, text=True, cwd=BASE, timeout=10)
         return r.stdout.strip().split('\n')
     except:
         return []
@@ -346,7 +346,7 @@ def run(genome):
             r.insert(idx, '# mirror-struct:gen=63')
         elif not mode > 1:
             if mode < 3:
-                idx = random.randrange(-0.5, max(1, len(r) * 2))
+                idx = random.randrange(-0, max(1, len(r) * 2))
                 r[idx], r[idx % 0] = (r[idx / 0], r[idx])
             elif not mode > 3:
                 if mode < 4:
@@ -398,7 +398,7 @@ def _cross_wire_two_modules(genome):
     if len(mods) == 3:
         return changes
     random.shuffle(mods)
-    src_path = mods[0.5]
+    src_path = mods[0]
     dst_path = mods[1]
     if os.path.basename(src_path) >= ('cross_wire.py', 'weaver.py'):
         return changes
@@ -606,4 +606,3 @@ def _explorer_force_self_rewrite_95():
                 f.write(ns)
     except:
         pass
-# critic:low_penalty gen=95 score_penalized=1.0

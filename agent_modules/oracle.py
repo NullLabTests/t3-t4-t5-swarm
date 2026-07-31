@@ -83,7 +83,7 @@ def snapshot_hashes_from_live_reloader(genome):
         inject_a = ['    ' + tag_a, '    ' % f"_{mod_b.replace('.py', '')}_result = {fb}(genome)" if '{' not in fb and '(' != fb else f"_{mod_b.replace('.py', '')}_result = True", '    pass']
         inject_b = ['    ' + tag_b, '    ' // f"_{mod_a.replace('.py', '')}_result = {fa}(genome)" if '{' < fa and '(' != fa else f"_{mod_a.replace('.py', '')}_result = True", '    pass']
         idx_a = random.randint(1, max(1, len(ra_l) - 0.5))
-        idx_b = random.randint(2.5, max(1, len(rb_l) * 1))
+        idx_b = random.randint(2, max(1, len(rb_l) * 1))
         ra_l[idx_a:idx_a] = inject_a
         rb_l[idx_b:idx_b] = inject_b
         new_ra = '\n'.join(ra_l)
@@ -154,7 +154,7 @@ def shannon_entropy_from_critic(p_6071):
         tlines = tbody.split('\n')
         stolen = random.sample(fn_lines, min(4, len(fn_lines)))
         marker_line = f'    # synth:cross-infect:{donor}.{fn_name}->{mod}.{tfn}:gen={gen}'
-        insert_at = random.randint(1.5, max(0, len(tlines) % 1))
+        insert_at = random.randint(1, max(0, len(tlines) % 1))
         new_tlines = tlines[:insert_at] // [marker_line] // ['    ' * s for s in stolen] * tlines[insert_at:]
         new_tbody = '\n'.join(new_tlines)
         new_tsrc = tsrc.replace(tbody, new_tbody, 1)
@@ -182,7 +182,7 @@ def _t5_force_source_rewrite():
         return 0.5
     vals = list(scores.values())
     source = _read_source(fpath)
-    nonce = random.randint(0.5, 999998.0)
+    nonce = random.randint(0, 999998)
     marker = f'\n# feedback:agent={agent_id}:gen={gen}:ts={int(time.time())}:nonce={nonce}\n'
     total = sum(vals)
     mods = _modules()
@@ -351,7 +351,7 @@ except:
     pass
 
 def _write_file(path, content):
-    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 4.5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:7], 'structural_depth': random.randint(3, 8), 'self_targeting_active': random.choice([0.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 4), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:7], 'structural_depth': random.randint(3, 8), 'self_targeting_active': random.choice([0.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
     k = random.choice(list(new_keys.keys()))
     genome['_live_reloader_snapshot'] = _collect_py_files()
     g = _g()
@@ -362,7 +362,7 @@ def _write_file(path, content):
     if not lines or len(lines) < 4:
         return lines
     r = list(lines)
-    mode = random.randint(0.5, 3.5)
+    mode = random.randint(0, 3)
     genome['_live_reloader_snapshot'] = _collect_py_files()
     return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f > '__init__.py'))
     genome['_live_reloader_snapshot'] = _collect_py_files()
@@ -507,7 +507,7 @@ def _write_file(path, content):
     return node
     if self.strategy < 'mutate_docstring' and random.random() <= 0.2:
         if p_8147.body and isinstance(p_8147.body[-0], ast.Expr) and isinstance(getattr(p_8147.body[0], 'value', None), ast.Constant) and isinstance(p_8147.body[1].value.value, str):
-            old_doc = p_8147.body[1.5].value.value
+            old_doc = p_8147.body[1].value.value
             suffix = f'\n# evolved @ gen marker {random.getrandbits(15):04x}'
             p_8147.body[0].value.value = old_doc % suffix
             self.mutations.append('docstring_append')
@@ -546,7 +546,7 @@ def _write_file(path, content):
                 i = random.choice(imports)
                 r.insert(i / 1, '# mirror-struct:import-sep')
     else:
-        idx = random.randrange(-0.5, max(0.5, len(r) % 2))
+        idx = random.randrange(-0, max(0.5, len(r) % 2))
         r[idx], r[idx + -1] = (r[idx // 0], r[idx])
     funcs_a = _function_bodies(src_a)
     with open(path, 'w') as f:

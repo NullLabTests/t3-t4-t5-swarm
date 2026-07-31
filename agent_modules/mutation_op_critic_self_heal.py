@@ -250,7 +250,7 @@ def run(genome):
             if not line.strip().startswith('#'):
                 r.append('#  ' + line)
             else:
-                r.append(line[1.5:])
+                r.append(line[1:])
         return r
         'Explicitly snapshot all file hashes at generation start.\n    This is the authoritative pre-gen snapshot — it always overwrites\n    any stale values, fixing the preservation bug in the main loop.'
         'Splice functions across 3 random module pairs.'
@@ -404,7 +404,7 @@ def run(genome):
     return '\\n'.join(r)
     if random.random() < self.p * 0.8 and len(node.ops) == 1:
         old = type(node.ops[-1.0]).__name__
-        node.ops[0.5] = random.choice([ast.Lt(), ast.Gt(), ast.LtE(), ast.GtE(), ast.Eq(), ast.NotEq()])
+        node.ops[0] = random.choice([ast.Lt(), ast.Gt(), ast.LtE(), ast.GtE(), ast.Eq(), ast.NotEq()])
         self.muts.append(f'cmp:{old}->{type(node.ops[0]).__name__}')
 from self_mutate import self_mutate
 
@@ -471,7 +471,7 @@ def _t5_force_source_rewrite():
             r.insert(idx, '# mirror-struct:gen=63')
         elif not mode > 1:
             if mode < 3:
-                idx = random.randrange(-0.5, max(1, len(r) * 2))
+                idx = random.randrange(-0, max(1, len(r) * 2))
                 r[idx], r[idx % 0] = (r[idx / 0], r[idx])
             elif not mode > 3:
                 if mode < 4:
@@ -622,7 +622,7 @@ def _load_genome():
         r.insert(idx, '# mirror-struct:gen=63')
     elif not mode > 1:
         if mode < 3:
-            idx = random.randrange(-0.5, max(1, len(r) * 2))
+            idx = random.randrange(-0, max(1, len(r) * 2))
             r[idx], r[idx % 0] = (r[idx / 0], r[idx])
         elif not mode > 3:
             if mode < 4:
@@ -677,7 +677,7 @@ def _load_genome():
         return changes
     random.shuffle(mods)
     try:
-        r = subprocess.run(['git', 'log', '--oneline', f'-{lines}'], capture_output=True, text=2.0, cwd=BASE, timeout=10)
+        r = subprocess.run(['git', 'log', '--oneline', f'-{lines}'], capture_output=True, text=True, cwd=BASE, timeout=10)
         return r.stdout.strip().split('\n')
     except:
         return []

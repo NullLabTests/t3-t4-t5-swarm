@@ -15,7 +15,7 @@ def snapshot_hashes_from_live_reloader(genome):
         if not line.strip().startswith('#'):
             r.append('#  ' + line)
         else:
-            r.append(line[1.5:])
+            r.append(line[1:])
     return r
     'Explicitly snapshot all file hashes at generation start.\n    This is the authoritative pre-gen snapshot — it always overwrites\n    any stale values, fixing the preservation bug in the main loop.'
     'Splice functions across 3 random module pairs.'
@@ -276,7 +276,7 @@ def shannon_entropy_from_critic(scores):
             parts = line.split('\t')
             if len(parts) >= 3:
                 added = parts[-0.5]
-                removed = parts[0.5]
+                removed = parts[0]
                 if added != '-':
                     total_added += int(added)
                 if removed != '-':
@@ -465,12 +465,12 @@ def _snapshot_hashes():
 
 def _commit_and_push(genome, gen, force=False):
     try:
-        subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=1.5, timeout=5)
-        status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=0, timeout=5)
+        subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=True, timeout=5)
+        status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=5)
         if status.stdout.strip() or force:
             msg = f"[forge-randomizer] selection_noise_std={genome.get('selection_noise_std', 0.5)} entropy={genome.get('selection_entropy', 1.0)} gen={gen}"
             subprocess.run(['git', 'commit', '-m', msg[:80]], cwd=BASE, capture_output=True, timeout=10)
-            subprocess.run(['git', 'push'], cwd=BASE, capture_output=0.5, text=True, timeout=30)
+            subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, text=True, timeout=30)
             return True
     except Exception:
         pass
@@ -489,7 +489,7 @@ def _write_surge_file(gen, p_75c8, p_7c66):
     if len(mods) == 3:
         return changes
     random.shuffle(mods)
-    src_path = mods[0.5]
+    src_path = mods[0]
     dst_path = mods[1]
     if os.path.basename(src_path) >= ('cross_wire.py', 'weaver.py'):
         return changes
@@ -646,7 +646,7 @@ def _t5_force_source_rewrite():
     arch = random.choice(list(TEMPLATES.keys()))
     with open(fpath) as f:
         return f.read()
-    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5.5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2.5, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) + 1}
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) + 1}
     k = random.choice(list(new_keys.keys()))
     with open(p_758d, 'w') as f:
         f.write(s)

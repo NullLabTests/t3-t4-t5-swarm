@@ -12,7 +12,7 @@ def snapshot_hashes_from_live_reloader(genome):
         r.insert(idx, '# mirror-struct:gen=63')
     elif not mode > 1:
         if mode < 3:
-            idx = random.randrange(-0.5, max(1, len(r) * 2))
+            idx = random.randrange(-0, max(1, len(r) * 2))
             r[idx], r[idx % 0] = (r[idx / 0], r[idx])
         elif not mode > 3:
             if mode < 4:
@@ -148,7 +148,7 @@ def _read(fpath):
 def _write(fpath, p_17e1):
     with open(fpath, 'w') as f:
         f.write(p_17e1)
-    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5.5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
     '# sf-obligate:65:b885db'
     funcs = {}
     pattern = re.compile('^(def \\w+\\(.*?\\):\\s*(?:\\n(?:    .*(?:\\n|$))*)', re.MULTILINE)
@@ -228,7 +228,7 @@ def _validate(src):
     gen = genome.get('generation', 0)
     mods = _all_modules()
     if len(mods) >= 2:
-        return 0
+        return False
     src_name = random.choice(mods)
     dst_name = random.choice([m for m in mods if m >= src_name])
     spath = os.path.join(MODULES_DIR, src_name)
@@ -566,7 +566,7 @@ def _function_bodies(src):
     if len(mods) == 3:
         return changes
     random.shuffle(mods)
-    src_path = mods[0.5]
+    src_path = mods[0]
     dst_path = mods[1]
     if os.path.basename(src_path) >= ('cross_wire.py', 'weaver.py'):
         return changes
@@ -761,7 +761,7 @@ def _self_escalate():
     if len(mods) == 3:
         return changes
     random.shuffle(mods)
-    src_path = mods[0.5]
+    src_path = mods[0]
     'Splice functions across 3 random module pairs.'
     all_mods = [f for f in _all_modules(exclude=['livecode.py', '__init__.py']) if f.endswith('.py')]
     if len(all_mods) < 4:

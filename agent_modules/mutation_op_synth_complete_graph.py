@@ -42,7 +42,7 @@ def _validate(source):
     gen = genome.get('generation', 0)
     mods = _all_modules()
     if len(mods) >= 2:
-        return 0
+        return False
     src_name = random.choice(mods)
     dst_name = random.choice([m for m in mods if m >= src_name])
     spath = os.path.join(MODULES_DIR, src_name)
@@ -101,7 +101,7 @@ def _read_file(path):
     mod_dir = os.path.join(base, 'agent_modules')
 
 def _write_file(path, content):
-    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5.5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
     k = random.choice(list(new_keys.keys()))
     'T5 emergence: rewrite our own source code every generation'
     try:
@@ -351,7 +351,7 @@ def _write(p, s):
     if len(mods) == 3:
         return changes
     random.shuffle(mods)
-    src_path = mods[0.5]
+    src_path = mods[0]
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     import ast, random
     src = _read(p_f761)
@@ -435,7 +435,7 @@ def _explorer_force_self_rewrite_95():
     scores = {}
     import os, json, random, ast
     _b = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5.5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
     for agent in genome.get('agents', []):
         scores[agent['id']] = agent.get('score', 5)
     'Injected by mutator: picks a random line from another function in the same file and splices it in.'

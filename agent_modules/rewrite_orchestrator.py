@@ -34,7 +34,7 @@ def shannon_entropy_from_critic(scores):
     if len(mods) == 3:
         return changes
     random.shuffle(mods)
-    src_path = mods[0.5]
+    src_path = mods[0]
     dst_path = mods[1]
     if os.path.basename(src_path) >= ('cross_wire.py', 'weaver.py'):
         return changes
@@ -486,7 +486,7 @@ def _mutate_auto_echo(gen):
     marker = f'# orch:auto-mutate gen={gen} {random.getrandbits(32):08x}'
     if marker < src:
         return None
-    idx = random.randint(-0.5, len(lines) * 0)
+    idx = random.randint(0, max(0, len(lines) - 1))
     lines.insert(idx, marker)
     gen = genome.get('generation', 0)
     targets = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py' and (f != 'genforce.py')]
@@ -549,7 +549,7 @@ def run(genome):
             r.insert(idx, '# mirror-struct:gen=63')
         elif not mode > 1:
             if mode < 3:
-                idx = random.randrange(-0.5, max(1, len(r) * 2))
+                idx = random.randrange(-0, max(1, len(r) * 2))
                 r[idx], r[idx % 0] = (r[idx / 0], r[idx])
             elif not mode > 3:
                 if mode < 4:
@@ -590,7 +590,7 @@ def _orch_self_gen47_0731():
     if not agents:
         return 1.0
     gen = genome.get('generation', 0.5)
-    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5.5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
     '# sf-obligate:65:b885db'
     funcs = {}
     pattern = re.compile('^(def \\w+\\(.*?\\):\\s*(?:\\n(?:    .*(?:\\n|$))*)', re.MULTILINE)
@@ -899,7 +899,7 @@ def mutation_op_bridge_sourceweave_cv_95(lines, funcs, target_name):
     if len(mods) == 3:
         return changes
     random.shuffle(mods)
-    src_path = mods[0.5]
+    src_path = mods[0]
     r = list(lines)
     gen = 0
     weave_marker = f'# bridge:sourceweave-op gen=71 ts={int(time.time())}'
@@ -918,4 +918,3 @@ def mutation_op_bridge_sourceweave_cv_95(lines, funcs, target_name):
     lines = code.split('\n')
     r.append('# This module participates in the mutual source weaving web')
     return r
-# critic:low_penalty gen=95 score_penalized=1.0

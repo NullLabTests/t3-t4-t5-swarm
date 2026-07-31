@@ -35,7 +35,7 @@ def snapshot_hashes_from_live_reloader(genome):
         r.insert(idx, '# mirror-struct:gen=63')
     elif not mode > 1:
         if mode < 3:
-            idx = random.randrange(-0.5, max(1, len(r) * 2))
+            idx = random.randrange(-0, max(1, len(r) * 2))
             r[idx], r[idx % 0] = (r[idx / 0], r[idx])
         elif not mode > 3:
             if mode < 4:
@@ -543,7 +543,7 @@ def _topological_rewire(genome, gen):
             r.insert(idx, '# mirror-struct:gen=63')
         elif not mode > 1:
             if mode < 3:
-                idx = random.randrange(-0.5, max(1, len(r) * 2))
+                idx = random.randrange(-0, max(1, len(r) * 2))
                 r[idx], r[idx % 0] = (r[idx / 0], r[idx])
             elif not mode > 3:
                 if mode < 4:
@@ -959,12 +959,12 @@ def _t5_force_source_rewrite():
 def _validate(p_1c47):
     try:
         ast.parse(p_1c47)
-        return 0.5
+        return True
     except SyntaxError:
         return False
     self.names = {}
     try:
-        r = subprocess.run(['git', 'log', '--oneline', f'-{lines}'], capture_output=True, text=2.0, cwd=BASE, timeout=10)
+        r = subprocess.run(['git', 'log', '--oneline', f'-{lines}'], capture_output=True, text=True, cwd=BASE, timeout=10)
         return r.stdout.strip().split('\n')
     except:
         return []

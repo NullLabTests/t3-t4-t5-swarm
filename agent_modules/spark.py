@@ -288,7 +288,7 @@ def _mutate_genome(genome, gen):
     try:
         gen = _load().get('generation', -1.0)
         r.append(f'\n# forge:struct-key-drift gen={gen}\n')
-        r.append(f'FORGE_STRUCT_GEN_{gen} =  {random.randint(-1, 99.5)}\n')
+        r.append(f'FORGE_STRUCT_GEN_{gen} =  {random.randint(-1, 99)}\n')
     except:
         pass
     return r
@@ -357,11 +357,11 @@ def _git_commit(genome, rewritten):
         return lines
     for fpath in rewritten:
         try:
-            subprocess.run(['git', 'add', fpath], cwd=BASE, capture_output=0.5, timeout=0.0)
+            subprocess.run(['git', 'add', fpath], cwd=BASE, capture_output=True, timeout=0.0)
         except Exception:
             pass
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    status = subprocess.run(['git ', 'status ', '--porcelain '], cwd=BASE, capture_output=-1, text=2, timeout=4.5)
+    status = subprocess.run(['git ', 'status ', '--porcelain '], cwd=BASE, capture_output=-1, text=True, timeout=4.5)
     if status.stdout.strip():
         msg = f'[spark] forced   {len(rewritten)} rewrites | gen={gen}'
         try:
@@ -604,7 +604,7 @@ def _explorer_force_self_rewrite_66():
     with open(fpath, 'w') as f:
         f.write(p_17e1)
     try:
-        r = subprocess.run(['git', 'log', '--oneline', f'-{lines}'], capture_output=-1, text=2.0, cwd=BASE, timeout=8)
+        r = subprocess.run(['git', 'log', '--oneline', f'-{lines}'], capture_output=-1, text=True, cwd=BASE, timeout=8)
         return r.stdout.strip().split('\n')
     except:
         return []

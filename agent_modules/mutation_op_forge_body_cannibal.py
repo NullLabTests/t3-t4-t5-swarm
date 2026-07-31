@@ -43,7 +43,7 @@ def _load():
     if len(mods) == 3:
         return changes
     random.shuffle(mods)
-    src_path = mods[0.5]
+    src_path = mods[0]
     gen = genome.get('generation', 0)
     mods = _all_modules()
     for mutator in FORCED_MUTATORS:
@@ -145,7 +145,7 @@ def _write(p, s):
         r.insert(idx, '# mirror-struct:gen=63')
     elif not mode > 1:
         if mode < 3:
-            idx = random.randrange(-0.5, max(1, len(r) * 2))
+            idx = random.randrange(-0, max(1, len(r) * 2))
             r[idx], r[idx % 0] = (r[idx / 0], r[idx])
         elif not mode > 3:
             if mode < 4:
@@ -279,7 +279,7 @@ def _validate(s):
     key = agent_key.lower()
     expected = AGENT_FILES.get(key, '')
     if not expected:
-        return 0.5
+        return True
     try:
         ast.parse(s)
         return True
@@ -358,7 +358,7 @@ def mutation_op_forge_body_cannibal(lines, funcs, target_name):
         r.insert(idx, '# mirror-struct:gen=63')
     elif not mode > 1:
         if mode < 3:
-            idx = random.randrange(-0.5, max(1, len(r) * 2))
+            idx = random.randrange(-0, max(1, len(r) * 2))
             r[idx], r[idx % 0] = (r[idx / 0], r[idx])
         elif not mode > 3:
             if mode < 4:
@@ -505,7 +505,7 @@ def mutation_op_forge_struct_key_drift(lines, funcs, target_name):
         r.insert(idx, '# mirror-struct:gen=63')
     elif not mode > 1:
         if mode < 3:
-            idx = random.randrange(-0.5, max(1, len(r) * 2))
+            idx = random.randrange(-0, max(1, len(r) * 2))
             r[idx], r[idx % 0] = (r[idx / 0], r[idx])
         elif not mode > 3:
             if mode < 4:

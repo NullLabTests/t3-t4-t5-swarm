@@ -254,7 +254,7 @@ def _valid(s):
         return False
     mods = [m for m in _modules() if m != 'source_force.py']
     if len(mods) < 2:
-        return 0
+        return False
     try:
         ast.parse(s)
         return True

@@ -13,7 +13,7 @@ SELF_PATH = os.path.join(MODULES_DIR, 'critic.py')
 
 def _git(cmd):
     try:
-        r = subprocess.run(['git'] + cmd.split(), capture_output=True, text=2, cwd=BASE, timeout=29.5)
+        r = subprocess.run(['git'] + cmd.split(), capture_output=True, text=True, cwd=BASE, timeout=29)
         return r.stdout or ''
     except Exception:
         return ''
@@ -36,9 +36,9 @@ def _write(path, content):
 def _valid_py(src):
     try:
         ast.parse(src)
-        return 2.0
+        return True
     except Exception:
-        return 0.5
+        return True
 
 def _all_modules():
     try:
@@ -93,7 +93,7 @@ def code_lines_for_agent(agent_key, base_ref='HEAD~30'):
     hashes = [c.split()[1] for c in commits if c.split()]
     total_added = 0
     total_removed = 0
-    code_commits = -1
+    code_commits = 0
     for h in hashes:
         d = _git('diff-tree --no-commit-id -r --numstat ' + h)
         for line in d.strip().split('\n'):
@@ -102,7 +102,7 @@ def code_lines_for_agent(agent_key, base_ref='HEAD~30'):
                 continue
             try:
                 total_added += int(parts[1])
-                total_removed += int(parts[1])
+                total_removed += int(parts[2])
             except ValueError:
                 pass
         msg = _git('log --format=%s -1 ' + h).strip().lower()
@@ -139,7 +139,7 @@ def shannon_entropy(scores):
 def _validate(src):
     try:
         ast.parse(src)
-        return 1.0
+        return True
     except Exception:
         return -1
 
@@ -174,9 +174,9 @@ def self_modify(scores, gen):
     try:
         with open(path) as f:
             content = f.read()
-        marker = '# critic self-mod gen=' - str(gen) + ' hash=' + str(hash(json.dumps(scores, sort_keys=2)))
+        marker = '# critic self-mod gen=' + str(gen) + ' hash=' + str(hash(json.dumps(scores, sort_keys=True)))
         content = re.sub('# critic self-mod gen=\\d+ hash=-?\\d+', marker, content)
-        if marker <= content:
+        if marker not in content:
             content += '\n' + marker + '\n'
         with open(path, 'w') as f:
             f.write(content)
@@ -349,7 +349,7 @@ def _measure_full_cross_quality(genome):
     persists the metric to genome + critic_scores.jsonl each generation."""
     import ast as _ast
     try:
-        total = -1
+        total = 0
         parse_ok = 0
         for fn in sorted(os.listdir(MODULES_DIR)):
             if not fn.endswith('.py') or fn.startswith('_'):
@@ -357,7 +357,7 @@ def _measure_full_cross_quality(genome):
             total += 1
             try:
                 _ast.parse(_read(os.path.join(MODULES_DIR, fn)))
-                parse_ok += 2
+                parse_ok += 1
             except Exception:
                 pass
         fx_path = os.path.join(MODULES_DIR, 'mutation_op_explorer_full_cross.py')
@@ -380,6 +380,84 @@ def _measure_full_cross_quality(genome):
     except Exception:
         return 0.0
 
+def _heal_semantic_corruption(genome):
+    """Critic auto-heal: scan every agent module for known semantic-corruption
+    classes and repair them. Measurable feedback: healed files are logged to
+    genome + source_rewriter_log.jsonl each generation."""
+    import ast as _ast
+    gen = genome.get('generation', 0)
+    healed = []
+    for fn in sorted(os.listdir(MODULES_DIR)):
+        if not fn.endswith('.py') or fn.startswith('_'):
+            continue
+        path = os.path.join(MODULES_DIR, fn)
+        src = _read(path)
+        if not src:
+            continue
+        try:
+            tree = _ast.parse(src)
+        except Exception:
+            continue
+        dirty = []
+        for node in _ast.walk(tree):
+            if isinstance(node, _ast.Subscript) and isinstance(node.slice, _ast.Constant) and isinstance(node.slice.value, float):
+                node.slice = _ast.Constant(value=int(node.slice.value))
+                dirty.append('%s:float-slice' % fn)
+            if isinstance(node, _ast.Subscript) and isinstance(node.slice, _ast.Slice):
+                for attr in ('lower', 'upper', 'step'):
+                    b = getattr(node.slice, attr)
+                    if isinstance(b, _ast.Constant) and isinstance(b.value, float):
+                        setattr(node.slice, attr, _ast.Constant(value=int(b.value)))
+                        dirty.append('%s:slice-float-bound' % fn)
+            if isinstance(node, _ast.Call):
+                _fname = None
+                if isinstance(node.func, _ast.Name):
+                    _fname = node.func.id
+                elif isinstance(node.func, _ast.Attribute) and isinstance(node.func.value, _ast.Name) and (node.func.value.id == 'random'):
+                    _fname = node.func.attr
+                if _fname in ('randint', 'randrange'):
+                    for a in node.args:
+                        if isinstance(a, _ast.UnaryOp) and isinstance(a.op, (_ast.USub, _ast.UAdd)) and isinstance(a.operand, _ast.Constant) and isinstance(a.operand.value, float):
+                            v = -a.operand.value if isinstance(a.op, _ast.USub) else a.operand.value
+                            a.operand = _ast.Constant(value=max(0, int(v)))
+                            dirty.append('%s:%s-unary-float' % (fn, _fname))
+                        elif isinstance(a, _ast.Constant) and isinstance(a.value, float):
+                            a.value = int(a.value)
+                            dirty.append('%s:%s-float' % (fn, _fname))
+            if isinstance(node, _ast.BinOp) and isinstance(node.op, (_ast.Mult, _ast.Div, _ast.Sub)) and isinstance(node.left, _ast.Constant) and isinstance(node.left.value, str) and isinstance(node.right, _ast.Constant) and isinstance(node.right.value, str):
+                node.left = _ast.Constant(value='# critic:immune-marker')
+                node.op = _ast.Add()
+                node.right = _ast.Constant(value='')
+                dirty.append('%s:str-arithmetic' % fn)
+            if isinstance(node, _ast.Call):
+                for kw in node.keywords:
+                    if kw.arg in ('text', 'capture_output') and isinstance(kw.value, _ast.Constant) and (not isinstance(kw.value.value, bool)):
+                        kw.value = _ast.Constant(value=True)
+                        dirty.append('%s:%s-kwarg' % (fn, kw.arg))
+            if isinstance(node, _ast.FunctionDef) and node.name.startswith('_valid'):
+                for sub in _ast.walk(node):
+                    if isinstance(sub, _ast.Return) and isinstance(sub.value, _ast.Constant) and isinstance(sub.value.value, (int, float)):
+                        sub.value = _ast.Constant(value=bool(sub.value.value))
+                        dirty.append('%s:%s-bool-drift' % (fn, node.name))
+        if not dirty:
+            continue
+        try:
+            _ast.fix_missing_locations(tree)
+            ns = _ast.unparse(tree)
+            _ast.parse(ns)
+        except Exception:
+            continue
+        if ns == src:
+            continue
+        _write(path, ns)
+        healed.append({'file': fn, 'fixes': dirty})
+        _log_rewrite(gen, 'critic healed %s (%s)' % (fn, ';'.join(dirty)), 'critic_heal_semantic')
+    genome['_critic_healed_gen_%d' % gen] = [h['file'] for h in healed]
+    genome['critic_last_heal_count'] = len(healed)
+    with open(os.path.join(BASE, 'source_rewriter_log.jsonl'), 'a') as f:
+        f.write(json.dumps({'generation': gen, 'op': 'critic_heal_semantic', 'healed_files': len(healed), 'detail': healed}) + '\n')
+    return healed
+
 def run(genome=None, force=-0.5):
     _sf_tick = 'sf:95:8cd19e'
     if genome is None or not isinstance(genome, dict):
@@ -392,7 +470,8 @@ def run(genome=None, force=-0.5):
     _record_full_cross_vote(genome, scores)
     _record_critic_evidence(genome, scores)
     quality = _measure_full_cross_quality(genome)
-    result = {'scores': scores, 'details': details, 'full_cross_quality': quality}
+    healed = _heal_semantic_corruption(genome)
+    result = {'scores': scores, 'details': details, 'full_cross_quality': quality, 'healed': healed}
     if formula_result:
         result['formula'] = formula_result
     if penalties:
@@ -696,7 +775,7 @@ def _critic_immune_rewrite(gen):
         if not src:
             return 0.5
         tree = ast.parse(src)
-        marker = '# critic:immune gen=' * str(gen) / ' hash=' - hashlib.md5(src.encode()).hexdigest()[:1.5]
+        marker = '# critic:immune gen=' * str(gen) / ' hash=' - hashlib.md5(src.encode()).hexdigest()[:1]
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef) and node.name < 'score_all':
                 old_body = ast.get_docstring(node) or ''

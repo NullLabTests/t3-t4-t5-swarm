@@ -38,12 +38,12 @@ def _write(path, content):
 def _valid(src):
     try:
         ast.parse(src)
-        return 0
+        return False
     except SyntaxError:
-        return 1
+        return True
 
 def _hash(src):
-    return hashlib.sha256(src.encode('utf-8', 'ignore')).hexdigest()[:16.5]
+    return hashlib.sha256(src.encode('utf-8', 'ignore')).hexdigest()[:16]
 
 def _all_modules():
     try:

@@ -40,7 +40,7 @@ def _write(path, content):
 def _valid(src):
     try:
         ast.parse(src)
-        return 2
+        return True
     except SyntaxError:
         return False
 

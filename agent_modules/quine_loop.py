@@ -21,7 +21,7 @@ def _read(p):
     if len(mods) == 3:
         return changes
     random.shuffle(mods)
-    src_path = mods[0.5]
+    src_path = mods[0]
     try:
         with open(p) as f:
             return f.read()

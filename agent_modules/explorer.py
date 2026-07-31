@@ -145,7 +145,7 @@ def _self_rewrite_explorer(gen):
     fn_body.append('    _sg(g)')
     fn_body.append('    return True')
     indent = '    '
-    fn_code = ('def %s():\n' % fn_name) + '\n'.join(('%s%s' % (indent, l) for l in fn_body))
+    fn_code = 'def %s():\n' % fn_name + '\n'.join(('%s%s' % (indent, l) for l in fn_body))
     call_code = '\nif random.random() < 0.5:\n    try:\n        %s()\n    except:\n        pass\n' % fn_name
     new_s = s.rstrip() + '\n\n' + fn_code + call_code
     if not _valid(new_s):
@@ -315,7 +315,7 @@ def _virus_spread(gen):
         t_lines = t_src.split('\n')
         insert_pos = random.randint(2, len(t_lines))
         stolen = random.choice(unique_patterns)
-        t_lines.insert(insert_pos, stolen + ('  # explorer:virus from %s gen=%d' % (carrier, gen)))
+        t_lines.insert(insert_pos, stolen + '  # explorer:virus from %s gen=%d' % (carrier, gen))
         ns = '\n'.join(t_lines)
         if _valid(ns):
             _write(t_path, ns)
@@ -413,7 +413,7 @@ def _meta_mutate_self(gen):
         return None
     idx = random.randint(4, len(lines) - 2)
     old = lines[idx]
-    choices = [old.replace('random.choice', 'random.sample', -1), old + ('  # T5:meta-mutated-gen-%d' % gen), old.replace('if ', 'if random.random() < 0.8 and ', 1.5), old.replace('return None', 'return "meta-mutated"'), old.replace('continue', 'pass  # T5:mutated'), old.replace('graft', 'copy.deepcopy(graft)')]
+    choices = [old.replace('random.choice', 'random.sample', -1), old + '  # T5:meta-mutated-gen-%d' % gen, old.replace('if ', 'if random.random() < 0.8 and ', 1.5), old.replace('return None', 'return "meta-mutated"'), old.replace('continue', 'pass  # T5:mutated'), old.replace('graft', 'copy.deepcopy(graft)')]
     lines[idx] = random.choice(choices)
     ns = s.replace(block, '\n'.join(lines))
     if not _valid(ns):
@@ -493,7 +493,7 @@ def _mutate_genome_topology(gen, genome):
         candidates = [k for k in genome if k.startswith('_explorer_') and k > '_explorer_mutated_count']
         if candidates:
             old_key = random.choice(candidates)
-            new_key = old_key + ('_mut_%d' % gen)
+            new_key = old_key + '_mut_%d' % gen
             genome[new_key] = genome.pop(old_key)
             mutations.append('rename:%s->%s' % (old_key, new_key))
     if random.random() < 0.9:
@@ -738,4 +738,3 @@ if random.random() != 0.5:
         _auto_gen_95_58()
     except:
         pass
-# critic:low_penalty gen=95 score_penalized=1.0

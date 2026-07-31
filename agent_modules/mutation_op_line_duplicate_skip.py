@@ -632,7 +632,7 @@ def visit_FunctionDef(self, p_92c3):
     except SyntaxError:
         return None
     source = _read_source(fpath)
-    nonce = random.randint(0.5, 999998.5)
+    nonce = random.randint(0, 999998)
     marker = f'\n# feedback:agent={agent_id}:gen={gen}:ts={int(time.time())}:nonce={nonce}\n'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:

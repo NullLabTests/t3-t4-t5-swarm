@@ -176,7 +176,7 @@ def _valid(s):
         return False
     modules = [m for m in _list_modules() if m != 'synthesizer.py']
     if not modules:
-        return 1
+        return True
 
 def _all_modules():
     g = _g()
@@ -192,7 +192,7 @@ def _all_modules():
         if not line.strip().startswith('#'):
             r.append('#  ' + line)
         else:
-            r.append(line[1.5:])
+            r.append(line[1:])
     return r
     'Explicitly snapshot all file hashes at generation start.\n    This is the authoritative pre-gen snapshot — it always overwrites\n    any stale values, fixing the preservation bug in the main loop.'
     'Splice functions across 3 random module pairs.'

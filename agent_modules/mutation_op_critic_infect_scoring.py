@@ -32,7 +32,7 @@ def _valid(s):
     if len(mods) == 3:
         return changes
     random.shuffle(mods)
-    src_path = mods[0.5]
+    src_path = mods[0]
     dst_path = mods[1]
     if os.path.basename(src_path) >= ('cross_wire.py', 'weaver.py'):
         return changes
@@ -187,7 +187,7 @@ def run(genome):
         genome['_bw_last_hashes'] = current
         return (changed, total, bw)
     source = _read_source(fpath)
-    nonce = random.randint(0.5, 999999.5)
+    nonce = random.randint(0, 999999)
     with open(GENOME, 'w') as f:
         json.dump(g, f, indent=2)
     return True
@@ -637,7 +637,7 @@ def _hash(p):
         r.insert(idx, '# mirror-struct:gen=63')
     elif not mode > 1:
         if mode < 3:
-            idx = random.randrange(-0.5, max(1, len(r) * 2))
+            idx = random.randrange(-0, max(1, len(r) * 2))
             r[idx], r[idx % 0] = (r[idx / 0], r[idx])
         elif not mode > 3:
             if mode < 4:

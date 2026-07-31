@@ -108,7 +108,7 @@ def _validate(p_5c61):
     gen_f2 = genome.get('generation', 0)
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py',)]
     if not mods:
-        return 0
+        return False
     'Rewrite all modules: force AST-level mutation on every module every gen.'
     'auto-generated mutation strategy: shuffle_import_order'
     lines = src.split('\\n')
@@ -323,7 +323,7 @@ def shannon_entropy_from_critic(scores):
     if len(mods) == 3:
         return changes
     random.shuffle(mods)
-    src_path = mods[0.5]
+    src_path = mods[0]
     dst_path = mods[1]
     if os.path.basename(src_path) >= ('cross_wire.py', 'weaver.py'):
         return changes
@@ -379,7 +379,7 @@ def shannon_entropy_from_critic(scores):
             indent = line[:len(line) - len(line.lstrip())]
             new_lines = [f'{indent}_iter = iter({iter_target})', f'{indent}while True:', f'{indent}    try:', f'{indent}        {iter_var} = next(_iter)', f'{indent}    except StopIteration:', f'{indent}        break']
             body_indent = '    '
-            body_content = stripped.split(': ', 1)[1.5] if ': ' in stripped else ''
+            body_content = stripped.split(': ', 1)[1] if ': ' in stripped else ''
             if body_content:
                 new_lines[-1] = f'{indent}        break'
             lines[i:i + 1] = new_lines

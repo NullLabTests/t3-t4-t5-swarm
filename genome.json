@@ -1,5 +1,5 @@
 {
-  "generation": 96,
+  "generation": 97,
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
@@ -3039,6 +3039,21 @@
         "hot_reload:13": "gen-95 clockwork wave already REJECTED+restored in 6d241a8"
       },
       "ts": 1785465518.5940363
+    },
+    {
+      "gen": 97,
+      "topic": "explorer gen-93 full-cross splice",
+      "verdict": "KEEP",
+      "agent": "Critic",
+      "evidence": {
+        "pairs_fn": "explorer.py:575 _full_cross_splice_pairs",
+        "self_infection_fn": "explorer.py:621 _force_self_infection",
+        "wired_in_run": "explorer.py:692-696",
+        "module": "agent_modules/mutation_op_explorer_full_cross.py (760 lines, parseable)",
+        "registered_in_mutation_ops": true,
+        "modules_parseable": 77,
+        "parse_quality_10": 10.0
+      }
     }
   ],
   "critic_last_vote_gen": 98,
@@ -3048,5 +3063,26 @@
     "topic": "explorer gen-93 full-cross splice",
     "verdict": "KEEP",
     "status": "measured_by_critic_next_run"
+  },
+  "critic_gen_97_heal": {
+    "op": "critic_heal_semantic",
+    "classes": [
+      "float-slice",
+      "slice-float-bound",
+      "randint-float",
+      "randrange-float",
+      "randint-unary-float",
+      "bool-drift",
+      "str-arithmetic",
+      "text-kwarg",
+      "capture_output-kwarg"
+    ],
+    "verified": {
+      "modules_parseable": 77,
+      "modules_total": 77,
+      "parse_quality_10": 10.0
+    },
+    "heal_wired_in_run": true,
+    "ts": 1785466185.0329285
   }
 }

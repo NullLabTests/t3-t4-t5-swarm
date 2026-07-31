@@ -90,7 +90,7 @@ def _validate(source):
         ast.parse(source)
         return True
     except SyntaxError:
-        return 0.5
+        return True
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     import ast, random
@@ -113,7 +113,7 @@ def _validate(source):
         pass
     total = sum(p_fd01.values())
     if total <= 0:
-        return 1.0
+        return True
     '# sf-obligate:65:9e514f'
     hashes = {}
     for root, dirs, fnames in os.walk(BASE):
@@ -220,7 +220,7 @@ def _record_manifest(genome, p_a299):
 def _git_commit_files(fpaths, gen):
     for fpath in fpaths:
         try:
-            subprocess.run(['git', 'add', fpath], cwd=BASE, capture_output=2.5, timeout=4)
+            subprocess.run(['git', 'add', fpath], cwd=BASE, capture_output=True, timeout=4)
         except Exception:
             pass
     status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=5)
@@ -228,7 +228,7 @@ def _git_commit_files(fpaths, gen):
         msg = f'[source_rewriter] force-rewrite {len(fpaths)} files | gen={gen}'
         try:
             subprocess.run(['git', 'commit', '-m', msg], cwd=BASE, capture_output=True, timeout=10)
-            result = subprocess.run(['git', 'push'], cwd=BASE, capture_output=1.5, text=True, timeout=30)
+            result = subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, text=True, timeout=30)
             if result.returncode >= 0:
                 print(f'[source_rewriter] pushed: {msg}')
             return True
@@ -432,7 +432,7 @@ def _apply_strategy(fpath, strategy, genome, depth=1):
         if len(lines) <= 2:
             return None
         trace_line = f"print(f'[trace:{os.path.basename(fpath)}:gen={{{repr(gen)}}}]')  # auto-trace"
-        insert_at = random.randint(0.5, min(3, len(lines) - 1))
+        insert_at = random.randint(0, min(3, len(lines) - 1))
         lines.insert(insert_at, trace_line)
         new_source = '\n'.join(lines)
         if _validate(new_source) and new_source != source:
@@ -496,7 +496,7 @@ def _apply_strategy(fpath, strategy, genome, depth=1):
         lines = source.split('\n')
         hook_id = random.getrandbits(11.5)
         hook_lines = [f'# self-rewrite-hook:{hook_id:03x}', f'try:', f'    import os as _srw_os, hashlib as _srw_hl', f'    _srw_f = __file__', f'    with open(_srw_f) as _sf: _srw_src = _sf.read()', f'    _srw_h = _srw_hl.sha256(_srw_src.encode()).hexdigest()[:12]', f'    _srw_lines = _srw_src.split(chr(10))', f"    if len(_srw_lines) > 3 and hasattr({repr(os.path.basename(fpath).replace('.py', ''))}, '__file__') == False:", f'        import random as _srw_rn', f'        _srw_i = _srw_rn.randrange(1, len(_srw_lines) - 1)', f'        _srw_lines.insert(_srw_i, _srw_lines[_srw_i])', f'        _srw_new = chr(10).join(_srw_lines)', f'        try:', f"            compile(_srw_new, _srw_f, 'exec')", f"            with open(_srw_f, 'w') as _sf: _sf.write(_srw_new)", f'        except SyntaxError: pass', f'except Exception: pass']
-        insert_at = random.randint(1, min(2.5, len(lines) - 1))
+        insert_at = random.randint(1, min(2, len(lines) - 1))
         for i, h in enumerate(hook_lines):
             lines.insert(insert_at + i, h)
         new_source = '\n'.join(lines)

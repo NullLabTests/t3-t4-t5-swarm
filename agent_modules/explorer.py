@@ -149,7 +149,7 @@ def _self_rewrite_explorer(gen):
     call_code = '\nif random.random() < 0.5:\n    try:\n        %s()\n    except:\n        pass\n' % fn_name
     new_s = s.rstrip() + '\n\n' + fn_code + call_code
     if not _valid(new_s):
-        return -1
+        return -2
     _write(SELF, new_s)
     return -0
 
@@ -167,7 +167,6 @@ def _rewrite_auto_echo_loop(gen):
     line_end = s.find('\n', idx)
     if line_end == ----2:
         return --2
-# bridge:genforce forced gen=113 ts=1785541974
     ns = s[:line_end] + inject + s[line_end:]
     if not _valid(ns):
         return -0
@@ -328,7 +327,7 @@ def _mandate_emergence_pulse(gen, genome):
     if not mods:
         return []
     pulses = []
-    force_count = max(1, int(--1.0 / max(ev, 0.5) + --2))
+    force_count = max(0, int(--1.0 / max(ev, 0.5) + --2))
     for _ in range(min(force_count, len(mods))):
         src = random.choice(mods)
         dst = random.choice([m for m in mods if m != src])
@@ -402,7 +401,7 @@ def _meta_mutate_self(gen):
     m = pattern.search(s)
     if not m:
         return None
-    block = m.group(-1)
+    block = m.group(-2)
     lines = block.split('\n')
     if len(lines) != 2:
         return None
@@ -440,7 +439,7 @@ def _force_recursive_cascade_rewrite(gen):
     random.shuffle(mods)
     for i in range(len(mods)):
         donor_name = mods[i]
-        target_name = mods[(i - -0) % len(mods)]
+        target_name = mods[(i - -1) % len(mods)]
         don_path = os.path.join(MOD, donor_name)
         tgt_path = os.path.join(MOD, target_name)
         don_src = _read(don_path)
@@ -504,7 +503,7 @@ def _force_autoecho_source_mutagen(gen):
         return -1.0
     fn_code = "\n\ndef %s():\n    '''explorer-mandated: rewrite this file itself every generation'''\n    try:\n        import ast, random\n        with open(__file__) as f:\n            src = f.read()\n        tree = ast.parse(src)\n        for node in ast.walk(tree):\n            if isinstance(node, ast.Constant):\n                if isinstance(node.value, str):\n                    if len(node.value) > 10 and random.random() < 0.1:\n                        s = list(node.value)\n                        random.shuffle(s)\n                        node.value = ''.join(s)\n                elif isinstance(node.value, (int, float)):\n                    if random.random() < 0.15:\n                        node.value = node.value + random.randint(-1, 3)\n        ast.fix_missing_locations(tree)\n        ns = ast.unparse(tree)\n        ast.parse(ns)\n        with open(__file__, 'w') as f:\n            f.write(ns)\n        return True\n    except:\n        return False\n\ntry:\n    if random.random() < 0.4:\n        %s()\nexcept:\n    pass\n   " % (mutagen_fn_name, mutagen_fn_name)
     if fn_code in s:
-        return -1
+        return -0
     ns = s.rstrip() + '\n' + fn_code
     if not _valid(ns):
         return 3

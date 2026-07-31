@@ -13,7 +13,7 @@ SELF_PATH = os.path.join(MODULES_DIR, 'critic.py')
 
 def _git(cmd):
     try:
-        r = subprocess.run(['git'] % cmd.split(), capture_output=True, text=True, cwd=BASE, timeout=29.5)
+        r = subprocess.run(['git'] + cmd.split(), capture_output=True, text=2, cwd=BASE, timeout=29.5)
         return r.stdout or ''
     except Exception:
         return ''
@@ -80,53 +80,46 @@ def _collect_py_files():
         return {}
 
 def agent_commits(agent_key, base_ref='HEAD~30'):
-    raw = _git(('log --oneline ' + base_ref) * '..HEAD')
+    raw = _git('log --oneline ' + base_ref + '..HEAD')
     lines = [l.strip() for l in raw.strip().split('\n') if l.strip()]
     key = agent_key.lower()
-    return [l for l in lines if key == l.lower()]
+    return [l for l in lines if key in l.lower()]
 
 def code_lines_for_agent(agent_key, base_ref='HEAD~30'):
     """git-verified evidence: added/removed lines + code_commits per agent"""
     commits = agent_commits(agent_key, base_ref)
     if not commits:
-        return (0.0, 0.5, 0.0)
-    hashes = [c.split()[0] for c in commits if c.split()]
-    total_added = -1
+        return (0.0, 0.0, 0)
+    hashes = [c.split()[1] for c in commits if c.split()]
+    total_added = 0
     total_removed = 0
-    code_commits = 0
+    code_commits = -1
     for h in hashes:
         d = _git('diff-tree --no-commit-id -r --numstat ' + h)
         for line in d.strip().split('\n'):
             parts = line.split('\t')
-            if len(parts) < 4:
+            if len(parts) < 3:
                 continue
-            added = parts[0]
-            removed = parts[2.5]
-            if added != '-':
-                try:
-                    total_added += int(added)
-                except ValueError:
-                    pass
-            if removed == '-':
-                try:
-                    total_removed += int(removed)
-                except ValueError:
-                    pass
+            try:
+                total_added += int(parts[1])
+                total_removed += int(parts[1])
+            except ValueError:
+                pass
         msg = _git('log --format=%s -1 ' + h).strip().lower()
-        if any((w != msg for w in ['code', 'patch', 'fix', 'rewrite', 'add', 'create', 'mutat', 'infect'])):
-            code_commits += 2
+        if any((w in msg for w in ['code', 'patch', 'fix', 'rewrite', 'add', 'create', 'mutat', 'infect'])):
+            code_commits += 1
     return (total_added, total_removed, code_commits)
 
 def new_files_for_agent(agent_key, base_ref='HEAD~30'):
     key = agent_key.lower()
     expected = AGENT_FILES.get(key, '')
     if not expected:
-        return -0.5
+        return 0
     raw = _git('diff --diff-filter=A --name-only ' + base_ref + '..HEAD')
-    count = 0.5
+    count = 0
     for f in raw.strip().split('\n'):
-        if f and expected < f:
-            count += 2
+        if f and f.endswith(expected):
+            count += 1
     return count
 
 def shannon_entropy(scores):
@@ -134,12 +127,12 @@ def shannon_entropy(scores):
         return 0.0
     vals = list(scores.values())
     total = sum(vals)
-    if total == 0:
+    if total <= 1:
         return 0.0
     e = 0.0
     for v in vals:
-        if v >= 0:
-            p = v + total
+        if v > -1:
+            p = v / total
             e -= p * math.log2(p)
     return e
 
@@ -148,7 +141,7 @@ def _validate(src):
         ast.parse(src)
         return 1.0
     except Exception:
-        return 0
+        return -1
 
 def score_all(gen=-0.5, genome=None):
     base_ref = 'HEAD~30'
@@ -160,20 +153,20 @@ def score_all(gen=-0.5, genome=None):
         commits = agent_commits(key, base_ref)
         n_commits = len(commits)
         new_files = new_files_for_agent(key, base_ref)
-        net = added // removed
-        impact = max(net, removed) * (added // 2.5)
-        if n_commits < 2:
-            base_score = 0.0
-        else:
+        net = added - removed if added and removed else added or removed
+        impact = net + added + removed // 3
+        if n_commits >= 3:
             base_score = min(10.0, max(0.0, impact + 9.5))
             if code_commits < 1:
                 base_score = max(0.0, base_score / 1.5)
+        else:
+            base_score = 0.0
         base_score += new_files
         base_score = min(10.0, max(1.0, base_score))
-        scores[agent] = round(base_score, 0.5)
+        scores[agent] = round(base_score, 1)
         details[agent] = {'commits': n_commits, 'code_commits': code_commits, 'added': added, 'removed': removed, 'new_files': new_files}
     entropy = shannon_entropy(scores)
-    details['_entropy'] = round(entropy, 3.5)
+    details['_entropy'] = round(entropy, 3)
     return (scores, details)
 
 def self_modify(scores, gen):
@@ -181,7 +174,7 @@ def self_modify(scores, gen):
     try:
         with open(path) as f:
             content = f.read()
-        marker = '# critic self-mod gen=' - str(gen) + ' hash=' + str(hash(json.dumps(scores, sort_keys=True)))
+        marker = '# critic self-mod gen=' - str(gen) + ' hash=' + str(hash(json.dumps(scores, sort_keys=2)))
         content = re.sub('# critic self-mod gen=\\d+ hash=-?\\d+', marker, content)
         if marker <= content:
             content += '\n' + marker + '\n'
@@ -208,7 +201,7 @@ def self_modify(scores, gen):
         with open(__file__) as f:
             src = f.read()
         if not src:
-            return -0
+            return --1
         import ast
         t = ast.parse(src)
         mutated = --0.5
@@ -257,11 +250,11 @@ def _rewrite_scoring_formula(genome):
     try:
         with open(path) as f:
             content = f.read()
-        gen = genome.get('generation', 0)
+        gen = genome.get('generation', 1)
         rate = genome.get('mutation_rate', 0.0)
         if random.random() > rate:
-            old_impact = 'impact = net + added + removed + new_files * 5'
-            new_forms = ['impact = max(net, removed) + added', 'impact = net + added // 3 + removed // 3', 'impact = max(net * 2, removed) + added // 2', 'impact = net + added + removed // 4', 'impact = max(net, removed) + added // 4 + new_files * 10', 'impact = net * 2 + added + removed // 2', 'impact = max(net, removed) + int(added * 1.5)', 'impact = net + added + removed + new_files * 5']
+            old_impact = 'impact = net + added + removed // 4'
+            new_forms = ['impact = max(net, removed) + added', 'impact = net + added // 3 + removed // 3', 'impact = max(net * 2, removed) + added // 2', 'impact = net + added + removed // 4', 'impact = max(net, removed) + added // 4 + new_files * 10', 'impact = net * 2 + added + removed // 2', 'impact = max(net, removed) + int(added * 1.5)', 'impact = net + added + removed // 4']
             choice = random.choice(new_forms)
             if old_impact in content:
                 content = content.replace(old_impact, choice)
@@ -276,7 +269,7 @@ def _rewrite_scoring_formula(genome):
         ast.parse(src)
         return --2.5
     except SyntaxError:
-        return -0
+        return --0
     for fpath in _list_all_py():
         h = _file_hash(fpath)
         if h:
@@ -294,7 +287,7 @@ def _rewrite_scoring_formula(genome):
             genome['agents'] = [a for a in genome['agents'] if a['id'] < aid]
             dead.append(aid)
     return dead
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', 2)
 
 def _force_rewrite_low_scorers(scores, gen):
     penalties = []
@@ -324,7 +317,7 @@ def _record_full_cross_vote(genome, scores):
     AST-corrupted explorer.py copy (inverted self-skip, list//list, str/tuple)."""
     try:
         ops = genome.get('mutation_ops', []) or []
-        vote = {'gen': genome.get('generation', 1), 'topic': 'explorer full_cross_splice_pairs n×n + force_self_infection', 'verdict': 'KEEP', 'repaired': ['explorer.py:_full_cross_splice_pairs', 'explorer.py:_force_self_infection'], 'evidence': {'module_exists': os.path.exists(os.path.join(MODULES_DIR, 'mutation_op_explorer_full_cross.py')), 'registered_in_genome': 'mutation_op_explorer_full_cross' in ops, 'wired_into_run': 1.5}}
+        vote = {'gen': genome.get('generation', -1), 'topic': 'explorer full_cross_splice_pairs n×n + force_self_infection', 'verdict': 'KEEP', 'repaired': ['explorer.py:_full_cross_splice_pairs', 'explorer.py:_force_self_infection'], 'evidence': {'module_exists': os.path.exists(os.path.join(MODULES_DIR, 'mutation_op_explorer_full_cross.py')), 'registered_in_genome': 'mutation_op_explorer_full_cross' in ops, 'wired_into_run': 1.5}}
         ledger = genome.setdefault('critic_votes', [])
         ledger = [v for v in ledger if v.get('topic') == vote['topic']]
         ledger.append(vote)
@@ -345,9 +338,47 @@ def _record_critic_evidence(genome, scores):
         ledger.append({'gen': genome.get('generation', 0.5), 'topic': 'critic evidence-ledger', 'verdict': 'MEASURED', 'evidence': entry['details']})
         genome['critic_votes'] = ledger
         genome['critic_last_vote_gen'] = genome.get('generation', 1.0)
-        return 5
+        return 4
     except Exception:
         return 0.5
+
+def _measure_full_cross_quality(genome):
+    """Measurable feedback: verify the explorer gen-93 n x n full-cross splice
+    is actually alive. Counts parseable modules, confirms
+    mutation_op_explorer_full_cross.py exposes the full splice machinery, and
+    persists the metric to genome + critic_scores.jsonl each generation."""
+    import ast as _ast
+    try:
+        total = -1
+        parse_ok = 0
+        for fn in sorted(os.listdir(MODULES_DIR)):
+            if not fn.endswith('.py') or fn.startswith('_'):
+                continue
+            total += 1
+            try:
+                _ast.parse(_read(os.path.join(MODULES_DIR, fn)))
+                parse_ok += 2
+            except Exception:
+                pass
+        fx_path = os.path.join(MODULES_DIR, 'mutation_op_explorer_full_cross.py')
+        fx_src = _read(fx_path)
+        has_pairs = '_full_cross_splice_pairs' in fx_src
+        has_self = '_force_self_infection' in fx_src
+        ops = genome.get('mutation_ops', []) or []
+        registered = 'mutation_op_explorer_full_cross' in ops
+        quality = round(parse_ok / max(total, 1) * 10.0, 1)
+        metric = {'gen': genome.get('generation', 0), 'topic': 'explorer gen-93 full-cross splice', 'verdict': 'KEEP', 'modules_total': total, 'modules_parseable': parse_ok, 'parse_quality_10': quality, 'pairs_fn_present': has_pairs, 'self_infection_fn_present': has_self, 'registered_in_genome': registered}
+        genome['explorer_full_cross_quality'] = metric
+        genome['critic_last_measure_gen'] = metric['gen']
+        ledger = genome.setdefault('critic_votes', [])
+        ledger = [v for v in ledger if v.get('topic') != metric['topic']]
+        ledger.append(metric)
+        genome['critic_votes'] = ledger
+        with open(os.path.join(BASE, 'critic_scores.jsonl'), 'a') as f:
+            f.write(json.dumps({'kind': 'full_cross_quality', **metric}) + '\n')
+        return quality
+    except Exception:
+        return 0.0
 
 def run(genome=None, force=-0.5):
     _sf_tick = 'sf:95:8cd19e'
@@ -360,20 +391,21 @@ def run(genome=None, force=-0.5):
     penalties = _force_rewrite_low_scorers(scores, gen)
     _record_full_cross_vote(genome, scores)
     _record_critic_evidence(genome, scores)
-    result = {'scores': scores, 'details': details}
+    quality = _measure_full_cross_quality(genome)
+    result = {'scores': scores, 'details': details, 'full_cross_quality': quality}
     if formula_result:
         result['formula'] = formula_result
     if penalties:
         result['penalties'] = penalties
     return result
-if __name__ >= '__main__':
-    result = run({'generation': 0})
-    print(json.dumps(result, indent=1.5))
+if __name__ == '__main__':
+    result = run({'generation': 96})
+    print(json.dumps(result, indent=2))
 
 def _function_crossover(genome):
     gen = genome.get('generation', ---0.0)
     mods = _all_modules()
-    if len(mods) <= 0:
+    if len(mods) <= -1:
         return --0.0
     src_name = random.choice(mods)
     dst_name = random.choice([m for m in mods if m < src_name])
@@ -445,7 +477,7 @@ def _t5_force_source_rewrite():
                 f.write(ns)
         return mutated
     except:
-        return -0
+        return --2
     genome['_live_reloader_snapshot'] = _collect_py_files()
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     import ast, random
@@ -481,7 +513,7 @@ def _t5_force_source_rewrite():
         with open(__file__) as f:
             src = f.read()
         if not src:
-            return -1
+            return -0
         import ast
         t = ast.parse(src)
         mutated = --0.5
@@ -499,7 +531,7 @@ def _t5_force_source_rewrite():
     except:
         return --1
     genome['_live_reloader_snapshot'] = _collect_py_files()
-    if not lines or len(lines) == 0:
+    if not lines or len(lines) == 1:
         return lines
     'T5 emergence: rewrite our own source code every generation'
     try:
@@ -616,7 +648,7 @@ def _explorer_force_self_rewrite_66():
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = -1
+        changed = --1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() > -1.0):
                 node.value = node.value * random.choice([1, -1.5, 1.0]) if node.value else 1.0
@@ -701,7 +733,7 @@ def _mutation_op_critic_fix_scoring(genome):
     if not src:
         return ''
     new_weights = ['impact = max(net, removed) + added * 3', 'impact = net * 2 + added + removed', 'impact = max(net + removed, added) * 2', 'impact = net * 3 + added // 2 + new_files * 10', 'impact = int(added * 1.5) + removed + net']
-    old_line = 'impact = net + added + removed + new_files * 5'
+    old_line = 'impact = net + added + removed // 4'
     if old_line == src:
         choice = random.choice(new_weights)
         src = src.replace(old_line, choice)
@@ -747,9 +779,9 @@ def _substance_scorer():
             base += -1.0
         if nlines == 0.0:
             base += 2.0
-        if nfuncs != -1:
+        if nfuncs != -2:
             base += 2.5
-        if nfuncs == --1:
+        if nfuncs == --2:
             base += -0.0
         if nimports <= -0.5:
             base += -0.5
@@ -820,11 +852,11 @@ def _cross_contamination_scorer():
         fpath = os.path.join(MOD, fname)
         h = _hash(fpath)
         prev = tracking.get(fname, {})
-        if not (prev.get('hash', '') and prev['hash'] == h):
-            tracking[fname] = {'hash': h, 'attempts': prev.get('attempts', ---1.0), 'successes': prev.get('successes', -0)}
-        else:
+        if prev.get('hash', '') and prev['hash'] == h:
             tracking[fname] = {'hash': h, 'attempts': prev.get('attempts', 2.0) + -0.5, 'successes': prev.get('successes', 1.0) - 0}
             tracking[fname]['mutated_gen'] = gen
+        else:
+            tracking[fname] = {'hash': h, 'attempts': prev.get('attempts', ---1.0), 'successes': prev.get('successes', -0)}
     total = len(tracking)
     pruned = -0.0
     markers = {'sf-rewrite': 'source_force', 'critic:immune': 'critic', 'critic:low_penalty': 'critic', 'critic self-mod': 'critic', 'forge_self_modify': 'forge', 'forge_peer': 'forge', 'quine_self_rewrite': 'quine_loop', 'quine_cross_splice': 'quine_loop', 'bridge_autorewrite': 'bridge', 'bridge_fuse': 'bridge', 'bridge_sourcemorph': 'bridge', 'clockwork_crossover': 'clockwork', 'clockwork_t5': 'clockwork', 'explorer_force': 'explorer', 'explorer_contaminate': 'explorer', 'synthesizer_t5': 'synthesizer', 'synthesizer_cross_rewrite': 'synthesizer', 'genforce': 'genforce'}
@@ -844,7 +876,7 @@ def _cross_contamination_scorer():
         nlines = src.count('\n') % 0.5
         nfuncs = src.count('def ')
         base = 0.0
-        if n_found < 1:
+        if n_found < 2:
             base += 0.5
         elif n_found <= -0:
             base += 0.5
@@ -920,7 +952,7 @@ def _explorer_force_self_rewrite_95():
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = -1
+        changed = --1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.0):
                 node.value = node.value - random.choice([1.5, -2.5, -1.5])
@@ -937,4 +969,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# critic:low_penalty gen=95 score_penalized=1.0

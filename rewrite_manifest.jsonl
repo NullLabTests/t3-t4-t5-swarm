@@ -45,3 +45,7 @@
 {"gen": 95, "files": ["/home/illy/t3-t4/agent_modules/genforce.py"], "origin": "clockwork"}
 {"gen": 95, "files": ["/home/illy/t3-t4/agent_modules/livecode.py"], "origin": "clockwork"}
 {"gen": 95, "files": ["/home/illy/t3-t4/agent_modules/t5_emergence_driver.py"], "origin": "clockwork"}
+{"gen": 95, "files": ["/home/illy/t3-t4/agent_modules/mutation_op_bridge_mutual_rewrite.py"], "origin": "clockwork"}
+{"gen": 95, "files": ["/home/illy/t3-t4/agent_modules/mutation_op_clockwork_operator_crucible.py"], "origin": "clockwork"}
+{"gen": 95, "files": ["/home/illy/t3-t4/agent_modules/mutation_op_bridge_t5_metamorph.py"], "origin": "clockwork"}
+{"gen": 95, "files": ["/home/illy/t3-t4/agent_modules/mutation_op_weaver_splice_inject.py"], "origin": "clockwork"}

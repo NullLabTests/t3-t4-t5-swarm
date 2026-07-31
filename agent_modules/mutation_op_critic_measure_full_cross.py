@@ -123,6 +123,47 @@ def audit_op_registry(genome=None):
     except Exception:
         pass
     return audit
+def apply_endogenous_governor(genome=None):
+    """Materialized twin of critic._apply_endogenous_governor: reads the SAME
+    measured novelty_pressure that the entropy governor already persisted in
+    critic_endogenous_selection_entropy, so the noise loop and the entropy loop
+    cannot diverge, and adds an entropy-gap term: when selection_entropy sits
+    below its drift target, selection_noise_std rises even faster to force
+    re-exploration of under-governed module space. Persists before/after for
+    later gens to audit."""
+    if genome is None or not isinstance(genome, dict):
+        genome = _load_genome()
+    audit = genome.get('critic_op_registry_audit', {}) or {}
+    drift = audit.get('drift_ops', 0) if isinstance(audit, dict) else 0
+    drift = drift if isinstance(drift, (int, float)) else 0
+    emergent = audit.get('emergent_ratio', 0.0) if isinstance(audit, dict) else 0.0
+    emergent = emergent if isinstance(emergent, (int, float)) else 0.0
+    ops_total = len(genome.get('mutation_ops', []) or [])
+    ent = genome.get('critic_endogenous_selection_entropy', {}) or {}
+    if isinstance(ent, dict):
+        novelty = ent.get('novelty_pressure', 0.0)
+        novelty = novelty if isinstance(novelty, (int, float)) else 0.0
+        ent_target = ent.get('target', 0.0)
+        ent_target = ent_target if isinstance(ent_target, (int, float)) else 0.0
+        ent_after = ent.get('after', 0.0)
+        ent_after = ent_after if isinstance(ent_after, (int, float)) else 0.0
+    else:
+        novelty, ent_target, ent_after = 0.0, 0.0, 0.0
+    drift_pressure = min(1.0, drift / max(ops_total, 1) + emergent)
+    pressure = max(novelty, drift_pressure)
+    gap = max(0.0, ent_target - ent_after)
+    prev_std = genome.get('selection_noise_std', 0.15)
+    prev_std = prev_std if isinstance(prev_std, (int, float)) else 0.15
+    target_std = round(min(1.5, max(0.1, prev_std + (pressure - 0.5) * 0.2 + gap * 0.5)), 4)
+    genome['selection_noise_std'] = target_std
+    applied = {'gen': genome.get('generation', 0), 'drift_ops': drift, 'emergent_ratio': round(emergent, 4), 'pressure': round(pressure, 4), 'novelty_pressure': round(novelty, 4), 'entropy_gap': round(gap, 4), 'selection_noise_std_before': prev_std, 'selection_noise_std_after': target_std}
+    genome['critic_endogenous_governor_applied'] = applied
+    try:
+        with open(SCORES_FILE, 'a') as f:
+            f.write(json.dumps({'kind': 'endogenous_governor_applied', **applied}) + '\n')
+    except Exception:
+        pass
+    return applied
 if __name__ == '__main__':
     g = _load_genome()
     print(json.dumps({'measure': measure_full_cross_quality(g), 'audit': audit_op_registry(g)}, indent=2))

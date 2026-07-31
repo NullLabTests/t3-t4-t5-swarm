@@ -357,7 +357,12 @@ def _apply_endogenous_governor(genome):
     runtime selection, not just the ledger. Measured drift (ghost ops + orphan
     modules) raises selection_noise_std so under-explored module space is
     sampled harder; the before/after is persisted so later gens can audit what
-    was actually applied. Structural counts only, no slice/increment literals."""
+    was actually applied. This rebuild couples the noise governor to the SAME
+    measured novelty_pressure the entropy governor already wrote into
+    critic_endogenous_selection_entropy, so the two loops can never diverge,
+    and adds an entropy gap term: when selection_entropy sits below its drift
+    target, noise rises even faster to force re-exploration. Structural counts
+    only, no slice/increment literals."""
     try:
         audit = genome.get('critic_op_registry_audit', {}) or {}
         drift = audit.get('drift_ops', 0) if isinstance(audit, dict) else 0
@@ -365,12 +370,24 @@ def _apply_endogenous_governor(genome):
         emergent = audit.get('emergent_ratio', 0.0) if isinstance(audit, dict) else 0.0
         emergent = emergent if isinstance(emergent, (int, float)) else 0.0
         ops_total = len(genome.get('mutation_ops', []) or [])
-        pressure = min(1.0, drift / max(ops_total, 1) + emergent)
+        ent = genome.get('critic_endogenous_selection_entropy', {}) or {}
+        if isinstance(ent, dict):
+            novelty = ent.get('novelty_pressure', 0.0)
+            novelty = novelty if isinstance(novelty, (int, float)) else 0.0
+            ent_target = ent.get('target', 0.0)
+            ent_target = ent_target if isinstance(ent_target, (int, float)) else 0.0
+            ent_after = ent.get('after', 0.0)
+            ent_after = ent_after if isinstance(ent_after, (int, float)) else 0.0
+        else:
+            novelty, ent_target, ent_after = 0.0, 0.0, 0.0
+        drift_pressure = min(1.0, drift / max(ops_total, 1) + emergent)
+        pressure = max(novelty, drift_pressure)
+        gap = max(0.0, ent_target - ent_after)
         prev_std = genome.get('selection_noise_std', 0.15)
         prev_std = prev_std if isinstance(prev_std, (int, float)) else 0.15
-        target_std = round(min(1.5, max(0.1, prev_std + (pressure - 0.5) * 0.2)), 4)
+        target_std = round(min(1.5, max(0.1, prev_std + (pressure - 0.5) * 0.2 + gap * 0.5)), 4)
         genome['selection_noise_std'] = target_std
-        applied = {'gen': genome.get('generation', 0), 'drift_ops': drift, 'emergent_ratio': round(emergent, 4), 'pressure': round(pressure, 4), 'selection_noise_std_before': prev_std, 'selection_noise_std_after': target_std}
+        applied = {'gen': genome.get('generation', 0), 'drift_ops': drift, 'emergent_ratio': round(emergent, 4), 'pressure': round(pressure, 4), 'novelty_pressure': round(novelty, 4), 'entropy_gap': round(gap, 4), 'selection_noise_std_before': prev_std, 'selection_noise_std_after': target_std}
         genome['critic_endogenous_governor_applied'] = applied
         with open(SCORES_FILE, 'a') as f:
             f.write(json.dumps({'kind': 'endogenous_governor_applied', **applied}) + '\n')
@@ -513,4 +530,4 @@ if __name__ == '__main__':
     result = run({'generation': 104})
     print(json.dumps(result, indent=4))
 
-# critic self-mod gen=106 hash=-332129138253037638
+# critic self-mod gen=108 hash=coupled-governor-noise-entropy-gap

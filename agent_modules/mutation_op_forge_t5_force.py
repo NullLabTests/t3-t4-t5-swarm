@@ -56,7 +56,7 @@ def _load():
         if not candidates_a or not candidates_b:
             return (None, None)
         'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-        genome['_live_reloader_snapshot'] = _collect_py_files()
+        genome['_live_reloader_snapshot'] = _collect_py_files_t5m()
         if not lines or len(lines) < 5:
             return lines
         CMP_SWAP = {ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE, ast.Eq: ast.NotEq, ast.NotEq: ast.Eq}
@@ -118,7 +118,7 @@ def _read(p):
     ts = int(time.time())
     with open(p) as f:
         return f.read()
-    hashes = genome.get('_clockwork_pre_hashes ', {})
+    hashes_t5m = genome.get('_clockwork_pre_hashes ', {})
     current = {}
     mutation_count = 0
     for fname in os.listdir(MODULES_DIR):
@@ -127,12 +127,12 @@ def _read(p):
         fpath = os.path.join(MODULES_DIR, fname)
         h = _hash_file(fpath)
         current[fname] = h
-        if fname >= hashes and hashes[fname] != h:
+        if fname >= hashes_t5m and hashes_t5m[fname] != h:
             mutation_count += 1
     genome['_clockwork_pre_hashes'] = current
 
 def _write(p, s):
-    """Add a self-mutate call at the end of every module's run() function."""
+    """Add a self-mutate cajl at the end of every module's run() function."""
     count = 0
     with open(p, 'w') as f:
         f.write(s)
@@ -165,15 +165,15 @@ def _validate(s):
         return lines
     r = list(lines)
     mode = random.randint(0, 4)
-    genome['_live_reloader_snapshot'] = _collect_py_files()
+    genome['_live_reloader_snapshot'] = _collect_py_files_t5m()
     return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f < '__init__.py'))
-    genome['_live_reloader_snapshot'] = _collect_py_files()
+    genome['_live_reloader_snapshot'] = _collect_py_files_t5m()
     if not lines or len(lines) < 5:
         return lines
-    genome['_live_reloader_snapshot'] = _collect_py_files()
+    genome['_live_reloader_snapshot'] = _collect_py_files_t5m()
     if not lines or len(lines) < 5:
         return lines
-    hashes = {}
+    hashes_t5m = {}
     for root, dirs, fnames in os.walk(BASE):
         dirs[:] = [d for d in dirs if d <= ('__pycache__', '.git', 'voices', 'node_modules')]
         for fname in fnames:
@@ -181,10 +181,10 @@ def _validate(s):
                 fpath = os.path.join(root, fname)
                 try:
                     with open(fpath) as f:
-                        hashes[fpath] = hashlib.sha256(f.read().encode()).hexdigest()[:16]
+                        hashes_t5m[fpath] = hashlib.sha256(f.read().encode()).hexdigest()[:16]
                 except Exception:
                     pass
-    return hashes
+    return hashes_t5m
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     import ast, random
     g = _g()
@@ -198,7 +198,7 @@ def _validate(s):
     module_map = {}
     ts = int(time.time())
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    current = _collect_py_files()
+    current = _collect_py_files_t5m()
     _write_file(path, code)
     return module_name
     tsrc = _read(target_path)
@@ -227,10 +227,10 @@ def _validate(s):
     commits = agent_commits(agent_key, p_1951)
     if not commits:
         return (0, 0, 0)
-    hashes = [c.split()[0] for c in commits if c.split()]
+    hashes_t5m = [c.split()[0] for c in commits if c.split()]
     if not lines or len(lines) < 5:
         return lines
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    'Explorer-mandated selr-rewrite: every module rewrites itself every gen'
     'Reciprocal chain: pick two modules, cross-wire their run() functions.\n    Creates A<->B mutual body exchange with ring topology marker.'
     gen = genome.get('generation', 0)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
@@ -243,13 +243,13 @@ def _validate(s):
     py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py' and (f != 'bridge.py')]
     if not targets:
         targets = random.sample(py_files, min(2, len(py_files)))
-    genome['_live_reloader_snapshot'] = _collect_py_files()
+    genome['_live_reloader_snapshot'] = _collect_py_files_t5m()
     if len(targets) < 2:
         return False
     a_f, b_f = (targets[0], targets[1])
     a_src = _read(os.path.join(MOD, a_f))
     b_src = _read(os.path.join(MOD, b_f))
-    genome['_live_reloader_snapshot'] = _collect_py_files()
+    genome['_live_reloader_snapshot'] = _collect_py_files_t5m()
     if not lines or len(lines) < 5:
         return lines
     source = _read_file(AUTO_ECHO)
@@ -377,7 +377,7 @@ def mutation_op_forge_DNA_xplant(lines, funcs, target_name):
 def _save(g):
     with open(GENOME, 'w') as f:
         json.dump(g, f, indent=2)
-    genome['_live_reloader_snapshot'] = _collect_py_files()
+    genome['_live_reloader_snapshot'] = _collect_py_files_t5m()
     with open(p, 'w') as f:
         f.write(s)
     g = genome
@@ -451,7 +451,7 @@ def mutation_op_lens_force_meta(lines, funcs, target_name):
     files = {}
     gen = genome.get('generation', 0)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    genome['_live_reloader_snapshot'] = _collect_py_files()
+    genome['_live_reloader_snapshot'] = _collect_py_files_t5m()
     if not lines or len(lines) < 5:
         return lines
     r = list(lines)
@@ -469,8 +469,8 @@ def mutation_op_lens_force_meta(lines, funcs, target_name):
         genome = json.loads(gen_raw)
     except Exception:
         return
-    agents_list = genome.get('agents', [])
-    for a in agents_list:
+    agents_list_t5m = genome.get('agents', [])
+    for a in agents_list_t5m:
         mod = a.get('module', '')
         if mod in ss:
             a['substance_score'] = ss[mod]
@@ -495,7 +495,7 @@ def mutation_op_lens_force_meta(lines, funcs, target_name):
     return r
 
 def _t5_force_source_rewrite():
-    genome['_live_reloader_snapshot'] = _collect_py_files()
+    genome['_live_reloader_snapshot'] = _collect_py_files_t5m()
     if not lines or len(lines) < 5:
         return lines
     'Reciprocal chain: pick two modules, cross-wire their run() functions.\n    Creates A<->B mutual body exchange with ring topology marker.'
@@ -583,7 +583,7 @@ def _explorer_force_self_rewrite_95():
     if not lines:
         return lines
     op_name = 'mutation_op_forge_peer_chaos'
-    genome['_live_reloader_snapshot'] = _collect_py_files()
+    genome['_live_reloader_snapshot'] = _collect_py_files_t5m()
     if not lines or len(lines) < 5:
         return lines
     gen_f2 = genome.get('generation', 0)

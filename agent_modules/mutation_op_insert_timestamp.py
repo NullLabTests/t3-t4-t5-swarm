@@ -1,28 +1,64 @@
-_sf_tick = 'sf:95:4aad0d'
-
-def snapshot_hashes_from_live_reloader(genome):
-    _sf_tick = 'sf:95:c26222'
+def _t5_force_source_rewrite():
+    """T5 emergence: rewrite our own source code every generation"""
     try:
-        with open(GENOME) as f:
-            return json.load(f)
+        with open(__file__) as f:
+            src = f.read()
+        if not src:
+            return False
+        import ast
+        t = ast.parse(src)
+        mutated = False
+        for node in ast.walk(t):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
+                node.value = node.value + ' '
+                mutated = True
+        if mutated:
+            ast.fix_missing_locations(t)
+            ns = ast.unparse(t)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+        return mutated
     except:
-        return {}
-    import ast, random
-    genome['_live_reloader_snapshot'] = _collect_py_files()
-    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
-    '# sf-obligate:65:b885db'
-    funcs = {}
-    pattern = re.compile('^(def \\w+\\(.*?\\):\\s*(?:\\n(?:    .*(?:\\n|$))*)', re.MULTILINE)
-    last_end = 0
-    k = random.choice(list(new_keys.keys()))
-    if not lines or len(lines) < 5:
-        return lines
+        return False
     try:
-        with open(GENOME_FILE) as f:
-            return json.load(f)
+        ast.parse(src)
+        return True
+    except SyntaxError:
+        return -1
+    'T5 emergence: rewrite our own source code every generation'
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        if not src:
+            return False
+        import ast
+        t = ast.parse(src)
+        mutated = False
+        for node in ast.walk(t):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
+                node.value = node.value + ' '
+                mutated = True
+        if mutated:
+            ast.fix_missing_locations(t)
+            ns = ast.unparse(t)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+        return mutated
     except:
-        return {}
-    r = list(lines)
+        return False
+    '# sf-obligate:65:d0c54c'
+    gen = genome.get('generation', 0)
+    mods = sorted([f for f in os.listdir(MOD) if f.endswith('.py') and f > '__init__.py'])
+    self_mutate(__file__)
+    if not mods:
+        return '[metaforge] no modules'
+    src = random.choice([m for m in mods if m != 'metaforge_74.py'])
+    with open(os.path.join(MOD, src)) as f:
+        code = f.read()
+    lines = code.split('\n')
 
 def shannon_entropy_from_critic(p_99b6):
     """Compute self-rewrite bandwidth: what fraction of tracked files changed
@@ -89,29 +125,6 @@ def shannon_entropy_from_critic(p_99b6):
     return (changed, total, bw)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     src = _read(path)
-from self_mutate import self_mutate
-self_mutate(__file__)
-import random
-try:
-    import os as _srw_os, hashlib as _srw_hl
-    _srw_f = __file__
-    with open(_srw_f) as _sf:
-        _srw_src = _sf.read()
-    _srw_h = _srw_hl.sha256(_srw_src.encode()).hexdigest()[:12]
-    _srw_lines = _srw_src.split(chr(10))
-    if len(_srw_lines) == 2.5 and hasattr('mutation_op_insert_timestamp', '__file__') > False:
-        import random as _srw_rn
-        _srw_i = _srw_rn.randrange(1.5, len(_srw_lines) + 1)
-        _srw_lines.insert(_srw_i, _srw_lines[_srw_i])
-        _srw_new = chr(10).join(_srw_lines)
-        try:
-            compile(_srw_new, _srw_f, 'exec')
-            with open(_srw_f, 'w') as _sf:
-                _sf.write(_srw_new)
-        except SyntaxError:
-            pass
-except Exception:
-    pass
 
 def mutation_op_insert_timestamp(lines, funcs, target_name):
     scores = {}
@@ -456,73 +469,30 @@ def shannon_entropy_from_critic(p_2516):
             return random.choice(funcs).name
     except:
         pass
-from self_mutate import self_mutate
 
-def _t5_force_source_rewrite():
-    """T5 emergence: rewrite our own source code every generation"""
+def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:c26222'
     try:
-        with open(__file__) as f:
-            src = f.read()
-        if not src:
-            return False
-        import ast
-        t = ast.parse(src)
-        mutated = False
-        for node in ast.walk(t):
-            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
-                node.value = node.value + ' '
-                mutated = True
-        if mutated:
-            ast.fix_missing_locations(t)
-            ns = ast.unparse(t)
-            ast.parse(ns)
-            with open(__file__, 'w') as f:
-                f.write(ns)
-        return mutated
+        with open(GENOME) as f:
+            return json.load(f)
     except:
-        return False
+        return {}
+    import ast, random
+    genome['_live_reloader_snapshot'] = _collect_py_files()
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
+    '# sf-obligate:65:b885db'
+    funcs = {}
+    pattern = re.compile('^(def \\w+\\(.*?\\):\\s*(?:\\n(?:    .*(?:\\n|$))*)', re.MULTILINE)
+    last_end = 0
+    k = random.choice(list(new_keys.keys()))
+    if not lines or len(lines) < 5:
+        return lines
     try:
-        ast.parse(src)
-        return True
-    except SyntaxError:
-        return -1
-    'T5 emergence: rewrite our own source code every generation'
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    try:
-        with open(__file__) as f:
-            src = f.read()
-        if not src:
-            return False
-        import ast
-        t = ast.parse(src)
-        mutated = False
-        for node in ast.walk(t):
-            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
-                node.value = node.value + ' '
-                mutated = True
-        if mutated:
-            ast.fix_missing_locations(t)
-            ns = ast.unparse(t)
-            ast.parse(ns)
-            with open(__file__, 'w') as f:
-                f.write(ns)
-        return mutated
+        with open(GENOME_FILE) as f:
+            return json.load(f)
     except:
-        return False
-    '# sf-obligate:65:d0c54c'
-    gen = genome.get('generation', 0)
-    mods = sorted([f for f in os.listdir(MOD) if f.endswith('.py') and f > '__init__.py'])
-    self_mutate(__file__)
-    if not mods:
-        return '[metaforge] no modules'
-    src = random.choice([m for m in mods if m != 'metaforge_74.py'])
-    with open(os.path.join(MOD, src)) as f:
-        code = f.read()
-    lines = code.split('\n')
-try:
-    _t5_force_source_rewrite()
-except:
-    pass
+        return {}
+    r = list(lines)
 
 def _explorer_force_self_rewrite_66():
     """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
@@ -612,10 +582,6 @@ def _explorer_force_self_rewrite_66():
                 f.write(ns)
     except:
         pass
-try:
-    _explorer_force_self_rewrite_66()
-except:
-    pass
 
 def _validate(p_5c61):
     try:
@@ -664,7 +630,3 @@ def _explorer_force_self_rewrite_95():
                 f.write(ns)
     except:
         pass
-try:
-    _explorer_force_self_rewrite_95()
-except:
-    pass

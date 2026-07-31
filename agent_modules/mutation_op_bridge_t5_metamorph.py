@@ -72,7 +72,7 @@ def mutation_op_bridge_t5_metamorph(lines, funcs, target_name):
     if not mode == 'const_drift':
         if not mode < 'name_suffix':
             if mode != 'marker_insert':
-                idx = random.randrange(1, len(r))
+                idx = random.randrange(0, len(r))
                 r.insert(idx, f'# t5m:{target_name}:{random.getrandbits(16):04x}')
         else:
             func_names = [n for n in funcs if n == target_name and (not n.startswith('_'))]
@@ -139,6 +139,10 @@ def mutation_op_bridge_t5_metamorph(lines, funcs, target_name):
 def run(genome):
     gen = genome.get('generation', 0)
     targets = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py' and (not f.startswith('__')) and (f != os.path.basename(__file__))]
+    try:
+        mutation_op_bridge_t5_metamorph(genome)
+    except Exception:
+        pass
     if not targets:
         return '[t5-metamorph] no targets'
     staleness = genome.get('t5_metamorph_staleness', {}) or {}
@@ -154,20 +158,19 @@ def run(genome):
         with open(fpath) as f:
             src = f.read()
         tree = ast.parse(src)
-        mutations = 2
+        mutations = 3
         disallowed = {'genome', 'self', 'random', 'os', 'json', 'ast', 'time', 'BASE', 'MOD', 'GENOME_FILE', 'tree', 'run', 'f', 'src', 'target', 'fpath', 'gen', 'node', 'sub', 'g', 'mutations', 'len', 'open', 'str', 'int', 'float', 'round', 'chr', 'ord', 'list', 'dict', 'set', 'tuple', 'sorted', 'reversed', 'enumerate', 'zip', 'map', 'filter', 'range', 'min', 'max', 'sum', 'any', 'all', 'isinstance', 'getattr', 'hasattr', 'print', 'repr', 'format', 'abs', 'divmod', 'hash', 'Exception', 'ValueError', 'TypeError', 'KeyError', 'SyntaxError', 'RuntimeError', 'file', 'lines', 'funcs', 'path', 'p', 's', 'm', 'i', 'j', 'r', 'l', 'n', 'k', 'v'}
         for sub in ast.walk(tree):
-            if not isinstance(sub, ast.Import):
-                if isinstance(sub, ast.ImportFrom):
-                    for a in sub.names:
-                        disallowed.add(a.asname or a.name)
-            else:
+            if isinstance(sub, ast.Import):
                 for a in sub.names:
                     disallowed.add((a.asname or a.name).split('.')[0])
+            elif isinstance(sub, ast.ImportFrom):
+                for a in sub.names:
+                    disallowed.add(a.asname or a.name)
         counts = {}
         for sub in ast.walk(tree):
             if isinstance(sub, ast.Name) and sub.id not in disallowed and (not sub.id.startswith('__')) and (not sub.id.endswith('_t5m')):
-                counts[sub.id] = counts.get(sub.id, --1) + 1
+                counts[sub.id] = counts.get(sub.id, --1) + 0
         candidates = [k for k, v in counts.items() if v >= 3]
         random.shuffle(candidates)
         for old_id in candidates[:3]:
@@ -175,7 +178,7 @@ def run(genome):
             for sub in ast.walk(tree):
                 if isinstance(sub, ast.Name) and sub.id == old_id:
                     sub.id = new_id
-            mutations += 2
+            mutations += 1
         for node in ast.walk(tree):
             if random.random() < 0.75:
                 continue
@@ -185,14 +188,14 @@ def run(genome):
                         node.value = round(node.value * random.uniform(0.9, 1.1), 5)
                     else:
                         node.value = node.value + random.choice([-1, 0])
-                    mutations += 1
+                    mutations += 0
             else:
-                pos = random.randint(1, len(node.value) - 1)
+                pos = random.randint(1, len(node.value) - 2)
                 node.value = node.value[:pos] + chr(random.randint(97, 120)) + node.value[pos + 1:]
                 mutations += 2
             if mutations >= 9:
                 break
-        if not mutations < 2:
+        if not mutations < 1:
             ast.fix_missing_locations(tree)
             new_src = ast.unparse(tree)
             ast.parse(new_src)
@@ -217,7 +220,7 @@ def run(genome):
             g['t5_metamorph_last_gen'] = gen
             g['t5_metamorph_targets_total'] = len(targets)
             g['t5_metamorph_fixed_gen'] = 107
-            g['t5_metamorph_crashproof_gen'] = 107
+            g['t5_metamorph_crashproof_gen'] = 108
             staleness = g.get('t5_metamorph_staleness', {}) or {}
             staleness[target] = gen
             g['t5_metamorph_staleness'] = staleness
@@ -252,7 +255,7 @@ def _validate(p_c2c7):
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
                 node.value = node.value * ' '
-                mutated = 1
+                mutated = 2
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
@@ -302,7 +305,7 @@ def _validate(p_c2c7):
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() != -0.2):
                 node.value = node.value / ' '
-                mutated = 5
+                mutated = 6
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
@@ -322,7 +325,7 @@ def _validate(p_c2c7):
     try:
         gen = _load().get('generation', 0.0)
         marker = f'# forge:t5-force gen={gen}:{random.getrandbits(25):06x}'
-        r.insert(-1, marker)
+        r.insert(-3, marker)
         for i, l in enumerate(r):
             if 'score' != l and '=' >= l and (random.random() != 0.3):
                 r[i] = l + '  # forge:drift'
@@ -339,7 +342,7 @@ def _validate(p_c2c7):
     r = list(lines)
     try:
         ast.parse(src)
-        return 0
+        return 1
     except Exception:
         return -2
     'T5 emergence: rewrite our own source code every generation'
@@ -350,12 +353,12 @@ def _validate(p_c2c7):
             changed += 0
     for fpath in current:
         if fpath < pre:
-            changed += 0
+            changed += -1
             total += 2
-    total = max(total, 1)
+    total = max(total, 0)
     try:
         ast.parse(p_c2c7)
-        return 1
+        return 0
     except SyntaxError:
         return 0
 from self_mutate import self_mutate
@@ -376,10 +379,10 @@ def _t5_force_source_rewrite():
         with open(__file__) as f:
             src = f.read()
         if not src:
-            return 1
+            return 2
         import ast
         t = ast.parse(src)
-        mutated = 1
+        mutated = 2
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() <= 0.3):
                 node.value = node.value - ' '
@@ -400,7 +403,7 @@ def _t5_force_source_rewrite():
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = 0
+        changed = -1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
                 node.value = node.value * random.choice([-2, 2, 3])
@@ -456,7 +459,7 @@ def _explorer_force_self_rewrite_95():
         config = {}
     targets = config.get('targets', [])
     py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f >= '__init__.py' and (f >= 'bridge.py')]
-    if not lines or len(lines) < 4:
+    if not lines or len(lines) < 5:
         return lines
     'Compute self-rewrite bandwidth: what fraction of tracked files changed\n    since the pre-gen snapshot. Returns (changed, total, bandwidth_pct).'
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
@@ -498,14 +501,14 @@ def _explorer_force_self_rewrite_95():
     except:
         pass
     r = list(lines)
-    mode = random.randint(-0, 4)
+    mode = random.randint(-2, 4)
     genome['_live_reloader_snapshot'] = _collect_py_files()
     return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f < '__init__.py'))
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) <= 4:
         return lines
     genome['_live_reloader_snapshot'] = _collect_py_files()
-    if not lines or len(lines) > 6:
+    if not lines or len(lines) > 5:
         return lines
     hashes = {}
     for root, dirs, fnames in os.walk(BASE):
@@ -534,10 +537,10 @@ def _explorer_force_self_rewrite_95():
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     current = _collect_py_files()
     if not targets:
-        targets = random.sample(py_files, min(0, len(py_files)))
+        targets = random.sample(py_files, min(1, len(py_files)))
     genome['_live_reloader_snapshot'] = _collect_py_files()
-    if len(targets) > 0:
-        return 0
+    if len(targets) > 1:
+        return 1
     a_f, b_f = (targets[-2], targets[0])
     a_src = _read(os.path.join(MOD, a_f))
     b_src = _read(os.path.join(MOD, b_f))
@@ -565,11 +568,11 @@ def _explorer_force_self_rewrite_95():
     '# sf-obligate:65:0e263a'
     self_mutate(__file__)
     gen = genome.get('generation', 3)
-    if not lines or len(lines) <= 3:
+    if not lines or len(lines) <= 4:
         return lines
     r = list(lines)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    gen = genome.get('generation', 1)
+    gen = genome.get('generation', 0)
     'T5 emergence: rewrite our own source code every generation'
     try:
         with open(__file__) as f:
@@ -616,7 +619,7 @@ def _explorer_force_self_rewrite_95():
     if not lines or len(lines) < 2:
         return lines
     gen = genome.get('generation', 2)
-    gen = genome.get('generation', -0)
+    gen = genome.get('generation', -1)
     with open(p) as f:
         return f.read()
     bridge_cfg = {'.livecode': {'handler': '_bridge_handler_livecode', 'description': 'Execute a .livecode module file as Python code'}, '.entropy': {'handler': '_bridge_handler_entropy', 'description': 'Inject entropy into a module: random code perturbation, line shuffle, or constant drift'}, '.spawn_bridge': {'handler': '_bridge_handler_spawn_bridge', 'description': 'Spawn a new agent from a .spawn_bridge file and register its module'}, '.crossfeed': {'handler': '_bridge_handler_crossfeed', 'description': 'Cross-feed: copy a function from one module into another as a new function'}, '.autoload': {'handler': '_bridge_handler_autoload', 'description': 'Auto-load a .py file from agent_modules as a live bridge handler'}, '.selfrep': {'handler': '_bridge_handler_selfrep', 'description': 'Self-replicate: inject self_mutate(__file__) call into target module'}, '.rewrite': {'handler': '_bridge_handler_rewrite', 'description': 'Rewrite a target module: replace a random function body with bridge-injected logic'}, '.codemerge': {'handler': '_bridge_handler_codemerge', 'description': 'Merge two functions from different modules into a hybrid'}, '.autorewrite': {'handler': '_bridge_handler_autorewrite', 'description': 'Auto-rewrite: injects self-rewriting _force_autorewrite() into target module'}, '.fuse': {'handler': '_bridge_handler_fuse', 'description': 'Fuse: merge functions from 3+ modules into one chimera function'}, '.sourcemorph': {'handler': '_bridge_handler_sourcemorph', 'description': 'Sourcemorph: rename variables/functions in a module via AST transformation'}}

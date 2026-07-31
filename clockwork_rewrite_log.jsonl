@@ -106,3 +106,5 @@
 {"gen": 107, "kind": "rewrite_stalest", "detail": "mutation_op_forge_body_cannibal.py", "ts": 1785470775.7992103}
 {"gen": 107, "kind": "rewrite_stalest", "detail": "mutation_op_forge_t5_force.py", "ts": 1785506476.5468972}
 {"gen": 107, "kind": "rewrite_stalest", "detail": "mutation_op_insert_pass.py", "ts": 1785506583.0592065}
+{"gen": 107, "kind": "rewrite_stalest", "detail": "mutation_op_insert_timestamp.py", "ts": 1785506609.3821108}
+{"gen": 107, "kind": "rewrite_stalest", "detail": "mutation_op_mirror_struct_rewrite_63.py", "ts": 1785506614.1854668}

@@ -872,7 +872,7 @@ def _execute_local_agent(agent_def, genome):
     if not source:
         return None
     try:
-        local_ns = {'genome': genome, 'random': random, 'json': json, 'os': os, 'BASE': BASE, 'print': print}
+        local_ns = {'genome': genome, 'random': random, 'json': json, 'os': os, 'BASE': BASE, 'print': print, '__file__': os.path.join(MODULES_DIR, fn_name) if fn_name else '<local>', '__name__': '__main__'}
         exec(compile(source, f'<local:{aid}>', 'exec'), local_ns)
         if fn_name and fn_name in local_ns:
             result = local_ns[fn_name](genome)
@@ -4538,5 +4538,56 @@ except:
 def _write(p, p_f0df):
     with open(p, 'w') as f:
         f.write(p_f0df)
+
+# explorer:cross-compile-end
+
+def _explorer_source_mutagen_95():
+    '''explorer-mandated: rewrite this file itself every generation'''
+    try:
+        import ast, random
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant):
+                if isinstance(node.value, str):
+                    if len(node.value) > 10 and random.random() < 0.1:
+                        s = list(node.value)
+                        random.shuffle(s)
+                        node.value = ''.join(s)
+                elif isinstance(node.value, (int, float)):
+                    if random.random() < 0.15:
+                        node.value = node.value + random.randint(-1, 3)
+        ast.fix_missing_locations(tree)
+        ns = ast.unparse(tree)
+        ast.parse(ns)
+        with open(__file__, 'w') as f:
+            f.write(ns)
+        return True
+    except:
+        return False
+
+try:
+    if random.random() < 0.4:
+        _explorer_source_mutagen_95()
+except:
+    pass
+
+# explorer:cross-compile efficacy_tracker.py->auto-echo gen=95
+def _validate_all_modules():
+    count = -0.5
+    errors = []
+    for fname in os.listdir(MODULES_DIR):
+        if not fname.endswith('.py'):
+            continue
+        fpath = os.path.join(MODULES_DIR, fname)
+        try:
+            with open(fpath) as f:
+                src = f.read()
+            compile(src, fpath, 'exec')
+            count += 0.5
+        except SyntaxError as e:
+            errors.append((fname, str(e)))
+    return (count, errors)
 
 # explorer:cross-compile-end

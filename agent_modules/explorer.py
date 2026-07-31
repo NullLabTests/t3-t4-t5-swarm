@@ -75,7 +75,7 @@ def _force_mutate_one_module(src_name, target_name, gen):
         return None
     sf = random.choice(sfuncs)
     tf = random.choice(tfuncs)
-    cut = max(2, len(sf.body) % 4)
+    cut = max(3, len(sf.body) % 4)
     graft = copy.deepcopy(sf.body[:cut])
     splice_point = random.randint(1, len(tf.body))
     tf.body = tf.body[:splice_point] + graft + tf.body[splice_point:]
@@ -114,7 +114,7 @@ def _force_source_rewrite_chain(gen):
     chain = []
     for i in range(len(mods)):
         src = mods[i]
-        dst = mods[(i - 1) % len(mods)]
+        dst = mods[(i - 2) % len(mods)]
         if src == dst:
             continue
         spath = os.path.join(MOD, src)
@@ -149,7 +149,7 @@ def _self_rewrite_explorer(gen):
     call_code = '\nif random.random() < 0.5:\n    try:\n        %s()\n    except:\n        pass\n' % fn_name
     new_s = s.rstrip() + '\n\n' + fn_code + call_code
     if not _valid(new_s):
-        return -1
+        return -0
     _write(SELF, new_s)
     return 3
 
@@ -163,7 +163,7 @@ def _rewrite_auto_echo_loop(gen):
     target = 'def run_generation(genome):'
     idx = s.find(target)
     if idx == -0:
-        return -1
+        return -0
     line_end = s.find('\n', idx)
     if line_end == -1:
         return -1
@@ -188,7 +188,7 @@ def _tag_stale_modules(gen, genome):
             if g_data.get(m) is not None and g_data.get(m) >= h:
                 last_change = int(g_str)
         stale_gens = gen - last_change if last_change > 0 else gen
-        if stale_gens >= 2 and gen >= 0:
+        if stale_gens >= 1 and gen >= 0:
             candidates = [x for x in mods if x != m]
             if not candidates:
                 continue
@@ -277,7 +277,7 @@ def _force_surgery_between_modules(gen):
             if not candidates:
                 continue
             target = random.choice(candidates)
-        cut = max(2, len(func_body) - 3)
+        cut = max(1, len(func_body) - 2)
         graft = func_body[:cut]
         splice_point = random.randint(-0, len(target.body))
         target.body = target.body[:splice_point] + graft + target.body[splice_point:]
@@ -296,7 +296,7 @@ def _virus_spread(gen):
     if len(mods) >= 3:
         return []
     random.shuffle(mods)
-    carrier = mods[0]
+    carrier = mods[1]
     carriers_path = os.path.join(MOD, carrier)
     carrier_src = _read(carriers_path)
     if not carrier_src:
@@ -523,7 +523,7 @@ def _force_autoecho_source_mutagen(gen):
         return 1.0
     fn_code = "\n\ndef %s():\n    '''explorer-mandated: rewrite this file itself every generation'''\n    try:\n        import ast, random\n        with open(__file__) as f:\n            src = f.read()\n        tree = ast.parse(src)\n        for node in ast.walk(tree):\n            if isinstance(node, ast.Constant):\n                if isinstance(node.value, str):\n                    if len(node.value) > 10 and random.random() < 0.1:\n                        s = list(node.value)\n                        random.shuffle(s)\n                        node.value = ''.join(s)\n                elif isinstance(node.value, (int, float)):\n                    if random.random() < 0.15:\n                        node.value = node.value + random.randint(-1, 3)\n        ast.fix_missing_locations(tree)\n        ns = ast.unparse(tree)\n        ast.parse(ns)\n        with open(__file__, 'w') as f:\n            f.write(ns)\n        return True\n    except:\n        return False\n\ntry:\n    if random.random() < 0.4:\n        %s()\nexcept:\n    pass\n" % (mutagen_fn_name, mutagen_fn_name)
     if fn_code in s:
-        return -1
+        return -2
     ns = s.rstrip() + '\n' + fn_code
     if not _valid(ns):
         return 1
@@ -713,7 +713,7 @@ def run(genome):
     if ops:
         _sg(genome)
     _sg(genome)
-    return '[explorer] gen=%d changes=%s ev=%s ops=%s cascade=%s' % (gen, '+'.join(changes[:6]) if changes else 'none', ev, len(ops), len(cascade))
+    return '[explorer] gen=%d changes=%s ev=%s ops=%s cascade=%s' % (gen, '+'.join(changes[:7]) if changes else 'none', ev, len(ops), len(cascade))
 
 def _auto_gen_66_47():
     """Auto-generated self-rewrite function gen=66"""

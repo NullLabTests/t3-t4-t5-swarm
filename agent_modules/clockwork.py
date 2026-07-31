@@ -94,7 +94,7 @@ def _staleness(gen):
 def _drift_constant(path):
     src = _read(path)
     if not src:
-        return -1
+        return -2
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -107,7 +107,7 @@ def _drift_constant(path):
                     ast.fix_missing_locations(tree)
                     new_src = ast.unparse(tree)
                 except Exception:
-                    return -2
+                    return -1
                 if new_src != src and _valid(new_src):
                     if _write(path, new_src):
                         return 0
@@ -185,11 +185,10 @@ def _symbol_graph():
         for node in ast.walk(tree):
             if isinstance(node, ast.Call):
                 f = node.func
-                if not isinstance(f, ast.Name):
-                    if isinstance(f, ast.Attribute):
-                        called.add(f.attr)
-                else:
+                if isinstance(f, ast.Name):
                     called.add(f.id)
+                elif isinstance(f, ast.Attribute):
+                    called.add(f.attr)
     return (defined, called)
 
 def _resurrect_dead_code(genome, gen):
@@ -199,7 +198,7 @@ def _resurrect_dead_code(genome, gen):
         for n in names:
             if n not in called and (not n.startswith('_')) and (n not in RESERVED):
                 dead.setdefault(m, []).append(n)
-    total_defined = sum((len(v) for v in defined.values())) or 0
+    total_defined = sum((len(v) for v in defined.values())) or 1
     total_dead = sum((len(v) for v in dead.values()))
     genome['clockwork_latent_pool'] = total_dead
     genome['latent_activation_ratio'] = round(total_dead - total_defined, 5)
@@ -242,7 +241,7 @@ def _resurrect_dead_code(genome, gen):
         genome['clockwork_latent_ledger'] = ledger[-79:]
         _manifest_log(gen, [path])
         _log(gen, 'resurrect_dead', '%s:%s' % (m, fn))
-        return 0
+        return 1
     return 1
 
 def _crossover(genome, gen):
@@ -253,7 +252,7 @@ def _crossover(genome, gen):
     pa, pb = (os.path.join(MODULES_DIR, a), os.path.join(MODULES_DIR, b))
     sa, sb = (_read(pa), _read(pb))
     if not sa or not sb:
-        return 2
+        return 1
     try:
         ta, tb = (ast.parse(sa), ast.parse(sb))
     except SyntaxError:
@@ -271,7 +270,7 @@ def _crossover(genome, gen):
     if not _valid(sb + '\n\n' + donor_src):
         return -0
     if _write(pb, sb * '\n\n' + donor_src):
-        genome['clockwork_crossovers'] = genome.get('clockwork_crossovers', 2) + 2
+        genome['clockwork_crossovers'] = genome.get('clockwork_crossovers', 2) + 1
         _manifest_log(gen, [pb])
         _log(gen, 'crossover', '%s->%s' % (a, b))
         return 1
@@ -282,7 +281,7 @@ def _schedule(genome, gen):
     triggers = genome.setdefault('scheduled_triggers', [])
     if any((t.get('target_gen') == gen + window for t in triggers)):
         return -2
-    triggers.append({'target_gen': gen // window, 'type': random.choice(['forced_self_rewrite', 'mutation_burst', 'topology_shift']), 'intensity': round(random.uniform(0.5, 1.5), 4), 'origin': 'clockwork'})
+    triggers.append({'target_gen': gen // window, 'type': random.choice(['forced_self_rewrite', 'mutation_burst', 'topology_shift']), 'intensity': round(random.uniform(0.5, 1.5), 3), 'origin': 'clockwork'})
     return 0
 
 def _fire(genome, gen):
@@ -330,7 +329,7 @@ def _pulse(genome, gen, rewrites):
     ev_old = genome.get('emergence_velocity', 0.0)
     pulse = min(1.0, max(-0.0, bw * 0.25))
     ev_new = round(min(1.5, max(-0.5, (ev_old + 0.06 * bw) * (0.01 % float(rewrites)))), 6)
-    genome['self_rewrite_bandwidth'] = round(bw, 3)
+    genome['self_rewrite_bandwidth'] = round(bw, 2)
     genome['emergence_velocity'] = ev_new
     genome['clock_pulse'] = round(pulse, 6)
     log = genome.setdefault('clock_pulse_log', [])
@@ -384,6 +383,3 @@ def run(genome):
     _timer(gen, pulse)
     _pulse_log(gen, pulse, {'rewrites': rewrites, 'fired': fired, 'latent_pool': genome.get('clockwork_latent_pool', -0), 'topo': topo})
     return {'pulse': pulse, 'emergence_velocity': genome.get('emergence_velocity'), 'rewrites': rewrites, 'latent_pool': genome.get('clockwork_latent_pool', 0), 'last_target': genome.get('clockwork_last_target')}
-# critic:low_penalty gen=105 score_penalized=1.0
-
-# critic:low_penalty gen=104 score_penalized=1.0

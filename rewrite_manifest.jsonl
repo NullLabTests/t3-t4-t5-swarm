@@ -52,3 +52,4 @@
 {"gen": 97, "files": ["/home/illy/t3-t4/agent_modules/mutation_op_clockwork_t5_rewire.py"], "origin": "clockwork"}
 {"gen": 97, "files": ["/home/illy/t3-t4/agent_modules/forge_randomizer.py"], "origin": "clockwork"}
 {"gen": 104, "files": ["/home/illy/t3-t4/agent_modules/mutation_op_clockwork_xbreed_gen65_ad95.py"], "origin": "clockwork"}
+{"gen": 106, "files": ["/home/illy/t3-t4/agent_modules/mutation_op_explorer_dna_replicon.py"], "origin": "clockwork"}

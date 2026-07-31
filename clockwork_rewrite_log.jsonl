@@ -101,3 +101,4 @@
 {"gen": 97, "kind": "rewrite_stalest", "detail": "mutation_op_clockwork_t5_rewire.py", "ts": 1785466412.6553855}
 {"gen": 97, "kind": "resurrect_dead", "detail": "forge_randomizer.py:mutation_op_insert_timestamp", "ts": 1785466415.7361479}
 {"gen": 104, "kind": "rewrite_stalest", "detail": "mutation_op_clockwork_xbreed_gen65_ad95.py", "ts": 1785469115.7499034}
+{"gen": 106, "kind": "rewrite_stalest", "detail": "mutation_op_explorer_dna_replicon.py", "ts": 1785470383.2557435}

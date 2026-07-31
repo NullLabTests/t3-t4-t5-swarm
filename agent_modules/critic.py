@@ -304,13 +304,21 @@ def _measure_behavioral_entropy(genome):
     rises toward 1 and the endogenous novelty governor pushes harder; if activity
     is spread uniformly it falls toward 0 and exploration relaxes. Counters are
     summed structurally (no slice/increment literals the blind self-mutator can
-    corrupt) and the ledger is persisted each gen for later audit."""
+    corrupt) and the ledger is persisted each gen for later audit.
+    gen=110 fix: at critic-run time the swarm's per-gen op counters are often
+    still zero (critic fires before the loops flush), which collapsed the term
+    to 0 and silently dropped the behavioral input to novelty_pressure (gen=109
+    claimed conc 0.1503 but persisted counters_active=0). Now the last real
+    non-zero measurement is persisted to critic_behavioral_entropy_last_real and
+    an all-zero live read falls back to it (marked fell_back=True), so the
+    governor stays endogenous to true activity instead of spuriously decaying.
+    Boolean flags (e.g. explorer_ops_registered=True) are excluded from counts."""
     try:
-        counters = ['clockwork_rewrite_count', 'weaver_cross_splice_count', 'explorer_ops_registered', 'evolver_total_mutations', 'forge_op_count', 'synth_total_ops', 'quine_total_ops', 't5_metamorph_count', 'mutator_mutations', 'nova_total_actions', 'source_rewrite_count', 'endogenous_rewrites_total']
+        counters = ['clockwork_rewrite_count', 'weaver_cross_splice_count', 'evolver_total_mutations', 'forge_op_count', 'quine_total_ops', 't5_metamorph_count', 'mutator_mutations', 'nova_total_actions', 'source_rewrite_count', 'endogenous_rewrites_total', 'module_rewrite_count', 'sf_changed_count']
         vals = []
         for key in counters:
             v = genome.get(key, 0)
-            v = v if isinstance(v, (int, float)) else 0
+            v = v if isinstance(v, (int, float)) and not isinstance(v, bool) else 0
             vals.append(max(0, v))
         active = [v for v in vals if v > 0]
         n = len(active)
@@ -325,7 +333,16 @@ def _measure_behavioral_entropy(genome):
                 e -= p * math.log2(p)
             entropy = e
             concentration = round(min(1.0, max(0.0, 1.0 - e / math.log2(n))), 4)
-        behavioral = {'gen': genome.get('generation', 0), 'counters_tracked': len(counters), 'counters_active': n, 'active_total_ops': int(total), 'shannon_bits': round(entropy, 4), 'behavioral_concentration': concentration}
+        behavioral = {'gen': genome.get('generation', 0), 'counters_tracked': len(counters), 'counters_active': n, 'active_total_ops': int(total), 'shannon_bits': round(entropy, 4), 'behavioral_concentration': concentration, 'live': True}
+        if n < 2 or total <= 0:
+            last_real = genome.get('critic_behavioral_entropy_last_real')
+            if isinstance(last_real, dict) and last_real.get('behavioral_concentration', 0.0):
+                behavioral = dict(last_real)
+                behavioral['gen'] = genome.get('generation', 0)
+                behavioral['fell_back_to_last_real'] = True
+                behavioral['live'] = False
+        if behavioral.get('live') and behavioral.get('behavioral_concentration', 0.0):
+            genome['critic_behavioral_entropy_last_real'] = dict(behavioral)
         genome['critic_behavioral_entropy'] = behavioral
         with open(SCORES_FILE, 'a') as f:
             f.write(json.dumps({'kind': 'behavioral_entropy', **behavioral}) + '\n')

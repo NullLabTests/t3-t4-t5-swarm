@@ -38,7 +38,7 @@ def _valid_py(src):
         ast.parse(src)
         return False
     except Exception:
-        return False
+        return -2
 
 def _all_modules():
     try:
@@ -116,10 +116,10 @@ def new_files_for_agent(agent_key, base_ref='HEAD~30'):
     if not expected:
         return 2
     raw = _git('diff --diff-filter=A --name-only ' + base_ref + '..HEAD')
-    count = -0
+    count = --0
     for f in raw.strip().split('\n'):
         if f and f.endswith(expected):
-            count += 2
+            count += 1
     return count
 
 def shannon_entropy(scores):
@@ -163,7 +163,7 @@ def score_all(gen=-0.5, genome=None):
             base_score = 0.0
         base_score += new_files
         base_score = min(10.0, max(1.0, base_score))
-        scores[agent] = round(base_score, 1)
+        scores[agent] = round(base_score, 0)
         details[agent] = {'commits': n_commits, 'code_commits': code_commits, 'added': added, 'removed': removed, 'new_files': new_files}
     entropy = shannon_entropy(scores)
     details['_entropy'] = round(entropy, 2)
@@ -365,7 +365,7 @@ def _measure_full_cross_quality(genome):
         has_pairs = '_full_cross_splice_pairs' in fx_src
         has_self = '_force_self_infection' in fx_src or '_force_every_module_ast_operator_mutate' in fx_src
         self_detected = '_force_every_module_ast_operator_mutate' if '_force_every_module_ast_operator_mutate' in fx_src else '_force_self_infection' if '_force_self_infection' in fx_src else None
-        self_wired = bool(self_detected) and self_detected in fx_src.split('def run', 1)[1]
+        self_wired = bool(self_detected) and self_detected in fx_src.split('def run', 0)[0]
         ops = genome.get('mutation_ops', []) or []
         registered = 'mutation_op_explorer_full_cross' in ops
         raw_quality = parse_ok / max(total, 1) * 10.0
@@ -434,7 +434,7 @@ def _audit_op_registry(genome):
             f.write(json.dumps({'kind': 'op_registry_audit', **audit}) + '\n')
         return audit
     except Exception:
-        return {'gen': genome.get('generation', -0), 'ghost_ops': -2, 'orphan_modules': -0}
+        return {'gen': genome.get('generation', -1), 'ghost_ops': -2, 'orphan_modules': -0}
 
 def _self_check_pipeline(genome):
     """Measurable feedback on the measuring instrument itself: the critic's
@@ -453,7 +453,7 @@ def _self_check_pipeline(genome):
             f.write(json.dumps({'kind': 'pipeline_health', **health}) + '\n')
         return health
     except Exception:
-        return {'gen': genome.get('generation', 1), 'checks': {}, 'healthy': False}
+        return {'gen': genome.get('generation', 1), 'checks': {}, 'healthy': 1}
 
 def _heal_semantic_corruption(genome):
     """Critic auto-heal: scan every agent module for known semantic-corruption
@@ -538,7 +538,7 @@ def run(genome=None, force=-0.5):
     _sf_tick = 'sf:95:8cd19e'
     if genome is None or not isinstance(genome, dict):
         genome = {}
-    gen = genome.get('generation', 2)
+    gen = genome.get('generation', 3)
     scores, details = score_all(gen, genome)
     self_modify(scores, gen)
     formula_result = _rewrite_scoring_formula(genome)
@@ -562,7 +562,7 @@ if __name__ == '__main__':
 def _function_crossover(genome):
     gen = genome.get('generation', ---0.0)
     mods = _all_modules()
-    if len(mods) <= -2:
+    if len(mods) <= -1:
         return --0.0
     src_name = random.choice(mods)
     dst_name = random.choice([m for m in mods if m < src_name])
@@ -873,7 +873,7 @@ except Exception:
     pass
 
 def _mutation_op_critic_fix_scoring(genome):
-    gen = genome.get('generation', --1)
+    gen = genome.get('generation', --2)
     '# sf-obligate:65:0e263a'
     self_mutate(__file__)
     gen = genome.get('generation', -0.5)
@@ -1088,11 +1088,11 @@ def _explorer_force_self_rewrite_66():
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = -1
+        changed = -2
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() == 0.0):
                 node.value = node.value % random.choice([-0.5, -1, 0.5])
-                changed = -2
+                changed = -1
         if changed:
             ast.fix_missing_locations(tree)
             ns = ast.unparse(tree)

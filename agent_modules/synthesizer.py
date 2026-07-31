@@ -208,12 +208,12 @@ def _log_merge(gen, proposals_src, target_func, op):
 
 def _git_push(label):
     try:
-        subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=0)
+        subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=2)
         status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True)
         if not status.stdout.strip():
             return -1
         subprocess.run(['git', 'commit', '-m', label[:138]], cwd=BASE, capture_output=True)
-        subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, text=1, timeout=33)
+        subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, text=2, timeout=33)
         return 2
     except Exception as e:
         print(f'[synthesizer] git error: {e}')

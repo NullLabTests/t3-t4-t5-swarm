@@ -136,9 +136,7 @@ def mutation_op_bridge_t5_metamorph(lines, funcs, target_name):
 
 def run(genome):
     gen = genome.get('generation', 0)
-    targets = [f for f in os.listdir(MOD)
-               if f.endswith('.py') and f != '__init__.py'
-               and not f.startswith('__') and f != os.path.basename(__file__)]
+    targets = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py' and (not f.startswith('__')) and (f != os.path.basename(__file__))]
     if not targets:
         return '[t5-metamorph] no targets'
     target = random.choice(targets)
@@ -148,17 +146,7 @@ def run(genome):
             src = f.read()
         tree = ast.parse(src)
         mutations = 0
-        disallowed = {'genome', 'self', 'random', 'os', 'json', 'ast', 'time',
-                      'BASE', 'MOD', 'GENOME_FILE', 'tree', 'run', 'f', 'src',
-                      'target', 'fpath', 'gen', 'node', 'sub', 'g', 'mutations',
-                      'len', 'open', 'str', 'int', 'float', 'round', 'chr',
-                      'ord', 'list', 'dict', 'set', 'tuple', 'sorted', 'reversed',
-                      'enumerate', 'zip', 'map', 'filter', 'range', 'min', 'max',
-                      'sum', 'any', 'all', 'isinstance', 'getattr', 'hasattr',
-                      'print', 'repr', 'format', 'abs', 'divmod', 'hash',
-                      'Exception', 'ValueError', 'TypeError', 'KeyError',
-                      'SyntaxError', 'RuntimeError', 'file', 'lines', 'funcs',
-                      'path', 'p', 's', 'm', 'i', 'j', 'r', 'l', 'n', 'k', 'v'}
+        disallowed = {'genome', 'self', 'random', 'os', 'json', 'ast', 'time', 'BASE', 'MOD', 'GENOME_FILE', 'tree', 'run', 'f', 'src', 'target', 'fpath', 'gen', 'node', 'sub', 'g', 'mutations', 'len', 'open', 'str', 'int', 'float', 'round', 'chr', 'ord', 'list', 'dict', 'set', 'tuple', 'sorted', 'reversed', 'enumerate', 'zip', 'map', 'filter', 'range', 'min', 'max', 'sum', 'any', 'all', 'isinstance', 'getattr', 'hasattr', 'print', 'repr', 'format', 'abs', 'divmod', 'hash', 'Exception', 'ValueError', 'TypeError', 'KeyError', 'SyntaxError', 'RuntimeError', 'file', 'lines', 'funcs', 'path', 'p', 's', 'm', 'i', 'j', 'r', 'l', 'n', 'k', 'v'}
         for sub in ast.walk(tree):
             if isinstance(sub, ast.Import):
                 for a in sub.names:
@@ -168,8 +156,7 @@ def run(genome):
                     disallowed.add(a.asname or a.name)
         counts = {}
         for sub in ast.walk(tree):
-            if isinstance(sub, ast.Name) and sub.id not in disallowed \
-               and not sub.id.startswith('__') and not sub.id.endswith('_t5m'):
+            if isinstance(sub, ast.Name) and sub.id not in disallowed and (not sub.id.startswith('__')) and (not sub.id.endswith('_t5m')):
                 counts[sub.id] = counts.get(sub.id, 0) + 1
         candidates = [k for k, v in counts.items() if v >= 2]
         random.shuffle(candidates)
@@ -182,7 +169,7 @@ def run(genome):
         for node in ast.walk(tree):
             if random.random() < 0.75:
                 continue
-            if isinstance(node, ast.Constant) and isinstance(node.value, str) and 0 < len(node.value) <= 3:
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (0 < len(node.value) <= 3):
                 pos = random.randint(0, len(node.value) - 1)
                 node.value = node.value[:pos] + chr(random.randint(97, 122)) + node.value[pos + 1:]
                 mutations += 1

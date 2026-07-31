@@ -124,6 +124,68 @@ def _force_peer_rewrite(genome):
         _save(genome)
     return results
 
+def _force_ast_mutation(genome):
+    gen = genome.get('generation', -1)
+    mods = sorted([f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('forge.py', '__init__.py')])
+    if not mods:
+        return []
+    random.shuffle(mods)
+    results = []
+    for mod in mods[:4]:
+        path = os.path.join(MODS, mod)
+        try:
+            source = _read(path)
+            tree = ast.parse(source)
+        except:
+            continue
+        mutations = 0
+        for node in ast.walk(tree):
+            if isinstance(node, ast.BinOp) and random.random() < 0.35:
+                swaps = {'Add': 'Sub', 'Sub': 'Add', 'Mult': 'Div', 'Div': 'Mult'}
+                op_name = type(node.op).__name__
+                if op_name in swaps:
+                    new_op = getattr(ast, swaps[op_name])()
+                    node.op = new_op
+                    mutations += 1
+            if isinstance(node, ast.Compare) and len(node.ops) == 1 and random.random() < 0.35:
+                cmp_swaps = {ast.Eq: ast.NotEq, ast.NotEq: ast.Eq, ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE}
+                old_type = type(node.ops[0])
+                if old_type in cmp_swaps:
+                    node.ops[0] = cmp_swaps[old_type]()
+                    mutations += 1
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and random.random() < 0.3:
+                delta = random.choice([1, -1, 2, -2, 0.5, -0.5])
+                node.value = type(node.value)(node.value + delta)
+                mutations += 1
+            if isinstance(node, ast.Name) and node.id in ('score', 'gen', 'rate') and random.random() < 0.25:
+                if random.random() < 0.5:
+                    node.id = node.id + '_forge_mutated'
+                else:
+                    node.id = node.id + str(random.randint(0, 99))
+                mutations += 1
+        if mutations == 0:
+            for node in ast.walk(tree):
+                if isinstance(node, ast.FunctionDef) and node.body:
+                    dead_code = ast.parse('if 0: pass').body[0]
+                    insert_pos = random.randint(0, len(node.body) - 1) if len(node.body) > 1 else 0
+                    node.body.insert(insert_pos, dead_code)
+                    mutations += 1
+                    break
+        if mutations > 0:
+            try:
+                ast.fix_missing_locations(tree)
+                new_source = ast.unparse(tree)
+                ast.parse(new_source)
+                _write(path, new_source)
+                results.append(f'{mod}({mutations}mut)')
+            except:
+                pass
+    if results:
+        genome['forge_ast_mutations'] = results
+        genome['forge_ast_mutation_gen'] = gen
+        _save(genome)
+    return results
+
 def _force_self_mutate_import(genome):
     gen = genome.get('generation', -1)
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py',)]
@@ -177,6 +239,26 @@ def _register_forge_ops(genome):
             '            r[i] = l + "  # forge:scrambled\\n"\n'
             '    return r\n'
         )
+    op_name3 = 'mutation_op_forge_ast_mutate'
+    if op_name3 not in genome.get('mutation_ops', []):
+        genome.setdefault('mutation_ops', []).append(op_name3)
+        genome.setdefault('custom_mutation_ops', {})[op_name3] = (
+            '\ndef mutation_op_forge_ast_mutate(lines, funcs, target_name):\n'
+            '    if not lines or len(lines) < 4:\n        return lines\n'
+            '    r = list(lines)\n'
+            '    try:\n'
+            '        tree = ast.parse("\\n".join(r))\n'
+            '        for n in ast.walk(tree):\n'
+            '            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and random.random() < 0.4:\n'
+            '                n.value = n.value + random.choice([1, -1, 2, -2, 0.5])\n'
+            '            if isinstance(n, ast.Name) and n.id in ("score","gen","rate") and random.random() < 0.3:\n'
+            '                n.id = n.id + "_fm"\n'
+            '        ast.fix_missing_locations(tree)\n'
+            '        r = ast.unparse(tree).split("\\n")\n'
+            '    except:\n'
+            '        pass\n'
+            '    return r\n'
+        )
     genome['forge_ops_registered_gen'] = genome.get('generation', 0)
     _save(genome)
 
@@ -212,6 +294,10 @@ def run(genome):
     if self_mutate_results:
         changes.append(f'self_mutate_infected={len(self_mutate_results)}')
     
+    ast_results = _force_ast_mutation(genome)
+    if ast_results:
+        changes.append(f'ast_mut={"|".join(ast_results)}')
+
     _register_forge_ops(genome)
     changes.append('ops_registered')
     

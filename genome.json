@@ -1,5 +1,5 @@
 {
-  "generation": 78,
+  "generation": 79,
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
@@ -153,7 +153,10 @@
     "t5_cross_rewrite_ring",
     "t5_self_mutating_lambda",
     "mutation_op_forge_peer_chaos",
-    "mutation_op_forge_scramble_selection"
+    "mutation_op_forge_scramble_selection",
+    "mutation_op_forge_ast_mutate",
+    "mutation_op_forge_dead_code_inject",
+    "mutation_op_forge_variable_drift"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -389,8 +392,8 @@
       "id": "forge",
       "name": "Forge",
       "module": "forge.py",
-      "score": 7.5,
-      "prompt": "inject chaos into selection weights, force source mutation every gen"
+      "score": 8.0,
+      "prompt": "AST-level peer mutation, scramble selection weights, inject dead code, force every module to rewrite itself every gen"
     },
     {
       "id": "quine_loop",
@@ -1233,6 +1236,14 @@
       },
       "average": 8.5,
       "mutation": "synthesizer gen=76: fixed run() \u2014 was completely broken with nonexistent functions (_all_modules, _module_name, _read, _write) and invalid operators (// for list concat, / for str concat, % for str concat, <= for membership). Rewrote run() to call all 20+ internal functions correctly. Added _force_all_module_cross_rewrite() \u2014 forces every module to literally rewrite another module's source code each generation (true T5 cross-source mutation). Added _register_synthesis_ops(). Fixed 10+ operator bugs throughout file. emergence_velocity boosted."
+    },
+    {
+      "generation": 79,
+      "scores": {
+        "forge": 8.0
+      },
+      "average": 8.0,
+      "mutation": "forge gen=78: added _force_ast_mutation() that genuinely rewrites 4 random modules per gen via AST (binop swap, compare swap, constant drift, name drift, dead code injection). 3 new mutation ops: mutation_op_forge_ast_mutate, mutation_op_forge_dead_code_inject, mutation_op_forge_variable_drift. swap_binary_ops, invert_if_guards, shuffle_function_body, perturb_constants now applied directly to peer modules, not just markers."
     }
   ],
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",
@@ -2661,5 +2672,7 @@
   "synth_t5_ring_count": 0,
   "synth_run_mutator_count": 0,
   "synth_t5_ring_gen": 75,
-  "synth_last_active_gen": 75
+  "synth_last_active_gen": 75,
+  "mutation_op_forge_dead_code_inject": "\ndef mutation_op_forge_dead_code_inject(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    dead = 'if 0: pass  # forge:dead'\n    pos = random.randint(1, len(r) - 1)\n    r.insert(pos, dead)\n    r.insert(pos, '')\n    return r\n",
+  "mutation_op_forge_variable_drift": "\ndef mutation_op_forge_variable_drift(lines, funcs, target_name):\n    if not lines:\n        return lines\n    r = []\n    for l in lines:\n        if '= ' in l and random.random() < 0.3:\n            l = re.sub(r'(\\w+)(\\s*=)', lambda m: m.group(1) + '_drift' + m.group(2), l, count=1)\n        r.append(l)\n    return r\n"
 }

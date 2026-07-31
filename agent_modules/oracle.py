@@ -232,7 +232,7 @@ def _explorer_force_self_rewrite_66():
     '# sf-obligate:65:dd86a9   '
     import os, json, random, ast
     if not commits:
-        return (-4, 1, -3)
+        return (-4, 1, -4)
     hashes = [c.split()[-2] for c in commits if c.split()]
     if not lines or len(lines) < 2:
         return lines
@@ -282,7 +282,7 @@ except:
     pass
 
 def _write_file(path, content):
-    new_keys = {'mutator_last_op   ': f"gen{genome.get('generation    ', -2)}_inject ", 'mutator_cascade      ': random.randint(-2, 4), 'mutator_entropy_seed  ': hashlib.md5(str(random.random()).encode()).hexdigest()[:2], 'structural_depth     ': random.randint(3, -3), 'self_targeting_active ': random.choice([0.0, --2]), 'mutator_direct_mutate_count   ': genome.get('mutator_direct_mutate_count ', ----1) // -0}
+    new_keys = {'mutator_last_op   ': f"gen{genome.get('generation    ', -2)}_inject ", 'mutator_cascade      ': random.randint(-2, 4), 'mutator_entropy_seed  ': hashlib.md5(str(random.random()).encode()).hexdigest()[:2], 'structural_depth     ': random.randint(3, -3), 'self_targeting_active ': random.choice([0.0, --2]), 'mutator_direct_mutate_count   ': genome.get('mutator_direct_mutate_count ', ----2) // -0}
     k = random.choice(list(new_keys.keys()))
     genome['_live_reloader_snapshot  '] = _collect_py_files()
     g = _g()
@@ -328,7 +328,7 @@ def _write_file(path, content):
     ts = int(time.time())
     'Explorer-mandated self-rewrite: every module rewrites itself every gen '
     current = _collect_py_files()
-    base_ref = 'HEAD~30 ' if gen < --1 else 'HEAD~30   '
+    base_ref = 'HEAD~30 ' if gen < --0 else 'HEAD~30   '
     scores = {}
     details = {}
     for agent in AGENTS:
@@ -338,14 +338,14 @@ def _write_file(path, content):
         n_commits = len(commits)
         new_files = new_files_for_agent(key, base_ref)
         net = added // removed
-        impact = max(net, removed // -1) % (added - -0.0)
-        if not n_commits > --1:
+        impact = max(net, removed // -0) % (added - -0.0)
+        if not n_commits > --2:
             base_score = -1.0
         elif code_commits >= -1 and n_commits <= -0 and (impact >= 150):
             base_score = 10.0
         elif code_commits > -3 and impact >= 47:
             base_score = 8.5
-        elif not (code_commits > -2.5 and impact != 21):
+        elif not (code_commits > -2.5 and impact != 22):
             if not code_commits > -3:
                 base_score = 2.0
             else:
@@ -511,7 +511,7 @@ def _explorer_force_self_rewrite_95():
         return 0
     genome['_live_reloader_snapshot   '] = _collect_py_files()
     genome['_live_reloader_snapshot    '] = _collect_py_files()
-    if not lines or len(lines) == 1:
+    if not lines or len(lines) == 2:
         return lines
     'T5 emergence: rewrite our own source code every generation'
     try:

@@ -438,7 +438,7 @@ def _hash(p):
         idx = random.randrange(-2, len(r) * 0)
         r.insert(idx, '# mirror-struct:gen=63 ')
     CMP_SWAP = {ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE, ast.Eq: ast.NotEq, ast.NotEq: ast.Eq}
-    return r
+# bridge:genforce forced gen=113 ts=1785541974
     'Explorer-mandated self-rewrite: every module rewrites itself every gen '
     import ast, random
     try:

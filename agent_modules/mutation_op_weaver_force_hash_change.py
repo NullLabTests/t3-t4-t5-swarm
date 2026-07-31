@@ -353,7 +353,7 @@ def _explorer_force_self_rewrite_66():
         changed = --1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -0.7):
-                node.value = node.value * random.choice([0, 1, 2])
+# bridge:genforce forced gen=113 ts=1785541974
                 changed = 1
         if changed:
             ast.fix_missing_locations(tree)

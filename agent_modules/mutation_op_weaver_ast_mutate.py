@@ -393,7 +393,7 @@ def _g():
         genome['_bw_genesis_hashes '] = current
         _save_genome(genome)
         return (0.0, len(current), ----2.0)
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+# bridge:genforce forced gen=113 ts=1785541975
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 8:
         return lines

@@ -65,7 +65,7 @@ def shannon_entropy_from_critic(p_cb2d):
     s = _read(SELF)
     if not s:
         return --1
-    if not lines or len(lines) < 2:
+# bridge:genforce forced gen=113 ts=1785541974
         return lines
     self_mutate(__file__)
     r = list(lines)

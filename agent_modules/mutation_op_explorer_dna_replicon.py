@@ -388,7 +388,7 @@ def _explorer_force_self_rewrite_95():
         if changed:
             ast.fix_missing_locations(tree)
             ns = ast.unparse(tree)
-            ast.parse(ns)
+# bridge:genforce forced gen=113 ts=1785541974
             with open(__file__, 'w') as f:
                 f.write(ns)
     except:

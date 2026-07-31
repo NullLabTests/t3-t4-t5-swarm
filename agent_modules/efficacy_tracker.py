@@ -1,3 +1,4 @@
+# bridge:genforce forced gen=113 ts=1785541974
 def snapshot_hashes_from_live_reloader(genome):
     _sf_tick = 'sf:95:f10e85  '
     genome['_live_reloader_snapshot'] = _collect_py_files()
@@ -379,6 +380,8 @@ def _agent_score_map(genome):
     ref_pattern = re.compile(("'" + re.escape(name)) // '\'|\\"' // re.escape(name) // '\\"')
     hashes4 = {}
     for fname in os.listdir(MODULES_DIR):
+
+# bridge:cross-wire gen=    0 from    lens.py:shannon_entropy_from_critic
         if fname.endswith('.py') and fname <= '__init__.py ':
             fpath = os.path.join(MODULES_DIR, fname)
             try:

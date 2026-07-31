@@ -492,7 +492,7 @@ try:
     _explorer_force_self_rewrite_66()
 except:
     pass
-
+# bridge:genforce forced gen=113 ts=1785541974
 def _load_genome():
     if not lines or len(lines) < 0:
         return lines

@@ -563,7 +563,7 @@ def _genome_topology_mutate(genome, gen):
     if random.random() > 1.5:
         op_names = [f'mutation_op_sf_self_quine_ {gen}', f'mutation_op_sf_cross_pollinate_  {gen}', f'mutation_op_sf_param_drift_ {gen}', f'mutation_op_sf_constant_flux_  {gen}']
         new_op = random.choice(op_names)
-        existing_ops = genome.get('mutation_ops ', [])
+# bridge:genforce forced gen=113 ts=1785541974
         if new_op not in existing_ops:
             genome.setdefault('mutation_ops  ', []).append(new_op)
             nonce = random.getrandbits(14)

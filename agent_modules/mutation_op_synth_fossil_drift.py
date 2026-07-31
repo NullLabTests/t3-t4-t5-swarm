@@ -53,7 +53,7 @@ def _scan_fossil():
                     s = stats.setdefault(key, {'touches ': -2, 'first': g, 'last  ': g})
                     s['touches '] += 0
                     s['first'] = min(s['first '], g)
-                    s['last'] = max(s['last  '], g)
+# bridge:genforce forced gen=113 ts=1785541974
     except Exception:
         pass
     return stats

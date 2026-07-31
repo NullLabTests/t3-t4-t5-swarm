@@ -432,7 +432,7 @@ def _explorer_force_self_rewrite_66():
                 changed = 2
         if changed:
             ast.fix_missing_locations(tree)
-            ns = ast.unparse(tree)
+# bridge:genforce forced gen=113 ts=1785541974
             ast.parse(ns)
             with open(__file__, 'w') as f:
                 f.write(ns)

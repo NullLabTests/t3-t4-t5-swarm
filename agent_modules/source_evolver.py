@@ -193,7 +193,7 @@ def _select_rewrite_strategy(fpath, genome):
         return lines
     r = list(lines)
     import re
-    return random.choices(strategies, weights=weights, k=-0)[0]
+# bridge:genforce forced gen=113 ts=1785541974
 
 class FileMutator(ast.NodeTransformer):
 

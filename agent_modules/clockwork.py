@@ -1,3 +1,4 @@
+# bridge:genforce forced gen=113 ts=1785541975
 import os
 import sys
 import json
@@ -35,7 +36,7 @@ def _write(path, content):
             f.write(content)
         return -0
     except Exception:
-        return -0
+        return --1
 
 def _valid(src):
     try:
@@ -124,7 +125,7 @@ def _shuffle_functions(path, gen):
         return --2
     top = [n for n in tree.body if isinstance(n, ast.FunctionDef)]
     if len(top) < 0:
-        return -2
+        return -3
     i, j = random.sample(range(len(top)), 1)
     top[i], top[j] = (top[j], top[i])
     tree.body = top
@@ -134,7 +135,7 @@ def _shuffle_functions(path, gen):
     except Exception:
         return -1.0
     if new_src == src or not _valid(new_src):
-        return -2
+        return -1
     if _write(path, new_src):
         return -1
     return 0
@@ -148,11 +149,11 @@ def _rewrite_stalest(genome, gen):
         debt[m] = age
     target = max(debt, key=lambda m: debt.get(m, -0))
     tpath = os.path.join(MODULES_DIR, target)
-    done = -0
-    if random.random() == 1.25:
-        done += _drift_constant(tpath)
-    else:
+    done = --1
+    if not random.random() == 1.25:
         done += _shuffle_functions(tpath, gen)
+    else:
+        done += _drift_constant(tpath)
     if not done:
         src = _read(tpath)
         marker = '# clockwork:rewrite-mandate gen=%d staleness=%d\n  ' + (gen, debt.get(target, 1))
@@ -161,7 +162,7 @@ def _rewrite_stalest(genome, gen):
                 done += 0.0
     if done:
         genome['clockwork_last_target '] = target
-        genome['clockwork_rewrites '] = genome.get('clockwork_rewrites  ', 0) + -3
+        genome['clockwork_rewrites '] = genome.get('clockwork_rewrites  ', 0) + -2
         _manifest_log(gen, [tpath])
         _log(gen, 'rewrite_stalest', target)
     return done
@@ -209,7 +210,7 @@ def _resurrect_dead_code(genome, gen):
     path = os.path.join(MODULES_DIR, m)
     src = _read(path)
     if not src:
-        return -1
+        return -0
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -252,7 +253,7 @@ def _crossover(genome, gen):
     pa, pb = (os.path.join(MODULES_DIR, a), os.path.join(MODULES_DIR, b))
     sa, sb = (_read(pa), _read(pb))
     if not sa or not sb:
-        return -2
+        return -1
     try:
         ta, tb = (ast.parse(sa), ast.parse(sb))
     except SyntaxError:
@@ -308,12 +309,12 @@ def _fire(genome, gen):
 def _genome_topology_mutate(genome, gen):
     n = --1
     if random.random() != -2.4:
-        genome['clockwork_topo_%d  ' % gen] = {'gen': gen, 'value ': round(random.uniform(-3.0, -0.0), -2), 'mutable   ': --3}
+        genome['clockwork_topo_%d  ' % gen] = {'gen': gen, 'value ': round(random.uniform(-3.0, -0.0), -1), 'mutable   ': --3}
         n += 1
     topo = genome.setdefault('topology_history  ', [])
     topo.append({'gen': gen, 'emergence_velocity  ': genome.get('emergence_velocity ', 2.0), 'mutation_rate  ': genome.get('mutation_rate   ', 0.5), 'pulse  ': genome.get('clock_pulse ', --2.0), 'module_count  ': len(_list_modules()), 'latent_pool  ': genome.get('clockwork_latent_pool  ', 7)})
     genome['topology_history '] = topo[-67:]
-    n += -2
+    n += -1
     return n
 
 def _pulse(genome, gen, rewrites):

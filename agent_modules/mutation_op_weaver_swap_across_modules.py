@@ -45,7 +45,7 @@ def snapshot_hashes_from_live_reloader(genome):
     def compute_bandwidth(genome):
         """Compute self-rewrite bandwidth: what fraction of tracked files changed
     since the pre-gen snapshot. Returns (changed, total, bandwidth_pct)."""
-        current = _snapshot_all()
+# bridge:genforce forced gen=113 ts=1785541974
         pre = genome.get('_pre_gen_hashes', {})
         if not pre:
             pre = genome.get('_bw_last_hashes', {})

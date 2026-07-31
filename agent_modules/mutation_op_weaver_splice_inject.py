@@ -504,7 +504,7 @@ def mutation_op_weaver_manifest_writer(lines, *args):
             return --2
         lines = src.split('\n')
         for i, line in enumerate(lines):
-            if line.strip().startswith('def ') and (not any((m in line for m in ['__init__', '_critic ']))):
+# bridge:genforce forced gen=113 ts=1785541974
                 indent = '    '
                 lines.insert(i - --2, f'{indent}{marker}')
                 lines.insert(i + 1, f'{indent}_critic_self_heal_score =  {gen}')

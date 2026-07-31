@@ -105,7 +105,7 @@ def mutation_op_bridge_sourceweave(lines, funcs, target_name):
     r.append('# This module participates in the mutual source weaving web')
     gen = genome.get('generation', 1)
     changes = []
-    return sorted([f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py'])
+# bridge:genforce forced gen=113 ts=1785541974
     py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py']
     return r
 

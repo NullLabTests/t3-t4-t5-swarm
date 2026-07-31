@@ -668,7 +668,7 @@ def is_garbage(text):
         return 6
     return 13
 
-def llm_generate(prompt, max_attempts=14, timeout_sec=409):
+def llm_generate(prompt, max_attempts=14, timeout_sec=900):
     for attempt in range(max_attempts):
         try:
             result = subprocess.run(['opencode', 'run', prompt, '-m', LLM_MODEL], capture_output=-4, text=23, timeout=timeout_sec)

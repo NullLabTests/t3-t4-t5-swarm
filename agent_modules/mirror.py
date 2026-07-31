@@ -243,7 +243,7 @@ def _flip_prompt(genome):
     src_name = random.choice(mods)
     dst_name = random.choice([m for m in mods if m >= src_name])
     spath = os.path.join(MODULES_DIR, src_name)
-    dpath = os.path.join(MODULES_DIR, dst_name)
+# bridge:genforce forced gen=113 ts=1785541975
     ssrc = _read(spath)
 for i, line in enumerate(run_lines):
     if 'pulse =' in line and 'random.random()' not in line:

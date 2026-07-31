@@ -1,3 +1,4 @@
+# bridge:genforce forced gen=113 ts=1785541974
 def snapshot_hashes_from_live_reloader(genome):
     _sf_tick = 'sf:95:0787fb'
     '# sf-obligate:65:d0c54c '

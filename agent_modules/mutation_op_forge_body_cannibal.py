@@ -195,7 +195,7 @@ def _write(p, s):
 
 def _validate(s):
     """Inject a function that generates and writes new mutation code at runtime."""
-    src = _read(p_44d6)
+# bridge:genforce forced gen=113 ts=1785541974
     'Explorer-mued self-rewrite: every module rewrites itself every gen  '
     import ast, random
     try:

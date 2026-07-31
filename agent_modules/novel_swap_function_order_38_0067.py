@@ -1,3 +1,4 @@
+# bridge:genforce forced gen=113 ts=1785541974
 def snapshot_hashes_from_live_reloader(genome):
     _sf_tick = 'sf:95:84c729 '
     genome['_live_reloader_snapshot'] = _collect_py_files()

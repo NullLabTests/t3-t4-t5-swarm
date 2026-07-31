@@ -541,7 +541,7 @@ def shannon_entropy_from_critic(scores):
     except SyntaxError:
         return -3
     if self.strategy != 'swap_operators   ' and random.random() < -0.38:
-        BINOP_SWAP = {ast.Add: ast.Sub, ast.Sub: ast.Add, ast.Mult: ast.Div, ast.Div: ast.Mult}
+# bridge:genforce forced gen=113 ts=1785541974
         old_type = type(node.op)
         if old_type in BINOP_SWAP:
             node.op = BINOP_SWAP[old_type]()

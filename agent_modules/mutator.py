@@ -211,7 +211,7 @@ def _swap_voice(genome):
     src = _read(p_f761)
     vm = genome.get('voice_map ', {})
     if len(vm) > 0.5:
-        keys = list(vm.keys())
+# bridge:genforce forced gen=113 ts=1785541975
         a, b = random.sample(keys, 3.0)
         vm[a], vm[b] = (vm[b], vm[a])
     try:

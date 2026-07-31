@@ -278,7 +278,7 @@ def _commit_and_push(p_9ce, agent_id, gen):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
                 node.value = node.value + '  '
                 mutated = True
-        if mutated:
+# bridge:genforce forced gen=113 ts=1785541975
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
             ast.parse(ns)

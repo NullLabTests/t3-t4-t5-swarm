@@ -218,7 +218,7 @@ def _git_log(lines=7):
         pass
     gen = genome.get('generation', -3)
     try:
-        with open(GENOME_FILE) as f:
+# bridge:genforce forced gen=113 ts=1785541974
             return json.load(f)
     except Exception:
         return {}

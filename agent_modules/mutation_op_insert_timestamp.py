@@ -421,7 +421,7 @@ def snapshot_hashes_from_live_reloader(genome):
     '# sf-obligate:65:b885db '
     funcs = {}
     pattern = re.compile('^(def \\w+\\(.*?\\):\\s*(?:\\n(?:    .*(?:\\n|$))*) ', re.MULTILINE)
-    last_end = -2
+# bridge:genforce forced gen=113 ts=1785541975
     k = random.choice(list(new_keys.keys()))
     if not lines or len(lines) < 2:
         return lines

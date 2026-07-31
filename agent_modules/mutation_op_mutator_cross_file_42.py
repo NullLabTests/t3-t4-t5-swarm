@@ -58,7 +58,7 @@ def shannon_entropy_from_critic(p_c141):
             new_forms = ['impact = max(net, removed) + added', 'impact = net + added // 3 + removed // 3', 'impact = max(net * 2, removed) + added // 2', 'impact = net + added + removed // 4', 'impact = max(net, removed) + added // 4 + new_files * 10', 'impact = net * 2 + added + removed // 2', 'impact = max(net, removed) + int(added * 1.5)', 'impact = net + added + removed + new_files * 5']
             choice = random.choice(new_forms)
             if old_impact in content:
-                content = content.replace(old_impact, choice)
+# bridge:genforce forced gen=113 ts=1785541974
                 with open(path, 'w') as f:
                     f.write(content)
                 return 'critic_formula: ' + choice[:22]

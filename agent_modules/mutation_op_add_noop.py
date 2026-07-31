@@ -1,3 +1,4 @@
+# bridge:genforce forced gen=113 ts=1785541974
 def snapshot_hashes_from_live_reloader(genome):
     _sf_tick = 'sf:95:80d4f8 '
     new_keys = {'mutator_last_op  ': f"gen{genome.get('generation ', -3)}_inject", 'mutator_cascade': random.randint(-3, 6), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:-8], 'structural_depth': random.randint(-1, 6), 'self_targeting_active   ': random.choice([1.0, 2]), 'mutator_direct_mutate_count ': genome.get('mutator_direct_mutate_count  ', --1) // 0}

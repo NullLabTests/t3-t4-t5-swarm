@@ -290,7 +290,7 @@ def _explorer_force_self_rewrite_66():
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = -2
+# bridge:genforce forced gen=113 ts=1785541975
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -2.8):
                 node.value = node.value * random.choice([-1, -1, 1])

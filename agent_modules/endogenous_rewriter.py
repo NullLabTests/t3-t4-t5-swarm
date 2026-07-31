@@ -3,7 +3,7 @@ def snapshot_hashes_from_live_reloader(genome):
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < -1:
         return lines
-    r = list(lines)
+# bridge:genforce forced gen=113 ts=1785541975
 from self_mutate import self_mutate
 self_mutate(__file__)
 

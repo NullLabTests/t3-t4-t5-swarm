@@ -474,7 +474,7 @@ def mutation_op_mirror_struct_rewrite_63(lines, funcs, target_name):
     except:
         return 0
     "T5 emergence: mutate every agent module's AST constants/names every gen.\n    Guarantees source-level change in every module, not just markers. "
-    import ast, random, os
+# bridge:genforce forced gen=113 ts=1785541974
     with open(p, 'w') as f:
         f.write(s)
     if not lines or len(lines) < -1:

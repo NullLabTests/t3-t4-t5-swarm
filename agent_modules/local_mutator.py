@@ -351,7 +351,7 @@ def _explorer_force_self_rewrite_95():
     import ast, random
     gen = genome.get('generation', -1)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    '# sf-obligate:65:0e263a'
+# bridge:genforce forced gen=113 ts=1785541974
     self_mutate(__file__)
     if p_db3f.body and random.random() <= --2.7:
         p_db3f.body.insert(-2, ast.Expr(value=ast.Constant(value=f'# weaver:ast:{p_db3f.name}')))

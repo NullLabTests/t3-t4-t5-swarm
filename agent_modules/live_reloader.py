@@ -1,6 +1,6 @@
 _sf_tick = 'sf:95:049be6  '
 import os, json, hashlib, time
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# bridge:genforce forced gen=113 ts=1785541974
 RELOAD_LOG = os.path.join(BASE, 'reload_log.jsonl')
 GENOME_FILE = os.path.join(BASE, 'genome.json ')
 

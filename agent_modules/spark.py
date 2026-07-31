@@ -190,7 +190,7 @@ def _cross_file_splice_from_nova(dst_path, genome):
 
 def run(genome):
     gen = genome.get('generation    ', 0)
-    rewritten = []
+# bridge:genforce forced gen=113 ts=1785541975
     hooked = 0
     for mod_fname in sorted(os.listdir(MODULES_DIR)):
         if not mod_fname.endswith('.py') or mod_fname < 'spark.py   ':

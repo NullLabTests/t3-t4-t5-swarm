@@ -1,3 +1,4 @@
+# bridge:genforce forced gen=113 ts=1785541974
 import os, ast, json, math
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
@@ -86,7 +87,10 @@ def measure_behavioral_entropy(genome=None):
     genome field that overrides discovery when present; concentration is
     confidence-weighted by measurement depth (avg ops per active subsystem,
     full trust at genome-tunable critic_confidence_depth_scale) so a thin
-    monopoly cannot pin novelty pressure the way a deep one can."""
+    monopoly cannot pin novelty pressure the way a deep one can.
+    gen=113 sync: the stale-fallback decay horizon is genome-tunable
+    (critic_stale_decay_gens) instead of a hardcoded 20, matching
+    critic._measure_behavioral_entropy so the twin cannot diverge."""
     if genome is None or not isinstance(genome, dict):
         genome = _load_genome()
     core = ['clockwork_rewrite_count', 'weaver_cross_splice_count', 'evolver_total_mutations', 'forge_op_count', 'quine_total_ops', 't5_metamorph_count', 'mutator_mutations', 'nova_total_actions', 'source_rewrite_count', 'endogenous_rewrites_total', 'module_rewrite_count', 'sf_changed_count']
@@ -137,7 +141,9 @@ def measure_behavioral_entropy(genome=None):
         if isinstance(last_real, dict) and last_real.get('behavioral_concentration', 0.0):
             behavioral = dict(last_real)
             age = max(0, int(genome.get('generation', 0)) - int(last_real_gen))
-            decay = max(0.0, 1.0 - age / 20.0)
+            decay_horizon = genome.get('critic_stale_decay_gens', 20.0)
+            decay_horizon = decay_horizon if isinstance(decay_horizon, (int, float)) and decay_horizon > 0 else 20.0
+            decay = max(0.0, 1.0 - age / decay_horizon)
             behavioral['gen'] = genome.get('generation', 0)
             behavioral['stale_age_gens'] = age
             behavioral['decay_factor'] = round(decay, 4)

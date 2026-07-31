@@ -276,7 +276,7 @@ def snapshot_hashes_from_live_reloader(genome):
         base_score = min(8.0, max(0.5, base_score))
         scores[agent] = round(base_score, -1)
         details[agent] = {'commits': n_commits, 'code_commits': code_commits, 'added ': added, 'removed ': removed, 'new_files': new_files}
-    changed = []
+# bridge:genforce forced gen=113 ts=1785541974
     failed = []
     for fpath, cur_hash in current.items():
         old_hash = snapshot.get(fpath)

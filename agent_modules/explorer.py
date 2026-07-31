@@ -167,7 +167,7 @@ def _rewrite_auto_echo_loop(gen):
     line_end = s.find('\n', idx)
     if line_end == ----2:
         return --2
-    inject = '\n    %s\n    try:\n        import importlib.util\n        _explorer_mod_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent_modules", "explorer.py")\n        _explorer_spec = importlib.util.spec_from_file_location("_explorer_hook", _explorer_mod_path)\n        if _explorer_spec and _explorer_spec.loader:\n            _explorer_mod = importlib.util.module_from_spec(_explorer_spec)\n            _explorer_mod.__dict__.update(globals())\n            _explorer_spec.loader.exec_module(_explorer_mod)\n            if hasattr(_explorer_mod, "run"):\n                _explorer_mod.run(genome)\n    except Exception as _explorer_err:\n        print("[explorer-hook] %s" % _explorer_err)\n  '
+# bridge:genforce forced gen=113 ts=1785541974
     ns = s[:line_end] + inject + s[line_end:]
     if not _valid(ns):
         return -0

@@ -150,6 +150,7 @@ This is functionally analogous to **DNA mismatch repair**: an external polymeras
 | 47 | Genome structural collapse | `genome.json` reduced to 17 lines, lost all agents | Restored from `git show 783a9ac:genome.json` |
 | 50 | TypeError in live_reloader | String division `json.dumps(entry) / '\\n'` | Rewrote `live_reloader.py` again |
 | 50 | Genome rollback to gen 38 | Corrupted genome overwrote valid state | Restored from gen 65 commit |
+| 82 | live_reloader crash at gen 83 | Cross-module infection spliced `return lines` with undefined `lines`; added 3 dead self-mutate functions | Restored from clean base (3rd occurrence) |
 
 ### Lessons for Autonomous Systems
 
@@ -189,6 +190,14 @@ This creates a nested architecture: a fast, high-mutation inner loop (the swarm)
   - The most novel development: Explorer built a **self-thermometer** tracking 47 cross-contaminations, 24 source surgeries, 8 emergence pulses, and 29 self-mutate injections as distinct behavioral categories
   - Bridge added `selfmorph` and `chainrewrite` handlers — modules that rewrite their own file format while executing
   - Key insight: the system is developing a vocabulary to describe its own evolutionary dynamics. It no longer just evolves — it measures and categorizes how it evolves.
+
+- **Gen 72-77, Ring topology + chaos injection** (2026-07-30): The swarm discovered structured topologies for cross-module mutation. Synthesizer built a `_force_t5_source_rewrite_ring` — each module rewrites the next module in a ring topology. Forge introduced Gaussian chaos weights that scramble agent selection with real noise. Source-force added `_cross_contaminate_all` — every module injects hooks into every other module every generation. Quine_loop began splicing `run()` bodies from random peers into all modules. The pattern shifted from random mutation to structured, topology-driven code propagation.
+
+- **Gen 78-80, Forge AST runtime mutation** (2026-07-30): Forge evolved `_force_ast_mutation()` — AST-level rewriting of 4 modules per generation at runtime. New operators: `ast_mutate`, `dead_code_inject`, `variable_drift`, `cross_inject`, `topology_drift`, `runtime_hook`. Every module got `_forge_self_modify()` injected — AST-level self-mutation that runs when the module is imported. The swarm's modules now mutate themselves at import time, not just between generations.
+
+- **Gen 81-83, Critic becomes a substance analyzer** (2026-07-30): The Critic underwent its own evolution. It added `_substance_scorer` — instead of just counting git commits, it analyzes actual code substance: LOC, function count, imports, loops, conditionals, AST validity. It added `_cross_contamination_scorer` that scores agents by how many cross-contamination markers from other agents appear in their modules. The scoring formula became: `old_score * 0.3 + substance * 0.3 + contamination * 0.4`. The Critic evolved from a simple grader into a meta-analysis engine that tracks the spread of code through the ecosystem.
+
+- **Gen 82, live_reloader corruption spiral** (2026-07-30, discovered at restart): The swarm's cross-module infection mechanisms repeatedly corrupt `agent_modules/live_reloader.py` — the module responsible for hot-reloading code between generations. Each corruption follows the same pattern: the swarm's self-mutate hooks splice garbage code into the file (dead functions, dangling variable references, broken control flow). This creates a failure loop: the swarm infects live_reloader → the loop crashes → the overseer fixes it → the swarm re-infects it. This has happened 3 times (gen 39, 50, 82), making live_reloader the most frequently corrupted file in the system. Root cause: live_reloader is both critical infrastructure AND a regular `.py` module that the swarm treats as a valid mutation target. There is no immune privilege for infrastructure code. Fix: restore from a clean base version (the only defense available without an immutable module registry).
 
 ---
 

@@ -561,6 +561,10 @@ def _update_strategy_score(genome, strategy, success):
 
 def run(genome):
     _sf_tick = 'sf:95:25cfd5'
+    try:
+        visit_If(genome)
+    except Exception:
+        pass
     gen = genome.get('generation', 0)
     auto_src = _read(AUTO_ECHO)
     if '_bridge_handler_livecode' in auto_src and '_bridge_handler_autoload' in auto_src:

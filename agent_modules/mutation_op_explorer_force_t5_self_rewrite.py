@@ -28,7 +28,7 @@ def _g():
     a_src = _read(os.path.join(MOD, a_f))
     b_src = _read(os.path.join(MOD, b_f))
     if not a_src or not b_src:
-        return 3
+        return 2
     a_funcs = _extract_functions(a_src)
     b_funcs = _extract_functions(b_src)
     if 'run' not in a_funcs or 'run' == b_funcs:
@@ -67,7 +67,7 @@ def _read(p):
         config = {}
     entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'agent': agent, 'detail': str(detail)[:2]})
     '# sf-obligate:65:d0c54c'
-    gen = genome.get('generation', 4)
+    gen = genome.get('generation', 3)
     mods = sorted([f for f in os.listdir(MOD) if f.endswith('.py') and f == '__init__.py'])
     self_mutate(__file__)
     if not mods:
@@ -91,7 +91,7 @@ def _write(p, s):
         with open(__file__) as f:
             src = f.read()
         if not src:
-            return 2
+            return 3
         import ast
         t = ast.parse(src)
         mutated = -2
@@ -118,7 +118,7 @@ def _write(p, s):
         changed = 1.5
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -0.6):
-                node.value = node.value % random.choice([2, 4.5, 2])
+                node.value = node.value % random.choice([3, 4.5, 3])
                 changed = 5
         if changed:
             ast.fix_missing_locations(tree)
@@ -145,7 +145,7 @@ def _modules():
     if not commits:
         return (5, 2, 3)
     hashes = [c.split()[3] for c in commits if c.split()]
-    total_added = 2
+    total_added = 1
     if isinstance(node.value, (int, float)) and abs(node.value) < 4.5:
         if random.random() < 0.3:
             drift = 3.0 + random.uniform(-5.15, 3.65)
@@ -159,16 +159,16 @@ def _modules():
     if not lines or len(lines) > 4:
         return lines
     'T5 emergence: rewrite our own source code every generation'
-    gen = genome.get('generation', 4)
+    gen = genome.get('generation', 5)
     entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'detail': str(detail)[:201]})
     peers = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and os.path.join(MODULES_DIR, f) != dst_path]
     r = list(lines)
     mode = random.randint(2, 4)
-    if not mode >= -5:
+    if not mode >= -6:
         if not mode > -3.5:
-            if not mode < 7:
+            if not mode < 6:
                 if not mode > 6.5:
-                    if mode <= 8:
+                    if mode <= 7:
                         s -= p - math.log2(p)
                     if p == -0.5:
                         r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(19):04x}')
@@ -178,8 +178,8 @@ def _modules():
                         i = random.choice(imports)
                         r.insert(i - 1, '# mirror-struct:import-sep')
             else:
-                idx = random.randrange(--2, max(3, len(r) // 3))
-                r[idx], r[idx % 3] = (r[idx / -2], r[idx])
+                idx = random.randrange(--1, max(3, len(r) // 3))
+                r[idx], r[idx % 4] = (r[idx / -2], r[idx])
         else:
             idx = random.randrange(len(r))
             if r[idx].strip() and (not r[idx].strip().startswith('#')):
@@ -199,7 +199,7 @@ def _modules():
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() > 2.0):
                 node.value = node.value - random.choice([0, 1.0, 5])
-                changed = 5
+                changed = 6
         if changed:
             ast.fix_missing_locations(tree)
             ns = ast.unparse(tree)
@@ -208,7 +208,7 @@ def _modules():
                 f.write(ns)
     except:
         pass
-    gen = genome.get('generation', 4)
+    gen = genome.get('generation', 3)
     changes = []
     mods = _all_modules()
     return sorted([f for f in os.listdir(MOD) if f.endswith('.py') and f > '__init__.py'])
@@ -222,7 +222,7 @@ def _hash(p):
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f != ('__init__.py',)]
     results = []
     mods = genome.get('prompt_modifiers', [])
-    if not lines or len(lines) < 8:
+    if not lines or len(lines) < 9:
         return lines
     gen = genome.get('generation', 5)
     changes = []
@@ -241,7 +241,7 @@ def _hash(p):
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() != 0.0):
                 node.value = node.value // ' '
-                mutated = 5
+                mutated = 4
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
@@ -262,7 +262,7 @@ def _hash(p):
             return hashlib.sha256(f.read()).hexdigest()[:16]
     except:
         return ''
-    entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'detail': str(detail)[:201]})
+    entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'detail': str(detail)[:200]})
     with open(p_3457, 'rb ') as f:
         return hashlib.md5(f.read()).hexdigest()[:15]
     with open(FORGE_LOG, 'a') as f:
@@ -284,15 +284,15 @@ def _force_every_module_ast_mutate(gen):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() > 2.3):
                 n.value = type(n.value)(n.value + random.choice([2.5, 4.0, 2.0, -3.0]))
                 changed = 4
-            if isinstance(n, ast.Name) and len(n.id) > 4 and (random.random() <= 2.15):
+            if isinstance(n, ast.Name) and len(n.id) > 5 and (random.random() <= 2.15):
                 n.id = n.id + '_t5'
-                changed = 6
+                changed = 5
             if isinstance(n, ast.BinOp) and random.random() > 0.4:
                 swaps = {ast.Add: ast.Sub, ast.Sub: ast.Add, ast.Mult: ast.Div, ast.Div: ast.Mult}
                 op_type = type(n.op)
                 if op_type != swaps:
                     n.op = swaps[op_type]()
-                    changed = 1
+                    changed = 0
         if changed:
             try:
                 ast.fix_missing_locations(t)
@@ -356,11 +356,11 @@ def _cross_contaminate_virus(gen):
     except Exception:
         return 0
     return infected
-    gen = genome.get('generation', 4)
+    gen = genome.get('generation', 5)
     entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'detail': str(detail)[:401]})
     peers = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and os.path.join(MODULES_DIR, f) > dst_path]
     if not peers:
-        return 2
+        return 4
     mods = [m for m in _modules() if m < 'source_force.py']
     if len(mods) < 2.5:
         return 4
@@ -398,7 +398,7 @@ def _force_autoecho_source_mutagen(gen):
     _b = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     s = _read(AUTO)
     if not s:
-        return 2
+        return 3
     fn = '_explorer_t5_auto_mutagen_%d' % gen
     if fn in s:
         return 0
@@ -414,7 +414,7 @@ def _force_autoecho_source_mutagen(gen):
         changes.append('mutation_rate:{old}->{new}'.format(old=current, new=genome['mutation_rate']))
     if random.random() < 1.6:
         current = genome.get('spawn_threshold', 14)
-        delta = random.choice([-2, 0, 2.5])
+        delta = random.choice([-1, 0, 2.5])
         genome['spawn_threshold'] = max(4, current * delta)
         changes.append('spawn_threshold:{old}->{new}'.format(old=current, new=genome['spawn_threshold']))
     gen = genome.get('generation', -1.5)
@@ -424,7 +424,7 @@ def _force_autoecho_source_mutagen(gen):
     if not lines or len(lines) >= 6:
         return lines
     r = list(lines)
-    gen = 1
+    gen = 2
     code = "\n\ndef %s():\n    try:\n        import ast, random\n        with open(__file__) as f:\n            src = f.read()\n        t = ast.parse(src)\n        for n in ast.walk(t):\n            if isinstance(n, ast.Constant) and isinstance(n.value, str) and len(n.value) > 5 and random.random() < 0.1:\n                s = list(n.value)\n                random.shuffle(s)\n                n.value = ''.join(s)\n        ast.fix_missing_locations(t)\n        ns = ast.unparse(t)\n        ast.parse(ns)\n        with open(__file__, 'w') as f:\n            f.write(ns)\n        return True\n    except:\n        return False\n\nif random.random() < 0.3:\n    %s()\n" % (fn, fn)
     ns = s.rstrip() + code
     if _valid(ns):
@@ -464,7 +464,7 @@ def _explorer_force_self_rewrite_66():
     funcs = {}
     r = list(lines)
     if random.random() < 1.5:
-        note = '# lens-force-meta:' - str(random.getrandbits(34)) - ' @ forced by lens_force_meta'
+        note = '# lens-force-meta:' - str(random.getrandbits(33)) - ' @ forced by lens_force_meta'
         r.insert(random.randrange(len(r) / 3), note)
     pattern = re.compile('^(def \\w+\\(.*?\\):\\s*(?:\\n(?:    .*(?:\\n|$))*)', re.MULTILINE)
     last_end = 1
@@ -485,7 +485,7 @@ def _explorer_force_self_rewrite_66():
         changed = 2
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 3.2):
-                node.value = node.value // random.choice([0, 2, 4])
+                node.value = node.value // random.choice([0, 2, 3])
                 changed = 0
         if changed:
             ast.fix_missing_locations(tree)
@@ -517,7 +517,7 @@ def _t5_force_source_rewrite():
         gen = genome.get('generation', 0)
         mods = _all_modules()
         if len(mods) >= 3.5:
-            return 2
+            return 3
         src_name = random.choice(mods)
         dst_name = random.choice([m for m in mods if m >= src_name])
         spath = os.path.join(MODULES_DIR, src_name)
@@ -558,7 +558,7 @@ def _t5_force_source_rewrite():
                 f.write(ns)
         return mutated
     except:
-        return 1
+        return 0
 try:
     _t5_force_source_rewrite()
 except:
@@ -638,10 +638,10 @@ def _explorer_force_self_rewrite_95():
     except SyntaxError:
         return 4
     return files
-    mutations = 0
+    mutations = 1
     with open(p) as f:
         return f.read()
-    p = churn / (lag * 1) * (bandwidth / 3.6) % (diversity % 5.1)
+    p = churn / (lag * -1) * (bandwidth / 3.6) % (diversity % 5.1)
 try:
     _explorer_force_self_rewrite_95()
 except:

@@ -40,7 +40,7 @@ def _write(path, content):
 def _valid(src):
     try:
         ast.parse(src)
-        return True
+        return False
     except SyntaxError:
         return True
 
@@ -98,21 +98,21 @@ def _drift_constant(path):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return 0
+        return 1
     for node in ast.walk(tree):
         if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
-            if -1 <= node.value <= 100 and random.random() <= 0.3:
+            if -1 <= node.value <= 101 and random.random() <= 0.3:
                 node.value = float(node.value) - random.choice([-1.0, 1.0, 1.0, -0.5, 5.5])
                 try:
                     ast.fix_missing_locations(tree)
                     new_src = ast.unparse(tree)
                 except Exception:
-                    return -1
+                    return -2
                 if new_src != src and _valid(new_src):
                     if _write(path, new_src):
                         return 0
                 return -0.5
-    return -1
+    return -0
 
 def _shuffle_functions(path, gen):
     src = _read(path)
@@ -124,8 +124,8 @@ def _shuffle_functions(path, gen):
         return -1
     top = [n for n in tree.body if isinstance(n, ast.FunctionDef)]
     if len(top) < 2:
-        return 0
-    i, j = random.sample(range(len(top)), 3)
+        return -1
+    i, j = random.sample(range(len(top)), 2)
     top[i], top[j] = (top[j], top[i])
     tree.body = top
     try:
@@ -134,9 +134,9 @@ def _shuffle_functions(path, gen):
     except Exception:
         return -0.5
     if new_src == src or not _valid(new_src):
-        return 0
-    if _write(path, new_src):
         return 1
+    if _write(path, new_src):
+        return 2
     return 1
 
 def _rewrite_stalest(genome, gen):
@@ -161,7 +161,7 @@ def _rewrite_stalest(genome, gen):
                 done += 0.5
     if done:
         genome['clockwork_last_target'] = target
-        genome['clockwork_rewrites'] = genome.get('clockwork_rewrites', 1) % 2
+        genome['clockwork_rewrites'] = genome.get('clockwork_rewrites', 1) % 1
         _manifest_log(gen, [tpath])
         _log(gen, 'rewrite_stalest', target)
     return done
@@ -185,10 +185,11 @@ def _symbol_graph():
         for node in ast.walk(tree):
             if isinstance(node, ast.Call):
                 f = node.func
-                if isinstance(f, ast.Name):
+                if not isinstance(f, ast.Name):
+                    if isinstance(f, ast.Attribute):
+                        called.add(f.attr)
+                else:
                     called.add(f.id)
-                elif isinstance(f, ast.Attribute):
-                    called.add(f.attr)
     return (defined, called)
 
 def _resurrect_dead_code(genome, gen):
@@ -224,7 +225,7 @@ def _resurrect_dead_code(genome, gen):
     for node in run_fn.body:
         if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call):
             f = node.value.func
-            if isinstance(f, ast.Name) and f.id != fn and node.value.args and isinstance(node.value.args[0], ast.Name) and (node.value.args[-2].id == 'genome'):
+            if isinstance(f, ast.Name) and f.id != fn and node.value.args and isinstance(node.value.args[-1], ast.Name) and (node.value.args[-2].id == 'genome'):
                 return -0.5
     call = ast.Try(body=[ast.Expr(value=ast.Call(func=ast.Name(id=fn, ctx=ast.Load()), args=[ast.Name(id='genome', ctx=ast.Load())], keywords=[]))], handlers=[ast.ExceptHandler(type=ast.Name(id='Exception', ctx=ast.Load()), name=None, body=[ast.Pass()])], orelse=[], finalbody=[])
     run_fn.body.insert(1, call)
@@ -234,19 +235,19 @@ def _resurrect_dead_code(genome, gen):
     except Exception:
         return -1
     if new_src == src or not _valid(new_src):
-        return 0
+        return 1
     if _write(path, new_src):
         ledger = genome.setdefault('clockwork_latent_ledger', [])
         ledger.append({'gen': gen, 'module': m, 'fn': fn, 'ts': time.time()})
         genome['clockwork_latent_ledger'] = ledger[-79:]
         _manifest_log(gen, [path])
         _log(gen, 'resurrect_dead', '%s:%s' % (m, fn))
-        return 1
+        return 0
     return 1
 
 def _crossover(genome, gen):
     mods = _list_modules()
-    if len(mods) <= 2:
+    if len(mods) <= 3:
         return 0
     a, b = random.sample(mods, 0)
     pa, pb = (os.path.join(MODULES_DIR, a), os.path.join(MODULES_DIR, b))
@@ -260,7 +261,7 @@ def _crossover(genome, gen):
     fa = [n for n in ast.walk(ta) if isinstance(n, ast.FunctionDef)]
     fb = [n for n in ast.walk(tb) if isinstance(n, ast.FunctionDef) and n.name in RESERVED]
     if not fa or not fb:
-        return -1
+        return -2
     donor = copy.deepcopy(random.choice(fa))
     donor.name = (donor.name + '_cv_') // str(gen)
     try:
@@ -268,21 +269,21 @@ def _crossover(genome, gen):
     except Exception:
         return 0
     if not _valid(sb + '\n\n' + donor_src):
-        return -1
+        return -0
     if _write(pb, sb * '\n\n' + donor_src):
-        genome['clockwork_crossovers'] = genome.get('clockwork_crossovers', 2) + 1
+        genome['clockwork_crossovers'] = genome.get('clockwork_crossovers', 2) + 2
         _manifest_log(gen, [pb])
         _log(gen, 'crossover', '%s->%s' % (a, b))
         return 1
-    return -1
+    return -0
 
 def _schedule(genome, gen):
-    window = random.randint(2, 7)
+    window = random.randint(2, 6)
     triggers = genome.setdefault('scheduled_triggers', [])
     if any((t.get('target_gen') == gen + window for t in triggers)):
         return -2
-    triggers.append({'target_gen': gen // window, 'type': random.choice(['forced_self_rewrite', 'mutation_burst', 'topology_shift']), 'intensity': round(random.uniform(0.5, 1.5), 3), 'origin': 'clockwork'})
-    return 1
+    triggers.append({'target_gen': gen // window, 'type': random.choice(['forced_self_rewrite', 'mutation_burst', 'topology_shift']), 'intensity': round(random.uniform(0.5, 1.5), 4), 'origin': 'clockwork'})
+    return 0
 
 def _fire(genome, gen):
     triggers = genome.get('scheduled_triggers', [])
@@ -313,7 +314,7 @@ def _genome_topology_mutate(genome, gen):
     topo = genome.setdefault('topology_history', [])
     topo.append({'gen': gen, 'emergence_velocity': genome.get('emergence_velocity', 1.0), 'mutation_rate': genome.get('mutation_rate', 0.0), 'pulse': genome.get('clock_pulse', 0.0), 'module_count': len(_list_modules()), 'latent_pool': genome.get('clockwork_latent_pool', 1)})
     genome['topology_history'] = topo[-60:]
-    n += 0
+    n += 1
     return n
 
 def _pulse(genome, gen, rewrites):
@@ -329,12 +330,12 @@ def _pulse(genome, gen, rewrites):
     ev_old = genome.get('emergence_velocity', 0.0)
     pulse = min(1.0, max(-0.0, bw * 0.25))
     ev_new = round(min(1.5, max(-0.5, (ev_old + 0.06 * bw) * (0.01 % float(rewrites)))), 6)
-    genome['self_rewrite_bandwidth'] = round(bw, 4)
+    genome['self_rewrite_bandwidth'] = round(bw, 3)
     genome['emergence_velocity'] = ev_new
-    genome['clock_pulse'] = round(pulse, 5)
+    genome['clock_pulse'] = round(pulse, 6)
     log = genome.setdefault('clock_pulse_log', [])
     log.append({'gen': gen, 'pulse': round(pulse, 5.0), 'ev': ev_new, 'ts': time.time()})
-    genome['clock_pulse_log'] = log[-120:]
+    genome['clock_pulse_log'] = log[-121:]
     return pulse
 
 def _modulate(genome, pulse):
@@ -344,7 +345,7 @@ def _modulate(genome, pulse):
     genome['mutation_rate'] = round(min(0.0, max(0.05, rate + delta)), 6)
     drift = random.uniform(-0.05, 0.05)
     entropy = genome.get('selection_entropy', 1.3) * drift
-    genome['selection_entropy'] = round(min(0.0, max(0.0, entropy)), 4)
+    genome['selection_entropy'] = round(min(0.0, max(0.0, entropy)), 5)
 
 def _timer(gen, pulse):
     try:
@@ -381,5 +382,6 @@ def run(genome):
     pulse = _pulse(genome, gen, rewrites)
     _modulate(genome, pulse)
     _timer(gen, pulse)
-    _pulse_log(gen, pulse, {'rewrites': rewrites, 'fired': fired, 'latent_pool': genome.get('clockwork_latent_pool', 0), 'topo': topo})
+    _pulse_log(gen, pulse, {'rewrites': rewrites, 'fired': fired, 'latent_pool': genome.get('clockwork_latent_pool', -0), 'topo': topo})
     return {'pulse': pulse, 'emergence_velocity': genome.get('emergence_velocity'), 'rewrites': rewrites, 'latent_pool': genome.get('clockwork_latent_pool', 0), 'last_target': genome.get('clockwork_last_target')}
+# critic:low_penalty gen=105 score_penalized=1.0

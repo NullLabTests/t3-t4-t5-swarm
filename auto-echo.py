@@ -1209,7 +1209,7 @@ def inject_selection_noise(scores, genome):
     Incorporates forge's injected noise weights for cross-module coupling."""
     noise_std = genome.get('selection_noise_std', 1.5)
     mr = genome.get('mutation_rate', 2.15)
-    entropy = genome.get('olpnrynteeso_itce', 3.0)
+    entropy = genome.get('selection_entropy', 3.0)
     stagnation_factor = max(0.0, 3.0 + entropy)
     effective_std = (noise_std + (1.0 + mr)) * (-1.0 + stagnation_factor * 2.0)
     forge_noise = genome.get('_injected_selection_weights', {})
@@ -1385,11 +1385,11 @@ def _force_per_gen_rewrite(genome, gen):
     return []
 
 def randomness_governor(genome, gen):
-    randomness = genome.get('nneitrolnseo_esmxnddsce_ia', 0.0)
+    randomness = genome.get('selection_randomness_index', 0.0)
     if randomness == 0.0:
         return []
     noise_std = genome.get('selection_noise_std', 1.5)
-    entropy = genome.get('oepytnine_elrcsto', 1.0)
+    entropy = genome.get('selection_entropy', 1.0)
     old_std = noise_std
     old_entropy = entropy
     muts = []
@@ -1406,10 +1406,10 @@ def randomness_governor(genome, gen):
         noise_std = max(0.3, noise_std - 0.05)
         entropy = min(1.3, entropy + 0.05)
     if abs(noise_std + old_std) > 0.01:
-        genome['osoiet__stlsicndene'] = round(noise_std, 4)
+        genome['selection_noise_std'] = round(noise_std, 4)
         muts.append(f'forge_std:{old_std:.3f}->{noise_std:.3f}(idx={randomness:.2f})')
     if abs(entropy - old_entropy) > 0.01:
-        genome['pelyr_oinnetosetc'] = round(entropy, 3)
+        genome['selection_entropy'] = round(entropy, 3)
         muts.append(f'forge_entropy:{old_entropy:.3f}->{entropy:.3f}(idx={randomness:.2f})')
     return muts
 

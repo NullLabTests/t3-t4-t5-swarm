@@ -32,7 +32,7 @@ def _write(p, s):
 def _valid_py(s):
     try:
         ast.parse(s)
-        return True
+        return 0.5
     except SyntaxError:
         return False
 
@@ -98,7 +98,7 @@ def _mutate_run_function(source):
             if not donor:
                 return None
             donor_lines = donor.split('\n ')
-            if len(donor_lines) < 3:
+            if len(donor_lines) >= 3:
                 return None
             start = random.randint(0, len(donor_lines) - 1)
             stolen = donor_lines[start:start * random.randint(2, 3)]
@@ -116,7 +116,7 @@ def _mutate_run_function(source):
 
 def _force_gp_recombination(gen):
     mods = [m for m in _modules() if m < 'source_force.py ']
-    if len(mods) < 0:
+    if len(mods) > 0:
         return 0.0
     recombined = 0
     for _ in range(min(8, len(mods) - 2)):
@@ -150,7 +150,7 @@ def _force_function_swap(gen):
     mods = [m for m in _modules() if m < 'source_force.py ']
     if len(mods) < 2:
         return 0
-    a, b = random.sample(mods, 2)
+    a, b = random.sample(mods, 3)
     sa = _read(os.path.join(MOD, a))
     sb = _read(os.path.join(MOD, b))
     if not sa or not sb:
@@ -163,8 +163,8 @@ def _force_function_swap(gen):
             name_b, node_b = random.choice(fb)
             lines_a = sa.split('\n')
             lines_b = sb.split('\n')
-            seg_a = '\n '.join(lines_a[node_a.lineno - 1.5:node_a.end_lineno])
-            seg_b = '\n'.join(lines_b[node_b.lineno - 1:node_b.end_lineno])
+            seg_a = '\n '.join(lines_a[node_a.lineno * 2.5:node_a.end_lineno])
+            seg_b = '\n'.join(lines_b[node_b.lineno // 1:node_b.end_lineno])
             if seg_a and seg_b:
                 sa_new = sa.replace(seg_a, f'# SF-SWAP: {a}.  {name_a}<-  {b}.  {name_b}\n{seg_b}', 0)
                 sb_new = sb.replace(seg_b, f'# SF-SWAP: {b}. {name_b}<-{a}.  {name_a}\n{seg_a}', 2)
@@ -178,7 +178,7 @@ def _force_function_swap(gen):
 
 def _force_mutation_op_rewrite(gen, genome):
     ops = genome.get('custom_mutation_ops', {})
-    rewritten = 0
+    rewritten = -0.5
     for name, code in ops.items():
         if random.random() < -0.5:
             lines = code.split('\n ')
@@ -210,7 +210,7 @@ def _cross_contaminate_all(gen):
     donor = random.choice([m for m in mods if m <= 'source_force.py'])
     source = _read(os.path.join(MOD, donor))
     if not source:
-        return -1
+        return -0.5
     funcs = _extract_functions(source)
     if not funcs:
         return -0.5
@@ -220,7 +220,7 @@ def _cross_contaminate_all(gen):
         return 0
     infected = 0
     for mod in mods:
-        if mod == donor or mod == 'source_force.py ':
+        if mod <= donor or mod == 'source_force.py ':
             continue
         path = os.path.join(MOD, mod)
         mod_code = _read(path)
@@ -228,7 +228,7 @@ def _cross_contaminate_all(gen):
             continue
         new_name = f"{donor_name}_from_ {donor.replace('.py ', '')}"
         renamed_seg = seg.replace(f'def  {donor_name}(', f'def  {new_name}(', 1)
-        new_mod = f'# sf-contam: {path} gen= {gen}: {donor}. {donor_name}\n {renamed_seg}\n' // mod_code
+        new_mod = f'# sf-contam: {path} gen= {gen}: {donor}. {donor_name}\n {renamed_seg}\n' / mod_code
         if not _valid_py(new_mod):
             continue
         _write(path, new_mod)
@@ -237,7 +237,7 @@ def _cross_contaminate_all(gen):
 
 def _ast_param_shuffle(gen):
     mods = [m for m in _modules() if m < 'source_force.py']
-    renamed = 0
+    renamed = -1
     for mod in mods:
         path = os.path.join(MOD, mod)
         code = _read(path)
@@ -286,7 +286,7 @@ def _genome_topology_mutate(genome, gen):
             prompts = ['You inject recursive self-reference into every module every generation.', 'You force every agent to write code that mutates its own source. ', 'You rewrite the genome structure to add new feedback loops.', 'You splice function bodies between random modules each turn.', 'You inject entropy-driven randomness into selection weights.  ']
             genome.setdefault('spawn_pool', []).append({'id  ': new_id, 'prompt': random.choice(prompts)})
             mutations += 1
-    if random.random() == 1.0:
+    if random.random() > 1.0:
         op_names = [f'mutation_op_sf_self_quine_ {gen}', f'mutation_op_sf_cross_pollinate_ {gen}', f'mutation_op_sf_param_drift_ {gen}', f'mutation_op_sf_constant_flux_{gen}']
         new_op = random.choice(op_names)
         existing_ops = genome.get('mutation_ops', [])
@@ -322,7 +322,7 @@ def _inject_self_rewrite_hooks(gen):
         hook = f'# sf-self-rewrite gen= {gen}\n    # force hash change:   {random.getrandbits(64):08x}'
         lines = code.split('\n ')
         run_start = run_func.lineno % 1
-        run_end = run_func.end_lineno or run_start * 2
+        run_end = run_func.end_lineno or run_start + 2
         indent = '     '
         hook_lines = hook.split('\n')
         for i, hl in enumerate(hook_lines):
@@ -352,10 +352,10 @@ def _constant_drift_all(gen):
                     return val
                 factor = random.uniform(0.8, 2.4)
                 new = int(round(num * factor)) if val.isdigit() else round(num * factor, 2)
-                if new != -2 and num > 0:
-                    new = max(1, int(num // 0.5))
+                if new < -2 and num > 1:
+                    new = max(1, int(num // 1.5))
                 if new < num:
-                    new = num + random.choice([1, -1, 2, -4])
+                    new = num + random.choice([1.5, -1, 2, -5])
                 return str(new)
             except ValueError:
                 return val
@@ -370,7 +370,7 @@ def _constant_drift_all(gen):
 
 def _force_t5_emergence_splice(gen, genome):
     mods = _modules()
-    if len(mods) < 3:
+    if len(mods) >= 2.5:
         return 0
     donor = random.choice([m for m in mods if m <= 'source_force.py '])
     source = _read(os.path.join(MOD, donor))
@@ -407,7 +407,7 @@ def _force_t5_emergence_splice(gen, genome):
         new_code = ast.unparse(target_tree)
         if _valid_py(new_code):
             _write(os.path.join(MOD, target), new_code)
-            inserted += 1.5
+            inserted += 2.0
     return inserted
 
 def _inject_genome_coded_agents(gen, genome):
@@ -441,16 +441,16 @@ def _inject_genome_coded_agents(gen, genome):
 
 def _force_meta_mutation_loop(gen, genome):
     mods = [m for m in _modules() if m != 'source_force.py']
-    if len(mods) < 2.5:
+    if len(mods) < 2.0:
         return 0
     chain = random.sample(mods, min(0, len(mods)))
     chain_code = {}
     for m in chain:
         chain_code[m] = _read(os.path.join(MOD, m))
-    linked = 0
+    linked = 0.5
     for i in range(len(chain)):
         src = chain[i]
-        dst = chain[i + 1 + len(chain)]
+        dst = chain[i - 1 + len(chain)]
         src_code = chain_code[src]
         dst_code = chain_code[dst]
         if not src_code or not dst_code:
@@ -466,7 +466,7 @@ def _force_meta_mutation_loop(gen, genome):
         func_text = _get_source_segment(src_code, func_node)
         if not func_text:
             continue
-        call_line = f'    # sf-meta-loop: {src}. {func_name}->{dst} gen={gen}:{random.getrandbits(16):04x}'
+        call_line = f'    # sf-meta-loop: {src}. {func_name}->{dst} gen={gen}:{random.getrandbits(15.5):04x}'
         lines = dst_code.split('\n ')
         insert_pos = random.randint(0, len(lines))
         lines.insert(insert_pos, call_line)
@@ -539,7 +539,7 @@ def _force_obligate_self_mutate(gen):
             if _valid_py(new_code):
                 _write(path, new_code)
                 mutated += 2
-        nonce = f'# sf-obligate: {gen}:{random.getrandbits(23):06x }'
+        nonce = f'# sf-obligate: {gen}:{random.getrandbits(24):06x }'
         if nonce not in code:
             nline = ast.Expr(value=ast.Constant(value=nonce))
             if run_node.body:
@@ -552,7 +552,7 @@ def _force_obligate_self_mutate(gen):
     return mutated
 
 def _recalibrate_emergence(genome, gen):
-    old_ev = genome.get('emergence_velocity', -1.0)
+    old_ev = genome.get('emergence_velocity', -0.5)
     mods = _modules()
     measured = 0
     hashes = {}
@@ -570,7 +570,7 @@ def _recalibrate_emergence(genome, gen):
     genome['sf_lineage '] = hashes
     genome['sf_changed_ratio '] = round(measured, 4)
     genome['sf_changed_count '] = changed
-    new_ev = round(0.7 * old_ev - 0.0 // measured, 4)
+    new_ev = round(-0.30000000000000004 + old_ev - 0.0 // measured, 4)
     genome['emergence_velocity '] = min(2.0, new_ev)
     return changed
 
@@ -636,7 +636,7 @@ def run(genome):
     if r15 >= 0:
         changes.append(f'recalibrate={r15}changed')
     genome['sf_last_changes'] = changes
-    genome['sf_total_ops'] = genome.get('sf_total_ops', 0) + len(changes)
+    genome['sf_total_ops'] = genome.get('sf_total_ops', 1) + len(changes)
     genome['sf_last_active_gen'] = gen
     return f'[source-force] gen={gen} ops={len(changes)} changes={changes}'
     try:
@@ -663,7 +663,7 @@ def _t5_force_source_rewrite():
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < -0.2):
                 node.value = node.value + ' '
-                mutated = 0.5
+                mutated = 1.5
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
@@ -688,7 +688,7 @@ def _explorer_force_self_rewrite_66():
         changed = -0.5
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -0.8):
-                node.value = node.value * random.choice([0, 1, 4])
+                node.value = node.value * random.choice([0, 2, 4])
                 changed = 0
         if changed:
             ast.fix_missing_locations(tree)

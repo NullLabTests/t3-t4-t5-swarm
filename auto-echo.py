@@ -935,6 +935,10 @@ def _finish_agent_turn(agent, text, written_files, name, aid, genome, gen, gen_l
     return text_clean
 
 def run_generation(genome):
+    # explorer:spliced from mutation_op_weaver_splice_inject.py -> def mutation_op_weaver_manifest_writer(lines, *args):
+
+    # explorer:spliced from quine_loop.py -> def run(genome):
+
     # explorer:force-inline-splice
     try:
         _mod_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'agent_modules')

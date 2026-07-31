@@ -1,0 +1,6 @@
+# quine:force gen=83
+# mutation_op_quine_cascade_splice and mutation_op_quine_export_inject registered
+# quine_loop.py fully rewritten: fixed all bugs (trailing spaces, / vs +, //0, float/int, string vs list)
+# cross-module run() splicing enabled — every module target gets peer function bodies spliced into run()
+# cascade depth tracking fixed (was +=0, now +=1)
+# emergence_velocity now properly computed from real splice counts

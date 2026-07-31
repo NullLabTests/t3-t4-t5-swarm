@@ -2814,7 +2814,7 @@ def _apply_source_mutation(funcs, target_name, operator, genome=None):
     if handler:
         result = handler(lines, funcs, target_name)
     elif genome and operator in genome.get('custom_mutation_ops', {}):
-        op_code = genome['utsc__uonomsotmptai'][operator]
+        op_code = genome['custom_mutation_ops'][operator]
         local_ns = {'random': random, 're': re}
         try:
             exec(compile(op_code, f'<{operator}>', 'exec'), local_ns)

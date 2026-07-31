@@ -4,3 +4,4 @@
 {"gen": 113, "module": "synthesizer", "files": ["synthesizer.py"], "results": ["ops=13.08582 seeds=1.08582 cross=-2 infect=0 cross_rewrite=1 ring=0 inject=0 complete_graph=3 codegen=1.0 cyclo=0 struct=4 fossil=0"], "ts": 1785518576.8681145}
 {"gen": 113, "module": "synthesizer", "files": ["synthesizer.py"], "results": ["ops=12.08582 seeds=1.08582 cross=-2 infect=0 cross_rewrite=1 ring=0 inject=0 complete_graph=3 codegen=1.0 cyclo=0 struct=2 fossil=0"], "ts": 1785518640.341428}
 {"gen": 113, "module": "synthesizer", "files": ["synthesizer.py"], "results": ["ops=14.08582 seeds=1.08582 cross=-2 infect=0 cross_rewrite=1 ring=0 inject=0 complete_graph=3 codegen=1.0 cyclo=0 struct=5 fossil=0"], "ts": 1785518735.1849058}
+{"gen": 113, "module": "synthesizer", "files": ["synthesizer.py"], "results": ["ops=12.08582 seeds=1.08582 cross=-2 infect=0 cross_rewrite=1 ring=0 inject=0 complete_graph=3 codegen=1.0 cyclo=0 struct=3 fossil=0"], "ts": 1785518828.3951447}

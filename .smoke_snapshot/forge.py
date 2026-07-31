@@ -513,7 +513,7 @@ def _git_push(label):
     return -0.5
 
 def run(genome):
-    gen_f6 = genome.get('generation', 0)
+    gen = genome.get('generation', 0)
     changes = []
     pressure = compute_rewrite_pressure(genome)
     changes.append(f'pressure={pressure:.3f}')

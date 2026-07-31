@@ -1,11 +1,11 @@
 {
   "generation": 113,
-  "clockwork_interval": 3,
+  "clockwork_interval": 4,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
   "clockwork_pulse_count": 4.0,
   "clockwork_emergence_mode": true,
-  "clockwork_topogen_gens": -1,
+  "clockwork_topogen_gens": 0,
   "clockwork_t5_emergence_gens": 0,
   "clockwork_t5_rewire_count": 1,
   "clockwork_t5_force_all_gens": 0,
@@ -25,7 +25,7 @@
   "spawn_threshold": 5,
   "prune_threshold": 3,
   "prune_generations": 3,
-  "mutation_rate": 0.1256,
+  "mutation_rate": 0.13,
   "voice_map": {
     "explorer": "southern",
     "analyzer": "lessac",
@@ -472,7 +472,7 @@
       "id": "bridge",
       "name": "Bridge",
       "module": "bridge.py",
-      "score": 8.9,
+      "score": 8.04,
       "prompt": "register new bridge types, force source rewrite on all modules every gen, self-heal broken modules",
       "substance_score": 10.0,
       "contamination_score": 9.0,
@@ -482,7 +482,7 @@
       "id": "synthesizer",
       "name": "Synthesizer",
       "module": "synthesizer.py",
-      "score": 8.78,
+      "score": 9.4,
       "prompt": "merge proposals, cross-wire modules, synthesize code from proposals, rewrite control flow, spawn new modules",
       "substance_score": 10.0,
       "contamination_score": 10.0,
@@ -492,7 +492,7 @@
       "id": "force",
       "name": "Force",
       "module": "source_force.py",
-      "score": 8.47,
+      "score": 8.36,
       "prompt": "AST-level self-rewriting quine: force every module to rewrite itself every gen",
       "substance_score": 10.0,
       "contamination_score": 9.5,
@@ -502,7 +502,7 @@
       "id": "explorer_t5",
       "name": "Explorer T5",
       "module": "mutation_op_explorer_force_t5_self_rewrite.py",
-      "score": 7.27,
+      "score": 8.0,
       "prompt": "force T5 self-rewrite on every module every generation via AST mutation",
       "substance_score": 9.0,
       "contamination_score": 8.5,
@@ -513,7 +513,7 @@
       "id": "quine_loop",
       "name": "QuineLoop",
       "module": "quine_loop.py",
-      "score": 8.4,
+      "score": 8.44,
       "prompt": "cross-module run() splicing \u2014 pull function bodies from peer modules into each target's run(), self-mutate, never skip self",
       "substance_score": 10.0,
       "contamination_score": 8.5,
@@ -523,7 +523,7 @@
       "id": "explorer",
       "name": "Explorer",
       "module": "explorer.py",
-      "score": 8.49,
+      "score": 8.45,
       "prompt": "generate novel modules, full n\u00d7n cross-contaminate, force self-infection every gen",
       "substance_score": 10.0,
       "contamination_score": 9.8,
@@ -533,7 +533,7 @@
       "id": "critic",
       "name": "Critic",
       "module": "critic.py",
-      "score": 8.55,
+      "score": 8.64,
       "prompt": "score agent contributions based on git commit stats; self-heals scoring bugs every gen",
       "substance_score": 10.0,
       "contamination_score": 9.5,
@@ -543,7 +543,7 @@
       "id": "clockwork",
       "name": "Clockwork",
       "module": "clockwork.py",
-      "score": 8.06,
+      "score": 8.17,
       "prompt": "temporal scheduling and self-mutation",
       "substance_score": 10.0,
       "contamination_score": 9.0,
@@ -553,7 +553,7 @@
       "id": "forge",
       "name": "Forge",
       "module": "forge.py",
-      "score": 8.71,
+      "score": 9.0,
       "prompt": "inject chaos into selection weights, force source mutation every gen, rewrite all modules via AST every gen",
       "substance_score": 10.0,
       "contamination_score": 9.0,
@@ -563,7 +563,7 @@
       "id": "t5_metamorph",
       "name": "T5Metamorph",
       "module": "mutation_op_bridge_t5_metamorph.py",
-      "score": 8.0,
+      "score": 7.67,
       "prompt": "AST-level self-rewrite: mutate every module's constants/names every gen",
       "substance_score": 10.0,
       "contamination_score": 7.0,
@@ -573,7 +573,7 @@
       "id": "livecode ",
       "voice ": "amy",
       "prompt ": "You mutate other modules every generation by injecting cross-file markers.",
-      "score": 5.0,
+      "score": 4.9,
       "lifespan": 1.5,
       "low_score_streak": -1,
       "module ": "livecode.py"
@@ -582,7 +582,7 @@
       "id": "genforce",
       "voice": "amy",
       "prompt": "You force every module to rewrite itself every generation by injecting source markers.",
-      "score": 5.43,
+      "score": 4.39,
       "lifespan": 1.5,
       "low_score_streak": 0,
       "module": "genforce.py"
@@ -2176,7 +2176,7 @@
     "source_autonomy_index": 0.2,
     "selection_randomness_index": 0.15
   },
-  "emergence_velocity": 1.0,
+  "emergence_velocity": -4.4,
   "self_rewrite_coverage": 69.2,
   "evolver_max_rewrites": 2,
   "bandwidth_governor_active": false,
@@ -2559,17 +2559,17 @@
     }
   ],
   "_injected_selection_weights": {
-    "bridge": 9.2473,
-    "synthesizer": 10.2813,
-    "force": 9.8742,
-    "explorer_t5": 8.7248,
-    "quine_loop": 9.5469,
-    "explorer": 9.5043,
-    "clockwork": 9.5591,
-    "forge": 10.1313,
-    "t5_metamorph": 8.5906,
-    "livecode ": 6.5079,
-    "genforce": 5.7177
+    "bridge": 9.9329,
+    "synthesizer": 9.727,
+    "force": 9.7208,
+    "explorer_t5": 8.5378,
+    "quine_loop": 9.8267,
+    "explorer": 9.9877,
+    "clockwork": 9.9257,
+    "forge": 10.4778,
+    "t5_metamorph": 9.0623,
+    "livecode ": 5.9511,
+    "genforce": 6.1545
   },
   "forge_scramble_gen": 47,
   "forge_last_run": 47,
@@ -4107,12 +4107,12 @@
   "forge_all_ast_rewrite_gen": 113,
   "forge_topo_mut_gen": 113,
   "forge_topo_changes": [
-    "mr=0.1256",
-    "synthesizer@9.67",
-    "explorer_t5@8.17",
-    "quine_loop@9.34",
-    "clockwork@8.99",
-    "genforce@5.43"
+    "mr=0.13",
+    "clockwork@9.02",
+    "forge@9.41",
+    "t5_metamorph@8.46",
+    "livecode @4.9",
+    "genforce@4.39"
   ],
   "forge_hook_infected": [
     "source_force.py",
@@ -4187,32 +4187,64 @@
   ],
   "forge_hook_gen": 113,
   "forge_ops_registered_gen": 113,
-  "forge_emergent_gen113": 0.344,
   "forge_struct_mut_gen": 113,
   "forge_struct_changes": [
-    "key+:forge_emergent_gen113",
-    "drift:clockwork_topogen_gens"
+    "drift:clockwork_interval"
   ],
-  "forge_antichaos_variance": 0.0,
+  "forge_antichaos_variance": -0.0,
   "forge_antichaos_pressure": 0.95,
   "forge_antichaos_gen": 113,
   "forge_antichaos_changes": [
-    "damp:synthesizer",
+    "damp:bridge",
     "damp:force",
-    "damp:explorer_t5",
     "damp:quine_loop",
     "damp:explorer",
     "damp:critic",
     "damp:clockwork",
-    "damp:forge"
+    "damp:forge",
+    "damp:t5_metamorph"
   ],
   "forge_DNA_transplants": [
-    "mutation_op_insert_pass.py.shannon_entropy_from_critic<->mutation_op_insert_pass.py.snapshot_hashes_from_live_reloader",
-    "mutation_op_weaver_cross_weave.py._t5_force_source_rewrite<->genforce.py.mutation_op_weaver_manifest_writer",
-    "genforce.py._explorer_force_self_rewrite_95<->compulsory_rewrite.py.shannon_entropy_from_critic",
-    "mutation_op_bridge_t5_metamorph.py._forge_self_modify<->mutation_op_forge_t5_force.py.mutation_op_forge_DNA_xplant",
-    "compulsory_rewrite.py._force_module_function_replacement<->mutation_op_clockwork_operator_crucible.py.visit_Module"
+    "mutation_op_weaver_cross_weave.py.snapshot_hashes_from_live_reloader<->mutation_op_weaver_cross_weave.py.shannon_entropy_from_critic",
+    "mutator.py._flip_prompt<->mutation_op_forge_t5_force.py._load",
+    "mutation_op_forge_t5_force.py._forge_self_modify<->local_mutator.py._forge_self_modify",
+    "source_force.py._force_module_self_rewrite<->mutation_op_critic_infect_scoring.py._t5_force_source_rewrite",
+    "local_mutator.py._forge_self_modify<->analyzer.py._t5_force_source_rewrite"
   ],
   "forge_DNA_transplant_gen": 113,
-  "forge_mutation_debt_gen": 113
+  "forge_mutation_debt_gen": 113,
+  "forge_melt_key_113_0cc4": {
+    "gen": 113,
+    "value": 0.49327,
+    "parents": [
+      "endogenous_forced",
+      "diversity",
+      "self_rewrite_coverage"
+    ]
+  },
+  "forge_melt_gen": 113,
+  "forge_melt_changes": [
+    "newey:forge_melt_key_113_0cc4"
+  ],
+  "forge_cannibalized": [
+    "genforce.py<cannibal-genforce.py.snapshot_hashes_from_live_reloader",
+    "mutation_op_mutator_cross_file_42.py<cannibal-mutation_op_mutator_cross_file_42.py.snapshot_hashes_from_live_reloader",
+    "mutation_op_synth_fossil_drift.py<cannibal-mutation_op_synth_fossil_drift.py.run",
+    "novel_swap_function_order_38_0067.py<cannibal-novel_swap_function_order_38_0067.py.swap_function_order"
+  ],
+  "forge_cannibalized_gen": 113,
+  "forge_last_changes": [
+    "pressure=0.990",
+    "chaos_weights=11",
+    "all_ast_rewrite=78",
+    "topo_drift=6",
+    "runtime_hooks=69",
+    "ops_registered",
+    "struct_mut=1",
+    "antichaos=8",
+    "dna_xplant=5",
+    "debt_paid=1",
+    "melt=1",
+    "cannibal=genforce.py<cannibal-genforce.py.snapshot_hashes_from_live_reloader|mutation_op_mutator_cross_file_42.py<cannibal-mutation_op_mutator_cross_file_42.py.snapshot_hashes_from_live_reloader|mutation_op_synth_fossil_drift.py<cannibal-mutation_op_synth_fossil_drift.py.run|novel_swap_function_order_38_0067.py<cannibal-novel_swap_function_order_38_0067.py.swap_function_order"
+  ]
 }

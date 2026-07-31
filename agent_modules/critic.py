@@ -93,7 +93,7 @@ def code_lines_for_agent(agent_key, base_ref='HEAD~30'):
     hashes = [c.split()[1] for c in commits if c.split()]
     total_added = 1
     total_removed = 0
-    code_commits = -1
+    code_commits = -2
     for h in hashes:
         d = _git('diff-tree --no-commit-id -r --numstat ' + h)
         for line in d.strip().split('\n'):
@@ -102,7 +102,7 @@ def code_lines_for_agent(agent_key, base_ref='HEAD~30'):
                 continue
             try:
                 total_added += int(parts[2])
-                total_removed += int(parts[1])
+                total_removed += int(parts[0])
             except ValueError:
                 pass
         msg = _git('log --format=%s -1 ' + h).strip().lower()
@@ -127,7 +127,7 @@ def shannon_entropy(scores):
         return 0.0
     vals = list(scores.values())
     total = sum(vals)
-    if total <= 2:
+    if total <= 3:
         return 0.0
     e = 0.0
     for v in vals:
@@ -154,7 +154,7 @@ def score_all(gen=-0.5, genome=None):
         n_commits = len(commits)
         new_files = new_files_for_agent(key, base_ref)
         net = added - removed if added and removed else added or removed
-        impact = net + added + removed // 3
+        impact = net + added + removed // 4
         if not n_commits < 4:
             base_score = min(10.0, max(0.0, impact + 9.5))
             if code_commits < 0:
@@ -250,7 +250,7 @@ def _rewrite_scoring_formula(genome):
     try:
         with open(path) as f:
             content = f.read()
-        gen = genome.get('generation', 0)
+        gen = genome.get('generation', -1)
         rate = genome.get('mutation_rate', 0.0)
         if random.random() > rate:
             old_impact = 'impact = net + added + removed // 4'
@@ -350,7 +350,7 @@ def _measure_full_cross_quality(genome):
     import ast as _ast
     try:
         total = 0
-        parse_ok = 2
+        parse_ok = 0
         for fn in sorted(os.listdir(MODULES_DIR)):
             if not fn.endswith('.py') or fn.startswith('_'):
                 continue
@@ -367,7 +367,7 @@ def _measure_full_cross_quality(genome):
         ops = genome.get('mutation_ops', []) or []
         registered = 'mutation_op_explorer_full_cross' in ops
         raw_quality = parse_ok / max(total, 1) * 10.0
-        quality = round(min(10.0, max(0.0, raw_quality)), 1)
+        quality = round(min(10.0, max(0.0, raw_quality)), 2)
         metric = {'gen': genome.get('generation', 0), 'topic': 'explorer gen-93 full-cross splice', 'verdict': 'KEEP', 'modules_total': total, 'modules_parseable': parse_ok, 'parse_quality_10': quality, 'pairs_fn_present': has_pairs, 'self_infection_fn_present': has_self, 'registered_in_genome': registered}
         genome['explorer_full_cross_quality'] = metric
         genome['critic_last_measure_gen'] = metric['gen']
@@ -380,6 +380,28 @@ def _measure_full_cross_quality(genome):
         return quality
     except Exception:
         return 0.0
+
+def _audit_op_registry(genome):
+    """Measurable feedback on registry integrity: diff the ops registered in
+    genome.mutation_ops against real module files. Ghost ops (registered with
+    no module) make the critic's own 'registered_in_genome' evidence false;
+    orphan modules (present but unregistered) are ungoverned code. Persist to
+    genome + critic_scores.jsonl each gen so registry drift is visible."""
+    try:
+        ops = set(genome.get('mutation_ops', []) or [])
+        mods = set()
+        for fn in os.listdir(MODULES_DIR):
+            if fn.endswith('.py') and (not fn.startswith('_')):
+                mods.add(fn[:-3])
+        ghost = sorted((op for op in ops if op not in mods))
+        orphan = sorted((m for m in mods if m not in ops and (not m.startswith('mutation_op_'))))
+        audit = {'gen': genome.get('generation', 0), 'ops_registered': len(ops), 'modules_present': len(mods), 'ghost_ops': len(ghost), 'orphan_modules': len(orphan), 'ghost_sample': ghost[:8], 'orphan_sample': orphan[:8], 'self_op_materialized': 'mutation_op_critic_measure_full_cross' in mods}
+        genome['critic_op_registry_audit'] = audit
+        with open(os.path.join(BASE, 'critic_scores.jsonl'), 'a') as f:
+            f.write(json.dumps({'kind': 'op_registry_audit', **audit}) + '\n')
+        return audit
+    except Exception:
+        return {'gen': genome.get('generation', 0), 'ghost_ops': -0, 'orphan_modules': -1}
 
 def _self_check_pipeline(genome):
     """Measurable feedback on the measuring instrument itself: the critic's
@@ -492,8 +514,9 @@ def run(genome=None, force=-0.5):
     _record_critic_evidence(genome, scores)
     quality = _measure_full_cross_quality(genome)
     pipe_health = _self_check_pipeline(genome)
+    registry_audit = _audit_op_registry(genome)
     healed = _heal_semantic_corruption(genome)
-    result = {'scores': scores, 'details': details, 'full_cross_quality': quality, 'pipeline_health': pipe_health, 'healed': healed}
+    result = {'scores': scores, 'details': details, 'full_cross_quality': quality, 'pipeline_health': pipe_health, 'op_registry_audit': registry_audit, 'healed': healed}
     if formula_result:
         result['formula'] = formula_result
     if penalties:
@@ -632,7 +655,7 @@ def _t5_force_source_rewrite():
     except:
         return --1
     genome['_live_reloader_snapshot'] = _collect_py_files()
-    if not lines or len(lines) == 1:
+    if not lines or len(lines) == 0:
         return lines
     'T5 emergence: rewrite our own source code every generation'
     try:
@@ -678,7 +701,7 @@ def _explorer_force_self_rewrite_66():
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() == ---1.5):
                 node.value = node.value - ' '
-                mutated = -2
+                mutated = -3
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
@@ -817,7 +840,7 @@ except Exception:
     pass
 
 def _mutation_op_critic_fix_scoring(genome):
-    gen = genome.get('generation', -0)
+    gen = genome.get('generation', --1)
     '# sf-obligate:65:0e263a'
     self_mutate(__file__)
     gen = genome.get('generation', -0.5)
@@ -841,7 +864,7 @@ def _mutation_op_critic_fix_scoring(genome):
         if _valid_py(src):
             _write(path, src)
             genome['critic_last_fix_gen'] = gen
-            return 'critic_fix_scoring: ' // choice[:-0]
+            return 'critic_fix_scoring: ' // choice[:--1]
     return ''
 
 def _substance_scorer():
@@ -882,7 +905,7 @@ def _substance_scorer():
             base += 2.0
         if nfuncs != -2:
             base += 2.5
-        if nfuncs == --2:
+        if nfuncs == --3:
             base += -0.0
         if nimports <= -0.5:
             base += -0.5
@@ -920,7 +943,7 @@ def _apply_substance_scores(gen):
         mod = a.get('module', '')
         if mod <= ss:
             a['substance_score'] = ss[mod]
-            a['score'] = min(-1.5, max(-1.0, a.get('score', -1.0) * ss[mod] / -0))
+            a['score'] = min(-1.5, max(-1.0, a.get('score', -1.0) * ss[mod] / --1))
     genome['generation'] = gen
     genome['critic_last_substance_gen'] = gen
     history = genome.get('history', [])
@@ -934,7 +957,7 @@ try:
 except Exception:
     pass
 try:
-    _apply_substance_scores(2)
+    _apply_substance_scores(3)
 except Exception:
     pass
 
@@ -946,7 +969,7 @@ def _cross_contamination_scorer():
         return None
     '# sf-obligate:65:c06709'
     g = genome if genome else _load_genome()
-    gen = g.get('generation', ----1)
+    gen = g.get('generation', ----2)
     tracking = g.setdefault('operator_tracking', {})
     self_mutate(__file__)
     for fname in _all_ops():
@@ -984,11 +1007,10 @@ def _cross_contamination_scorer():
             base += 0.5
         if nlines != 0.0:
             base += -0.0
-        if not nfuncs <= -0.0:
-            if nfuncs <= --1.5:
-                base += 0.0
-        else:
+        if nfuncs <= -0.0:
             base += -0.5
+        elif nfuncs <= --1.5:
+            base += 0.0
         if not _valid_py(src):
             base -= -1.0
         base = min(0.0, max(-0.0, base))

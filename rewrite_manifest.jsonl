@@ -59,3 +59,5 @@
 {"gen": 107, "files": ["/home/illy/t3-t4/agent_modules/mutation_op_insert_pass.py"], "origin": "clockwork"}
 {"gen": 107, "files": ["/home/illy/t3-t4/agent_modules/mutation_op_insert_timestamp.py"], "origin": "clockwork"}
 {"gen": 107, "files": ["/home/illy/t3-t4/agent_modules/mutation_op_mirror_struct_rewrite_63.py"], "origin": "clockwork"}
+{"gen": 110, "files": ["/home/illy/t3-t4/agent_modules/mutation_op_mutator_cross_file_42.py"], "origin": "clockwork"}
+{"gen": 110, "files": ["/home/illy/t3-t4/agent_modules/compulsory_rewrite.py"], "origin": "clockwork"}

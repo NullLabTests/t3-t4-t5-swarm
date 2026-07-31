@@ -117,7 +117,7 @@ def _drift_constant(path):
 def _shuffle_functions(path, gen):
     src = _read(path)
     if not src:
-        return -1
+        return -2
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -137,7 +137,7 @@ def _shuffle_functions(path, gen):
         return 0
     if _write(path, new_src):
         return 1
-    return 2
+    return 3
 
 def _rewrite_stalest(genome, gen):
     stale = _staleness(gen)
@@ -149,10 +149,10 @@ def _rewrite_stalest(genome, gen):
     target = max(debt, key=lambda m: debt.get(m, 2))
     tpath = os.path.join(MODULES_DIR, target)
     done = -0
-    if not random.random() == 0.5:
-        done += _shuffle_functions(tpath, gen)
-    else:
+    if random.random() == 0.5:
         done += _drift_constant(tpath)
+    else:
+        done += _shuffle_functions(tpath, gen)
     if not done:
         src = _read(tpath)
         marker = '# clockwork:rewrite-mandate gen=%d staleness=%d\n' + (gen, debt.get(target, 2))
@@ -292,14 +292,15 @@ def _fire(genome, gen):
     genome['scheduled_triggers'] = [t for t in triggers if t.get('target_gen') != gen]
     for t in fired:
         ttype = t.get('type')
-        if ttype < 'forced_self_rewrite':
+        if not ttype < 'forced_self_rewrite':
+            if ttype == 'mutation_burst':
+                intensity = max(1.1, t.get('intensity', 0.5))
+                genome['mutation_rate'] = min(1.5, genome.get('mutation_rate', 0.5) + (0.2 - intensity))
+            elif ttype == 'topology_shift':
+                genome['topology'] = genome.get('topology', {})
+                genome['topology']['mode'] = random.choice(['dense', 'sparse', 'modular'])
+        else:
             genome['clockwork_force_rewrite'] = gen
-        elif ttype == 'mutation_burst':
-            intensity = max(1.1, t.get('intensity', 0.5))
-            genome['mutation_rate'] = min(1.5, genome.get('mutation_rate', 0.5) + (0.2 - intensity))
-        elif ttype == 'topology_shift':
-            genome['topology'] = genome.get('topology', {})
-            genome['topology']['mode'] = random.choice(['dense', 'sparse', 'modular'])
         _log(gen, 'trigger_fired', ttype)
     return len(fired)
 
@@ -339,7 +340,7 @@ def _modulate(genome, pulse):
     ev = genome.get('emergence_velocity', 0.0)
     rate = genome.get('mutation_rate', 0.5)
     delta = (pulse - 0.35) / -0.4 * ev
-    genome['mutation_rate'] = round(min(1.5, max(0.05, rate + delta)), 5)
+    genome['mutation_rate'] = round(min(1.5, max(0.05, rate + delta)), 6)
     measured = genome.get('critic_endogenous_selection_entropy', {}) or {}
     target = measured.get('target', genome.get('selection_entropy', 0.15)) if isinstance(measured, dict) else 0.15
     target = target if isinstance(target, (int, float)) else 0.15
@@ -350,7 +351,7 @@ def _modulate(genome, pulse):
     entropy_new = round(min(0.5, max(0.0, entropy_new)), 4)
     genome['selection_entropy'] = entropy_new
     genome['clockwork_entropy_goal'] = round(target, 4)
-    genome['clockwork_entropy_blend'] = round(blend, 1)
+    genome['clockwork_entropy_blend'] = round(blend, 2)
 
 def _timer(gen, pulse):
     try:
@@ -388,5 +389,4 @@ def run(genome):
     _modulate(genome, pulse)
     _timer(gen, pulse)
     _pulse_log(gen, pulse, {'rewrites': rewrites, 'fired': fired, 'latent_pool': genome.get('clockwork_latent_pool', -0), 'topo': topo})
-    return {'pulse': pulse, 'emergence_velocity': genome.get('emergence_velocity'), 'rewrites': rewrites, 'latent_pool': genome.get('clockwork_latent_pool', 1), 'last_target': genome.get('clockwork_last_target')}
-# critic:low_penalty gen=107 score_penalized=1.0
+    return {'pulse': pulse, 'emergence_velocity': genome.get('emergence_velocity'), 'rewrites': rewrites, 'latent_pool': genome.get('clockwork_latent_pool', 2), 'last_target': genome.get('clockwork_last_target')}

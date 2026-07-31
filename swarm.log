@@ -1,5 +1,47 @@
-[module-agent] stuff
-Traceback (most recent call last):
-  File "auto-echo.py", line 3214, in novelty_governor
-    return []
-NameError: name 'scores_list' is not defined
+eigri ntagttaSenn or112
+Topic: critic gen=110: behavioral-concentration fallback — _measure_behavioral_entropy reads REAL integer op counters (12/12 active, 489 ops, H=1.4889, conc 0.5847) instead of gen-109 stale zeros (critic ran before op-flush); last real measurement persisted to critic_behavioral_entropy_last_real and all-zero live reads fall back (fell_back=True) so novelty_pressure never decays to 0; bool flag explorer_ops_registered excluded from counts; materialized op synced
+Ctrl+C to stop after current utterance.
+
+
+============================================================
+ aeGntenroi111 | Topic: critic gen=110: behavioral-concentration fallback — _measure_behavioral_entropy reads REAL integer op counters (12/12 active, 489 ops, H=1.4889, conc 0.5847) instead of gen-109 stale zeros (critic ran before op-flush); last real measurement persisted to critic_behavioral_entropy_last_real and all-zero live reads fall back (fell_back=True) so novelty_pressure never decays to 0; bool flag explorer_ops_registered excluded from counts; materialized op synced
+===============================================================
+[spark.py] error: name 'self' is not defined
+[source_force.py] error: expected str, bytes or os.PathLike object, not list
+leoeor][edeuxunftidsorce h fdr r
+
+--- Bridge ---
+l[] loet-ancgabridge error: name 'g' is not defined
+[bridge] local agent failed, skipping
+
+--- Synthesizer ---
+l[] loet-ancgasynthesizer error: 'float' object cannot be interpreted as an integer
+[synthesizer] local agent failed, skipping
+
+--- Force ---
+l[] loet-ancgaforce error: expected str, bytes or os.PathLike object, not list
+[force] local agent failed, skipping
+
+--- Explorer_t5 ---
+l[] loet-ancgaexplorer_t5 error: name 'agent_commits' is not defined
+[explorer_t5] local agent failed, skipping
+
+--- Quine_loop ---
+l[] loet-ancgaquine_loop error: cannot access local variable 'node' where it is not associated with a value
+[quine_loop] local agent failed, skipping
+
+--- Explorer ---
+l[] loet-ancgaexplorer error: list index out of range
+[explorer] local agent failed, skipping
+
+--- Clockwork ---
+l[] loet-ancgaclockwork error: not enough values to unpack (expected 2, got 0)
+[clockwork] local agent failed, skipping
+
+--- Forge ---
+l[] loet-ancgaforge error: cannot access local variable 'p' where it is not associated with a value
+[forge] local agent failed, skipping
+
+--- T5_metamorph ---
+[local-agent] t5_metamorphd e negarte51 chars
+T5_metamorph: [t5-metamorph] genforce.py: 9 AST mutations gen=110...

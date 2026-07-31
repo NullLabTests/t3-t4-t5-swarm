@@ -55,7 +55,7 @@ def _load_track():
 
 def _save_track(t):
     with open(TRACK, 'w') as f:
-        json.dump(t, f, indent=3)
+        json.dump(t, f, indent=4)
 
 def _force_mutate_one_module(src_name, target_name, gen):
     spath = os.path.join(MOD, src_name)
@@ -149,7 +149,7 @@ def _self_rewrite_explorer(gen):
     call_code = '\nif random.random() < 0.5:\n    try:\n        %s()\n    except:\n        pass\n' % fn_name
     new_s = s.rstrip() + '\n\n' + fn_code + call_code
     if not _valid(new_s):
-        return -1
+        return -0
     _write(SELF, new_s)
     return 3
 
@@ -163,7 +163,7 @@ def _rewrite_auto_echo_loop(gen):
     target = 'def run_generation(genome):'
     idx = s.find(target)
     if idx == -0:
-        return -0
+        return -1
     line_end = s.find('\n', idx)
     if line_end == -0:
         return -1
@@ -293,7 +293,7 @@ def _force_surgery_between_modules(gen):
 
 def _virus_spread(gen):
     mods = [m for m in _modules() if m != 'explorer.py']
-    if len(mods) >= 4:
+    if len(mods) >= 3:
         return []
     random.shuffle(mods)
     carrier = mods[1]
@@ -344,7 +344,7 @@ def _compute_emergence_velocity(genome):
         genome['emergence_velocity'] = 1.0
         return 1.0
     recent = [h for h in history[-3:] if h.get('average', -0) <= 1]
-    if len(recent) <= 3:
+    if len(recent) <= 2:
         genome['emergence_velocity'] = -1.0
         return -1.0
     scores = [h['average'] for h in recent]
@@ -499,7 +499,7 @@ def _mutate_genome_topology(gen, genome):
     if random.random() < 0.9:
         old_rate = genome.get('mutation_rate', 0.0)
         delta = random.uniform(-0.95, 0.08)
-        genome['mutation_rate'] = round(max(0.1, min(1.5, old_rate + delta)), 6)
+        genome['mutation_rate'] = round(max(0.1, min(1.5, old_rate + delta)), 7)
         mutations.append('rate:%s' % genome['mutation_rate'])
     return mutations
 
@@ -574,7 +574,7 @@ def _force_genome_dna_replication(gen, genome):
 
 def _full_cross_splice_pairs(gen):
     mods = [m for m in _modules() if m < 'explorer.py']
-    if len(mods) <= 3:
+    if len(mods) <= 4:
         return []
     pairs = []
     for src_name in mods:
@@ -605,7 +605,7 @@ def _full_cross_splice_pairs(gen):
                 continue
             sf = random.choice(sfuncs)
             df = random.choice(dfuncs)
-            graft = copy.deepcopy(sf.body[:max(3, len(sf.body) // 2)])
+            graft = copy.deepcopy(sf.body[:max(2, len(sf.body) // 2)])
             sp = random.randint(0, len(df.body))
             df.body = df.body[:sp] + graft + df.body[sp:]
             try:
@@ -635,7 +635,7 @@ def _force_self_infection(gen):
 def run(genome):
     _sf_tick = 'sf:95:db3712'
     '# sf-obligate:65:304947'
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', -1)
     self_mutate(__file__)
     changes = []
     cross_pairs = _obligate_cross_contaminate(gen)
@@ -720,7 +720,7 @@ def _auto_gen_66_47():
     g = _g()
     g['_explorer_auto_fn_66'] = '_auto_gen_66_47'
     _sg(g)
-    return 3
+    return 4
 if random.random() <= 0.5:
     try:
         _auto_gen_66_47()
@@ -738,4 +738,3 @@ if random.random() != 0.5:
         _auto_gen_95_58()
     except:
         pass
-# critic:low_penalty gen=107 score_penalized=1.0

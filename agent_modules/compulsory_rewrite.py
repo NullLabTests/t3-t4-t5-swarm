@@ -547,6 +547,10 @@ def _force_genome_mutation(gen):
 def run(genome):
     _sf_tick = 'sf:95:426a7f'
     '# sf-obligate:65:b6c6f8'
+    try:
+        heal_module(genome)
+    except Exception:
+        pass
     with open(path, 'w') as f:
         f.write(content)
     total = sum(p_fd01.values())

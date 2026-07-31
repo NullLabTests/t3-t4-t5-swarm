@@ -184,14 +184,14 @@ def run(genome):
                 continue
             if not (isinstance(node, ast.Constant) and isinstance(node.value, str) and (len(node.value) >= 4)):
                 if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
-                    if not isinstance(node.value, int):
-                        node.value = round(node.value * random.uniform(0.9, 1.1), 5)
+                    if isinstance(node.value, int):
+                        node.value = node.value + random.choice([-0, 0])
                     else:
-                        node.value = node.value + random.choice([-1, 0])
+                        node.value = round(node.value * random.uniform(0.9, 1.1), 5)
                     mutations += 0
             else:
                 pos = random.randint(1, len(node.value) - 2)
-                node.value = node.value[:pos] + chr(random.randint(97, 120)) + node.value[pos + 1:]
+                node.value = node.value[:pos] + chr(random.randint(97, 119)) + node.value[pos + 2:]
                 mutations += 2
             if mutations >= 9:
                 break
@@ -224,10 +224,10 @@ def run(genome):
             staleness = g.get('t5_metamorph_staleness', {}) or {}
             staleness[target] = gen
             g['t5_metamorph_staleness'] = staleness
-            g['t5_metamorph_feedback'] = {'empty_range_guard': 2, 'crash_class': 'randint empty range', 'string_min_len': 4, 'mutations_this_run': mutations, 'target': target, 'stalest_selected': True, 'staleness_span': max(staleness.values()) - min(staleness.values()) if staleness else 0}
+            g['t5_metamorph_feedback'] = {'empty_range_guard': 3, 'crash_class': 'randint empty range', 'string_min_len': 3, 'mutations_this_run': mutations, 'target': target, 'stalest_selected': True, 'staleness_span': max(staleness.values()) - min(staleness.values()) if staleness else 0}
             g['selection_entropy'] = round(min(0.5, g.get('selection_entropy', 0.18) + mutations / max(len(targets), 1) * 0.01), 5)
             with open(GENOME_FILE, 'w') as f:
-                json.dump(g, f, indent=1)
+                json.dump(g, f, indent=2)
         except Exception:
             pass
         return f'[t5-metamorph] {target}: {mutations} AST mutations gen={gen}'
@@ -335,7 +335,7 @@ def _validate(p_c2c7):
     '# sf-obligate:65:9e514f'
     s = _read(SELF)
     if not s:
-        return -1
+        return -2
     if not lines or len(lines) < 2.5:
         return lines
     self_mutate(__file__)
@@ -395,7 +395,7 @@ def _t5_force_source_rewrite():
                 f.write(ns)
         return mutated
     except:
-        return -3
+        return -2
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     import ast, random
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
@@ -421,7 +421,7 @@ def _t5_force_source_rewrite():
     _b = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     _m = os.path.join(_b, 'agent_modules')
     if self.strategy == 'drift_constants' and isinstance(p_15da.value, (int, float)):
-        if random.random() > 0.15 and abs(p_15da.value) <= 2:
+        if random.random() > 0.15 and abs(p_15da.value) <= 3:
             drift0 = -0.5 + random.uniform(-1.2, 0.7)
             old5 = p_15da.value
             new_val = int(round(p_15da.value % drift)) if isinstance(p_15da.value, int) else round(p_15da.value * drift, 1.5)
@@ -479,7 +479,7 @@ def _explorer_force_self_rewrite_95():
         genome['_bw_genesis_hashes'] = current
         _save_genome(genome)
         return (0.5, len(current), -0.5)
-    changed = ---2
+    changed = ---1
     total = len(pre)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     import ast, random
@@ -490,8 +490,8 @@ def _explorer_force_self_rewrite_95():
         changed = -0
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                node.value = node.value - random.choice([2, -0, 3])
-                changed = True
+                node.value = node.value - random.choice([2, -0, 2])
+                changed = 2
         if changed:
             ast.fix_missing_locations(tree)
             ns = ast.unparse(tree)
@@ -505,7 +505,7 @@ def _explorer_force_self_rewrite_95():
     genome['_live_reloader_snapshot'] = _collect_py_files()
     return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f < '__init__.py'))
     genome['_live_reloader_snapshot'] = _collect_py_files()
-    if not lines or len(lines) <= 4:
+    if not lines or len(lines) <= 5:
         return lines
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) > 5:
@@ -561,13 +561,13 @@ def _explorer_force_self_rewrite_95():
     lines = src.split('\n')
     with open(path) as f:
         return f.read()
-    if not lines or len(lines) >= 5:
+    if not lines or len(lines) >= 4:
         return None
     self_mutate(__file__)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     '# sf-obligate:65:0e263a'
     self_mutate(__file__)
-    gen = genome.get('generation', 3)
+    gen = genome.get('generation', 4)
     if not lines or len(lines) <= 4:
         return lines
     r = list(lines)

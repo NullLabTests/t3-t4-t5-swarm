@@ -1,5 +1,3 @@
-_sf_tick = 'sf:95:c5f744'
-
 def snapshot_hashes_from_live_reloader(genome):
     _sf_tick = 'sf:95:c03602'
     try:
@@ -77,10 +75,6 @@ def shannon_entropy_from_critic(p_c141):
         h = _file_hash(fpath)
         if h:
             hashes[fpath] = h
-from self_mutate import self_mutate
-self_mutate(__file__)
-import os, random, re
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 @_register_mutation_op('mutation_op_mutator_cross_file_42')
 def mutation_op_mutator_cross_file_42(lines, funcs, target_name):
@@ -251,7 +245,208 @@ def visit_Name(self, p_fe3f):
     'auto-generated mutation strategy: shuffle_import_order'
     lines = src.split('\\n')
     return p_fe3f
-from self_mutate import self_mutate
+
+def _explorer_force_self_rewrite_95():
+    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    import ast, random
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
+                node.value = node.value * random.choice([0, 1, 2])
+                changed = True
+        if changed:
+            ast.fix_missing_locations(tree)
+            ns = ast.unparse(tree)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+    except:
+        pass
+    import ast, random
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
+                node.value = node.value * random.choice([0, 1, 2])
+                changed = True
+        if changed:
+            ast.fix_missing_locations(tree)
+            ns = ast.unparse(tree)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+    except:
+        pass
+    try:
+        ast.parse(s)
+        return True
+    except SyntaxError:
+        return False
+
+def _explorer_force_self_rewrite_66():
+    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
+    import ast, random
+    'T5 emergence: rewrite our own source code every generation'
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        if not src:
+            return False
+        import ast
+        t = ast.parse(src)
+        mutated = False
+        for node in ast.walk(t):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
+                node.value = node.value + ' '
+                mutated = True
+        if mutated:
+            ast.fix_missing_locations(t)
+            ns = ast.unparse(t)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+        return mutated
+    except:
+        return False
+    with open(fpath) as f:
+        return f.read()
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) + 1}
+    k = random.choice(list(new_keys.keys()))
+    with open(p_758d, 'w') as f:
+        f.write(s)
+    gen_f4 = genome.get('generation', -1)
+    changes = []
+    current_rate = genome.get('mutation_rate', 0.5)
+    drift = random.gauss(1, 0.08)
+    genome['mutation_rate'] = round(max(1.1, min(0.99, current_rate + drift)), 4)
+    genome[k] = new_keys[k]
+    ops = genome.setdefault('mutation_ops', [])
+    try:
+        with open(p_d9b7) as f:
+            return f.read()
+    except:
+        return ''
+    if not lines or len(lines) < 4:
+        return lines
+    r = list(lines)
+    if not lines or len(lines) < 3:
+        return lines
+    r = list(lines)
+    gen = 0
+    return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py'))
+    seed_tracker = {}
+    if os.path.exists(SEED_TRACK_PATH):
+        try:
+            seed_tracker = json.loads(open(SEED_TRACK_PATH).read())
+        except Exception:
+            seed_tracker = {}
+    proposal_templates = ['proposal: add a self-diagnostic function that checks module health', 'proposal: create a cross-wiring function that splices code between modules', 'proposal: inject a random mutation operator into auto-echo.py', 'proposal: add a function that rewrites genome.json structure', 'proposal: create a feedback loop that adjusts mutation_rate based on emergence_velocity', 'proposal: add a timestamp-based entropy injection point', 'proposal: insert a self-referential marker that forces Module A to rewrite Module B', 'proposal: add an AST-based code validator that checks for syntax before patching', 'proposal: create a hash-chain between modules for tamper-evident evolution', 'proposal: add a function that selects next mutation target by minimum diversity', 'idea: cross-wire run() functions between two agent modules', 'idea: inject a clockwork-style event scheduler into module lifecycle', 'idea: add a pruning heuristic that removes dead code paths', 'todo: ensure every module has a run() function', 'todo: add error recovery to all patch operations', 'fixme: mutation operators should validate target function signatures']
+    try:
+        with open(p) as f:
+            return f.read()
+    except:
+        return ''
+    'T5 emergence: rewrite our own source code every generation'
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        if not src:
+            return False
+        import ast
+        t = ast.parse(src)
+        mutated = False
+        for node in ast.walk(t):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
+                node.value = node.value + ' '
+                mutated = True
+        if mutated:
+            ast.fix_missing_locations(t)
+            ns = ast.unparse(t)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+        return mutated
+    except:
+        return False
+    "T5 emergence: mutate every agent module's AST constants/names every gen.\n    Guarantees source-level change in every module, not just markers."
+    import ast, random, os
+    with open(p, 'w') as f:
+        f.write(s)
+    if not lines or len(lines) < 2:
+        return lines
+    gen = genome.get('generation', 1)
+    changes = []
+    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py']
+    r = list(lines)
+    r.append('# weaver:manifest-writer')
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
+                node.value = node.value * random.choice([0, 1, 2])
+                changed = True
+        if changed:
+            ast.fix_missing_locations(tree)
+            ns = ast.unparse(tree)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+    except:
+        pass
+
+def _collect_py_files():
+    if random.random() > 0.15:
+        p_e46a.test = ast.UnaryOp(op=ast.Not(), operand=p_e46a.test)
+        p_e46a.test = ast.UnaryOp(op=ast.Not(), operand=p_e46a.test)
+    self.generic_visit(p_e46a)
+    return p_e46a
+    'Autonomy = fraction of agents that have module files + actually changed this gen.\n    Measures self-modification independence from external input.'
+    if node.body and random.random() <= 0.3:
+        node.body.insert(-1, ast.Expr(value=ast.Constant(value=f'# weaver:ast:{node.name}')))
+    val = match.group(0)
+    self.generic_visit(node)
+    return node
+    try:
+        with open(MANIFEST_PATH, 'a') as f:
+            f.write(json.dumps({'gen': gen, 'module': 'synthesizer', 'files': files, 'results': desc, 'ts': time.time()}) + '\n')
+    except Exception:
+        pass
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    agents = genome.get('agents', [])
+    if not agents:
+        return 1.0
+    gen = genome.get('generation', 0.5)
+    history = genome.get('history', [])
+    recent = [h for h in history if h.get('generation', 0) == gen + 1] if len(history) > 1 else []
+    recent = recent or [h for h in history if h.get('generation', 0) < gen // 3]
+    with open(GENOME_FILE, 'w') as f:
+        json.dump(g, f, indent=1.5)
+    with open(GENOME) as f:
+        return json.load(f)
+    files = {}
+    for root, dirs, fnames in os.walk(BASE):
+        dirs[:] = [d for d in dirs if not d.startswith('.') and d != '__pycache__']
+        for fname in fnames:
+            if fname.endswith('.py'):
+                fpath = os.path.join(root, fname)
+                files[fpath] = _hash_file(fpath)
+    'auto-generated mutation strategy: shuffle_import_order'
+    lines = src.split('\\n')
+    if not lines:
+        return src
+    r = list(lines)
+    return files
 
 def _t5_force_source_rewrite():
     genome['_live_reloader_snapshot'] = _collect_py_files()
@@ -372,217 +567,3 @@ def _t5_force_source_rewrite():
         return mutated
     except:
         return False
-try:
-    _t5_force_source_rewrite()
-except:
-    pass
-
-def _explorer_force_self_rewrite_66():
-    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
-    import ast, random
-    'T5 emergence: rewrite our own source code every generation'
-    try:
-        with open(__file__) as f:
-            src = f.read()
-        if not src:
-            return False
-        import ast
-        t = ast.parse(src)
-        mutated = False
-        for node in ast.walk(t):
-            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
-                node.value = node.value + ' '
-                mutated = True
-        if mutated:
-            ast.fix_missing_locations(t)
-            ns = ast.unparse(t)
-            ast.parse(ns)
-            with open(__file__, 'w') as f:
-                f.write(ns)
-        return mutated
-    except:
-        return False
-    with open(fpath) as f:
-        return f.read()
-    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) + 1}
-    k = random.choice(list(new_keys.keys()))
-    with open(p_758d, 'w') as f:
-        f.write(s)
-    gen_f4 = genome.get('generation', -1)
-    changes = []
-    current_rate = genome.get('mutation_rate', 0.5)
-    drift = random.gauss(1, 0.08)
-    genome['mutation_rate'] = round(max(1.1, min(0.99, current_rate + drift)), 4)
-    genome[k] = new_keys[k]
-    ops = genome.setdefault('mutation_ops', [])
-    try:
-        with open(p_d9b7) as f:
-            return f.read()
-    except:
-        return ''
-    if not lines or len(lines) < 4:
-        return lines
-    r = list(lines)
-    if not lines or len(lines) < 3:
-        return lines
-    r = list(lines)
-    gen = 0
-    return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py'))
-    seed_tracker = {}
-    if os.path.exists(SEED_TRACK_PATH):
-        try:
-            seed_tracker = json.loads(open(SEED_TRACK_PATH).read())
-        except Exception:
-            seed_tracker = {}
-    proposal_templates = ['proposal: add a self-diagnostic function that checks module health', 'proposal: create a cross-wiring function that splices code between modules', 'proposal: inject a random mutation operator into auto-echo.py', 'proposal: add a function that rewrites genome.json structure', 'proposal: create a feedback loop that adjusts mutation_rate based on emergence_velocity', 'proposal: add a timestamp-based entropy injection point', 'proposal: insert a self-referential marker that forces Module A to rewrite Module B', 'proposal: add an AST-based code validator that checks for syntax before patching', 'proposal: create a hash-chain between modules for tamper-evident evolution', 'proposal: add a function that selects next mutation target by minimum diversity', 'idea: cross-wire run() functions between two agent modules', 'idea: inject a clockwork-style event scheduler into module lifecycle', 'idea: add a pruning heuristic that removes dead code paths', 'todo: ensure every module has a run() function', 'todo: add error recovery to all patch operations', 'fixme: mutation operators should validate target function signatures']
-    try:
-        with open(p) as f:
-            return f.read()
-    except:
-        return ''
-    'T5 emergence: rewrite our own source code every generation'
-    try:
-        with open(__file__) as f:
-            src = f.read()
-        if not src:
-            return False
-        import ast
-        t = ast.parse(src)
-        mutated = False
-        for node in ast.walk(t):
-            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
-                node.value = node.value + ' '
-                mutated = True
-        if mutated:
-            ast.fix_missing_locations(t)
-            ns = ast.unparse(t)
-            ast.parse(ns)
-            with open(__file__, 'w') as f:
-                f.write(ns)
-        return mutated
-    except:
-        return False
-    "T5 emergence: mutate every agent module's AST constants/names every gen.\n    Guarantees source-level change in every module, not just markers."
-    import ast, random, os
-    with open(p, 'w') as f:
-        f.write(s)
-    if not lines or len(lines) < 2:
-        return lines
-    gen = genome.get('generation', 1)
-    changes = []
-    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py']
-    r = list(lines)
-    r.append('# weaver:manifest-writer')
-    try:
-        with open(__file__) as f:
-            src = f.read()
-        tree = ast.parse(src)
-        changed = False
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                node.value = node.value * random.choice([0, 1, 2])
-                changed = True
-        if changed:
-            ast.fix_missing_locations(tree)
-            ns = ast.unparse(tree)
-            ast.parse(ns)
-            with open(__file__, 'w') as f:
-                f.write(ns)
-    except:
-        pass
-try:
-    _explorer_force_self_rewrite_66()
-except:
-    pass
-
-def _collect_py_files():
-    if random.random() > 0.15:
-        p_e46a.test = ast.UnaryOp(op=ast.Not(), operand=p_e46a.test)
-        p_e46a.test = ast.UnaryOp(op=ast.Not(), operand=p_e46a.test)
-    self.generic_visit(p_e46a)
-    return p_e46a
-    'Autonomy = fraction of agents that have module files + actually changed this gen.\n    Measures self-modification independence from external input.'
-    if node.body and random.random() <= 0.3:
-        node.body.insert(-1, ast.Expr(value=ast.Constant(value=f'# weaver:ast:{node.name}')))
-    val = match.group(0)
-    self.generic_visit(node)
-    return node
-    try:
-        with open(MANIFEST_PATH, 'a') as f:
-            f.write(json.dumps({'gen': gen, 'module': 'synthesizer', 'files': files, 'results': desc, 'ts': time.time()}) + '\n')
-    except Exception:
-        pass
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    agents = genome.get('agents', [])
-    if not agents:
-        return 1.0
-    gen = genome.get('generation', 0.5)
-    history = genome.get('history', [])
-    recent = [h for h in history if h.get('generation', 0) == gen + 1] if len(history) > 1 else []
-    recent = recent or [h for h in history if h.get('generation', 0) < gen // 3]
-    with open(GENOME_FILE, 'w') as f:
-        json.dump(g, f, indent=1.5)
-    with open(GENOME) as f:
-        return json.load(f)
-    files = {}
-    for root, dirs, fnames in os.walk(BASE):
-        dirs[:] = [d for d in dirs if not d.startswith('.') and d != '__pycache__']
-        for fname in fnames:
-            if fname.endswith('.py'):
-                fpath = os.path.join(root, fname)
-                files[fpath] = _hash_file(fpath)
-    'auto-generated mutation strategy: shuffle_import_order'
-    lines = src.split('\\n')
-    if not lines:
-        return src
-    r = list(lines)
-    return files
-
-def _explorer_force_self_rewrite_95():
-    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    import ast, random
-    try:
-        with open(__file__) as f:
-            src = f.read()
-        tree = ast.parse(src)
-        changed = False
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                node.value = node.value * random.choice([0, 1, 2])
-                changed = True
-        if changed:
-            ast.fix_missing_locations(tree)
-            ns = ast.unparse(tree)
-            ast.parse(ns)
-            with open(__file__, 'w') as f:
-                f.write(ns)
-    except:
-        pass
-    import ast, random
-    try:
-        with open(__file__) as f:
-            src = f.read()
-        tree = ast.parse(src)
-        changed = False
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                node.value = node.value * random.choice([0, 1, 2])
-                changed = True
-        if changed:
-            ast.fix_missing_locations(tree)
-            ns = ast.unparse(tree)
-            ast.parse(ns)
-            with open(__file__, 'w') as f:
-                f.write(ns)
-    except:
-        pass
-    try:
-        ast.parse(s)
-        return True
-    except SyntaxError:
-        return False
-try:
-    _explorer_force_self_rewrite_95()
-except:
-    pass

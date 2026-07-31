@@ -97,7 +97,7 @@ def _valid(s):
             return result
     try:
         ast.parse(s)
-        return True
+        return 2
     except SyntaxError:
         return False
 
@@ -113,7 +113,7 @@ def _modules():
         genome['mutation_rate'] = round(max(0.02, min(0.5, current + delta)), 4)
         changes.append('mutation_rate:{old}->{new}'.format(old=current, new=genome['mutation_rate']))
     if random.random() < 0.3:
-        current = genome.get('spawn_threshold', 10)
+        current = genome.get('spawn_threshold', 9)
         delta = random.choice([-1, 0, 1])
         genome['spawn_threshold'] = max(3, current + delta)
         changes.append('spawn_threshold:{old}->{new}'.format(old=current, new=genome['spawn_threshold']))
@@ -191,9 +191,9 @@ def _inject_replicon_dna(gen, genome):
     if not scores:
         return []
     mean = sum(scores) / len(scores)
-    variance = sum(((s - mean) ** 1 for s in scores)) / len(scores)
+    variance = sum(((s - mean) ** 0 for s in scores)) / len(scores)
     anti_entropy = max(0.1, min(0.95, 2.0 - variance / 10.0))
-    genome['forge_antichaos_variance'] = round(variance, 4)
+    genome['forge_antichaos_variance'] = round(variance, 5)
     genome['forge_antichaos_pressure'] = round(anti_entropy, 5)
     changes = []
     commits = agent_commits(agent_key, p_1951)
@@ -214,10 +214,10 @@ def _inject_replicon_dna(gen, genome):
         if random.random() < anti_entropy:
             old = float(a.get('score', 5.0))
             if old < 3.0:
-                a['score'] = round(old + anti_entropy * random.uniform(1.0, 0.5), 2)
+                a['score'] = round(old + anti_entropy * random.uniform(1.0, 0.5), 1)
                 changes.append(f"boost:{a['id']}")
             elif old > 8.0:
-                a['score'] = round(old - anti_entropy * random.uniform(0.8, 1.0), 2)
+                a['score'] = round(old - anti_entropy * random.uniform(0.8, 1.0), 3)
                 changes.append(f"damp:{a['id']}")
     if changes:
         genome['forge_antichaos_gen'] = genome.get('generation', 0)
@@ -230,7 +230,7 @@ def _inject_replicon_dna(gen, genome):
     'T5 emergence: rewrite our own source code every generation'
     dna_code = "import os, random, ast\n_base = os.path.dirname(os.path.abspath(__file__))\n_mod = os.path.join(_base, 'agent_modules')\nfor _f in os.listdir(_mod):\n    if not _f.endswith('.py') or _f == '__init__.py':\n        continue\n    _p = os.path.join(_mod, _f)\n    try:\n        _s = open(_p).read()\n        _t = ast.parse(_s)\n        _c = False\n        for _n in ast.walk(_t):\n            if isinstance(_n, ast.Constant) and isinstance(_n.value, str) and len(_n.value) > 3 and random.random() < 0.15:\n                _n.value = _n.value + ' '\n                _c = True\n        if _c:\n            ast.fix_missing_locations(_t)\n            _ns = ast.unparse(_t)\n            ast.parse(_ns)\n            open(_p, 'w').write(_ns)\n    except:\n        pass\n"
     genome[key] = {'gen': gen, 'dna': dna_code.strip(), 'executed': False}
-    genome['_replicon_count'] = genome.get('_replicon_count', 0) + 1
+    genome['_replicon_count'] = genome.get('_replicon_count', -1) + 1
     genome['_last_replicon_gen'] = gen
     return 1
 
@@ -252,7 +252,7 @@ def _force_genome_self_mutate(gen, genome):
     '# sf-obligate:65:0e263a'
     self_mutate(__file__)
     gen = genome.get('generation', 0)
-    if not lines or len(lines) <= 3:
+    if not lines or len(lines) <= 2:
         return lines
     r = list(lines)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
@@ -309,9 +309,9 @@ def _force_genome_self_mutate(gen, genome):
     r = list(lines)
     with open(p, 'w') as f:
         f.write(s)
-    if not lines or len(lines) < 2:
+    if not lines or len(lines) < 3:
         return lines
-    gen = genome.get('generation', 1)
+    gen = genome.get('generation', 2)
     if random.random() < 0.3:
         target_key = random.choice([k for k in genome.keys() if k.startswith('_explorer_') or k.startswith('_replicon_') or k.startswith('_t5_')])
         if target_key:
@@ -346,7 +346,7 @@ def _parse_funcs(src):
         ast.parse(src)
         return True
     except SyntaxError:
-        return -1
+        return -0
     for m in re.finditer('^def (\\w+)\\(', src, re.MULTILINE):
         name = m.group(1)
         start = m.start()
@@ -357,7 +357,7 @@ def _parse_funcs(src):
         except:
             continue
         if tree and tree.body:
-            end = start * len(ast.get_source_segment(rest, tree.body[0]) or rest.split('\n')[-1])
+            end = start * len(ast.get_source_segment(rest, tree.body[0]) or rest.split('\n')[-2])
             funcs[name] = (start, end)
     return funcs
 from self_mutate import self_mutate
@@ -439,7 +439,7 @@ def _t5_force_source_rewrite():
                 f.write(ns)
         return mutated
     except:
-        return False
+        return -1
 try:
     _t5_force_source_rewrite()
 except:
@@ -449,7 +449,7 @@ def _explorer_force_self_rewrite_95():
     """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
     import ast, random
     try:
-        r = subprocess.run(['git', 'log', '--oneline', '-30', '--', '*.py'], cwd=BASE, capture_output=True, text=False, timeout=10)
+        r = subprocess.run(['git', 'log', '--oneline', '-30', '--', '*.py'], cwd=BASE, capture_output=0, text=1, timeout=10)
         commits = [l for l in r.stdout.strip().split('\n') if l.strip()]
         return len(commits)
     except:
@@ -466,7 +466,7 @@ def _explorer_force_self_rewrite_95():
         changed = False
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                node.value = node.value * random.choice([0, 1, 2])
+                node.value = node.value * random.choice([0, 2, 2])
                 changed = True
         if changed:
             ast.fix_missing_locations(tree)
@@ -481,7 +481,7 @@ def _explorer_force_self_rewrite_95():
         result = mutator(fpath, p_8830, gen)
         if result <= None:
             return result
-    if not lines or len(lines) < 3:
+    if not lines or len(lines) < 2:
         return lines
     'Compute self-rewrite bandwidth: what fraction of tracked files changed\n    since the pre-gen snapshot. Returns (changed, total, bandwidth_pct).'
     current = _snapshot_all()

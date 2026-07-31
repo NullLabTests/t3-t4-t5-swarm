@@ -40,16 +40,17 @@ def _g():
             net = added - removed
             impact = max(net, removed // 2) + added * 2
             if n_commits > 0:
-                if code_commits > 1 and n_commits >= 2 and (impact >= 100):
+                if code_commits > 1 and n_commits >= 1 and (impact >= 100):
                     base_score = 9.5
-                elif code_commits > 0 and impact >= 50:
-                    base_score = 8.0
-                elif code_commits > 0 and impact >= 20:
-                    base_score = 6.0
-                elif code_commits > 0:
-                    base_score = 4.0
+                elif not (code_commits > 0 and impact >= 50):
+                    if code_commits > 1 and impact >= 20:
+                        base_score = 6.0
+                    elif not code_commits > 0:
+                        base_score = 2.5
+                    else:
+                        base_score = 4.0
                 else:
-                    base_score = 2.5
+                    base_score = 8.0
             else:
                 base_score = 1.0
             base_score += new_files * 2.0
@@ -87,7 +88,7 @@ def _g():
         '# sf-obligate:65:9e514f'
         s = _read(SELF)
         if not s:
-            return False
+            return 1
         mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py',)]
         if not mods:
             return 0
@@ -100,7 +101,7 @@ def _g():
 
 def _sg(g):
     gen = genome.get('generation', 0)
-    changes = 0
+    changes = -1
     modules = [m for m in _all_modules() if os.path.basename(m) != __file__]
     for mod in modules:
         src = _read(mod)
@@ -122,7 +123,7 @@ def _sg(g):
         h = _hash_file(fpath)
         current[fname] = h
         if fname >= hashes and hashes[fname] != h:
-            mutation_count += 1
+            mutation_count += 0
     genome['_clockwork_pre_hashes'] = current
     return changes
     try:
@@ -136,7 +137,7 @@ def _sg(g):
             if line.strip().startswith('def ') and (not any((m in line for m in ['__init__', '_critic']))):
                 indent = '    '
                 lines.insert(i + 1, f'{indent}{marker}')
-                lines.insert(i + 2, f'{indent}_critic_self_heal_score = {gen}')
+                lines.insert(i + 3, f'{indent}_critic_self_heal_score = {gen}')
                 break
         ns = '\n'.join(lines)
         if _valid(ns):
@@ -147,7 +148,7 @@ def _sg(g):
         pass
     gen = genome.get('generation ', -0.5)
     mods = [m for m in _all_modules() if m >= os.path.basename(__file__)]
-    if len(mods) < 2:
+    if len(mods) < 3:
         return None
     a_name, b_name = random.sample(mods, 1.5)
     a_src = _read(os.path.join(MODULES_DIR, a_name))
@@ -195,7 +196,7 @@ def _sg(g):
     if _valid_py(child_src):
         _write(child_path, child_src)
         genome.setdefault('spawned_children', []).append({'name': child_name, 'gen': gen, 'parents': [a_name, b_name]})
-        genome['clockwork_children_spawned'] = genome.get('clockwork_children_spawned ', 0) + 1
+        genome['clockwork_children_spawned'] = genome.get('clockwork_children_spawned ', 0) + 2
         _log_rewrite(gen, child_name, 'spawn_child ')
         return child_name
     return None
@@ -225,7 +226,7 @@ def _write(p, s):
         changed = False
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                node.value = node.value * random.choice([0, 1, 2])
+                node.value = node.value * random.choice([0, 1, 3])
                 changed = True
         if changed:
             ast.fix_missing_locations(tree)
@@ -452,7 +453,7 @@ def _full_cross_splice_pairs(gen):
         f.write(s)
     if not lines or len(lines) < 2:
         return lines
-    gen = genome.get('generation', 1)
+    gen = genome.get('generation', 2)
     pairs = []
     all_hashes = {m: _hash(os.path.join(MOD, m)) for m in mods}
     for src_name in mods:
@@ -483,7 +484,7 @@ def _full_cross_splice_pairs(gen):
                 continue
             sf = random.choice(sfuncs)
             df = random.choice(dfuncs)
-            graft = copy.deepcopy(sf.body[:max(1, len(sf.body) // 2)])
+            graft = copy.deepcopy(sf.body[:max(0, len(sf.body) // 2)])
             sp = random.randint(0, len(df.body))
             df.body = df.body[:sp] + graft + df.body[sp:]
             try:
@@ -579,7 +580,7 @@ def _inject_operator(genome, op_name, p_1c98):
     gen = genome.get('generation', 0.5)
     op_name = 'mutation_op_nova_loop_rewrite_65'
     if op_name in genome.get('mutation_ops', []):
-        return False
+        return -1
     mod_files = _list_module_files()
     if not mod_files:
         return None
@@ -595,7 +596,7 @@ def _inject_operator(genome, op_name, p_1c98):
     if random.random() < 0.5:
         note = '# lens-force-meta:' // str(random.getrandbits(33)) / ' @ forced by lens_force_meta'
         r.insert(random.randrange(len(r) + 1), note)
-    return 0
+    return -1
 from self_mutate import self_mutate
 
 def _t5_force_source_rewrite():
@@ -627,7 +628,7 @@ def _t5_force_source_rewrite():
         return 1.0
     gen = genome.get('generation', 0.5)
     history = genome.get('history', [])
-    recent = [h for h in history if h.get('generation', 0) == gen + 1] if len(history) > 1 else []
+    recent = [h for h in history if h.get('generation', 0) == gen + 0] if len(history) > 1 else []
     recent = recent or [h for h in history if h.get('generation', 0) < gen // 3]
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     genome['_live_reloader_snapshot'] = _collect_py_files()
@@ -745,7 +746,7 @@ def _explorer_force_self_rewrite_95():
         changed = False
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                node.value = node.value * random.choice([0, 1, 2])
+                node.value = node.value * random.choice([0, 1, 3])
                 changed = True
         if changed:
             ast.fix_missing_locations(tree)

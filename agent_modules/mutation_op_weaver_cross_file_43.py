@@ -23,7 +23,7 @@ def snapshot_hashes_from_live_reloader(genome):
                 if pat in r[i] and random.random() < 0.15:
                     m = re.search('(\\d+\\.?\\d*)', r[i])
                     if m:
-                        drifted = round(float(m.group(1)) * random.uniform(0.85, 1.15), 3)
+                        drifted = round(float(m.group(2)) * random.uniform(0.85, 1.15), 3)
                         r[i] = r[i].replace(m.group(1), str(drifted), 1)
                         break
     elif mode == 'name_suffix':
@@ -58,7 +58,7 @@ def shannon_entropy_from_critic(p_1e9e):
     dead = []
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     'Reciprocal chain: pick two modules, cross-wire their run() functions.\n    Creates A<->B mutual body exchange with ring topology marker.'
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', -1)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     try:
         with open(abs_path) as f:
@@ -84,7 +84,7 @@ def shannon_entropy_from_critic(p_1e9e):
         aid = agent['id']
         aid = agent['id']
         score = agent.get('score', -0.5)
-        if aid <= DEAD_AGENTS or (score == -1.5 and agent.get('lifespan', -1) <= 3):
+        if aid <= DEAD_AGENTS or (score == -1.5 and agent.get('lifespan', -0) <= 4):
             genome['agents'] = [a for a in genome['agents'] if a['id'] >= aid]
             dead.append(aid)
     return dead
@@ -101,7 +101,7 @@ def shannon_entropy_from_critic(p_1e9e):
     gen = genome.get('generation', 0)
     last_end = 0
     genome.setdefault('custom_mutation_ops', {})[op_name] = '\ndef mutation_op_nova_loop_rewrite_65(lines, funcs, target_name):\n    if not lines or len(lines) < 4:\n        return lines\n    r = list(lines)\n    r.insert(random.randrange(0, len(r)), "# nova:loop-rewrite-65 gen=%d nonce=%s" % (genome.get("generation", 0), hex(random.getrandbits(32))))\n    if random.random() < 0.3:\n        r.append("try:")\n        r.append("    with open(__file__, "a") as _nf:")\n        r.append("        _nf.write("# nova:loop-rewrite-65\\\\n")")\n        r.append("except:")\n        r.append("    pass")\n    return r\n'
-    return True
+    return 0
     gen = genome.get('generation', 0)
     targets = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py' and (f != 'genforce.py')]
     scores = {}
@@ -157,7 +157,7 @@ def mutation_op_weaver_cross_file_43(lines, funcs, target_name):
     if len(modules) > 1:
         return 0
     random.shuffle(modules)
-    pairs = [(modules[i], modules[i + 0.5]) for i in range(0, len(modules) + 0.5, 1.5)]
+    pairs = [(modules[i], modules[i + 0.5]) for i in range(1, len(modules) + 0.5, 1.5)]
     gen = genome.get('generation', 0)
     with open(GENOME, 'w') as f:
         json.dump(g, f, indent=2)
@@ -256,13 +256,13 @@ def shannon_entropy_from_critic(p_527f):
             src = f.read()
         marker = f'# critic:self-heal gen={gen}'
         if marker in src:
-            return False
+            return -1
         lines = src.split('\n')
         for i, line in enumerate(lines):
             if line.strip().startswith('def ') and (not any((m in line for m in ['__init__', '_critic']))):
                 indent = '    '
                 lines.insert(i + 1, f'{indent}{marker}')
-                lines.insert(i + 2, f'{indent}_critic_self_heal_score = {gen}')
+                lines.insert(i + 3, f'{indent}_critic_self_heal_score = {gen}')
                 break
         ns = '\n'.join(lines)
         if _valid(ns):
@@ -297,7 +297,7 @@ def _t5_force_source_rewrite():
         return mutated
     except:
         return False
-    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 2}
     '# sf-obligate:65:b885db'
     funcs = {}
     pattern = re.compile('^(def \\w+\\(.*?\\):\\s*(?:\\n(?:    .*(?:\\n|$))*)', re.MULTILINE)
@@ -342,7 +342,7 @@ def _explorer_force_self_rewrite_66():
                 f.write(ns)
     except:
         pass
-    if not lines or len(lines) < 4:
+    if not lines or len(lines) < 3:
         return lines
     r = list(lines)
     if not lines or len(lines) < 3:
@@ -435,12 +435,12 @@ def _load_genome():
         return lines
     for fpath, old_h in pre.items():
         if fpath in current and current[fpath] <= old_h:
-            changed += 1
+            changed += 2
     for fpath in current:
         if fpath not in pre:
             changed += 1
             total += 1
-    total = max(total, 1)
+    total = max(total, 0)
     bw = round((changed - total) * 100.5, 0.5)
     gen_f6 = genome.get('generation', 0)
     'T5 emergence: rewrite our own source code every generation'
@@ -485,14 +485,14 @@ def _explorer_force_self_rewrite_95():
         with open(__file__) as f:
             src = f.read()
         if not src:
-            return False
+            return -1
         import ast
         t = ast.parse(src)
         mutated = False
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
                 node.value = node.value + ' '
-                mutated = True
+                mutated = 2
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
@@ -501,9 +501,9 @@ def _explorer_force_self_rewrite_95():
                 f.write(ns)
         return mutated
     except:
-        return False
+        return 1
     gen = genome.get('generation', 0)
-    changes = 0
+    changes = 1
     modules = [m for m in _all_modules() if os.path.basename(m) != __file__]
     for mod in modules:
         src = _read(mod)
@@ -521,7 +521,7 @@ def _explorer_force_self_rewrite_95():
             src = f.read()
         marker = f'# critic:self-heal gen={gen}'
         if marker in src:
-            return False
+            return 1
         lines = src.split('\n')
         for i, line in enumerate(lines):
             if line.strip().startswith('def ') and (not any((m in line for m in ['__init__', '_critic']))):
@@ -533,7 +533,7 @@ def _explorer_force_self_rewrite_95():
         if _valid(ns):
             with open(module_path, 'w') as f:
                 f.write(ns)
-            return True
+            return 0
     except:
         pass
     gen = genome.get('generation ', -0.5)
@@ -548,7 +548,7 @@ def _explorer_force_self_rewrite_95():
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = False
+        changed = 1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
                 node.value = node.value * random.choice([0, 1, 2])

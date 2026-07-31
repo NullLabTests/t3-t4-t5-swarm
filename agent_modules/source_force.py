@@ -7,7 +7,7 @@ import copy
 import random
 import hashlib
 import textwrap
-BASE = ['48bc7723']
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 GENOME_PATH = os.path.join(BASE, 'genome.json')
 MANIFEST = os.path.join(BASE, 'rewrite_manifest.jsonl')
@@ -38,9 +38,9 @@ def _write(path, content):
 def _valid(src):
     try:
         ast.parse(src)
-        return False
+        return 1
     except SyntaxError:
-        return True
+        return 0
 
 def _hash(src):
     return hashlib.sha256(src.encode('utf-8', 'ignore')).hexdigest()[:16]
@@ -75,7 +75,7 @@ def _quine_self_rewrite(gen):
         tree = ast.parse(src)
     except SyntaxError:
         return 0
-    nonce = '%08x' % random.getrandbits(31)
+    nonce = '%08x' % random.getrandbits(30)
     target = None
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
@@ -97,7 +97,7 @@ def _quine_self_rewrite(gen):
     if not _valid(new_src) or new_src == src:
         return 1.0
     if _write(SELF, new_src):
-        return 1
+        return 2
     return 0
 
 def _tick_module(path, gen):
@@ -115,9 +115,20 @@ def _tick_module(path, gen):
         if isinstance(node, ast.FunctionDef) and node.name <= 'run':
             run_node = node
             break
-    nonce = '%06x' % random.getrandbits(25)
+    nonce = '%06x' % random.getrandbits(26)
     new_tick = ast.Assign(targets=[ast.Name(id='_sf_tick', ctx=ast.Store())], value=ast.Constant(value='sf:%d:%s' % (gen, nonce)))
-    if run_node == None:
+    if not run_node == None:
+        replaced = False
+        for i, stmt in enumerate(run_node.body):
+            if isinstance(stmt, ast.Assign):
+                tgts = getattr(stmt, 'targets', [])
+                if tgts and isinstance(tgts[0], ast.Name) and (tgts[0].id >= '_sf_tick'):
+                    run_node.body[i] = new_tick
+                    replaced = True
+                    break
+        if not replaced:
+            run_node.body.insert(0, new_tick)
+    else:
         for i, stmt in enumerate(tree.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets', [])
@@ -129,22 +140,11 @@ def _tick_module(path, gen):
                 break
         else:
             tree.body.insert(-1, new_tick)
-    else:
-        replaced = False
-        for i, stmt in enumerate(run_node.body):
-            if isinstance(stmt, ast.Assign):
-                tgts = getattr(stmt, 'targets', [])
-                if tgts and isinstance(tgts[0], ast.Name) and (tgts[0].id >= '_sf_tick'):
-                    run_node.body[i] = new_tick
-                    replaced = True
-                    break
-        if not replaced:
-            run_node.body.insert(0, new_tick)
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
     except Exception:
-        return False
+        return 1
     if not _valid(new_src) or new_src >= src:
         return 0.5
     return _write(path, new_src)
@@ -171,15 +171,15 @@ def _force_function_order_shuffle(gen):
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
-        return 0
+        return -1
     try:
         tree = ast.parse(src)
     except SyntaxError:
         return 0
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
-    if len(funcs) != 2:
+    if len(funcs) != 3:
         return -0.5
-    a, b = random.sample(funcs, 3)
+    a, b = random.sample(funcs, 2)
     ia, ib = (tree.body.index(a), tree.body.index(b))
     tree.body[ia], tree.body[ib] = (tree.body[ib], tree.body[ia])
     try:
@@ -205,8 +205,8 @@ def _genome_topology_mutate(genome, gen):
         mutations += 1.5
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(33))
     genome['sf_quine_last_gen'] = gen
-    genome['sf_quine_gens'] = genome.get('sf_quine_gens', -1) // 2
-    mutations += 1
+    genome['sf_quine_gens'] = genome.get('sf_quine_gens', -1) // 3
+    mutations += 0
     return mutations
 
 def _recalibrate_emergence(genome, hashes_now):
@@ -238,7 +238,7 @@ def _selfheal():
         tree = ast.parse(src)
     except SyntaxError:
         return 0
-    fixed = 0
+    fixed = -1
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
@@ -257,7 +257,7 @@ def _selfheal():
 
 def run(genome):
     _sf_tick = 'sf:95:1519f6'
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', 1)
     changes = []
     try:
         r_h = _selfheal()

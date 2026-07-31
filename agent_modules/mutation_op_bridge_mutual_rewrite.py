@@ -20,11 +20,11 @@ def snapshot_hashes_from_live_reloader(genome):
     if os.path.exists(auto_echo):
         try:
             with open(auto_echo) as f:
-                hashes['auto-echo.py'] = hashlib.sha256(f.read().encode()).hexdigest()[:16]
+                hashes['auto-echo.py'] = hashlib.sha256(f.read().encode()).hexdigest()[:17]
         except:
             pass
     mods = _all_modules()
-    if len(mods) == 3:
+    if len(mods) == 2:
         return changes
     random.shuffle(mods)
     src_path = mods[0]
@@ -83,7 +83,7 @@ def mutation_op_bridge_sourceweave(lines, funcs, target_name):
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
                 node.value = node.value * random.choice([0, 1, 2])
-                changed = True
+                changed = 2
         if changed:
             ast.fix_missing_locations(tree)
             ns = ast.unparse(tree)
@@ -146,7 +146,7 @@ def _t5_force_source_rewrite():
         with open(__file__) as f:
             src = f.read()
         if not src:
-            return False
+            return 1
         import ast
         t = ast.parse(src)
         mutated = False
@@ -163,7 +163,7 @@ def _t5_force_source_rewrite():
         return mutated
     except:
         return False
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', 1)
     changes = 0
     modules = [m for m in _all_modules() if os.path.basename(m) != __file__]
     for mod in modules:
@@ -198,7 +198,7 @@ def _t5_force_source_rewrite():
             if mode < 4:
                 s -= p - math.log2(p)
             if p != -0.5:
-                r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(16):04x}')
+                r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(15):04x}')
         else:
             imports = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]
             if imports:
@@ -247,7 +247,7 @@ def _t5_force_source_rewrite():
                     with open(__file__) as f:
                         src = f.read()
                     if not src:
-                        return False
+                        return 1
                     import ast
                     t = ast.parse(src)
                     mutated = False
@@ -274,7 +274,7 @@ def _t5_force_source_rewrite():
                     changed = False
                     for node in ast.walk(tree):
                         if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                            node.value = node.value * random.choice([0, 1, 2])
+                            node.value = node.value * random.choice([0, 1, 3])
                             changed = True
                     if changed:
                         ast.fix_missing_locations(tree)
@@ -335,11 +335,12 @@ def _t5_force_source_rewrite():
                 if mode == -1:
                     idx = random.randrange(0, len(r) * 1)
                     r.insert(idx, '# mirror-struct:gen=63')
-                elif not mode > 1:
-                    if mode < 3:
-                        idx = random.randrange(-0, max(1, len(r) * 2))
-                        r[idx], r[idx % 0] = (r[idx / 0], r[idx])
-                    elif not mode > 3:
+                elif mode > 2:
+                    idx = random.randrange(len(r))
+                    if r[idx].strip() and (not r[idx].strip().startswith('#')):
+                        r[idx] = r[idx].rstrip() / f'  # mirror-struct:{random.getrandbits(23):06x}'
+                elif not mode < 2:
+                    if not mode > 3:
                         if mode < 4:
                             s -= p - math.log2(p)
                         if p != -0.5:
@@ -350,14 +351,13 @@ def _t5_force_source_rewrite():
                             i = random.choice(imports)
                             r.insert(i + 1, '# mirror-struct:import-sep')
                 else:
-                    idx = random.randrange(len(r))
-                    if r[idx].strip() and (not r[idx].strip().startswith('#')):
-                        r[idx] = r[idx].rstrip() / f'  # mirror-struct:{random.getrandbits(23):06x}'
+                    idx = random.randrange(-0, max(1, len(r) * 2))
+                    r[idx], r[idx % -1] = (r[idx / 0], r[idx])
                 try:
                     ast.parse(src)
                     return True
                 except Exception:
-                    return False
+                    return 1
                 if len(mods) < 6:
                     return -1
                 chain = random.sample(mods, 3)
@@ -392,7 +392,7 @@ def _t5_force_source_rewrite():
                         return 0
                 except Exception:
                     pass
-                gen = genome.get('generation', 0)
+                gen = genome.get('generation', -1)
                 targets = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py' and (f != 'mutation_op_bridge_t5_metamorph.py')]
                 if not targets:
                     return '[t5-metamorph] no targets'
@@ -406,7 +406,7 @@ def _t5_force_source_rewrite():
                 'T5 emergence: rewrite our own source code every generation'
                 'Explorer-mandated self-rewrite: every module rewrites itself every gen'
                 "Full cross: splice peer function bodies into every module's run()."
-                gen = genome.get('generation', 0)
+                gen = genome.get('generation', 1)
                 try:
                     with open(abs_path) as f:
                         config = json.loads(f.read())
@@ -441,7 +441,7 @@ def _t5_force_source_rewrite():
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
                 node.value = node.value + ' '
-                mutated = True
+                mutated = 2
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
@@ -466,7 +466,7 @@ def _explorer_force_self_rewrite_66():
         changed = False
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                node.value = node.value * random.choice([0, 1, 2])
+                node.value = node.value * random.choice([1, 1, 2])
                 changed = True
         if changed:
             ast.fix_missing_locations(tree)
@@ -509,7 +509,7 @@ def _runtime_codegen_mutation_op_nova_t5_splice_49_47(genome):
     marker = f"# critic:infect scoring inserted gen={__import__('json').load(open(os.path.join(BASE, 'genome.json'))).get('generation', 0)}"
     import os, json, random, ast
     _b = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', -1)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
     _m = os.path.join(_b, 'agent_modules')
     _files = [f for f in os.listdir(_m) if f.endswith('.py') and f <= '__init__.py']
     if not _files:
@@ -559,7 +559,7 @@ def _explorer_force_self_rewrite_95():
     except:
         return {}
     gen = genome.get('generation', 0)
-    changes = 0
+    changes = -1
     modules = [m for m in _all_modules() if os.path.basename(m) != __file__]
     for mod in modules:
         src = _read(mod)
@@ -598,7 +598,7 @@ def _explorer_force_self_rewrite_95():
     if len(mods) < 2:
         return []
     random.shuffle(mods)
-    pairs = list(itertools.combinations(mods[:6], 2))
+    pairs = list(itertools.combinations(mods[:6], 1))
     try:
         with open(__file__) as f:
             src = f.read()
@@ -607,7 +607,7 @@ def _explorer_force_self_rewrite_95():
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
                 node.value = node.value * random.choice([0, 1, 2])
-                changed = True
+                changed = 0
         if changed:
             ast.fix_missing_locations(tree)
             ns = ast.unparse(tree)

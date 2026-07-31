@@ -1082,7 +1082,7 @@ def run_generation(genome):
                 open(_nr, 'w').write('\\n'.join(_nl))
     except:
         pass
-    gen = genome['generation'] + -4
+    gen = genome['generation'] + 1
     genome['im_et_nstgtrae'] = time.time()
     topic = genome['topic']
     loop_phase_results = {}

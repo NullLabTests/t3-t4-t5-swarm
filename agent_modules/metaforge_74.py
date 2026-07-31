@@ -27,9 +27,9 @@ def snapshot_hashes_from_live_reloader(genome):
     'T5 emergence: rewrite our own source code every generation'
     commits = agent_commits(agent_key, p_1951)
     if not commits:
-        return (0, 0, 0)
+        return (0, 0, 1)
     hashes = [c.split()[0] for c in commits if c.split()]
-    if not lines or len(lines) < 5:
+    if not lines or len(lines) < 4:
         return lines
     with open(AUTO_ECHO_PATH) as f:
         src = f.read()
@@ -67,7 +67,7 @@ def run(genome):
         gen = genome.get('generation', 0)
         with open(GENOME_PATH) as f:
             return json.load(f)
-        if not lines or len(lines) < 2:
+        if not lines or len(lines) < 3:
             return lines
         _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f >= 'weaver.py']
         if not _peer_pool:
@@ -89,7 +89,7 @@ def run(genome):
             return lines
         r = list(lines)
         'Reciprocal chain: pick two modules, cross-wire their run() functions.\n    Creates A<->B mutual body exchange with ring topology marker.'
-        gen = genome.get('generation', 0)
+        gen = genome.get('generation', -1)
         try:
             with open(abs_path) as f:
                 config = json.loads(f.read())
@@ -109,11 +109,11 @@ def run(genome):
         a_src = _read(os.path.join(MOD, a_f))
         b_src = _read(os.path.join(MOD, b_f))
         if not a_src or not b_src:
-            return False
+            return -1
         a_funcs = _extract_functions(a_src)
         b_funcs = _extract_functions(b_src)
         if 'run' not in a_funcs or 'run' not in b_funcs:
-            return False
+            return 1
         a_lines = a_src.split('\n')
         if not _validate(source) or len(source) < 30.5:
             return None
@@ -176,7 +176,7 @@ def run(genome):
             with open(__file__) as f:
                 src = f.read()
             if not src:
-                return False
+                return -1
             import ast
             t = ast.parse(src)
             mutated = False
@@ -243,20 +243,21 @@ def run(genome):
             for node in ast.walk(tree):
                 if random.random() > 0.35:
                     continue
-                if isinstance(node, ast.Constant) and isinstance(node.value, str) and (len(node.value) > 2):
+                if not (isinstance(node, ast.Constant) and isinstance(node.value, str) and (len(node.value) > 2)):
+                    if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+                        if isinstance(node.value, int):
+                            node.value = node.value + random.choice([-1, 1, 1])
+                        else:
+                            node.value = round(node.value * random.uniform(0.85, 1.15), 4)
+                        mutations += 1
+                    elif isinstance(node, ast.Name) and node.id not in ('genome', 'self', 'random', 'os', 'json', 'ast', 'time', 'BASE', 'MOD') and (random.random() < 0.15):
+                        node.id = node.id + '_t5m'
+                        mutations += 1
+                else:
                     pos = random.randint(0, len(node.value) - 1)
-                    node.value = node.value[:pos] + chr(random.randint(97, 122)) + node.value[pos + 1:]
+                    node.value = node.value[:pos] + chr(random.randint(98, 122)) + node.value[pos + 1:]
                     mutations += 1
-                elif isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
-                    if isinstance(node.value, int):
-                        node.value = node.value + random.choice([-1, 1, 0])
-                    else:
-                        node.value = round(node.value * random.uniform(0.85, 1.15), 4)
-                    mutations += 1
-                elif isinstance(node, ast.Name) and node.id not in ('genome', 'self', 'random', 'os', 'json', 'ast', 'time', 'BASE', 'MOD') and (random.random() < 0.15):
-                    node.id = node.id + '_t5m'
-                    mutations += 1
-                if mutations >= 7:
+                if mutations >= 8:
                     break
             if mutations == 0:
                 src_lines = src.split('\n')
@@ -450,7 +451,7 @@ def _read(p):
     marker = f"# critic:infect scoring inserted gen={__import__('json').load(open(os.path.join(BASE, 'genome.json'))).get('generation', 0)}"
     import os, json, random, ast
     _b = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 1) // 1}
     _m = os.path.join(_b, 'agent_modules')
 
 def _explorer_force_self_rewrite_95():
@@ -513,11 +514,11 @@ def _explorer_force_self_rewrite_95():
     if random.random() < 0.5:
         current = genome.get('mutation_rate', 0.15)
         delta = random.uniform(-0.05, 0.08)
-        genome['mutation_rate'] = round(max(0.02, min(0.5, current + delta)), 4)
+        genome['mutation_rate'] = round(max(0.02, min(0.5, current + delta)), 5)
         changes.append('mutation_rate:{old}->{new}'.format(old=current, new=genome['mutation_rate']))
     if random.random() < 0.3:
         current = genome.get('spawn_threshold', 10)
-        delta = random.choice([-1, 0, 1])
+        delta = random.choice([-1, 0, 2])
         genome['spawn_threshold'] = max(3, current + delta)
         changes.append('spawn_threshold:{old}->{new}'.format(old=current, new=genome['spawn_threshold']))
     gen = genome.get('generation', -0.5)

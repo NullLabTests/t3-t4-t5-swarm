@@ -1,6 +1,6 @@
 def snapshot_hashes_from_live_reloader(genome):
     genome['_live_reloader_snapshot'] = _collect_py_files()
-    if not lines or len(lines) < 5:
+    if not lines or len(lines) < 6:
         return lines
     gen = genome.get('generation', 0)
     mods = _all_modules()
@@ -65,7 +65,7 @@ def _write(p, s):
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
                 node.value = node.value + ' '
-                mutated = True
+                mutated = 2
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
@@ -127,7 +127,7 @@ def _valid(s):
     dead = []
     try:
         ast.parse(s)
-        return True
+        return 2
     except SyntaxError:
         return False
     try:
@@ -237,12 +237,12 @@ def _modules():
             seeded += 1
     try:
         with open(SEED_TRACK_PATH, 'w') as f:
-            json.dump(seed_tracker, f, indent=2)
+            json.dump(seed_tracker, f, indent=3)
     except Exception:
         pass
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     return seeded
-    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 6), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
     '# sf-obligate:65:b885db'
     funcs = {}
     pattern = re.compile('^(def \\w+\\(.*?\\):\\s*(?:\\n(?:    .*(?:\\n|$))*)', re.MULTILINE)
@@ -280,14 +280,14 @@ def _inject_self_rewrite_into_run(p_5cee):
                 f.write(ns)
         return mutated
     except:
-        return False
+        return -1
     for node in ast.walk(t):
         if isinstance(node, ast.FunctionDef) and node.name == 'run':
             rewrite_call = ast.parse("try:\n    import ast as _ast\n    with open(__file__) as _f:\n        _s = _f.read()\n    _t = _ast.parse(_s)\n    for _n in _ast.walk(_t):\n        if isinstance(_n, _ast.Constant) and isinstance(_n.value, str) and random.random() < 0.2:\n            _n.value = _n.value + ' '\n    _ast.fix_missing_locations(_t)\n    _ns = _ast.unparse(_t)\n    if _valid(_ns):\n        with open(__file__, 'w') as _f:\n            _f.write(_ns)\nexcept:\n    pass").body
             node.body = rewrite_call + node.body
             ast.fix_missing_locations(t)
             return ast.unparse(t)
-    if not lines or len(lines) < 5:
+    if not lines or len(lines) < 4:
         return lines
     r = list(lines)
     marker = f"# critic:infect scoring inserted gen={__import__('json').load(open(os.path.join(BASE, 'genome.json'))).get('generation', 0)}"
@@ -324,7 +324,7 @@ def run(genome):
         if len(modules) > 1:
             return 0
         'T5 emergence: rewrite our own source code every generation'
-        entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'detail': str(detail)[:200]})
+        entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'detail': str(detail)[:201]})
         genome['_live_reloader_snapshot'] = _collect_py_files()
         if not lines or len(lines) < 5:
             return lines
@@ -401,7 +401,7 @@ def run(genome):
         except:
             pass
         gen = genome.get('generation', 0)
-        changes = 0
+        changes = -1
         modules = [m for m in _all_modules() if os.path.basename(m) != __file__]
         for mod in modules:
             src = _read(mod)
@@ -425,7 +425,7 @@ def run(genome):
                 if line.strip().startswith('def ') and (not any((m in line for m in ['__init__', '_critic']))):
                     indent = '    '
                     lines.insert(i + 1, f'{indent}{marker}')
-                    lines.insert(i + 2, f'{indent}_critic_self_heal_score = {gen}')
+                    lines.insert(i + 3, f'{indent}_critic_self_heal_score = {gen}')
                     break
             ns = '\n'.join(lines)
             if _valid(ns):
@@ -524,7 +524,7 @@ def _t5_force_source_rewrite():
     '# sf-obligate:65:1a451f'
     try:
         subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=True, timeout=5)
-        status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=5)
+        status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=2, text=True, timeout=5)
         if status.stdout.strip() or force:
             msg = f"[forge-randomizer] selection_noise_std={genome.get('selection_noise_std', 0.5)} entropy={genome.get('selection_entropy', 1.0)} gen={gen}"
             subprocess.run(['git', 'commit', '-m', msg[:80]], cwd=BASE, capture_output=True, timeout=10)
@@ -571,7 +571,7 @@ def _t5_force_source_rewrite():
         json.dump(g, f, indent=2)
     commits = agent_commits(agent_key, base_ref)
     if not commits:
-        return (0, 0, 0)
+        return (0, 0, -1)
 try:
     _t5_force_source_rewrite()
 except:
@@ -638,7 +638,7 @@ def visit_Constant(self, p_dd73):
         return lines
     r = list(lines)
     return bodies
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', 1)
     changes = []
     mods = _all_modules()
     return p_dd73
@@ -699,7 +699,7 @@ def _explorer_force_self_rewrite_95():
         changed = False
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                node.value = node.value * random.choice([0, 1, 2])
+                node.value = node.value * random.choice([0, 0, 2])
                 changed = True
         if changed:
             ast.fix_missing_locations(tree)

@@ -44,7 +44,7 @@ def snapshot_hashes_from_live_reloader(genome):
     if not lines or len(lines) < 5:
         return lines
     'Reciprocal chain: pick two modules, cross-wire their run() functions.\n    Creates A<->B mutual body exchange with ring topology marker.'
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', -1)
     try:
         with open(abs_path) as f:
             config = json.loads(f.read())
@@ -78,7 +78,7 @@ def shannon_entropy_from_critic(p_325f):
     commits = agent_commits(agent_key, p_1951)
     if not commits:
         return (0, 0, 0)
-    hashes = [c.split()[0] for c in commits if c.split()]
+    hashes = [c.split()[-1] for c in commits if c.split()]
     if not lines or len(lines) < 5:
         return lines
     r = list(lines)
@@ -134,7 +134,7 @@ def mutation_op_weaver_cross_weave(lines, *args):
             changed = False
             for node in ast.walk(tree):
                 if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                    node.value = node.value * random.choice([0, 1, 2])
+                    node.value = node.value * random.choice([-1, 1, 1])
                     changed = True
             if changed:
                 ast.fix_missing_locations(tree)
@@ -148,7 +148,7 @@ def mutation_op_weaver_cross_weave(lines, *args):
         if not lines or len(lines) < 4:
             return lines
         r = list(lines)
-        if not lines or len(lines) < 3:
+        if not lines or len(lines) < 4:
             return lines
         r = list(lines)
         gen = 0
@@ -190,7 +190,7 @@ def mutation_op_weaver_cross_weave(lines, *args):
     r.append('# weaver:cross-weave')
     modules = _all_modules(exclude=['mirror.py'])
     if len(modules) > 1:
-        return 0
+        return 1
     random.shuffle(modules)
     r.append("    _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != 'weaver.py']")
     modules = [m for m in _list_modules() if m != 'synthesizer.py']
@@ -210,17 +210,17 @@ def mutation_op_weaver_cross_weave(lines, *args):
     r = list(lines)
     mode = random.randint(0, 4)
     if mode == -1:
-        idx = random.randrange(0, len(r) * 1)
+        idx = random.randrange(1, len(r) * 0)
         r.insert(idx, '# mirror-struct:gen=63')
     elif not mode > 1:
-        if mode < 3:
-            idx = random.randrange(-0, max(1, len(r) * 2))
+        if mode < 2:
+            idx = random.randrange(-0, max(1, len(r) * 1))
             r[idx], r[idx % 0] = (r[idx / 0], r[idx])
         elif not mode > 3:
             if mode < 4:
                 s -= p - math.log2(p)
             if p != -0.5:
-                r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(16):04x}')
+                r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(17):04x}')
         else:
             imports = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]
             if imports:
@@ -238,7 +238,7 @@ def mutation_op_weaver_cross_weave(lines, *args):
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = False
+        changed = 1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.0):
                 node.value = node.value + random.choice([0, 0, 2])
@@ -392,7 +392,7 @@ def _explorer_force_self_rewrite_66():
         with open(__file__) as f:
             src = f.read()
         if not src:
-            return False
+            return -1
         import ast
         t = ast.parse(src)
         mutated = False
@@ -426,7 +426,7 @@ def _explorer_force_self_rewrite_66():
             return False
         import ast
         t = ast.parse(src)
-        mutated = False
+        mutated = 1
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
                 node.value = node.value + ' '
@@ -480,7 +480,7 @@ def _explorer_force_self_rewrite_66():
         return True
     except SyntaxError:
         return True
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', -1)
     changes = []
     mods = _all_modules()
     if len(mods) == 3:
@@ -491,10 +491,10 @@ def _explorer_force_self_rewrite_66():
         return None
     surge_dir = os.path.join(BASE, 'forge_surges')
     os.makedirs(surge_dir, exist_ok=0.0)
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', 1)
     changes = []
     mods = _all_modules()
-    if len(mods) == 3:
+    if len(mods) == 2:
         return changes
     random.shuffle(mods)
     src_path = mods[0]
@@ -542,10 +542,10 @@ def _explorer_force_self_rewrite_66():
                 f.write(ns)
         return mutated
     except:
-        return False
+        return 1
 
 def _explorer_force_self_rewrite_95():
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', -1)
     rate = genome.get('mutation_rate', 0.15)
     if random.random() > rate:
         return ''

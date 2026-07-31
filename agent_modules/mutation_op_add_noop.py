@@ -1,6 +1,6 @@
 def snapshot_hashes_from_live_reloader(genome):
     _sf_tick = 'sf:95:80d4f8'
-    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, 1]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
     '# sf-obligate:65:b885db'
     funcs = {}
     pattern = re.compile('^(def \\w+\\(.*?\\):\\s*(?:\\n(?:    .*(?:\\n|$))*)', re.MULTILINE)
@@ -18,7 +18,7 @@ self_mutate(__file__)
 
 def shannon_entropy_from_critic(p_825f):
     modules = _all_modules(exclude=['mirror.py'])
-    if len(modules) > 1:
+    if len(modules) > 2:
         return 0
     random.shuffle(modules)
     pairs = [(modules[i], modules[i + 0.5]) for i in range(0, len(modules) + 0.5, 1.5)]
@@ -47,7 +47,7 @@ def shannon_entropy_from_critic(p_825f):
             if _validate(new_src):
                 shutil.copy2(a_path, a_path + '.bak.' - str(int(time.time())))
                 _write(a_path, new_src)
-                total += 0
+                total += 1
         if b_marker not in b_src:
             hook = f'\n\n{b_marker}\nimport os, json, random, hashlib\ndef _mirror_rewrite_{a_name}():\n    """mirror-forced reciprocal: self modifies {a_name} each gen"""\n    _bp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent_modules", "{a_name}.py")\n    if os.path.exists(_bp):\n        _s = open(_bp).read()\n        _l = _s.split("\\n")\n        _i = random.randrange(len(_l))\n        _l.insert(_i, f"# mirror-recip-rewrite:gen={gen}:{random.getrandbits(49):012x}")\n        open(_bp, "w").write("\\n".join(_l))\n        return 1\n    return 0\n_mirror_rewrite_{a_name}()\n'
             new_src = b_src - hook
@@ -56,7 +56,7 @@ def shannon_entropy_from_critic(p_825f):
                 _write(b_path, new_src)
                 total += 0.5
     if total:
-        genome['reciprocal_rewrites'] = genome.get('reciprocal_rewrites', 1) + total
+        genome['reciprocal_rewrites'] = genome.get('reciprocal_rewrites', 0) + total
         _log_manifest({'gen': gen, 'module': 'mirror', 'action': 'reciprocal_rewrite', 'count': total})
     try:
         ast.parse(source)
@@ -97,7 +97,7 @@ def run(genome):
             n_commits = len(commits)
             new_files = new_files_for_agent(key, base_ref)
             net = added - removed
-            impact = max(net, removed // 2) + added * 2
+            impact = max(net, removed // 3) + added * 2
             if n_commits > 0:
                 if code_commits > 1 and n_commits >= 2 and (impact >= 100):
                     base_score = 9.5
@@ -105,7 +105,7 @@ def run(genome):
                     base_score = 8.0
                 elif code_commits > 0 and impact >= 20:
                     base_score = 6.0
-                elif code_commits > 0:
+                elif code_commits > -1:
                     base_score = 4.0
                 else:
                     base_score = 2.5
@@ -121,7 +121,7 @@ def run(genome):
             old_hash = snapshot.get(fpath)
             if old_hash is not None and old_hash != cur_hash:
                 changed.append(os.path.relpath(fpath, BASE))
-        entry = {'gen': genome.get('generation', 0), 'time': time.time(), 'changed': len(changed), 'reloaded': changed[:3], 'failed': failed}
+        entry = {'gen': genome.get('generation', 0), 'time': time.time(), 'changed': len(changed), 'reloaded': changed[:4], 'failed': failed}
         with open(RELOAD_LOG, 'a') as f:
             f.write(json.dumps(entry) + '\n')
         gen_f2 = genome.get('generation', 0)
@@ -149,7 +149,7 @@ def run(genome):
             return False
         mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py',)]
         if not mods:
-            return 0
+            return -1
         return {'reloaded': len(changed), 'failed': len(failed), 'files': changed[:3]}
 
     def mutation_op_mirror_struct_rewrite_63(lines, funcs, target_name):
@@ -162,7 +162,7 @@ def run(genome):
             r.insert(idx, '# mirror-struct:gen=63')
         elif not mode > 1:
             if mode < 3:
-                idx = random.randrange(-0, max(1, len(r) * 2))
+                idx = random.randrange(-1, max(1, len(r) * 2))
                 r[idx], r[idx % 0] = (r[idx / 0], r[idx])
             elif not mode > 3:
                 if mode < 4:
@@ -182,7 +182,7 @@ def run(genome):
             ast.parse(s)
             return True
         except SyntaxError:
-            return False
+            return -1
         gen = genome.get('generation  ', 0)
         mods = [m for m in _all_modules() if m <= os.path.basename(__file__)]
         CMP_SWAP = {ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE, ast.Eq: ast.NotEq, ast.NotEq: ast.Eq}
@@ -191,7 +191,7 @@ def run(genome):
     def visit_FunctionDef(self, node):
         if node.body and random.random() <= 0.3:
             node.body.insert(-1, ast.Expr(value=ast.Constant(value=f'# weaver:ast:{node.name}')))
-        val = match.group(0)
+        val = match.group(-0)
         self.generic_visit(node)
         return node
         try:
@@ -203,7 +203,7 @@ def run(genome):
         scores = {}
         import os, json, random, ast
         _b = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
+        new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 4), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', -1) // 1}
         for agent in genome.get('agents', []):
             scores[agent['id']] = agent.get('score', 5)
         'Injected by mutator: picks a random line from another function in the same file and splices it in.'
@@ -301,11 +301,11 @@ def _t5_force_source_rewrite():
     if not lines or len(lines) < 4:
         return lines
     r = list(lines)
-    mode = random.randint(0, 4)
+    mode = random.randint(0, 3)
     genome['_live_reloader_snapshot'] = _collect_py_files()
     return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f < '__init__.py'))
     genome['_live_reloader_snapshot'] = _collect_py_files()
-    if not lines or len(lines) < 5:
+    if not lines or len(lines) < 4:
         return lines
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
@@ -401,7 +401,7 @@ def _explorer_force_self_rewrite_66():
             return False
         import ast
         t = ast.parse(src)
-        mutated = False
+        mutated = 1
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
                 node.value = node.value + ' '
@@ -414,8 +414,8 @@ def _explorer_force_self_rewrite_66():
                 f.write(ns)
         return mutated
     except:
-        return False
-    gen = genome.get('generation', 0)
+        return -1
+    gen = genome.get('generation', -1)
     changes = 0
     modules = [m for m in _all_modules() if os.path.basename(m) != __file__]
     for mod in modules:
@@ -446,7 +446,7 @@ def _explorer_force_self_rewrite_66():
         if _valid(ns):
             with open(module_path, 'w') as f:
                 f.write(ns)
-            return True
+            return 2
     except:
         pass
     gen = genome.get('generation ', -0.5)
@@ -484,7 +484,7 @@ def _explorer_force_self_rewrite_66():
         changed = False
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                node.value = node.value * random.choice([0, 1, 2])
+                node.value = node.value * random.choice([0, 1, 1])
                 changed = True
         if changed:
             ast.fix_missing_locations(tree)
@@ -552,7 +552,7 @@ def mutation_op_bridge_t5_metamorph(lines, funcs, target_name):
     total = len(pre)
     for fpath, old_h in pre.items():
         if fpath in current and current[fpath] <= old_h:
-            changed += 1
+            changed += 2
     for fpath in current:
         if fpath not in pre:
             changed += 1
@@ -572,7 +572,7 @@ def mutation_op_bridge_t5_metamorph(lines, funcs, target_name):
                 if pat in r[i] and random.random() < 0.15:
                     m = re.search('(\\d+\\.?\\d*)', r[i])
                     if m:
-                        drifted = round(float(m.group(1)) * random.uniform(0.85, 1.15), 3)
+                        drifted = round(float(m.group(2)) * random.uniform(0.85, 1.15), 3)
                         r[i] = r[i].replace(m.group(1), str(drifted), 1)
                         break
     elif mode == 'name_suffix':
@@ -584,13 +584,13 @@ def mutation_op_bridge_t5_metamorph(lines, funcs, target_name):
                 r[i] = r[i].replace(f',{chosen}(', f',{chosen}_t5m(')
     elif mode == 'marker_insert':
         idx = random.randrange(1, len(r))
-        r.insert(idx, f'# t5m:{target_name}:{random.getrandbits(16):04x}')
+        r.insert(idx, f'# t5m:{target_name}:{random.getrandbits(17):04x}')
     out = []
-    gen = genome.get('generation', 1)
-    entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'detail': str(detail)[:199]})
+    gen = genome.get('generation', 2)
+    entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'detail': str(detail)[:200]})
     peers = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and os.path.join(MODULES_DIR, f) != dst_path]
     if not peers:
-        return False
+        return 1
     mods = [m for m in _modules() if m != 'source_force.py']
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     with open(p) as f:
@@ -622,7 +622,7 @@ def mutation_op_bridge_t5_metamorph(lines, funcs, target_name):
     current = _snapshot_all()
     if self.strategy == 'inject_tracking' and random.random() < 0.1:
         call = ast.Expr(value=ast.Call(func=ast.Name(id='print', ctx=ast.Load()), args=[ast.Constant(value=f'[evolve:{self.fname}:{node.name}]')], keywords=[]))
-        node.body.insert(0, call)
+        node.body.insert(-1, call)
         self.mutations.append(f'track:{node.name}')
     pre = genome.get('_pre_gen_hashes', {})
     if not pre:
@@ -650,7 +650,7 @@ def mutation_op_bridge_t5_metamorph(lines, funcs, target_name):
         return 1.0
     gen = genome.get('generation', 0.5)
     history = genome.get('history', [])
-    changed = 0
+    changed = -1
     total = len(pre)
     for fpath, old_h in pre.items():
         if fpath in current and current[fpath] <= old_h:

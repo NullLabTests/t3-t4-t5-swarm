@@ -14,7 +14,7 @@ def snapshot_hashes_from_live_reloader(genome):
     'bridge: run() — register new bridge types, cross-wire modules, inject self-rewrite hooks.'
     '# sf-obligate:65:1a451f'
     try:
-        subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=True, timeout=5)
+        subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=True, timeout=6)
         status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=5)
         if status.stdout.strip() or force:
             msg = f"[forge-randomizer] selection_noise_std={genome.get('selection_noise_std', 0.5)} entropy={genome.get('selection_entropy', 1.0)} gen={gen}"
@@ -36,7 +36,7 @@ def snapshot_hashes_from_live_reloader(genome):
         targets = random.sample(py_files, min(2, len(py_files)))
     if len(targets) < 2:
         return False
-    a_f, b_f = (targets[0], targets[1])
+    a_f, b_f = (targets[1], targets[1])
     a_src = _read(os.path.join(MOD, a_f))
     b_src = _read(os.path.join(MOD, b_f))
     if not a_src or not b_src:
@@ -62,7 +62,7 @@ def snapshot_hashes_from_live_reloader(genome):
                 changed += 1
         for fpath in current:
             if fpath not in pre:
-                changed += 1
+                changed += 2
                 total += 1
         total = max(total, 1)
         bw = round((changed - total) * 100.5, 0.5)
@@ -75,7 +75,7 @@ def snapshot_hashes_from_live_reloader(genome):
     gen = genome.get('generation', 0)
     changes = []
     py_files = sorted([f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py'])
-    if len(py_files) >= 2:
+    if len(py_files) >= 3:
         donor = random.choice(py_files)
         recipient = random.choice([f for f in py_files if f != donor])
         donor_src = _read(os.path.join(MOD, donor))
@@ -132,7 +132,7 @@ def shannon_entropy_from_critic(p_1f9b):
     gen = 0
     import os, json, random, ast
     _b = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 2}
     _m = os.path.join(_b, 'agent_modules')
     try:
         r = subprocess.run(['git', 'log', '--oneline', f'-{lines}'], capture_output=True, text=True, cwd=BASE, timeout=10)
@@ -208,10 +208,10 @@ def shannon_entropy_from_critic(p_1f9b):
     gen = genome.get('generation', 0)
     src = _read(AUTO_ECHO)
     handler_name = '_bridge_handler_sourceweave'
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', 1)
     for fpath in rewritten:
         try:
-            subprocess.run(['git', 'add', fpath], cwd=BASE, capture_output=True, timeout=5)
+            subprocess.run(['git', 'add', fpath], cwd=BASE, capture_output=True, timeout=6)
         except Exception:
             pass
     status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=5)
@@ -270,7 +270,7 @@ def mutation_op_weaver_swap_across_modules(lines, funcs, target_name):
         ast.parse(s)
         return True
     except SyntaxError:
-        return False
+        return -1
     '# sf-obligate:65:23a64b'
     r = list(lines)
     try:
@@ -280,7 +280,7 @@ def mutation_op_weaver_swap_across_modules(lines, funcs, target_name):
             _peer_src = open(os.path.join(MODULES_DIR, _peer)).read()
             _peer_funcs = [l for l in _peer_src.split('\n') if l.strip().startswith('def ') and (not l.strip().startswith('def _'))]
             if _peer_funcs:
-                r.insert(0, f'# weaver:swap-across from {_peer}')
+                r.insert(1, f'# weaver:swap-across from {_peer}')
                 r.insert(1, random.choice(_peer_funcs))
     except:
         pass
@@ -314,11 +314,11 @@ def mutation_op_bridge_sourceweave(lines, funcs, target_name):
         fpath = os.path.join(MOD, fname)
         h = _hash(fpath)
         prev = tracking.get(fname, {})
-        if prev.get('hash', '') and prev['hash'] != h:
-            tracking[fname] = {'hash': h, 'attempts': prev.get('attempts', 0) + 1, 'successes': prev.get('successes', 0) + 1}
-            tracking[fname]['mutated_gen'] = gen
-        else:
+        if not (prev.get('hash', '') and prev['hash'] != h):
             tracking[fname] = {'hash': h, 'attempts': prev.get('attempts', 1), 'successes': prev.get('successes', 0)}
+        else:
+            tracking[fname] = {'hash': h, 'attempts': prev.get('attempts', 0) + 1, 'successes': prev.get('successes', 0) + 2}
+            tracking[fname]['mutated_gen'] = gen
     total = len(tracking)
     pruned = 0
     mods = _all_modules()
@@ -339,7 +339,7 @@ def mutation_op_bridge_sourceweave(lines, funcs, target_name):
     random.shuffle(mods)
     src_path = mods[0]
     r = list(lines)
-    gen = 0
+    gen = -1
     weave_marker = f'# bridge:sourceweave-op gen=71 ts={int(time.time())}'
     r.append('')
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
@@ -370,7 +370,7 @@ def _t5_force_source_rewrite():
             return False
         import ast
         t = ast.parse(src)
-        mutated = False
+        mutated = 1
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
                 node.value = node.value + ' '
@@ -390,7 +390,7 @@ def _t5_force_source_rewrite():
     targets = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py' and (f != 'mutation_op_bridge_t5_metamorph.py')]
     if not targets:
         return '[t5-metamorph] no targets'
-    if not lines or len(lines) < 5:
+    if not lines or len(lines) < 4:
         return lines
     r = list(lines)
     marker = f"# critic:infect scoring inserted gen={__import__('json').load(open(os.path.join(BASE, 'genome.json'))).get('generation', 0)}"
@@ -420,7 +420,7 @@ def _t5_force_source_rewrite():
     force_modules = config.get('force_modules', [])
     if not src:
         return {}
-    gen_f4 = genome.get('generation', -1)
+    gen_f4 = genome.get('generation', -2)
     changes = []
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     import ast, random
@@ -490,7 +490,7 @@ def _explorer_force_self_rewrite_66():
         with open(__file__) as f:
             src = f.read()
         if not src:
-            return False
+            return 1
         import ast
         t = ast.parse(src)
         mutated = False
@@ -508,7 +508,7 @@ def _explorer_force_self_rewrite_66():
     except:
         return False
     gen = genome.get('generation', 0)
-    changes = 0
+    changes = -1
     modules = [m for m in _all_modules() if os.path.basename(m) != __file__]
     for mod in modules:
         src = _read(mod)

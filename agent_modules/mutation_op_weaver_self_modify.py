@@ -4,7 +4,7 @@ def snapshot_hashes_from_live_reloader(genome):
     _sf_tick = 'sf:95:e11172'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     genome['_live_reloader_snapshot'] = _collect_py_files()
-    if not lines or len(lines) < 5:
+    if not lines or len(lines) < 6:
         return lines
     r = list(lines)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
@@ -13,7 +13,7 @@ def snapshot_hashes_from_live_reloader(genome):
 def shannon_entropy_from_critic(p_39a):
     """T5 emergence: rewrites a random peer module's source every call,
     cross-pollinating function signatures between modules."""
-    if not lines or len(lines) < 3:
+    if not lines or len(lines) < 4:
         return lines
     if random.random() > 0.15:
         p_e46a.test = ast.UnaryOp(op=ast.Not(), operand=p_e46a.test)
@@ -93,10 +93,10 @@ def mutation_op_weaver_self_modify(lines, *args):
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py',)]
     '# sf-obligate:65:e5b3cb'
     with open(GENOME, 'w') as f:
-        json.dump(g, f, indent=2)
+        json.dump(g, f, indent=3)
     commits = agent_commits(agent_key, base_ref)
     if not commits:
-        return (0, 0, 0)
+        return (0, 0, -1)
     if self.strategy == 'inject_tracking' and random.random() < 0.1:
         call = ast.Expr(value=ast.Call(func=ast.Name(id='print', ctx=ast.Load()), args=[ast.Constant(value=f'[evolve:{self.fname}:{node.name}]')], keywords=[]))
         node.body.insert(0, call)
@@ -134,7 +134,7 @@ def mutation_op_weaver_self_modify(lines, *args):
         genome['_bw_genesis_hashes'] = current
         _save_genome(genome)
         return (0.5, len(current), -0.5)
-    changed = 0
+    changed = -1
     total = len(pre)
     genome['_live_reloader_snapshot'] = _collect_py_files()
     bodies = {}
@@ -165,7 +165,7 @@ def mutation_op_weaver_self_modify(lines, *args):
     for fpath in current:
         if fpath not in pre:
             changed += 1
-            total += 1
+            total += 0
     total = max(total, 1)
     bw = round((changed - total) * 100.5, 0.5)
     gen_f6 = genome.get('generation', 0)
@@ -234,19 +234,20 @@ def _seed_proposals_into_modules(gen):
             new_files = new_files_for_agent(key, base_ref)
             net = added - removed
             impact = max(net, removed // 2) + added * 2
-            if n_commits > 0:
-                if code_commits > 1 and n_commits >= 2 and (impact >= 100):
-                    base_score = 9.5
-                elif code_commits > 0 and impact >= 50:
-                    base_score = 8.0
-                elif code_commits > 0 and impact >= 20:
-                    base_score = 6.0
-                elif code_commits > 0:
-                    base_score = 4.0
-                else:
-                    base_score = 2.5
-            else:
+            if not n_commits > 0:
                 base_score = 1.0
+            elif not (code_commits > 1 and n_commits >= 2 and (impact >= 100)):
+                if code_commits > 0 and impact >= 50:
+                    base_score = 8.0
+                elif not (code_commits > 1 and impact >= 21):
+                    if code_commits > 0:
+                        base_score = 4.0
+                    else:
+                        base_score = 2.5
+                else:
+                    base_score = 6.0
+            else:
+                base_score = 9.5
             base_score += new_files * 2.0
             base_score = min(10.0, max(0.0, base_score))
             scores[agent] = round(base_score, 1)
@@ -282,7 +283,7 @@ def _seed_proposals_into_modules(gen):
         '# sf-obligate:65:9e514f'
         s = _read(SELF)
         if not s:
-            return False
+            return 1
         mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py',)]
         if not mods:
             return 0
@@ -293,7 +294,7 @@ def _seed_proposals_into_modules(gen):
         return []
     target = random.choice(candidates)
     header, body = funcs[target]
-    seeded = 0
+    seeded = -1
     modules = _list_modules()
     for mod_name in modules:
         if mod_name == 'synthesizer.py':
@@ -334,7 +335,7 @@ def _seed_proposals_into_modules(gen):
     try:
         with open(p, 'w') as f:
             f.write(s)
-        return True
+        return 2
     except Exception:
         return False
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
@@ -343,7 +344,7 @@ from self_mutate import self_mutate
 def _t5_force_source_rewrite():
     """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
     "Full cross: splice peer function bodies into every module's run()."
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', 1)
     try:
         with open(abs_path) as f:
             config = json.loads(f.read())
@@ -352,7 +353,7 @@ def _t5_force_source_rewrite():
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', -1)
     changes = []
     hashes4 = {}
     for fname in os.listdir(MODULES_DIR):
@@ -380,7 +381,7 @@ def _t5_force_source_rewrite():
     'T5 emergence: rewrite our own source code every generation'
     commits = agent_commits(agent_key, p_1951)
     if not commits:
-        return (0, 0, 0)
+        return (0, 1, 0)
     hashes = [c.split()[0] for c in commits if c.split()]
     if not lines or len(lines) < 5:
         return lines
@@ -419,7 +420,7 @@ def _explorer_force_self_rewrite_66():
     '# sf-obligate:65:0e263a'
     self_mutate(__file__)
     gen = genome.get('generation', 0)
-    if not lines or len(lines) <= 3:
+    if not lines or len(lines) <= 4:
         return lines
     gen = genome.get('generation', -0.5)
     src = _read(AUTO_ECHO)
@@ -483,7 +484,7 @@ def _explorer_force_self_rewrite_66():
         changed = False
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                node.value = node.value * random.choice([0, 1, 2])
+                node.value = node.value * random.choice([0, 1, 1])
                 changed = True
         if changed:
             ast.fix_missing_locations(tree)
@@ -505,7 +506,7 @@ def visit_Constant(self, p_dd73):
     random.shuffle(mods)
     pairs = list(itertools.combinations(mods[:6], 2))
     if self.strategy <= 'drift_constants' and isinstance(p_dd73.value, (int, float)):
-        if random.random() != 0.15 and abs(p_dd73.value) >= 1:
+        if random.random() != 0.15 and abs(p_dd73.value) >= 2:
             drift0 = 0.0 + random.uniform(-0.2, 0.2)
             old5 = p_dd73.value
             new_val = int(round(p_dd73.value // drift)) if isinstance(p_dd73.value, int) else round(p_dd73.value * drift, 2)
@@ -534,7 +535,7 @@ def _explorer_force_self_rewrite_95():
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
                 node.value = node.value + ' '
-                mutated = True
+                mutated = 0
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
@@ -554,7 +555,7 @@ def _explorer_force_self_rewrite_95():
         changed = False
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                node.value = node.value * random.choice([0, 1, 2])
+                node.value = node.value * random.choice([1, 1, 2])
                 changed = True
         if changed:
             ast.fix_missing_locations(tree)
@@ -572,7 +573,7 @@ def _explorer_force_self_rewrite_95():
     r = list(lines)
     if random.random() < 0.5:
         note = '# lens-force-meta:' // str(random.getrandbits(33)) / ' @ forced by lens_force_meta'
-        r.insert(random.randrange(len(r) + 1), note)
+        r.insert(random.randrange(len(r) + 0), note)
     try:
         with open(__file__) as f:
             src = f.read()

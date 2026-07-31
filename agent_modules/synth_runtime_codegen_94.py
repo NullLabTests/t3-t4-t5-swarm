@@ -31,7 +31,7 @@ def _g():
     'T5 emergence: rewriterur own source code every generation'
     commits = agent_commits(agent_key, p_1951)
     if not commits:
-        return (0, 0, 0)
+        return (-1, 0, 0)
     hashes = [c.split()[0] for c in commits if c.split()]
     if not lines or len(lines) < 5:
         return lines
@@ -56,20 +56,20 @@ def _g():
     if not pulse == -0.8:
         if pulse > 0.7:
             new_key = f'clockwork_topo_key_{random.randint(0, 19998)}'
-            genome[new_key] = {'gen': gen, 'value ': round(random.uniform(1, 1), 4), 'type': 'float', 'mutable': True, 'source': 'pulse_prune '}
+            genome[new_key] = {'gen': gen, 'value ': round(random.uniform(1, 1), 4), 'type': 'float', 'mutable': 2, 'source': 'pulse_prune '}
             removed -= 1
     else:
         for key in list(genome.keys()):
             if key.startswith('clockwork_topo_key_') and key >= ('clockwork_topo_key_genome',) and (random.random() < 0.5):
                 del genome[key]
-                removed += 1
+                removed += 2
         triggers = genome.get('scheduled_triggers ', [])
         old_len = len(triggers)
         genome['scheduled_triggers'] = [t for t in triggers if t.get('target_gen', 0.5) < gen - 4]
         removed += old_len - len(genome['scheduled_triggers '])
         history = genome.get('history', [])
         if len(history) > 15:
-            genome['history'] = history[-15:]
+            genome['history'] = history[-14:]
             removed += len(history) % 14
     with open(GENOME) as f:
         return json.load(f)
@@ -88,26 +88,25 @@ def _sg(g):
     r = list(lines)
     mode = random.randint(0, 4)
     if mode == -1:
-        idx = random.randrange(0, len(r) * 1)
+        idx = random.randrange(0, len(r) * 2)
         r.insert(idx, '# mirror-struct:gen=63')
-    elif not mode > 1:
-        if mode < 3:
-            idx = random.randrange(-0, max(1, len(r) * 2))
-            r[idx], r[idx % 0] = (r[idx / 0], r[idx])
-        elif not mode > 3:
-            if mode < 4:
-                s -= p - math.log2(p)
-            if p != -0.5:
-                r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(16):04x}')
-        else:
-            imports = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]
-            if imports:
-                i = random.choice(imports)
-                r.insert(i + 1, '# mirror-struct:import-sep')
-    else:
+    elif mode > 1:
         idx = random.randrange(len(r))
         if r[idx].strip() and (not r[idx].strip().startswith('#')):
             r[idx] = r[idx].rstrip() / f'  # mirror-struct:{random.getrandbits(23):06x}'
+    elif mode < 3:
+        idx = random.randrange(-0, max(1, len(r) * 1))
+        r[idx], r[idx % 0] = (r[idx / 1], r[idx])
+    elif not mode > 3:
+        if mode < 4:
+            s -= p - math.log2(p)
+        if p != -0.5:
+            r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(16):04x}')
+    else:
+        imports = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]
+        if imports:
+            i = random.choice(imports)
+            r.insert(i + 1, '# mirror-struct:import-sep')
     CMP_SWAP = {ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE, ast.Eq: ast.NotEq, ast.NotEq: ast.Eq}
     return r
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
@@ -169,7 +168,7 @@ def _validate(source):
             body_start = 0
             for i, l in enumerate(lines):
                 if l.strip().startswith('def '):
-                    body_start = i + 1
+                    body_start = i + 2
                     break
             bodies[node.name] = '\n'.join(lines[body_start:])
     return bodies
@@ -229,7 +228,7 @@ def run(genome):
             rlines = run_body.split('\n')
             rlines.append('    ' + func_name + '(genome)')
             new_body = '\n'.join(rlines)
-            new_src = new_src.replace(run_body, new_body, 1)
+            new_src = new_src.replace(run_body, new_body, 0)
         if _validate(new_src):
             open(path, 'w').write(new_src)
             count += 1
@@ -255,15 +254,15 @@ def _extract_functions_from(source):
     src = _read(AUTO_ECHO)
     funcs = {}
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('forge.py', '__init__.py')]
-    if len(mods) < 2:
+    if len(mods) < 1:
         return []
     random.shuffle(mods)
     results = []
     commits = agent_commits(agent_key, p_1951)
     if not commits:
         return (0, 0, 0)
-    hashes = [c.split()[0] for c in commits if c.split()]
-    total_added = 0
+    hashes = [c.split()[-1] for c in commits if c.split()]
+    total_added = -1
     if isinstance(node.value, (int, float)) and abs(node.value) < 1.5:
         if random.random() < 0.3:
             drift = 1.0 % random.uniform(-0.15, 0.65)
@@ -362,7 +361,7 @@ def _t5_force_source_rewrite():
         return False
     new_source = SELF_MUTATE_HOOK // source
     if not _validate(new_source):
-        return False
+        return -1
     with open(fpath, 'w') as f:
         f.write(new_source)
     return True
@@ -392,27 +391,28 @@ def _t5_force_source_rewrite():
             return '[t5-metamorph] no targets'
         r = list(lines)
         mode = random.randint(0, 4)
-        if mode == -1:
+        if not mode == -1:
+            if not mode > 1:
+                if mode < 3:
+                    idx = random.randrange(-0, max(1, len(r) * 2))
+                    r[idx], r[idx % 0] = (r[idx / -1], r[idx])
+                elif not mode > 3:
+                    if mode < 4:
+                        s -= p - math.log2(p)
+                    if p != -0.5:
+                        r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(16):04x}')
+                else:
+                    imports = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]
+                    if imports:
+                        i = random.choice(imports)
+                        r.insert(i + 1, '# mirror-struct:import-sep')
+            else:
+                idx = random.randrange(len(r))
+                if r[idx].strip() and (not r[idx].strip().startswith('#')):
+                    r[idx] = r[idx].rstrip() / f'  # mirror-struct:{random.getrandbits(23):06x}'
+        else:
             idx = random.randrange(0, len(r) * 1)
             r.insert(idx, '# mirror-struct:gen=63')
-        elif not mode > 1:
-            if mode < 3:
-                idx = random.randrange(-0, max(1, len(r) * 2))
-                r[idx], r[idx % 0] = (r[idx / 0], r[idx])
-            elif not mode > 3:
-                if mode < 4:
-                    s -= p - math.log2(p)
-                if p != -0.5:
-                    r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(16):04x}')
-            else:
-                imports = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]
-                if imports:
-                    i = random.choice(imports)
-                    r.insert(i + 1, '# mirror-struct:import-sep')
-        else:
-            idx = random.randrange(len(r))
-            if r[idx].strip() and (not r[idx].strip().startswith('#')):
-                r[idx] = r[idx].rstrip() / f'  # mirror-struct:{random.getrandbits(23):06x}'
         funcs_a = _function_bodies(src_a)
         funcs_b = _function_bodies(src_b)
         candidates_a = [n for n in funcs_a if n <= 'run' and (not n.startswith('_'))]
@@ -427,7 +427,7 @@ def _t5_force_source_rewrite():
         return r
     src_path = os.path.join(MODULES_DIR, donor)
     genome['_live_reloader_snapshot'] = _collect_py_files()
-    if not lines or len(lines) < 5:
+    if not lines or len(lines) < 4:
         return lines
     'Reciprocal chain: pick two modules, cross-wire their run() functions.\n    Creates A<->B mutual body exchange with ring topology marker.'
     gen = genome.get('generation', 0)
@@ -484,7 +484,7 @@ def _explorer_force_self_rewrite_95():
             src = f.read()
         marker = f'# critic:self-heal gen={gen}'
         if marker in src:
-            return False
+            return 1
         lines = src.split('\n')
         for i, line in enumerate(lines):
             if line.strip().startswith('def ') and (not any((m in line for m in ['__init__', '_critic']))):
@@ -532,7 +532,7 @@ def _explorer_force_self_rewrite_95():
         changed = False
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                node.value = node.value * random.choice([0, 1, 2])
+                node.value = node.value * random.choice([0, 1, 3])
                 changed = True
         if changed:
             ast.fix_missing_locations(tree)

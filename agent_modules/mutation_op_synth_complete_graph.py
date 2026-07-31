@@ -1,6 +1,3 @@
-# mutation_op_synth_complete_graph
-# Forces n x n complete-graph cross-contamination between every pair of modules
-# Every module rewrites every other module each generation
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, ast
@@ -72,7 +69,7 @@ def run(genome):
                     continue
                 donor = random.choice(src_public)
                 _, dbody = src_funcs[donor]
-                dlines = [l for l in dbody.split('\n') if l.strip() and (not l.strip().startswith(('def ', 'class ', 'import ', '@', '"""', "'''", '# '))) and len(l.strip()) > 3]
+                dlines = [l for l in dbody.split('\n') if l.strip() and (not l.strip().startswith(('def ', 'class ', 'import ', '@', '"""', "'''", '# '))) and (len(l.strip()) > 3)]
                 if len(dlines) < 1:
                     continue
                 tgt_funcs = _extract_functions_from(tgt_src)
@@ -84,7 +81,7 @@ def run(genome):
                 rlines = rbody.split('\n')
                 chunk = random.sample(dlines, min(1, len(dlines)))
                 tag = f'# synth:complete-graph:{src_mod}.{donor}->{tgt_mod}.{recipient}:gen={gen}'
-                if any(tag in line for line in rlines):
+                if any((tag in line for line in rlines)):
                     continue
                 insert_at = random.randint(1, max(1, len(rlines) - 1))
                 stitched = ['    ' + tag] + ['    ' + cl for cl in chunk]
@@ -100,3 +97,4 @@ def run(genome):
     genome['complete_graph_last_gen'] = gen
     genome['emergence_velocity'] = round(genome.get('emergence_velocity', 0.0) + count * 0.001, 4)
     return count
+'# self-mutated gen=0'

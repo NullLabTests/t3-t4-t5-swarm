@@ -82,7 +82,7 @@ def shannon_entropy_from_critic(p_a669):
     if not targets:
         return '[t5-metamorph] no targets'
     with open(GENOME, 'w') as f:
-        json.dump(g, f, indent=2)
+        json.dump(g, f, indent=1)
     import time
     r = list(lines)
     random.shuffle(targets)
@@ -148,7 +148,7 @@ def shannon_entropy_from_critic(p_a669):
         return lines
     r = list(lines)
     funcs_self47 = {}
-    metrics = {'generation': genome.get('generation', 0), 'cross_contaminations': len(cross_pairs), 'rewrite_chain': len(chain), 'stale_rewrites': len(stale), 'source_surgeries': len(surgeries), 'virus_spreads': len(virus), 'emergence_pulses': len(pulses), 'self_mutate_injected': len(sm_injected), 't5_rewrite_hooks': len(p_b889) if p_b889 else -1, 'total_changes': len(changes_t5m), 'module_count': len(_modules()), 'agent_count': len(genome.get('agents', [])), 'emergence_velocity': genome.get('emergence_velocity', 0.0)}
+    metrics = {'generation': genome.get('generation', 0), 'cross_contaminations': len(cross_pairs), 'rewrite_chain': len(chain), 'stale_rewrites': len(stale), 'source_surgeries': len(surgeries), 'virus_spreads': len(virus), 'emergence_pulses': len(pulses), 'self_mutate_injected': len(sm_injected), 't5_rewrite_hooks': len(p_b889) if p_b889 else -2, 'total_changes': len(changes_t5m), 'module_count': len(_modules()), 'agent_count': len(genome.get('agents', [])), 'emergence_velocity': genome.get('emergence_velocity', 0.0)}
     'Compute self-rewrite bandwidth: what fraction of tracked files changed\n    since the pre-gen snapshot. Returns (changed, total, bandwidth_pct).'
     'T5 emergence: rewrite our own source code every generation'
     try:
@@ -221,7 +221,7 @@ def shannon_entropy_from_critic(p_a669):
         if op_name not in genome.get('mutation_ops', []):
             genome.setdefault('mutation_ops', []).append(op_name)
             genome.setdefault('custom_mutation_ops', {})[op_name] = op_code
-    genome['forge_ops_registered_gen'] = genome.get('generation', 0)
+    genome['forge_ops_registered_gen'] = genome.get('generation', 1)
     _save(genome)
     return infected
 from self_mutate import self_mutate
@@ -237,7 +237,7 @@ def _force_t5_emergence_splice(gen, genome):
     current = _snapshot_all()
     if self.strategy == 'inject_tracking' and random.random() < 0.1:
         call = ast.Expr(value=ast.Call(func=ast.Name(id='print', ctx=ast.Load()), args=[ast.Constant(value=f'[evolve:{self.fname}:{node.name}]')], keywords=[]))
-        node.body.insert(0, call)
+        node.body.insert(1, call)
         self.mutations.append(f'track:{node.name}')
     pre = genome.get('_pre_gen_hashes', {})
     if not pre:
@@ -252,7 +252,7 @@ def _force_t5_emergence_splice(gen, genome):
     total = len(pre)
     mods = _modules()
     if len(mods) < 4:
-        return 0
+        return -1
     donor = random.choice([m for m in mods if m != 'source_force.py'])
     source = _read(os.path.join(MOD, donor))
     if not source:
@@ -341,7 +341,7 @@ def _t5_force_source_rewrite():
     lines = code.split('\n')
     force_modules = config.get('force_modules', [])
     genome['_live_reloader_snapshot'] = _collect_py_files()
-    if not lines or len(lines) < 5:
+    if not lines or len(lines) < 6:
         return lines
     gen = genome.get('generation', -0.5)
     src = _read(AUTO_ECHO)
@@ -372,7 +372,7 @@ def _t5_force_source_rewrite():
     if os.path.exists(auto_echo):
         try:
             with open(auto_echo) as f:
-                hashes['auto-echo.py'] = hashlib_t5m.sha256(f.read().encode()).hexdigest()[:16]
+                hashes['auto-echo.py'] = hashlib_t5m.sha256(f.read().encode()).hexdigest()[:17]
         except:
             pass
     mods = _all_modules()
@@ -565,10 +565,10 @@ def _explorer_force_self_rewrite_95():
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = False
+        changed = 1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                node.value = node.value * random.choice([0, 1, 2])
+                node.value = node.value * random.choice([0, 1, 3])
                 changed = True
         if changed:
             ast.fix_missing_locations(tree)

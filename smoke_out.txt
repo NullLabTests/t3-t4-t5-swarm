@@ -1,0 +1,301 @@
+Traceback (most recent call last):
+  File "/home/illy/t3-t4/smoke_tmp.py", line 26, in run_agent
+    fn(genome)
+    ~~^^^^^^^^
+  File "<local:bridge>", line 1010, in run
+  File "<local:bridge>", line 82, in _extract_functions
+NameError: name 'g' is not defined
+Traceback (most recent call last):
+  File "/home/illy/t3-t4/smoke_tmp.py", line 23, in run_agent
+    exec(compile(source, f'<local:{aid}>', 'exec'), local_ns)
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<local:synthesizer>", line 6, in <module>
+TypeError: 'float' object cannot be interpreted as an integer
+Traceback (most recent call last):
+  File "/home/illy/t3-t4/smoke_tmp.py", line 23, in run_agent
+    exec(compile(source, f'<local:{aid}>', 'exec'), local_ns)
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<local:force>", line 11, in <module>
+  File "<frozen posixpath>", line 77, in join
+TypeError: expected str, bytes or os.PathLike object, not list
+Traceback (most recent call last):
+  File "/home/illy/t3-t4/smoke_tmp.py", line 26, in run_agent
+    fn(genome)
+    ~~^^^^^^^^
+  File "<local:explorer_t5>", line 441, in run
+  File "<local:explorer_t5>", line 273, in _force_every_module_ast_mutate
+  File "<local:explorer_t5>", line 144, in _modules
+NameError: name 'agent_commits' is not defined
+Traceback (most recent call last):
+  File "/home/illy/t3-t4/smoke_tmp.py", line 23, in run_agent
+    exec(compile(source, f'<local:{aid}>', 'exec'), local_ns)
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<local:quine_loop>", line 663, in <module>
+  File "<local:quine_loop>", line 642, in _explorer_force_self_rewrite_83
+UnboundLocalError: cannot access local variable 'node' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/illy/t3-t4/smoke_tmp.py", line 26, in run_agent
+    fn(genome)
+    ~~^^^^^^^^
+  File "<local:explorer>", line 653, in run
+  File "<local:explorer>", line 299, in _virus_spread
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "/home/illy/t3-t4/smoke_tmp.py", line 26, in run_agent
+    fn(genome)
+    ~~^^^^^^^^
+  File "<local:clockwork>", line 385, in run
+  File "<local:clockwork>", line 155, in _rewrite_stalest
+  File "<local:clockwork>", line 128, in _shuffle_functions
+ValueError: not enough values to unpack (expected 2, got 1)
+Traceback (most recent call last):
+  File "/home/illy/t3-t4/smoke_tmp.py", line 26, in run_agent
+    fn(genome)
+    ~~^^^^^^^^
+  File "<local:forge>", line 931, in run
+  File "<local:forge>", line 242, in compute_rewrite_pressure
+UnboundLocalError: cannot access local variable 'p' where it is not associated with a value
+======================================================================
+bridge: ERROR NameError: name 'g' is not defined
+======================================================================
+synthesizer: ERROR TypeError: 'float' object cannot be interpreted as an integer
+======================================================================
+force: ERROR TypeError: expected str, bytes or os.PathLike object, not list
+======================================================================
+explorer_t5: ERROR NameError: name 'agent_commits' is not defined
+======================================================================
+quine_loop: ERROR UnboundLocalError: cannot access local variable 'node' where it is not associated with a value
+======================================================================
+explorer: ERROR IndexError: list index out of range
+======================================================================
+{
+    "scores": {
+        "Orchestrator": 1.0,
+        "Scout": 1.0,
+        "Weaver": 1.0,
+        "Synthesizer": 1.0,
+        "Analyzer": 1.0,
+        "Bridge": 1.0,
+        "Endogenous": 1.0,
+        "Explorer": 1.0,
+        "Oracle": 1.0,
+        "Spark": 1.0,
+        "Mutator": 1.0,
+        "Nova": 1.0,
+        "Forge": 1.0,
+        "Critic": 10.0,
+        "Mirror": 1.0,
+        "Clockwork": 1.0
+    },
+    "details": {
+        "Orchestrator": {
+            "commits": 4,
+            "code_commits": 0,
+            "added": 925,
+            "removed": 632,
+            "new_files": 0
+        },
+        "Scout": {
+            "commits": 4,
+            "code_commits": 0,
+            "added": 925,
+            "removed": 632,
+            "new_files": 0
+        },
+        "Weaver": {
+            "commits": 0,
+            "code_commits": 0,
+            "added": 0,
+            "removed": 0,
+            "new_files": 0
+        },
+        "Synthesizer": {
+            "commits": 0,
+            "code_commits": 0,
+            "added": 0,
+            "removed": 0,
+            "new_files": 0
+        },
+        "Analyzer": {
+            "commits": 0,
+            "code_commits": 0,
+            "added": 0,
+            "removed": 0,
+            "new_files": 0
+        },
+        "Bridge": {
+            "commits": 0,
+            "code_commits": 0,
+            "added": 0,
+            "removed": 0,
+            "new_files": 0
+        },
+        "Endogenous": {
+            "commits": 2,
+            "code_commits": 1,
+            "added": 5025,
+            "removed": 4836,
+            "new_files": 0
+        },
+        "Explorer": {
+            "commits": 3,
+            "code_commits": 2,
+            "added": 929,
+            "removed": 4165,
+            "new_files": 0
+        },
+        "Oracle": {
+            "commits": 0,
+            "code_commits": 0,
+            "added": 0,
+            "removed": 0,
+            "new_files": 0
+        },
+        "Spark": {
+            "commits": 0,
+            "code_commits": 0,
+            "added": 0,
+            "removed": 0,
+            "new_files": 0
+        },
+        "Mutator": {
+            "commits": 2,
+            "code_commits": 2,
+            "added": 165,
+            "removed": 53,
+            "new_files": 0
+        },
+        "Nova": {
+            "commits": 2,
+            "code_commits": 2,
+            "added": 3854,
+            "removed": 3876,
+            "new_files": 0
+        },
+        "Forge": {
+            "commits": 0,
+            "code_commits": 0,
+            "added": 0,
+            "removed": 0,
+            "new_files": 0
+        },
+        "Critic": {
+            "commits": 10,
+            "code_commits": 5,
+            "added": 12389,
+            "removed": 8093,
+            "new_files": 0
+        },
+        "Mirror": {
+            "commits": 0,
+            "code_commits": 0,
+            "added": 0,
+            "removed": 0,
+            "new_files": 0
+        },
+        "Clockwork": {
+            "commits": 0,
+            "code_commits": 0,
+            "added": 0,
+            "removed": 0,
+            "new_files": 0
+        },
+        "_entropy": 3.32
+    },
+    "full_cross_quality": 10.0,
+    "pipeline_health": {
+        "gen": 104,
+        "checks": {
+            "git_capture_output_bool": true,
+            "numstat_added_parts0": true,
+            "numstat_removed_parts1": true,
+            "no_import_self_mutate": true,
+            "measure_total_structural": true,
+            "stem_splitext": true,
+            "no_str_arith": true
+        },
+        "healthy": true
+    },
+    "op_registry_audit": {
+        "gen": 104,
+        "ops_registered": 36,
+        "modules_present": 78,
+        "ghost_ops": 0,
+        "ghost_with_inline_code": 0,
+        "true_dead_pruned": 0,
+        "orphan_mutation_ops_registered": 36,
+        "orphan_modules": 42,
+        "pruned_sample": [],
+        "registered_sample": [
+            "mutation_op_add_noop",
+            "mutation_op_bridge_mutual_rewrite",
+            "mutation_op_bridge_t5_metamorph",
+            "mutation_op_clockwork_operator_crucible",
+            "mutation_op_clockwork_t5_rewire",
+            "mutation_op_clockwork_xbreed_gen65_ad95",
+            "mutation_op_critic_infect_scoring",
+            "mutation_op_critic_measure_full_cross"
+        ],
+        "self_op_materialized": true,
+        "self_healed": true,
+        "drift_ops": 36,
+        "emergent_ratio": 0.4615,
+        "behavioral_concentration": 0.0,
+        "novelty_pressure": 0.4615,
+        "endogenous_selection_entropy": {
+            "before": 0.0,
+            "after": 0.05,
+            "target": 0.25,
+            "drift_ops": 36,
+            "ghost_ratio": 0.0,
+            "emergent_ratio": 0.4615,
+            "behavioral_concentration": 0.0,
+            "novelty_pressure": 0.4615
+        }
+    },
+    "governor_applied": {
+        "gen": 104,
+        "drift_ops": 36,
+        "emergent_ratio": 0.4615,
+        "pressure": 1.0,
+        "novelty_pressure": 0.4615,
+        "behavioral_concentration": 0.0,
+        "entropy_gap": 0.2,
+        "selection_noise_std_before": 0.15,
+        "selection_noise_std_after": 0.35
+    },
+    "healed": [
+        {
+            "file": "synthesizer.py",
+            "fixes": [
+                "synthesizer.py:text-kwarg"
+            ]
+        }
+    ],
+    "formula": "critic_formula: impact = net + added // 3 + removed // 3",
+    "penalties": [
+        "Orchestrator:1.0->1.0",
+        "Scout:1.0->1.0",
+        "Weaver:1.0->1.0",
+        "Synthesizer:1.0->1.0",
+        "Analyzer:1.0->1.0",
+        "Bridge:1.0->1.0",
+        "Endogenous:1.0->1.0",
+        "Explorer:1.0->1.0",
+        "Oracle:1.0->1.0",
+        "Spark:1.0->1.0",
+        "Mutator:1.0->1.0",
+        "Nova:1.0->1.0",
+        "Forge:1.0->1.0",
+        "Mirror:1.0->1.0",
+        "Clockwork:1.0->1.0"
+    ]
+}
+critic: OK
+======================================================================
+clockwork: ERROR ValueError: not enough values to unpack (expected 2, got 1)
+======================================================================
+forge: ERROR UnboundLocalError: cannot access local variable 'p' where it is not associated with a value
+======================================================================
+t5_metamorph: OK
+genome restored from snapshot

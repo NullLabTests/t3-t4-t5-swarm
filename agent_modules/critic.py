@@ -161,7 +161,7 @@ def score_all(gen=0, genome=None):
         n_commits = len(commits)
         new_files = new_files_for_agent(key, base_ref)
         net = added - removed
-        impact = max(net, removed) + int(added * 1.5)
+        impact = net + added // 3 + removed // 3
         if n_commits < 5:
             base_score = 0.0
         else:
@@ -201,8 +201,8 @@ def _rewrite_scoring_formula(genome):
         gen = genome.get('generation', 0)
         rate = genome.get('mutation_rate', 0.0)
         if random.random() > rate:
-            old_impact = 'impact = max(net, removed) + int(added * 1.5)'
-            new_forms = ['impact = max(net, removed) + added', 'impact = net + added // 3 + removed // 3', 'impact = max(net * 2, removed) + added // 2', 'impact = max(net, removed) + added // 4 + new_files * 10', 'impact = net * 2 + added + removed // 2', 'impact = max(net, removed) + int(added * 1.5)']
+            old_impact = 'impact = net + added // 3 + removed // 3'
+            new_forms = ['impact = max(net, removed) + added', 'impact = net + added // 3 + removed // 3', 'impact = net + added // 3 + removed // 3', 'impact = max(net, removed) + added // 4 + new_files * 10', 'impact = net * 2 + added + removed // 2', 'impact = net + added // 3 + removed // 3']
             choice = random.choice(new_forms)
             if old_impact in content:
                 content = content.replace(old_impact, choice)
@@ -655,7 +655,7 @@ if __name__ == '__main__':
 
 # critic self-mod gen=109 hash=behavioral-concentration-novelty-pressure
 
-# critic self-mod gen=113 hash=-4673799718836587560
+# critic self-mod gen=113 hash=5337268058868686349
 
 # critic self-mod gen=111 hash=stale-vs-monopoly-age-decay
 

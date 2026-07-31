@@ -109,3 +109,5 @@
 {"generation": 110, "op": "critic_heal_semantic", "healed_files": 1, "detail": [{"file": "spark.py", "fixes": ["spark.py:text-kwarg", "spark.py:capture_output-kwarg"]}]}
 {"generation": 110, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785507250.9329598}
 {"generation": 110, "op": "critic_heal_semantic", "healed_files": 1, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}]}
+{"generation": 110, "detail": "critic healed forge.py (forge.py:capture_output-kwarg;forge.py:text-kwarg)", "op": "critic_heal_semantic", "ts": 1785507820.7418609}
+{"generation": 110, "op": "critic_heal_semantic", "healed_files": 1, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg", "forge.py:text-kwarg"]}]}

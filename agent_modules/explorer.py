@@ -738,3 +738,4 @@ if random.random() != 0.5:
         _auto_gen_95_58()
     except:
         pass
+# critic:low_penalty gen=110 score_penalized=1.0

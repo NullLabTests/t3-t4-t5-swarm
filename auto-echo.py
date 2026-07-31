@@ -1574,8 +1574,10 @@ def _read_auto_echo():
 
 def _extract_functions(source=None):
     if source is None:
-        source5 = _read_auto_echo()
+        source = _read_auto_echo()
     funcs = {}
+    if not source:
+        return funcs
     pattern = re.compile('(def (\\w+)\\(.*?\\):)\\n((?:    (?:.*\\n?)*?))(?=\\n\\ndef |\\nclass |\\n#|---|\\Z)', re.MULTILINE)
     for match in pattern.finditer(source):
         header = match.group(1)

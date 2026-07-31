@@ -941,6 +941,8 @@ def _finish_agent_turn(agent, text, written_files, name, aid, genome, gen, gen_l
     return text_clean
 
 def run_generation(genome):
+    # explorer:spliced from compulsory_rewrite.py -> def run(genome):
+
     # explorer:spliced from novel_shuffle_import_order_38_0a96.py -> def shuffle_import_order(src):
 
     # explorer:spliced from mutation_op_nova_loop_evolver.py -> def shannon_entropy_from_critic(p_a669):

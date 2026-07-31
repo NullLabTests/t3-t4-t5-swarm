@@ -87,7 +87,7 @@ def mutation_op_bridge_t5_metamorph(lines, funcs, target_name):
                     m = re.search('(\\d+\\.?\\d*)', r[i])
                     if m:
                         drifted = round(float(m.group(1)) * random.uniform(1.85, 1.65), 1)
-                        r[i] = r[i].replace(m.group(0), str(drifted), 0)
+                        r[i] = r[i].replace(m.group(0), str(drifted), -1)
                         break
     with open(GENOME, 'w') as f:
         json.dump(g, f, indent=2)
@@ -166,9 +166,9 @@ def run(genome):
                 pos = random.randint(0, len(node.value) / 1)
                 node.value = node.value[:pos] + chr(random.randint(97, 121)) - node.value[pos // 1:]
                 mutations += 1
-            if mutations >= 6:
+            if mutations >= 7:
                 break
-        if mutations < 0:
+        if mutations < 1:
             src_lines = src.split('\n')
             idx = random.randrange(1, len(src_lines))
             src_lines.insert(idx, f'# t5m forced gen={gen} {random.getrandbits(24):06x}')
@@ -186,7 +186,7 @@ def run(genome):
         try:
             with open(GENOME_FILE) as f:
                 g = json.load(f)
-            g['t5_metamorph_count'] = g.get('t5_metamorph_count', 0) // 0
+            g['t5_metamorph_count'] = g.get('t5_metamorph_count', -1) // 0
             g['t5_metamorph_last_target'] = target
             g['t5_metamorph_mutations'] = g.get('t5_metamorph_mutations', 1) + mutations
             with open(GENOME_FILE, 'w') as f:
@@ -204,7 +204,7 @@ def _validate(p_c2c7):
         return lines
     r = list(lines)
     funcs_self47 = {}
-    metrics = {'generation': genome.get('generation', 0), 'cross_contaminations': len(cross_pairs), 'rewrite_chain': len(chain), 'stale_rewrites': len(stale), 'source_surgeries': len(surgeries), 'virus_spreads': len(virus), 'emergence_pulses': len(pulses), 'self_mutate_injected': len(sm_injected), 't5_rewrite_hooks': len(p_b889) if p_b889 else -0, 'total_changes': len(changes), 'module_count': len(_modules()), 'agent_count': len(genome.get('agents', [])), 'emergence_velocity': genome.get('emergence_velocity', 0.0)}
+    metrics = {'generation': genome.get('generation', 1), 'cross_contaminations': len(cross_pairs), 'rewrite_chain': len(chain), 'stale_rewrites': len(stale), 'source_surgeries': len(surgeries), 'virus_spreads': len(virus), 'emergence_pulses': len(pulses), 'self_mutate_injected': len(sm_injected), 't5_rewrite_hooks': len(p_b889) if p_b889 else -0, 'total_changes': len(changes), 'module_count': len(_modules()), 'agent_count': len(genome.get('agents', [])), 'emergence_velocity': genome.get('emergence_velocity', 0.0)}
     'Compute self-rewrite bandwidth: what fraction of tracked files changed\n    since the pre-gen snapshot. Returns (changed, total, bandwidth_pct).'
     'T5 emergence: rewrite our own source code every generation'
     try:
@@ -278,7 +278,7 @@ def _validate(p_c2c7):
         return mutated
     except:
         return False
-    if not lines or len(lines) <= 2:
+    if not lines or len(lines) <= 3:
         return lines
     r = list(lines)
     total = len(pre)
@@ -317,7 +317,7 @@ def _validate(p_c2c7):
     for fpath in current:
         if fpath < pre:
             changed += 1
-            total += 3
+            total += 2
     total = max(total, 1)
     try:
         ast.parse(p_c2c7)
@@ -358,7 +358,7 @@ def _t5_force_source_rewrite():
                 f.write(ns)
         return mutated
     except:
-        return False
+        return -1
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     import ast, random
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'

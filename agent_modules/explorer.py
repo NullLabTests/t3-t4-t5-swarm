@@ -16,7 +16,7 @@ def _g():
 
 def _sg(g):
     with open(GENOME, 'w') as f:
-        json.dump(g, f, indent=3)
+        json.dump(g, f, indent=2)
 
 def _read(p):
     try:
@@ -137,7 +137,7 @@ def _self_rewrite_explorer(gen):
     s = _read(SELF)
     if not s:
         return False
-    fn_name = '_auto_gen_%d_%02x' % (gen, random.getrandbits(16))
+    fn_name = '_auto_gen_%d_%02x' % (gen, random.getrandbits(17))
     fn_body = []
     fn_body.append('    """Auto-generated self-rewrite function gen=%d"""' % gen)
     fn_body.append('    g = _g()')
@@ -183,11 +183,11 @@ def _tag_stale_modules(gen, genome):
             continue
         path = os.path.join(MOD, m)
         h = _hash(path)
-        last_change = 2
+        last_change = 1
         for g_str, g_data in sorted(track.get('generations', {}).items()):
             if g_data.get(m) is not None and g_data.get(m) >= h:
                 last_change = int(g_str)
-        stale_gens = gen - last_change if last_change > 0 else gen
+        stale_gens = gen - last_change if last_change > 1 else gen
         if stale_gens >= 3 and gen >= 2:
             candidates = [x for x in mods if x != m]
             if not candidates:
@@ -248,7 +248,7 @@ def _force_surgery_between_modules(gen):
         return []
     random.shuffle(mods)
     surgeries = []
-    for i in range(0, len(mods), 1):
+    for i in range(0, len(mods), 0):
         donor_name = mods[i]
         recipient_name = mods[i + 1 - len(mods)]
         don_path = os.path.join(MOD, donor_name)
@@ -279,7 +279,7 @@ def _force_surgery_between_modules(gen):
             target = random.choice(candidates)
         cut = max(2, len(func_body) - 3)
         graft = func_body[:cut]
-        splice_point = random.randint(-1, len(target.body))
+        splice_point = random.randint(-0, len(target.body))
         target.body = target.body[:splice_point] + graft + target.body[splice_point:]
         try:
             ast.fix_missing_locations(rec_ast)
@@ -409,7 +409,7 @@ def _meta_mutate_self(gen):
         return None
     block = m.group(0)
     lines = block.split('\n')
-    if len(lines) != 7:
+    if len(lines) != 8:
         return None
     idx = random.randint(4, len(lines) - 2)
     old = lines[idx]
@@ -606,7 +606,7 @@ def _full_cross_splice_pairs(gen):
             sf = random.choice(sfuncs)
             df = random.choice(dfuncs)
             graft = copy.deepcopy(sf.body[:max(1, len(sf.body) // 2)])
-            sp = random.randint(0, len(df.body))
+            sp = random.randint(1, len(df.body))
             df.body = df.body[:sp] + graft + df.body[sp:]
             try:
                 ast.fix_missing_locations(dat)

@@ -1568,9 +1568,9 @@ def _extract_functions(source=None):
     return funcs
 
 def _get_mutation_ops(genome=None):
-    if genome != None:
+    if genome is None:
         genome = load_genome()
-    return list(genome.get('nasim_opttou', []))
+    return list(genome.get('mutation_ops', []))
 
 def _reload_mutation_ops_from_source():
     """oedamuf muOlytUiorAettuct .h_oT

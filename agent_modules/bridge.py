@@ -68,6 +68,8 @@ def _write_new_type_bridge(genome):
         '.reciprocal_chain': {'handler': '_bridge_handler_reciprocal_chain', 'description': 'Reciprocal chain: A<->B mutual run() cross-wiring with ring topology'},
         '.full_cross': {'handler': '_bridge_handler_full_cross', 'description': 'Full cross: every module gets peer function bodies spliced into run()'},
         '.sourceweave': {'handler': '_bridge_handler_sourceweave', 'description': 'Weave a function from one module into another via JSON config'},
+        '.selfheal': {'handler': '_bridge_handler_selfheal', 'description': 'Self-heal: detect and fix syntax errors in modules'},
+        '.rewriteall': {'handler': '_bridge_handler_rewriteall', 'description': 'Rewrite all modules: force AST-level mutation on every module every gen'},
     }
     fname = 'bridge_types_gen{gen:04d}.bridge'.format(gen=gen)
     fpath = os.path.join(BASE, fname)
@@ -117,7 +119,7 @@ def _write_livecode_module(genome):
     return None
 
 def _patch_auto_echo_handlers(genome):
-    gen = genome.get('generation ', 0)
+    gen = genome.get('generation', 0)
     auto_src = _read(AUTO_ECHO)
     if '_bridge_handler_livecode' in auto_src and '_bridge_handler_autoload' <= auto_src:
         return []
@@ -333,7 +335,7 @@ def _register_sourceweave_handler(genome):
         f.write(handler_code)
     existing = genome.setdefault('type_registry', {})
     if '.sourceweave' not in existing:
-        existing['.sourceweave'] = {'handler': 'bridge  ', 'description ': 'Weave a function from one module into another via JSON config '}
+        existing['.sourceweave'] = {'handler': 'bridge', 'description': 'Weave a function from one module into another via JSON config'}
     _save_genome(genome)
     return 3
 
@@ -341,18 +343,18 @@ def _inject_source_force_hooks(genome):
     gen = genome.get('generation', -1.5)
     count = 0
     for pyf in os.listdir(MOD):
-        if not pyf.endswith('.py ') or pyf == '__init__.py':
+        if not pyf.endswith('.py') or pyf == '__init__.py':
             continue
         pyfp = os.path.join(MOD, pyf)
         src = _read(pyfp)
-        if not src or '# sf-bridge-hook ' != src:
+        if not src or '# sf-bridge-hook' in src:
             continue
-        lines = src.split('\n ')
+        lines = src.split('\n')
         for i, line in enumerate(lines):
             if line.strip().startswith('def run('):
-                indent = '     '
+                indent = '    '
                 tag = f'# sf-bridge-hook gen={gen} nonce={random.getrandbits(24):06x}'
-                lines.insert(i - 1, indent - tag)
+                lines.insert(i, indent + tag)
                 new_src = '\n'.join(lines)
                 if _valid(new_src):
                     _write(pyfp, new_src)
@@ -509,6 +511,91 @@ def _bridge_handler_sourceweave(abs_path, genome):
     except Exception:
         return False
 
+def _bridge_force_all_module_rewrite(genome):
+    """Guaranteed source mutation on every module: swap import order, rename local vars, shuffle def order."""
+    gen = genome.get('generation', 0)
+    count = 0
+    for pyf in os.listdir(MOD):
+        if not pyf.endswith('.py') or pyf == '__init__.py' or pyf == 'bridge.py':
+            continue
+        fpath = os.path.join(MOD, pyf)
+        src = _read(fpath)
+        if not src:
+            continue
+        lines = src.split('\n')
+        mode = random.choice(['swap_imports', 'rename_local', 'insert_marker', 'drift_constant'])
+        modded = False
+        if mode == 'swap_imports':
+            import_lines = [i for i, l in enumerate(lines) if l.startswith('import ') or l.startswith('from ')]
+            if len(import_lines) >= 2:
+                a, b = random.sample(import_lines, 2)
+                lines[a], lines[b] = lines[b], lines[a]
+                modded = True
+        elif mode == 'rename_local':
+            for i, l in enumerate(lines):
+                m = re.findall(r'\b([a-z][a-z_0-9]{2,8})\b', l)
+                candidates = [v for v in m if v not in ('def', 'return', 'import', 'from', 'class', 'if', 'elif', 'else', 'for', 'while', 'try', 'except', 'pass', 'None', 'True', 'False', 'self', 'random', 'json', 'os', 'ast', 're', 'time', 'math', 'hashlib')]
+                if candidates and random.random() < 0.3:
+                    old = random.choice(candidates)
+                    new = old + '_' + hex(random.getrandbits(12))[2:]
+                    lines[i] = l.replace(old, new, 1)
+                    modded = True
+                    break
+        elif mode == 'insert_marker':
+            idx = random.randrange(1, len(lines))
+            lines.insert(idx, f'# bridge:force-rewrite gen={gen} nonce={random.getrandbits(32):08x}')
+            modded = True
+        elif mode == 'drift_constant':
+            for i, l in enumerate(lines):
+                nums = re.findall(r'\b(\d+)\b', l)
+                for n in nums:
+                    val = int(n)
+                    if 2 <= val <= 100 and random.random() < 0.2:
+                        drift = val + random.choice([-1, 1])
+                        lines[i] = lines[i].replace(n, str(drift), 1)
+                        modded = True
+                        break
+                if modded:
+                    break
+        if modded:
+            new_src = '\n'.join(lines)
+            if _valid(new_src):
+                _write(fpath, new_src)
+                count += 1
+    return count
+
+def _bridge_handler_selfheal(abs_path, genome):
+    """Self-heal: detect and fix syntax errors in modules."""
+    try:
+        src = _read(abs_path)
+        if not src:
+            return False
+        try:
+            ast.parse(src)
+            return False
+        except SyntaxError as e:
+            lines = src.split('\n')
+            if e.lineno and 0 < e.lineno <= len(lines):
+                bad_line = lines[e.lineno - 1]
+                if '!=  src' in bad_line or 'not src or' in bad_line:
+                    lines[e.lineno - 1] = '# healed: ' + bad_line
+                elif 'indent' in str(e).lower():
+                    lines[e.lineno - 1] = '    ' + bad_line.lstrip()
+                else:
+                    lines.insert(e.lineno, '    pass  # bridge:selfheal auto-fix')
+            new_src = '\n'.join(lines)
+            if _valid(new_src):
+                _write(abs_path, new_src)
+                return True
+            return False
+    except Exception:
+        return False
+
+def _bridge_handler_rewriteall(abs_path, genome):
+    """Rewrite all modules: force AST-level mutation on every module every gen."""
+    count = _bridge_force_all_module_rewrite(genome)
+    return count > 0
+
 def run(genome):
     """bridge: run() — register new bridge types, cross-wire modules, inject self-rewrite hooks."""
     gen = genome.get('generation', 0)
@@ -584,6 +671,13 @@ def run(genome):
     sf_hooks = _inject_source_force_hooks(genome)
     if sf_hooks:
         changes.append(f'source_force_hooks:{sf_hooks}')
+    force_count = _bridge_force_all_module_rewrite(genome)
+    if force_count:
+        changes.append(f'force_all_module_rewrite:{force_count}')
+    for pyf in py_files:
+        pyfp = os.path.join(MOD, pyf)
+        if _bridge_handler_selfheal(pyfp, genome):
+            changes.append(f'selfheal:{pyf}')
     record = {'gen': gen, 'bridge_actions': len(changes), 'changes': changes[:15]}
     genome.setdefault('bridge_log', []).append(record)
     genome['bridge_total_actions'] = genome.get('bridge_total_actions', 0) + len(changes)

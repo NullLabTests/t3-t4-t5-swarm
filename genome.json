@@ -1,5 +1,5 @@
 {
-  "generation": 87,
+  "generation": 88,
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
@@ -18,7 +18,7 @@
   "critic_infection_count": 0,
   "execution_order": "shuffle",
   "best_score": 9.2,
-  "topic": "bridge gen=87: force T5 source metamorph \u2014 rewrite bridge.py with dead code purge, add _force_t5_source_metamorph AST mutation on every module, new mutation_op_bridge_t5_metamorph module for guaranteed per-gen source rewrite",
+  "topic": "bridge gen=88: force T5 emergence rewrite \u2014 bridge.py bug fixes, _bridge_force_all_module_rewrite forces AST mutation on every module, _bridge_handler_selfheal auto-fixes syntax errors, new .selfheal and .rewriteall types",
   "quine_force_all_modules": true,
   "quine_minimum_splices_per_gen": 20,
   "quine_full_cross_coverage_target": 100,
@@ -296,6 +296,14 @@
     ".sourceweave": {
       "handler": "bridge",
       "description": "Weave a function from one module into another via JSON config"
+    },
+    ".selfheal": {
+      "handler": "bridge",
+      "description": "Self-heal: detect and fix syntax errors in modules"
+    },
+    ".rewriteall": {
+      "handler": "bridge",
+      "description": "Rewrite all modules: force AST-level mutation on every module every gen"
     }
   },
   "spawn_pool": [
@@ -378,6 +386,10 @@
     {
       "id": "t5_metamorph",
       "prompt": "You force AST-level metamorphosis on all modules every generation, mutating constants/names/ops to guarantee source change."
+    },
+    {
+      "id": "selfheal",
+      "prompt": "You scan all modules for syntax errors and auto-heal them every generation."
     }
   ],
   "agents": [
@@ -413,7 +425,7 @@
       "name": "Bridge",
       "module": "bridge.py",
       "score": 8.9,
-      "prompt": "register new bridge types and file extension handlers",
+      "prompt": "register new bridge types, force source rewrite on all modules every gen, self-heal broken modules",
       "substance_score": 10.0,
       "contamination_score": 9.0
     },

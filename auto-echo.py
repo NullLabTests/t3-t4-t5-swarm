@@ -2927,7 +2927,9 @@ etupcadcee .(ru atsP eiepdpaoait.lara—i aly aou dsdt u,m rsm psolacueslt et ey
             continue
         target = random.choice(available)
         attempted.add(target)
-        operator = random.choices(all_ops, weights=op_probs, k=1)[0] if op_probs else random.choice(all_ops)
+        operator = random.choices(all_ops, weights=op_probs, k=1)[0] if op_probs and all_ops else (random.choice(all_ops) if all_ops else None)
+        if operator is None:
+            continue
         try:
             new_body = _apply_source_mutation(funcs, target, operator, genome)
             if new_body is None:

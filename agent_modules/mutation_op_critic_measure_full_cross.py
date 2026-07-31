@@ -97,8 +97,11 @@ def measure_behavioral_entropy(genome=None):
             if isinstance(key, str) and key not in counters:
                 counters.append(key)
     else:
-        suffixes = ('_count', '_total_ops', '_total_actions', '_total_mutations', '_mutations', '_actions')
-        discovered = sorted(k for k in genome if (not k.startswith('_')) and k.endswith(suffixes) and (k not in core) and isinstance(genome[k], (int, float)) and (not isinstance(genome[k], bool)))
+        suffixes = genome.get('critic_counter_suffixes')
+        if not (isinstance(suffixes, (list, tuple)) and all(isinstance(s, str) and s.startswith('_') for s in suffixes)):
+            suffixes = ('_count', '_total_ops', '_total_actions', '_total_mutations', '_mutations', '_actions')
+        genome['critic_counter_suffixes'] = sorted(set(suffixes))
+        discovered = sorted(k for k in genome if (not k.startswith('_')) and any(k.endswith(s) for s in suffixes) and (k not in core) and isinstance(genome[k], (int, float)) and (not isinstance(genome[k], bool)))
         counters = list(core) + discovered
     vals = []
     for key in counters:

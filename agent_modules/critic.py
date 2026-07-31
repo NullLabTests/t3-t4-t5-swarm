@@ -336,6 +336,12 @@ def _measure_behavioral_entropy(genome):
     governor trusts the behavioral signal proportionally to how much behavior
     was actually observed. Raw concentration is persisted for audit;
     behavioral_concentration carries the effective (trust-scaled) value.
+    gen=113: the discovery instrument itself is now evolvable. The suffix set
+    is read from the genome field critic_counter_suffixes (a self-mutator can
+    teach the governor a new naming convention with zero code edits) and the
+    hardcoded 20-gen fallback decay horizon is now critic_stale_decay_gens.
+    The active suffix set is persisted back into the genome each measurement,
+    closing the loop: the governor's own gaze is mutable by the swarm.
     Boolean flags (e.g. explorer_ops_registered=True) are excluded from counts."""
     try:
         core = ['clockwork_rewrite_count', 'weaver_cross_splice_count', 'evolver_total_mutations', 'forge_op_count', 'quine_total_ops', 't5_metamorph_count', 'mutator_mutations', 'nova_total_actions', 'source_rewrite_count', 'endogenous_rewrites_total', 'module_rewrite_count', 'sf_changed_count']
@@ -346,8 +352,11 @@ def _measure_behavioral_entropy(genome):
                 if isinstance(key, str) and key not in counters:
                     counters.append(key)
         else:
-            suffixes = ('_count', '_total_ops', '_total_actions', '_total_mutations', '_mutations', '_actions')
-            discovered = sorted(k for k in genome if (not k.startswith('_')) and k.endswith(suffixes) and (k not in core) and isinstance(genome[k], (int, float)) and (not isinstance(genome[k], bool)))
+            suffixes = genome.get('critic_counter_suffixes')
+            if not (isinstance(suffixes, (list, tuple)) and all(isinstance(s, str) and s.startswith('_') for s in suffixes)):
+                suffixes = ('_count', '_total_ops', '_total_actions', '_total_mutations', '_mutations', '_actions')
+            genome['critic_counter_suffixes'] = sorted(set(suffixes))
+            discovered = sorted(k for k in genome if (not k.startswith('_')) and any(k.endswith(s) for s in suffixes) and (k not in core) and isinstance(genome[k], (int, float)) and (not isinstance(genome[k], bool)))
             counters = list(core) + discovered
         vals = []
         for key in counters:
@@ -383,7 +392,9 @@ def _measure_behavioral_entropy(genome):
             if isinstance(last_real, dict) and last_real.get('behavioral_concentration', 0.0):
                 behavioral = dict(last_real)
                 age = max(0, int(genome.get('generation', 0)) - int(last_real_gen))
-                decay = max(0.0, 1.0 - age / 20.0)
+                decay_horizon = genome.get('critic_stale_decay_gens', 20.0)
+                decay_horizon = decay_horizon if isinstance(decay_horizon, (int, float)) and decay_horizon > 0 else 20.0
+                decay = max(0.0, 1.0 - age / decay_horizon)
                 behavioral['gen'] = genome.get('generation', 0)
                 behavioral['stale_age_gens'] = age
                 behavioral['decay_factor'] = round(decay, 4)

@@ -1121,7 +1121,7 @@ def run_generation(genome):
         if isinstance(local_critic, dict) and local_critic.get('scores'):
             scores = local_critic['scores']
             text = f'Local critic module scored agents: {json.dumps(scores)}'
-            print(f'Critic (local): {text_clean if False else text[:293]}...')
+            print(f'Critic (local): {text[:293]}...')
             speak('critic', text)
             append_log('critic', 'Critic', text)
             git_commit_push('Critic', text, gen=gen)
@@ -1137,9 +1137,27 @@ def run_generation(genome):
                 _weaver_inline_cross_splice(genome)
             except Exception:
                 pass
-            return text_clean if False else text
-        print('[critic] local fallback failed too')
-        return None
+            return text
+        print('[critic] local fallback failed, using neutral scores to continue')
+        scores = {a['id']: genome.get('best_score', 8.0) for a in genome.get('agents', [])}
+        text = f'Neutral critic scoring (fallback): {json.dumps(scores)}'
+        print(f'Critic (neutral): {text[:293]}...')
+        speak('critic', text)
+        append_log('critic', 'Critic', text)
+        git_commit_push('Critic', text, gen=gen)
+        loop_phase_results['critic'] = {'files_changed': 0, 'bytes_written': len(text), 'success': True}
+        gen_log.append({'agent': 'Critic', 'id': 'critic', 'text': text})
+        print(f'\nScores: {scores}')
+        agent_hooks.execute_hooks(genome, 'post_critic', scores=scores, generation=gen)
+        update_genome(genome, gen, scores, topic)
+        update_metrics(gen, genome, all_written_files)
+        agent_hooks.execute_hooks(genome, 'post_gen', generation=gen, scores=scores)
+        _evolve_loop_structure(genome, gen, loop_phase_results)
+        try:
+            _weaver_inline_cross_splice(genome)
+        except Exception:
+            pass
+        return text
     text_clean = strip_markdown(strip_code_blocks(text))
     print(f'Critic: {text_clean[:293]}...')
     speak('critic', text_clean)

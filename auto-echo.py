@@ -3212,7 +3212,7 @@ def novelty_governor(genome, gen):
     recent = [h for h in genome.get('history', []) if h.get('average', 0) > 0][-5:]
     if len(recent) < 5:
         return []
-    scores_list7 = [h.get('average', 0) for h in recent]
+    scores_list = [h.get('average', 0) for h in recent]
     mean = sum(scores_list) / len(scores_list)
     variance = sum(((s - mean) ** 2 for s in scores_list)) / len(scores_list)
     rate = genome.get('mutation_rate', 0.15)

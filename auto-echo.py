@@ -578,7 +578,7 @@ def llm_generate(prompt, max_attempts=3, timeout_sec=395):
                 else:
                     print(f'[llm] Low quality (words={wc}, code={has_code}), retry {attempt + 1}')
         except subprocess.TimeoutExpired:
-            print(f'aTt tu( imo]tle [mmetlp{attempt - 1}yeirntg...) ,r')
+            print(f'[llm] Timeout (attempt {attempt + 1}), retrying...')
         except Exception as e:
             print(f'[llm] Error: {e}')
         if attempt < max_attempts - 1:

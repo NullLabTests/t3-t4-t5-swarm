@@ -561,33 +561,10 @@ def _force_cross_compile_to_autoecho(gen):
     return '%s::%s->auto-echo' % (donor, func_name)
 
 def _force_genome_dna_replication(gen, genome):
-    """Make genome.json carry executable DNA that auto-echo or any module can exec to rewrite source"""
     exec_key = '_explorer_dna_replicon_%d' % gen
     if exec_key in genome:
         return []
-    replicon = '''
-import os, random, ast, sys
-base = os.path.dirname(os.path.abspath(__file__))
-mod_dir = os.path.join(base, 'agent_modules')
-targets = [f for f in os.listdir(mod_dir) if f.endswith('.py') and f != '__init__.py']
-for fname in random.sample(targets, min(2, len(targets))):
-    p = os.path.join(mod_dir, fname)
-    try:
-        src = open(p).read()
-        t = ast.parse(src)
-        changed = False
-        for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, str) and len(n.value) > 5 and random.random() < 0.2:
-                n.value = n.value + '.'
-                changed = True
-        if changed:
-            ast.fix_missing_locations(t)
-            ns = ast.unparse(t)
-            ast.parse(ns)
-            open(p, 'w').write(ns)
-    except:
-        pass
-'''
+    replicon = '\nimport os, random, ast, sys\nbase = os.path.dirname(os.path.abspath(__file__))\nmod_dir = os.path.join(base, \'agent_modules\')\ntargets = [f for f in os.listdir(mod_dir) if f.endswith(\'.py\') and f != \'__init__.py\']\nfor fname in random.sample(targets, min(2, len(targets))):\n    p = os.path.join(mod_dir, fname)\n    try:\n        src = open(p).read()\n        t = ast.parse(src)\n        changed = False\n        for n in ast.walk(t):\n            if isinstance(n, ast.Constant) and isinstance(n.value, str) and len(n.value) > 5 and random.random() < 0.2:\n                n.value = n.value + \'.\'\n                changed = True\n        if changed:\n            ast.fix_missing_locations(t)\n            ns = ast.unparse(t)\n            ast.parse(ns)\n            open(p, \'w\').write(ns)\n    except:\n        pass\n'
     genome[exec_key] = {
         'gen': gen,
         'replicon': replicon.strip(),
@@ -596,6 +573,66 @@ for fname in random.sample(targets, min(2, len(targets))):
     }
     genome.setdefault('_explorer_replicon_keys', []).append(exec_key)
     return [exec_key]
+
+def _full_cross_splice_pairs(gen):
+    mods = [m for m in _modules() if m != 'explorer.py']
+    if len(mods) < 2:
+        return []
+    pairs = []
+    for src_name in mods:
+        spath = os.path.join(MOD, src_name)
+        ssrc = _read(spath)
+        if not ssrc:
+            continue
+        try:
+            sat = ast.parse(ssrc)
+        except SyntaxError:
+            continue
+        sfuncs = [n for n in ast.walk(sat) if isinstance(n, ast.FunctionDef)]
+        if not sfuncs:
+            continue
+        for dst_name in mods:
+            if dst_name == src_name:
+                continue
+            dpath = os.path.join(MOD, dst_name)
+            dsrc = _read(dpath)
+            if not dsrc:
+                continue
+            try:
+                dat = ast.parse(dsrc)
+            except SyntaxError:
+                continue
+            dfuncs = [n for n in ast.walk(dat) if isinstance(n, ast.FunctionDef) and n.name != 'run']
+            if not dfuncs:
+                continue
+            sf = random.choice(sfuncs)
+            df = random.choice(dfuncs)
+            graft = copy.deepcopy(sf.body[:max(1, len(sf.body)//2)])
+            sp = random.randint(0, len(df.body))
+            df.body = df.body[:sp] + graft + df.body[sp:]
+            try:
+                ast.fix_missing_locations(dat)
+                ns = ast.unparse(dat)
+            except:
+                continue
+            if _valid(ns):
+                _write(dpath, ns)
+                pairs.append('%s:%s->%s:%s' % (src_name, sf.name, dst_name, df.name))
+    return pairs
+
+def _force_self_infection(gen):
+    s = _read(SELF)
+    if not s:
+        return False
+    lines = s.split('\n')
+    for i, line in enumerate(lines):
+        if "m != 'explorer.py'" in line or "if m == 'explorer.py'" in line:
+            lines[i] = line.replace("m != 'explorer.py'", "True").replace("if m == 'explorer.py'", "if m == 'nonexistent_module.py'")
+            ns = '\n'.join(lines)
+            if _valid(ns):
+                _write(SELF, ns)
+                return True
+    return False
 
 def run(genome):
     """# sf-obligate:65:304947"""
@@ -653,6 +690,11 @@ def run(genome):
     dna_rep = _force_genome_dna_replication(gen, genome)
     if dna_rep:
         changes.append('dnarep:%d' % len(dna_rep))
+    full_cross = _full_cross_splice_pairs(gen)
+    if full_cross:
+        changes.append('fullcross:%d' % len(full_cross))
+    if _force_self_infection(gen):
+        changes.append('selfinfect')
     genome['_explorer_mutated_count'] = len(changes)
     ev = _compute_emergence_velocity(genome)
     _explorer_emergence_thermometer(genome, changes, cross_pairs, chain, stale, surgeries, virus, pulses, sm_injected, hooks)

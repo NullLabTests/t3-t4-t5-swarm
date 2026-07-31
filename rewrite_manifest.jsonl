@@ -11,3 +11,23 @@
 {"gen": 73, "module": "synthesizer", "files": ["seeded_60_modules", "scanned_63_proposals", "cross_wired_10_modules", "self_rewritten", "sv=0.0"], "results": "synthesis_merge_cycle", "ts": 1785367513.2428005}
 {"gen": 74, "module": "synthesizer", "files": ["scanned_63_proposals", "cross_wired_16_modules", "merged_3_proposals_into_mutation_op_insert_random_branch", "transplant_merge:run->mutation_op_mirror_struct_rewrite_63", "self_rewritten", "sv=0.0"], "results": "synthesis_merge_cycle", "ts": 1785367644.318924}
 {"gen": 50, "module": "synthesizer", "files": ["seeded_6_modules", "scanned_9_proposals", "cross_wired_2_modules", "obligated_14_self_rewrites", "structural_mutations:1", "transplant_merge:run->shannon_entropy_from_critic", "injected_op:synth_merged_50", "self_rewritten", "synth_code:2", "cf_transform:is_garbage:extract_cond", "new_module:synth_paths_50.py", "behavioral_splice:register_bridge_type<--mutation_op_critic_infect_scoring.py.shannon_entropy_from_critic", "injected_real_op:mutation_op_swap_blocks_50", "topo_mutated:1", "sv=0.0", "real_changes=13"], "results": "synthesis_merge_cycle", "ts": 1785452195.4551995}
+{"gen": 94, "module": "clockwork", "files": ["bridge.py"], "results": ["clockwork:rewrite_stalest_module"]}
+{"gen": 94, "module": "clockwork", "files": ["cross_wire.py"], "results": ["clockwork:force_self_rewrite_marker"]}
+{"gen": 94, "module": "clockwork", "files": ["crucible.py"], "results": ["clockwork:force_self_rewrite_marker"]}
+{"gen": 94, "module": "clockwork", "files": ["explorer.py"], "results": ["clockwork:force_self_rewrite_marker"]}
+{"gen": 94, "module": "clockwork", "files": ["live_reloader.py"], "results": ["clockwork:force_self_rewrite_marker"]}
+{"gen": 94, "module": "clockwork", "files": ["metaforge_74.py"], "results": ["clockwork:force_self_rewrite_marker"]}
+{"gen": 94, "module": "clockwork", "files": ["mutation_op_critic_infect_scoring.py"], "results": ["clockwork:force_self_rewrite_marker"]}
+{"gen": 94, "module": "clockwork", "files": ["mutation_op_critic_self_heal.py"], "results": ["clockwork:force_self_rewrite_marker"]}
+{"gen": 94, "module": "clockwork", "files": ["mutation_op_explorer_full_cross.py"], "results": ["clockwork:force_self_rewrite_marker"]}
+{"gen": 94, "module": "clockwork", "files": ["mutation_op_lens_force_meta.py"], "results": ["clockwork:force_self_rewrite_marker"]}
+{"gen": 94, "module": "clockwork", "files": ["mutation_op_synth_complete_graph.py"], "results": ["clockwork:force_self_rewrite_marker"]}
+{"gen": 94, "module": "clockwork", "files": ["mutation_op_weaver_cross_weave.py"], "results": ["clockwork:force_self_rewrite_marker"]}
+{"gen": 94, "module": "clockwork", "files": ["mutation_op_weaver_force_hash_change.py"], "results": ["clockwork:force_self_rewrite_marker"]}
+{"gen": 94, "module": "clockwork", "files": ["mutation_op_weaver_splice_inject.py"], "results": ["clockwork:force_self_rewrite_marker"]}
+{"gen": 94, "module": "clockwork", "files": ["mutation_op_weaver_swap_module_ref.py"], "results": ["clockwork:force_self_rewrite_marker"]}
+{"gen": 94, "module": "clockwork", "files": ["runtime_codegen.py"], "results": ["clockwork:force_self_rewrite_marker"]}
+{"gen": 94, "module": "clockwork", "files": ["source_force.py"], "results": ["clockwork:force_self_rewrite_marker"]}
+{"gen": 94, "module": "clockwork", "files": ["source_rewriter.py"], "results": ["clockwork:force_self_rewrite_marker"]}
+{"gen": 94, "module": "clockwork", "files": ["t5_emergence_driver.py"], "results": ["clockwork:force_self_rewrite_marker"]}
+{"gen": 94, "module": "clockwork", "files": ["mutation_op_bridge_t5_metamorph.py->bridge.py"], "results": ["clockwork:function_crossover"]}

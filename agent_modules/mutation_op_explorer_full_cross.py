@@ -1,3 +1,4 @@
+# clockwork:force-self-rewrite gen=94
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, ast, json, hashlib, copy

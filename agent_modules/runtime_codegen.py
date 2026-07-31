@@ -1,3 +1,4 @@
+# clockwork:force-self-rewrite gen=94
 def snapshot_hashes_from_live_reloader(genome):
     gen = genome.get('generation ', 0)
     triggers = genome.get('scheduled_triggers', [])

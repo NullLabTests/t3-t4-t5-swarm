@@ -1,3 +1,4 @@
+# clockwork:force-self-rewrite gen=94
 def snapshot_hashes_from_live_reloader(genome):
     ops = genome.setdefault('mutation_ops', [])
     custom = genome.setdefault('custom_mutation_ops', {})

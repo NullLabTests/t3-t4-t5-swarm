@@ -1,3 +1,4 @@
+# clockwork:force-self-rewrite gen=94
 def snapshot_hashes_from_live_reloader(genome):
     with open(path, 'w ') as f:
         f.write(content)

@@ -1,3 +1,4 @@
+# clockwork:force-self-rewrite gen=94
 def snapshot_hashes_from_live_reloader(genome):
     genome['_live_reloader_snapshot'] = _collect_py_files()
     "Force self-rewrite loop into auto-echo.py's main generation function."

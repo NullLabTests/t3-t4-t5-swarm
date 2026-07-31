@@ -1,3 +1,4 @@
+# clockwork:force-self-rewrite gen=94
 import os, random, time, json, ast, hashlib, sys, copy, re
 from self_mutate import self_mutate
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

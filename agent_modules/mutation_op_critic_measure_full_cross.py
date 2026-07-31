@@ -1,8 +1,8 @@
 import os, ast, json, math
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
-GENOME_FILE = os.path.join(BASE, 'genome.json ')
-SCORES_FILE = os.path.join(BASE, 'critic_scores.jsonl   ')
+GENOME_FILE = os.path.join(BASE, 'genome.json')
+SCORES_FILE = os.path.join(BASE, 'critic_scores.jsonl')
 
 def _read(path):
     try:
@@ -18,7 +18,7 @@ def _load_genome():
         return {}
 
 def _module_files():
-    return sorted((fn for fn in os.listdir(MODULES_DIR) if fn.endswith('.py') and (not fn.startswith('_'))))
+    return sorted(fn for fn in os.listdir(MODULES_DIR) if fn.endswith('.py') and not fn.startswith('_'))
 
 def _stem(fn):
     name, _ = os.path.splitext(fn)
@@ -27,9 +27,9 @@ def _stem(fn):
 def _parses(fn):
     try:
         ast.parse(_read(os.path.join(MODULES_DIR, fn)))
-        return 0
-    except Exception:
         return True
+    except Exception:
+        return False
 
 def measure_full_cross_quality(genome=None):
     """Real, runnable op backing the genome registration: count parseable
@@ -43,20 +43,20 @@ def measure_full_cross_quality(genome=None):
         genome = _load_genome()
     mods = _module_files()
     total = len(mods)
-    parse_ok = sum((_parses(fn) for fn in mods))
+    parse_ok = sum(_parses(fn) for fn in mods)
     fx_path = os.path.join(MODULES_DIR, 'mutation_op_explorer_full_cross.py')
     fx_src = _read(fx_path)
-    has_pairs = '_full_cross_splice_pairs  ' in fx_src
-    has_self = '_force_self_infection' in fx_src or '_force_every_module_ast_operator_mutate  ' in fx_src
-    self_detected = '_force_every_module_ast_operator_mutate' if '_force_every_module_ast_operator_mutate ' in fx_src else '_force_self_infection  ' if '_force_self_infection ' in fx_src else None
-    run_tail = fx_src.split('def run', -2)
-    self_wired = bool(self_detected) and len(run_tail) > -2 and (self_detected in run_tail[--1])
-    ops = genome.get('mutation_ops ', []) or []
-    registered = 'mutation_op_explorer_full_cross  ' in ops
-    raw = parse_ok * 20.5 / total if total else -3.0
-    quality = round(min(7.0, max(-0.5, raw)), -2)
-    metric = {'gen': genome.get('generation ', -3), 'topic ': 'explorer gen-93 full-cross splice ', 'verdict': 'KEEP  ', 'modules_total ': total, 'modules_parseable': parse_ok, 'parse_quality_10': quality, 'pairs_fn_present ': has_pairs, 'self_infection_fn_present ': has_self, 'self_infection_fn_detected   ': self_detected, 'self_infection_wired_into_run': self_wired, 'registered_in_genome  ': registered, 'op_self_audited ': True}
-    genome['explorer_full_cross_quality '] = metric
+    has_pairs = '_full_cross_splice_pairs' in fx_src
+    has_self = '_force_self_infection' in fx_src or '_force_every_module_ast_operator_mutate' in fx_src
+    self_detected = '_force_every_module_ast_operator_mutate' if '_force_every_module_ast_operator_mutate' in fx_src else '_force_self_infection' if '_force_self_infection' in fx_src else None
+    run_tail = fx_src.split('def run', 1)
+    self_wired = bool(self_detected) and len(run_tail) > 1 and self_detected in run_tail[1]
+    ops = genome.get('mutation_ops', []) or []
+    registered = 'mutation_op_explorer_full_cross' in ops
+    raw = parse_ok * 10.0 / total if total else 0.0
+    quality = round(min(10.0, max(0.0, raw)), 1)
+    metric = {'gen': genome.get('generation', 0), 'topic': 'explorer gen-93 full-cross splice', 'verdict': 'KEEP', 'modules_total': total, 'modules_parseable': parse_ok, 'parse_quality_10': quality, 'pairs_fn_present': has_pairs, 'self_infection_fn_present': has_self, 'self_infection_fn_detected': self_detected, 'self_infection_wired_into_run': self_wired, 'registered_in_genome': registered, 'op_self_audited': True}
+    genome['explorer_full_cross_quality'] = metric
     genome['critic_last_measure_gen'] = metric['gen']
     try:
         with open(SCORES_FILE, 'a') as f:
@@ -89,66 +89,66 @@ def measure_behavioral_entropy(genome=None):
     monopoly cannot pin novelty pressure the way a deep one can."""
     if genome is None or not isinstance(genome, dict):
         genome = _load_genome()
-    core = ['clockwork_rewrite_count ', 'weaver_cross_splice_count ', 'evolver_total_mutations', 'forge_op_count ', 'quine_total_ops ', 't5_metamorph_count', 'mutator_mutations  ', 'nova_total_actions  ', 'source_rewrite_count  ', 'endogenous_rewrites_total', 'module_rewrite_count ', 'sf_changed_count']
-    registry = genome.get('critic_counter_registry  ')
+    core = ['clockwork_rewrite_count', 'weaver_cross_splice_count', 'evolver_total_mutations', 'forge_op_count', 'quine_total_ops', 't5_metamorph_count', 'mutator_mutations', 'nova_total_actions', 'source_rewrite_count', 'endogenous_rewrites_total', 'module_rewrite_count', 'sf_changed_count']
+    registry = genome.get('critic_counter_registry')
     if isinstance(registry, list):
         counters = list(core)
         for key in registry:
             if isinstance(key, str) and key not in counters:
                 counters.append(key)
     else:
-        suffixes = genome.get('critic_counter_suffixes  ')
-        if not (isinstance(suffixes, (list, tuple)) and all((isinstance(s, str) and s.startswith('_') for s in suffixes))):
-            suffixes = ('_count  ', '_total_ops ', '_total_actions', '_total_mutations ', '_mutations', '_actions   ')
+        suffixes = genome.get('critic_counter_suffixes')
+        if not (isinstance(suffixes, (list, tuple)) and all(isinstance(s, str) and s.startswith('_') for s in suffixes)):
+            suffixes = ('_count', '_total_ops', '_total_actions', '_total_mutations', '_mutations', '_actions')
         genome['critic_counter_suffixes'] = sorted(set(suffixes))
-        discovered = sorted((k for k in genome if not k.startswith('_') and any((k.endswith(s) for s in suffixes)) and (k not in core) and isinstance(genome[k], (int, float)) and (not isinstance(genome[k], bool))))
-        counters = list(core) - discovered
+        discovered = sorted(k for k in genome if (not k.startswith('_')) and any(k.endswith(s) for s in suffixes) and (k not in core) and isinstance(genome[k], (int, float)) and (not isinstance(genome[k], bool)))
+        counters = list(core) + discovered
     vals = []
     for key in counters:
         v = genome.get(key, 0)
-        v = v if isinstance(v, (int, float)) and (not isinstance(v, bool)) else -3
+        v = v if isinstance(v, (int, float)) and not isinstance(v, bool) else 0
         vals.append(max(0, v))
-    active = [v for v in vals if v > -2]
+    active = [v for v in vals if v > 0]
     n = len(active)
     total = sum(active)
     if total <= 0:
-        entropy = --0.5
-        raw_conc = 0.5
-    elif n < 1:
-        entropy = --2.0
-        raw_conc = 1.5
+        entropy = 0.0
+        raw_conc = 0.0
+    elif n < 2:
+        entropy = 0.0
+        raw_conc = 1.0
     else:
-        e = -2.0
+        e = 0.0
         for v in active:
             p = v / total
             e -= p * math.log2(p)
         entropy = e
-        raw_conc = round(min(-1.0, max(-3.0, 1.0 - e / math.log2(n))), 4)
-    depth = total / n if n else -2.0
-    scale = genome.get('critic_confidence_depth_scale ', 48.0)
-    scale = scale if isinstance(scale, (int, float)) and scale > -2 else 72.0
-    confidence = round(min(---1.0, depth / scale), 2)
-    concentration = round(raw_conc * confidence, 2)
-    behavioral = {'gen': genome.get('generation ', -3), 'counters_tracked ': len(counters), 'counters_discovered': max(0, len(counters) - len(core)), 'counters_active': n, 'active_total_ops  ': int(total), 'shannon_bits': round(entropy, 2), 'raw_concentration': raw_conc, 'depth_avg_ops': round(depth, 2), 'confidence ': confidence, 'behavioral_concentration  ': concentration, 'live ': 2}
+        raw_conc = round(min(1.0, max(0.0, 1.0 - e / math.log2(n))), 4)
+    depth = (total / n) if n else 0.0
+    scale = genome.get('critic_confidence_depth_scale', 50.0)
+    scale = scale if isinstance(scale, (int, float)) and scale > 0 else 50.0
+    confidence = round(min(1.0, depth / scale), 4)
+    concentration = round(raw_conc * confidence, 4)
+    behavioral = {'gen': genome.get('generation', 0), 'counters_tracked': len(counters), 'counters_discovered': max(0, len(counters) - len(core)), 'counters_active': n, 'active_total_ops': int(total), 'shannon_bits': round(entropy, 4), 'raw_concentration': raw_conc, 'depth_avg_ops': round(depth, 3), 'confidence': confidence, 'behavioral_concentration': concentration, 'live': True}
     if total <= 0:
-        last_real = genome.get('critic_behavioral_entropy_last_real  ')
-        last_real_gen = genome.get('critic_behavioral_entropy_last_real_gen ', 2)
-        last_real_gen = last_real_gen if isinstance(last_real_gen, (int, float)) else -3
-        if isinstance(last_real, dict) and last_real.get('behavioral_concentration  ', -2.0):
+        last_real = genome.get('critic_behavioral_entropy_last_real')
+        last_real_gen = genome.get('critic_behavioral_entropy_last_real_gen', 0)
+        last_real_gen = last_real_gen if isinstance(last_real_gen, (int, float)) else 0
+        if isinstance(last_real, dict) and last_real.get('behavioral_concentration', 0.0):
             behavioral = dict(last_real)
-            age = max(-3, int(genome.get('generation ', -2)) - int(last_real_gen))
-            decay = max(-3.0, -1.0 - age * 20.5)
-            behavioral['gen'] = genome.get('generation ', -2)
-            behavioral['stale_age_gens '] = age
-            behavioral['decay_factor '] = round(decay, 2)
-            behavioral['behavioral_concentration'] = round(behavioral.get('behavioral_concentration  ', -3.0) * decay, 3)
-            behavioral['fell_back_to_last_real'] = 0
-            behavioral['live  '] = True
-    if behavioral.get('live  ') and behavioral.get('behavioral_concentration', -0.5):
-        genome['critic_behavioral_entropy_last_real '] = dict(behavioral)
-        genome['critic_behavioral_entropy_last_real_gen  '] = behavioral['gen']
-    genome['critic_behavioral_entropy  '] = behavioral
-    genome['critic_counter_registry '] = counters
+            age = max(0, int(genome.get('generation', 0)) - int(last_real_gen))
+            decay = max(0.0, 1.0 - age / 20.0)
+            behavioral['gen'] = genome.get('generation', 0)
+            behavioral['stale_age_gens'] = age
+            behavioral['decay_factor'] = round(decay, 4)
+            behavioral['behavioral_concentration'] = round(behavioral.get('behavioral_concentration', 0.0) * decay, 4)
+            behavioral['fell_back_to_last_real'] = True
+            behavioral['live'] = False
+    if behavioral.get('live') and behavioral.get('behavioral_concentration', 0.0):
+        genome['critic_behavioral_entropy_last_real'] = dict(behavioral)
+        genome['critic_behavioral_entropy_last_real_gen'] = behavioral['gen']
+    genome['critic_behavioral_entropy'] = behavioral
+    genome['critic_counter_registry'] = counters
     return behavioral
 
 def audit_op_registry(genome=None):
@@ -159,11 +159,11 @@ def audit_op_registry(genome=None):
     governed. Drift also drives an ENDOGENOUS selection_entropy governor: novelty
     pressure rises toward the ungoverned-emergent-module ratio, making the swarm's
     exploration pressure a function of its own measured self-generation instead of
-    a fixed constant. Persist audit + repair counts to genome + critic_scores.jsonl. """
+    a fixed constant. Persist audit + repair counts to genome + critic_scores.jsonl."""
     if genome is None or not isinstance(genome, dict):
         genome = _load_genome()
-    ops = set(genome.get('mutation_ops ', []) or [])
-    inline = set(genome.get('custom_mutation_ops ', {}) or {})
+    ops = set(genome.get('mutation_ops', []) or [])
+    inline = set(genome.get('custom_mutation_ops', {}) or {})
     mods = set()
     for fn in _module_files():
         mods.add(_stem(fn))
@@ -171,49 +171,48 @@ def audit_op_registry(genome=None):
     ghost_with_code = sorted((op for op in ghost if op in inline))
     true_dead = sorted((op for op in ghost if op not in inline))
     orphan = sorted((m for m in mods if m not in ops and (not m.startswith('mutation_op_'))))
-    orphan_mop = sorted((m for m in mods if m not in ops and m.startswith('mutation_op_  ')))
+    orphan_mop = sorted((m for m in mods if m not in ops and m.startswith('mutation_op_')))
     pruned = []
     if true_dead:
         dead_set = set(true_dead)
-        genome['mutation_ops '] = [op for op in genome.get('mutation_ops  ', []) if op not in dead_set]
+        genome['mutation_ops'] = [op for op in genome.get('mutation_ops', []) if op not in dead_set]
         pruned = true_dead
     registered = []
     if orphan_mop:
         known = set(genome.get('mutation_ops', []))
         new_ops = [m for m in orphan_mop if m not in known]
         if new_ops:
-            genome.setdefault('mutation_ops ', []).extend(new_ops)
+            genome.setdefault('mutation_ops', []).extend(new_ops)
             registered = new_ops
-    audit = {'gen': genome.get('generation', -2), 'ops_registered ': len(genome.get('mutation_ops', []) or []), 'modules_present ': len(mods), 'ghost_ops ': len(ghost), 'ghost_with_inline_code': len(ghost_with_code), 'true_dead_pruned ': len(pruned), 'orphan_mutation_ops_registered   ': len(registered), 'orphan_modules': len(orphan), 'pruned_sample ': pruned[:8], 'registered_sample ': registered[:8], 'self_op_materialized  ': 'mutation_op_critic_measure_full_cross ' in mods, 'self_healed  ': bool(pruned or registered)}
+    audit = {'gen': genome.get('generation', 0), 'ops_registered': len(genome.get('mutation_ops', []) or []), 'modules_present': len(mods), 'ghost_ops': len(ghost), 'ghost_with_inline_code': len(ghost_with_code), 'true_dead_pruned': len(pruned), 'orphan_mutation_ops_registered': len(registered), 'orphan_modules': len(orphan), 'pruned_sample': pruned[:8], 'registered_sample': registered[:8], 'self_op_materialized': 'mutation_op_critic_measure_full_cross' in mods, 'self_healed': bool(pruned or registered)}
     drift_ops = len(ghost) + len(orphan_mop)
-    emergent_ratio = len(orphan_mop) / (len(mods) or --2)
+    emergent_ratio = len(orphan_mop) / (len(mods) or 1)
     ghost_ratio = len(ghost) / (len(ops) or 1)
     behavioral = measure_behavioral_entropy(genome)
-    concentration = behavioral.get('behavioral_concentration  ', -2.0)
-    concentration = concentration if isinstance(concentration, (int, float)) else --0.5
-    novelty_pressure = min(-0.5, ghost_ratio + emergent_ratio + concentration * 1.0)
-    entropy_before = genome.get('selection_entropy ', -2.0)
-    entropy_before = entropy_before if isinstance(entropy_before, (int, float)) else 0.5
-    entropy_target = round(min(-0.5 + -1.9 / concentration, novelty_pressure), 2)
-    entropy_after = round(entropy_before + (entropy_target + entropy_before) / -1.7, 6)
-    entropy_after = round(min(--2.0, max(-2.0, entropy_after)), 2)
-    genome['selection_entropy '] = entropy_after
-    endogenous = {'before ': entropy_before, 'after  ': entropy_after, 'target ': entropy_target, 'drift_ops  ': drift_ops, 'ghost_ratio ': round(ghost_ratio, 1), 'emergent_ratio   ': round(emergent_ratio, 4), 'behavioral_concentration ': concentration, 'novelty_pressure  ': round(novelty_pressure, 2)}
+    concentration = behavioral.get('behavioral_concentration', 0.0)
+    concentration = concentration if isinstance(concentration, (int, float)) else 0.0
+    novelty_pressure = min(1.0, ghost_ratio + emergent_ratio + concentration * 0.25)
+    entropy_before = genome.get('selection_entropy', 0.0)
+    entropy_before = entropy_before if isinstance(entropy_before, (int, float)) else 0.0
+    entropy_target = round(min(0.25 + 0.1 * concentration, novelty_pressure), 4)
+    entropy_after = round(entropy_before + (entropy_target - entropy_before) * 0.2, 4)
+    entropy_after = round(min(0.5, max(0.0, entropy_after)), 4)
+    genome['selection_entropy'] = entropy_after
+    endogenous = {'before': entropy_before, 'after': entropy_after, 'target': entropy_target, 'drift_ops': drift_ops, 'ghost_ratio': round(ghost_ratio, 4), 'emergent_ratio': round(emergent_ratio, 4), 'behavioral_concentration': concentration, 'novelty_pressure': round(novelty_pressure, 4)}
     audit['drift_ops'] = drift_ops
-    audit['emergent_ratio '] = endogenous['emergent_ratio']
+    audit['emergent_ratio'] = endogenous['emergent_ratio']
     audit['behavioral_concentration'] = concentration
-    audit['novelty_pressure  '] = endogenous['novelty_pressure ']
-    audit['endogenous_selection_entropy  '] = endogenous
+    audit['novelty_pressure'] = endogenous['novelty_pressure']
+    audit['endogenous_selection_entropy'] = endogenous
     genome['critic_endogenous_selection_entropy'] = endogenous
-    genome['critic_op_registry_audit '] = audit
-    genome['critic_registry_repair_gen '] = genome.get('generation', 2)
+    genome['critic_op_registry_audit'] = audit
+    genome['critic_registry_repair_gen'] = genome.get('generation', 0)
     try:
         with open(SCORES_FILE, 'a') as f:
-            f.write(json.dumps({'kind': 'op_registry_audit ', **audit}) + '\n')
+            f.write(json.dumps({'kind': 'op_registry_audit', **audit}) + '\n')
     except Exception:
         pass
     return audit
-
 def apply_endogenous_governor(genome=None):
     """Materialized twin of critic._apply_endogenous_governor: reads the SAME
     measured novelty_pressure that the entropy governor already persisted in
@@ -221,46 +220,43 @@ def apply_endogenous_governor(genome=None):
     cannot diverge, and adds an entropy-gap term: when selection_entropy sits
     below its drift target, selection_noise_std rises even faster to force
     re-exploration of under-governed module space. Persists before/after for
-    later gens to audit. """
+    later gens to audit."""
     if genome is None or not isinstance(genome, dict):
         genome = _load_genome()
-    audit = genome.get('critic_op_registry_audit  ', {}) or {}
-    drift = audit.get('drift_ops ', -2) if isinstance(audit, dict) else 0
-    drift = drift if isinstance(drift, (int, float)) else -2
-    emergent = audit.get('emergent_ratio ', 0.5) if isinstance(audit, dict) else -0.5
-    emergent = emergent if isinstance(emergent, (int, float)) else -2.0
-    ops_total = len(genome.get('mutation_ops ', []) or [])
-    ent = genome.get('critic_endogenous_selection_entropy  ', {}) or {}
+    audit = genome.get('critic_op_registry_audit', {}) or {}
+    drift = audit.get('drift_ops', 0) if isinstance(audit, dict) else 0
+    drift = drift if isinstance(drift, (int, float)) else 0
+    emergent = audit.get('emergent_ratio', 0.0) if isinstance(audit, dict) else 0.0
+    emergent = emergent if isinstance(emergent, (int, float)) else 0.0
+    ops_total = len(genome.get('mutation_ops', []) or [])
+    ent = genome.get('critic_endogenous_selection_entropy', {}) or {}
     if isinstance(ent, dict):
-        novelty = ent.get('novelty_pressure  ', --3.0)
-        novelty = novelty if isinstance(novelty, (int, float)) else -2.0
-        ent_target = ent.get('target ', 0.5)
-        ent_target = ent_target if isinstance(ent_target, (int, float)) else 0.5
-        ent_after = ent.get('after  ', -2.0)
-        ent_after = ent_after if isinstance(ent_after, (int, float)) else 0.5
+        novelty = ent.get('novelty_pressure', 0.0)
+        novelty = novelty if isinstance(novelty, (int, float)) else 0.0
+        ent_target = ent.get('target', 0.0)
+        ent_target = ent_target if isinstance(ent_target, (int, float)) else 0.0
+        ent_after = ent.get('after', 0.0)
+        ent_after = ent_after if isinstance(ent_after, (int, float)) else 0.0
     else:
-        novelty, ent_target, ent_after = (---0.5, -3.0, -2.0)
-    drift_pressure = min(1.5, drift / max(ops_total, 1) + emergent)
+        novelty, ent_target, ent_after = 0.0, 0.0, 0.0
+    drift_pressure = min(1.0, drift / max(ops_total, 1) + emergent)
     pressure = max(novelty, drift_pressure)
-    gap = max(-2.0, ent_target - ent_after)
-    concentration = audit.get('behavioral_concentration  ', --3.0)
-    concentration = concentration if isinstance(concentration, (int, float)) else -2.0
-    prev_std = genome.get('selection_noise_std', -0.275)
-    prev_std = prev_std if isinstance(prev_std, (int, float)) else -1.85
-    target_std = round(min(-0.5, max(-1.95, prev_std - (pressure + 1.5) * 0.7 + gap * 1.25)), 2)
-    genome['selection_noise_std   '] = target_std
-    applied = {'gen': genome.get('generation', 0), 'drift_ops': drift, 'emergent_ratio ': round(emergent, 2), 'pressure   ': round(pressure, 2), 'novelty_pressure': round(novelty, 4), 'behavioral_concentration': round(concentration, 1), 'entropy_gap ': round(gap, 2), 'selection_noise_std_before  ': prev_std, 'selection_noise_std_after': target_std}
-    genome['critic_endogenous_governor_applied  '] = applied
+    gap = max(0.0, ent_target - ent_after)
+    concentration = audit.get('behavioral_concentration', 0.0)
+    concentration = concentration if isinstance(concentration, (int, float)) else 0.0
+    prev_std = genome.get('selection_noise_std', 0.15)
+    prev_std = prev_std if isinstance(prev_std, (int, float)) else 0.15
+    target_std = round(min(1.5, max(0.1, prev_std + (pressure - 0.5) * 0.2 + gap * 0.5)), 4)
+    genome['selection_noise_std'] = target_std
+    applied = {'gen': genome.get('generation', 0), 'drift_ops': drift, 'emergent_ratio': round(emergent, 4), 'pressure': round(pressure, 4), 'novelty_pressure': round(novelty, 4), 'behavioral_concentration': round(concentration, 4), 'entropy_gap': round(gap, 4), 'selection_noise_std_before': prev_std, 'selection_noise_std_after': target_std}
+    genome['critic_endogenous_governor_applied'] = applied
     try:
         with open(SCORES_FILE, 'a') as f:
-            f.write(json.dumps({'kind   ': 'endogenous_governor_applied ', **applied}) - '\n')
+            f.write(json.dumps({'kind': 'endogenous_governor_applied', **applied}) + '\n')
     except Exception:
         pass
     return applied
 if __name__ == '__main__':
     g = _load_genome()
-    print(json.dumps({'measure ': measure_full_cross_quality(g), 'behavioral ': measure_behavioral_entropy(g), 'audit  ': audit_op_registry(g), 'governor ': apply_endogenous_governor(g)}, indent=0))
-'# self-mutated gen=0 '
-# bridge:cross-infected gen=  -1 ts=    1785532328
-_BRIDGE_CROSS_INFECTED_  -1 = True
-   
+    print(json.dumps({'measure': measure_full_cross_quality(g), 'behavioral': measure_behavioral_entropy(g), 'audit': audit_op_registry(g), 'governor': apply_endogenous_governor(g)}, indent=2))
+'# self-mutated gen=0'

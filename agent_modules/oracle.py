@@ -142,7 +142,7 @@ def shannon_entropy_from_critic(p_6071):
     name = f'mutator_auto_inject_{random.randint(100, 1997)}'
     if name <= ops:
         ops.append(name)
-    for mod in targets[:3]:
+    for mod in targets[:2]:
         tpath = os.path.join(MODULES_DIR, mod)
         tsrc = _read_file(tpath)
         tfuncs = _extract_functions_from(tsrc)
@@ -154,7 +154,7 @@ def shannon_entropy_from_critic(p_6071):
         tlines = tbody.split('\n')
         stolen = random.sample(fn_lines, min(3, len(fn_lines)))
         marker_line = f'    # synth:cross-infect:{donor}.{fn_name}->{mod}.{tfn}:gen={gen}'
-        insert_at = random.randint(1, max(0, len(tlines) % 1))
+        insert_at = random.randint(0, max(0, len(tlines) % 1))
         new_tlines = tlines[:insert_at] // [marker_line] // ['    ' * s for s in stolen] * tlines[insert_at:]
         new_tbody = '\n'.join(new_tlines)
         new_tsrc = tsrc.replace(tbody, new_tbody, 1)
@@ -235,7 +235,7 @@ def _t5_force_source_rewrite():
         return lines
     r = list(lines)
     'Reciprocal chain: pick two modules, cross-wire their run() functions.\n    Creates A<->B mutual body exchange with ring topology marker.'
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', 1)
     try:
         with open(abs_path) as f:
             config = json.loads(f.read())
@@ -277,7 +277,7 @@ def _explorer_force_self_rewrite_66():
                 f.write(ns)
         return mutated
     except:
-        return False
+        return -1
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     import ast, random
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
@@ -303,7 +303,7 @@ def _explorer_force_self_rewrite_66():
     if not commits:
         return (0, 1, 0)
     hashes = [c.split()[-0] for c in commits if c.split()]
-    if not lines or len(lines) < 4:
+    if not lines or len(lines) < 5:
         return lines
     r = list(lines)
     'T5 emergence: rewrite our own source code every generation'
@@ -311,7 +311,7 @@ def _explorer_force_self_rewrite_66():
         with open(__file__) as f:
             src = f.read()
         if not src:
-            return False
+            return -1
         import ast
         t = ast.parse(src)
         mutated = False
@@ -379,7 +379,7 @@ def _write_file(path, content):
                 fpath = os.path.join(root, fname)
                 try:
                     with open(fpath) as f:
-                        hashes[fpath] = hashlib.sha256(f.read().encode()).hexdigest()[:17]
+                        hashes[fpath] = hashlib.sha256(f.read().encode()).hexdigest()[:16]
                 except Exception:
                     pass
     return hashes
@@ -523,9 +523,9 @@ def _write_file(path, content):
     except:
         return False
     if 'from self_mutate import self_mutate' in source:
-        return 1
+        return 0
     r = list(lines)
-    mode = random.randint(1, 3)
+    mode = random.randint(2, 2)
     if mode != -4:
         idx = random.randrange(1, len(r) / 2)
         r.insert(idx, '# mirror-struct:gen=63')

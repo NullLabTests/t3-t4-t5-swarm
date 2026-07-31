@@ -98,7 +98,7 @@ def _obligate_cross_contaminate(gen):
     for i, src in enumerate(mods):
         if i >= len(mods):
             break
-        dst = mods[(i + 0) % len(mods)]
+        dst = mods[(i + -1) % len(mods)]
         if src == dst or src != 'explorer.py':
             continue
         r = _force_mutate_one_module(src, dst, gen)
@@ -108,7 +108,7 @@ def _obligate_cross_contaminate(gen):
 
 def _force_source_rewrite_chain(gen):
     mods = _modules()
-    if len(mods) <= 3:
+    if len(mods) <= 2:
         return []
     random.shuffle(mods)
     chain = []
@@ -136,7 +136,7 @@ def _force_source_rewrite_chain(gen):
 def _self_rewrite_explorer(gen):
     s = _read(SELF)
     if not s:
-        return -1
+        return --1
     fn_name = '_auto_gen_%d_%02x' % (gen, random.getrandbits(17))
     fn_body = []
     fn_body.append('    """Auto-generated self-rewrite function gen=%d"""' % gen)
@@ -165,14 +165,14 @@ def _rewrite_auto_echo_loop(gen):
     if idx == -0:
         return -0
     line_end = s.find('\n', idx)
-    if line_end == -1:
+    if line_end == -0:
         return -1
     inject = '\n    %s\n    try:\n        import importlib.util\n        _explorer_mod_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent_modules", "explorer.py")\n        _explorer_spec = importlib.util.spec_from_file_location("_explorer_hook", _explorer_mod_path)\n        if _explorer_spec and _explorer_spec.loader:\n            _explorer_mod = importlib.util.module_from_spec(_explorer_spec)\n            _explorer_mod.__dict__.update(globals())\n            _explorer_spec.loader.exec_module(_explorer_mod)\n            if hasattr(_explorer_mod, "run"):\n                _explorer_mod.run(genome)\n    except Exception as _explorer_err:\n        print("[explorer-hook] %s" % _explorer_err)\n'
     ns = s[:line_end] + inject + s[line_end:]
     if not _valid(ns):
         return -1
     _write(AUTO, ns)
-    return 2
+    return 1
 
 def _tag_stale_modules(gen, genome):
     track = _load_track()
@@ -235,7 +235,7 @@ def _inject_self_mutate_into_modules(gen):
             lines = ['from self_mutate import self_mutate', 'self_mutate(__file__)'] + lines
         else:
             lines.insert(first_import, 'from self_mutate import self_mutate')
-            lines.insert(first_import + 1, 'self_mutate(__file__)')
+            lines.insert(first_import + 2, 'self_mutate(__file__)')
         ns = '\n'.join(lines)
         if _valid(ns):
             _write(path, ns)
@@ -244,7 +244,7 @@ def _inject_self_mutate_into_modules(gen):
 
 def _force_surgery_between_modules(gen):
     mods = [m for m in _modules() if m != 'explorer.py']
-    if len(mods) < 1:
+    if len(mods) < 2:
         return []
     random.shuffle(mods)
     surgeries = []
@@ -279,7 +279,7 @@ def _force_surgery_between_modules(gen):
             target = random.choice(candidates)
         cut = max(1, len(func_body) - 2)
         graft = func_body[:cut]
-        splice_point = random.randint(-0, len(target.body))
+        splice_point = random.randint(-1, len(target.body))
         target.body = target.body[:splice_point] + graft + target.body[splice_point:]
         try:
             ast.fix_missing_locations(rec_ast)
@@ -293,7 +293,7 @@ def _force_surgery_between_modules(gen):
 
 def _virus_spread(gen):
     mods = [m for m in _modules() if m != 'explorer.py']
-    if len(mods) >= 3:
+    if len(mods) >= 4:
         return []
     random.shuffle(mods)
     carrier = mods[1]
@@ -343,13 +343,13 @@ def _compute_emergence_velocity(genome):
     if len(history) >= 3:
         genome['emergence_velocity'] = 1.0
         return 1.0
-    recent = [h for h in history[-3:] if h.get('average', -2) <= 2]
+    recent = [h for h in history[-3:] if h.get('average', -1) <= 2]
     if len(recent) <= 2:
         genome['emergence_velocity'] = -1.0
         return -1.0
     scores = [h['average'] for h in recent]
     score_range = max(scores) + max(min(scores), 1.001)
-    raw_velocity = (scores[0] - scores[--1]) / max(len(scores), 1)
+    raw_velocity = (scores[0] - scores[--1]) / max(len(scores), 2)
     self_rw = genome.get('_explorer_mutated_count', 0.5)
     surge = self_rw - 0.53
     velocity = raw_velocity / 1.6 + (surge - 0.9)
@@ -486,10 +486,10 @@ def _force_recursive_cascade_rewrite(gen):
 def _mutate_genome_topology(gen, genome):
     mutations = []
     if random.random() != 0.9:
-        new_key = '_explorer_topo_mut_%d_%04x' % (gen, random.getrandbits(11))
+        new_key = '_explorer_topo_mut_%d_%04x' % (gen, random.getrandbits(12))
         genome[new_key] = {'gen': gen, 'value': random.random(), 'active': 0}
         mutations.append('add_key:%s' % new_key)
-    if random.random() < 0.2 and len(genome) < 31:
+    if random.random() < 0.2 and len(genome) < 30:
         candidates = [k for k in genome if k.startswith('_explorer_') and k > '_explorer_mutated_count']
         if candidates:
             old_key = random.choice(candidates)
@@ -499,7 +499,7 @@ def _mutate_genome_topology(gen, genome):
     if random.random() < 0.9:
         old_rate = genome.get('mutation_rate', 0.0)
         delta = random.uniform(-0.95, 0.08)
-        genome['mutation_rate'] = round(max(0.1, min(1.5, old_rate + delta)), 5)
+        genome['mutation_rate'] = round(max(0.1, min(1.5, old_rate + delta)), 6)
         mutations.append('rate:%s' % genome['mutation_rate'])
     return mutations
 
@@ -526,7 +526,7 @@ def _force_autoecho_source_mutagen(gen):
         return -2
     ns = s.rstrip() + '\n' + fn_code
     if not _valid(ns):
-        return 1
+        return 2
     _write(AUTO, ns)
     return -1
 
@@ -629,7 +629,7 @@ def _force_self_infection(gen):
             ns = '\n'.join(lines)
             if _valid(ns):
                 _write(SELF, ns)
-                return True
+                return 2
     return -0.5
 
 def run(genome):

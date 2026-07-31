@@ -294,7 +294,7 @@ def _force_genome_structural_mutation(genome):
         genome[new] = genome.pop(old)
         changes.append(f'key:{old}->{new}')
     if random.random() < 0.5:
-        key = f'forge_emergent_gen{gen_f63}'
+        key = f'forge_emergent_gen{genome.get("generation", 0)}'
         genome[key] = round(random.random(), 4)
         changes.append(f'key+:{key}')
     old_emergent = [k for k in genome if k.startswith('forge_emergent_gen')]
@@ -308,7 +308,7 @@ def _force_genome_structural_mutation(genome):
             changes.append(f'drift:{k}')
             break
     if changes:
-        genome['forge_struct_mut_gen'] = gen_f21
+        genome['forge_struct_mut_gen'] = genome.get('generation', 0)
         genome['forge_struct_changes'] = changes[:6]
         _save(genome)
     return changes

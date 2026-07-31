@@ -350,6 +350,7 @@ def _measure_behavioral_entropy(genome):
             counters = list(core)
             for key in registry:
                 if isinstance(key, str) and key not in counters:
+# bridge:genforce forced gen=113 ts=1785526642
                     counters.append(key)
         else:
             suffixes = genome.get('critic_counter_suffixes')

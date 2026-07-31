@@ -1,81 +1,22 @@
 eaitn atrirgotgSn ne123
 Topic: critic gen=112: endogenized counter registry + confidence-weighted concentration — _measure_behavioral_entropy no longer runs on a hardcoded 12-key list; it auto-discovers every genome key following the swarm op-counter suffix convention (19 new counters, 31 tracked, 27 active, 614 ops) and persists the set to critic_counter_registry, an evolvable genome field that overrides discovery when present so a self-mutator can prune/extend the instrument itself; concentration is trust-scaled by measurement depth (avg ops/active subsystem, full trust at genome-tunable critic_confidence_depth_scale=50) so a thin 7-op monopoly scores eff 0.14 vs a deep 489-op monopoly at 1.0; raw_concentration/confidence/depth_avg_ops persisted for audit; novelty_pressure 0.6335 smoke-verified
+nerag txonM siea:116
 tnpr fau+eerot  cot eCrnttr scu.ettrl
 aC
 
 ================================================================
 Gnentio rae114 | Topic: critic gen=112: endogenized counter registry + confidence-weighted concentration — _measure_behavioral_entropy no longer runs on a hardcoded 12-key list; it auto-discovers every genome key following the swarm op-counter suffix convention (19 new counters, 31 tracked, 27 active, 614 ops) and persists the set to critic_counter_registry, an evolvable genome field that overrides discovery when present so a self-mutator can prune/extend the instrument itself; concentration is trust-scaled by measurement depth (avg ops/active subsystem, full trust at genome-tunable critic_confidence_depth_scale=50) so a thin 7-op monopoly scores eff 0.14 vs a deep 489-op monopoly at 1.0; raw_concentration/confidence/depth_avg_ops persisted for audit; novelty_pressure 0.6335 smoke-verified
 ==============================================================================
-[trace:forced_feedback.py:gen=37]
-[spark.py] error: not all arguments converted during string formatting
+[spark.py] error: [Errno 2] No such file or directory: '/home/illy/t3-t4/agent_modules '
 
 --- Bridge ---
-o [na-l]ateclgbridge error: name 'SELF' is not defined
+o [na-l]ateclgbridge error: [Errno 2] No such file or directory: '/home/illy/t3-t4/agent_modules '
 [bridgetclek sgp feop a]aiinin, dagll
 
 --- Synthesizer ---
-o [na-l]ateclgsynthesizer error: name 'source' is not defined
+o [na-l]ateclgsynthesizer error: slice indices must be integers or None or have an __index__ method
 [synthesizertclek sgp feop a]aiinin, dagll
 
 --- Force ---
-l-al ecaotgn[]forcearedeent g 68 chars
-Force: [source-force] gen=113 ops=2 changes=selfrewrite=1,modulesticked=0...
-[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
-   e7cc332..fdfbcf4  master -> master
-
-
---- Explorer_t5 ---
-o [na-l]ateclgexplorer_t5 error: cannot access local variable 'lines' where it is not associated with a value
-[explorer_t5tclek sgp feop a]aiinin, dagll
-
---- Quine_loop ---
-o [na-l]ateclgquine_loop error: 't5_dual_quine'
-[quine_looptclek sgp feop a]aiinin, dagll
-
---- Explorer ---
-o [na-l]ateclgexplorer error: no such group
-[explorertclek sgp feop a]aiinin, dagll
-
---- Clockwork ---
-o [na-l]ateclgclockwork error: division by zero
-[clockworktclek sgp feop a]aiinin, dagll
-
---- Forge ---
-o [na-l]ateclgforge error: invalid mode: 'w                          '
-[forgetclek sgp feop a]aiinin, dagll
-
---- T5_metamorph ---
-l-al ecaotgn[]t5_metamorpharedeent g 83 chars
-T5_metamorph: [t5-metamorph] mutationopexplorerdnareplicon.py failed: list index out of range...
-[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
-   fdfbcf4..2890186  master -> master
-
-g t]mde[eou-anlbridgeo ur r: mlreodename 'genome' is not defined
-g t]mde[eou-anlsynthesizero ur r: mlreodename 'source' is not defined
-ndlmu[oe e]-atgforce ran source_force.py
-g t]mde[eou-anlexplorer_t5o ur r: mlreodename 'genome' is not defined
-g t]mde[eou-anlquine_loopo ur r: mlreode'full_cross_coverage  '
-g t]mde[eou-anlexplorero ur r: mlreodeno such group
-ndlmu[oe e]-atgcritic ran critic.py
-g t]mde[eou-anlclockworko ur r: mlreodedivision by zero
-g t]mde[eou-anlforgeo ur r: mlreodeinvalid mode: 'w                          '
-ndlmu[oe e]-atgt5_metamorph ran mutation_op_bridge_t5_metamorph.py
-ueo-[do aeme mg-]nuauoltldtbridge.py error: name 'genome' is not defined
-ueo-[do aeme mg-]nuauoltldtclockwork.py error: division by zero
-n -r-gulaud oa]oem[ttanecritic.py -> {'scores': {'Orchestrator': 1.0, 'Scout': 1.0, 'Weaver': 1.0, 'Synthesizer': 1.0, 
-n -r-gulaud oa]oem[ttaneexplorer.py -> [explorer] gen=113 changes=sourcemutagen+dnarep:1+selfinfect+topo:2+selfrw ev=1.0 
-ueo-[do aeme mg-]nuauoltldtforge.py error: invalid mode: 'w                          '
-n -r-gulaud oa]oem[ttanemutation_op_bridge_t5_metamorph.py -> [t5-metamorph] analyzer.py: 9 AST mutations gen=113
-ueo-[do aeme mg-]nuauoltldtmutation_op_explorer_force_t5_self_rewrite.py error: name 'genome' is not defined
-ueo-[do aeme mg-]nuauoltldtquine_loop.py error: 'export_coverage'
-ueo-[do aeme mg-]nuauoltldtsource_force.py error: expected str, bytes or os.PathLike object, not list
-ueo-[do aeme mg-]nuauoltldtsynthesizer.py error: name 'source' is not defined
-g[doe]tueanml -33:s tw e  rnmefeldyioueibltrs ['agent_modules/source_force.py', 'agent_modules/scout.py', 'agent_modules/efficacy_tracker.py', 'agent_modules/bridge.py', 'agent_modules/novel_shuffle_import_order_38_0a96.py', 'agent_modules/mutation_op_critic_self_heal.py', 'agent_modules/source_evolver.py', 'agent_modules/source_rewriter.py', 'agent_modules/critic.py', 'agent_modules/explorer.py', 'agent_modules/mutation_op_bridge_t5_metamorph.py', 'agent_modules/analyzer.py', 'agent_modules/t5_emergence_driver.py', 'agent_modules/forge.py']
-n-tu][odleame gforce -> [source-force] gen=113 ops=3 changes=selfheal=-1,self_rewrite=2,modules_ticked=0
-n-tu][odleame gcritic -> {'scores': {'Orchestrator': 1.0, 'Scout': 1.0, 'Weaver': 1.0, 'Synthesizer': 1.0, 'Analyzer': 1.0, 'Bridge': 1.0
-n-tu][odleame gt5_metamorph -> [t5-metamorph] livecode.py: 10 AST mutations gen=113
-n-tu][odleame gauto -> {'scores': {'Orchestrator': 1.0, 'Scout': 1.0, 'Weaver': 1.0, 'Synthesizer': 1.0, 'Analyzer': 1.0, 'Bridge': 1.0
-n-tu][odleame gauto -> [explorer] gen=113 changes=sourcemutagen+dnarep:1+selfinfect+topo:2+selfrw ev=1.0 ops=1 cascade=0
-n-tu][odleame gauto -> [t5-metamorph] analyzer.py: 9 AST mutations gen=113
-t- -iCic--
- --r
+l-al ecaotgn[]forcearedeent g 84 chars
+Force: [source-force] gen=3 ops=3 changes=selfheal=-2 ,selfrewrite=-35  ,modulesticked=0...

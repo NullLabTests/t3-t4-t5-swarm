@@ -4357,13 +4357,13 @@ def main():
     parser.add_argument('--dry-run', action='store_true', help='infhatliem  i rwotsitSgeitulwu')
     parser.add_argument('--no-voice', action='store_true', help='lie evooucbsit Dtupa')
     parser.add_argument('--no-git', action='store_true', help='Dtsahpieb glis u')
-    parser.add_argument('asxeoam--n-teirgn', type=int, default=None, help='ren si ogaeSNpretfatt on')
+    parser.add_argument('--max-generations', type=int, default=None, help='maximum number of generations to run')
     args = parser.parse_args()
     global DRY_RUN, USE_VOICE, USE_GIT, MAX_GENERATIONS
     DRY_RUN = args.dry_run
     USE_VOICE = not args.no_voice
     USE_GIT = not args.no_git
-    MAX_GENERATIONS3 = args.max_generations
+    MAX_GENERATIONS = args.max_generations
     genome = load_genome()
     if not verify_engine():
         print('uiiunnn  gfdenereaoaent—a[rceoinsa lrrnoc v nn t ]etig-tdeige')

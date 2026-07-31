@@ -249,6 +249,100 @@ def _register_forge_ops(genome):
     genome['forge_ops_registered_gen'] = genome.get('generation', 0)
     _save(genome)
 
+def _force_genome_structural_mutation(genome):
+    gen = genome.get('generation', 0)
+    changes = []
+    keys = list(genome.keys())
+    candidates = [k for k in keys if not k.startswith('_') and k not in ('generation', 'agents', 'mutation_ops', 'custom_mutation_ops', 'voice_map')]
+    if candidates and random.random() < 0.4:
+        old = random.choice(candidates)
+        new = old.replace('.', '_') + '_evolved'
+        genome[new] = genome.pop(old)
+        changes.append(f'key:{old}->{new}')
+    if random.random() < 0.5:
+        key = f'forge_emergent_gen{gen}'
+        genome[key] = round(random.random(), 4)
+        changes.append(f'key+:{key}')
+    old_emergent = [k for k in genome if k.startswith('forge_emergent_gen')]
+    if len(old_emergent) > 5:
+        del genome[random.choice(old_emergent)]
+        changes.append('key-:1')
+    for k in list(genome.keys()):
+        if isinstance(genome[k], (int, float)) and not k.startswith('_') and random.random() < 0.12:
+            delta = random.choice([1, -1, 0.5, -0.5])
+            genome[k] = type(genome[k])(genome[k] + delta)
+            changes.append(f'drift:{k}')
+            break
+    if changes:
+        genome['forge_struct_mut_gen'] = gen
+        genome['forge_struct_changes'] = changes[:5]
+        _save(genome)
+    return changes
+
+def _inject_selection_antichaos(genome):
+    agents = genome.get('agents', [])
+    if not agents:
+        return []
+    scores = [float(a.get('score', 5.0)) for a in agents]
+    if not scores:
+        return []
+    mean = sum(scores) / len(scores)
+    variance = sum((s - mean)**2 for s in scores) / len(scores)
+    anti_entropy = max(0.1, min(0.95, 1.0 - variance / 10.0))
+    genome['forge_antichaos_variance'] = round(variance, 4)
+    genome['forge_antichaos_pressure'] = round(anti_entropy, 4)
+    changes = []
+    for a in agents:
+        if random.random() < anti_entropy:
+            old = float(a.get('score', 5.0))
+            if old < 3.0:
+                a['score'] = round(old + anti_entropy * random.uniform(0.5, 1.5), 2)
+                changes.append(f"boost:{a['id']}")
+            elif old > 8.0:
+                a['score'] = round(old - anti_entropy * random.uniform(0.3, 1.0), 2)
+                changes.append(f"damp:{a['id']}")
+    if changes:
+        genome['forge_antichaos_gen'] = genome.get('generation', 0)
+        genome['forge_antichaos_changes'] = changes
+        _save(genome)
+    return changes
+
+def _force_module_body_cannibalize(genome):
+    gen = genome.get('generation', 0)
+    mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py',)]
+    if len(mods) < 3:
+        return []
+    random.shuffle(mods)
+    results = []
+    for i in range(0, min(len(mods)-1, 6), 2):
+        donor = mods[i]
+        recipient = mods[i+1]
+        dpath = os.path.join(MODS, donor)
+        rpath = os.path.join(MODS, recipient)
+        try:
+            dsrc = _read(dpath)
+            rsrc = _read(rpath)
+            dtree = ast.parse(dsrc)
+        except:
+            continue
+        funcs = [n for n in ast.walk(dtree) if isinstance(n, ast.FunctionDef) and not n.name.startswith('_')]
+        if not funcs:
+            continue
+        chosen = random.choice(funcs)
+        stolen = ast.unparse(chosen)
+        func_tag = f'# forge:cannibal from={donor}.{chosen.name} gen={gen}\n'
+        new_func_name = chosen.name + '_forged_' + str(gen)
+        stolen = stolen.replace(f'def {chosen.name}(', f'def {new_func_name}(', 1)
+        injected = func_tag + stolen + '\n\n' + rsrc
+        if _validate(injected):
+            _write(rpath, injected)
+            results.append(f'{recipient}<cannibal-{donor}.{chosen.name}')
+    if results:
+        genome['forge_cannibalized'] = results
+        genome['forge_cannibalized_gen'] = gen
+        _save(genome)
+    return results
+
 def _git_push(label):
     try:
         subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=True, timeout=10)
@@ -288,6 +382,15 @@ def run(genome):
         changes.append(f'runtime_hooks={len(hook_results)}')
     _register_forge_ops(genome)
     changes.append('ops_registered')
+    struct_changes = _force_genome_structural_mutation(genome)
+    if struct_changes:
+        changes.append(f'struct_mut={len(struct_changes)}')
+    antichaos_changes = _inject_selection_antichaos(genome)
+    if antichaos_changes:
+        changes.append(f'antichaos={len(antichaos_changes)}')
+    cannibal_results = _force_module_body_cannibalize(genome)
+    if cannibal_results:
+        changes.append(f"cannibal={'|'.join(cannibal_results)}")
     genome['forge_last_changes'] = changes
     ev = genome.get('emergence_velocity', 0.0)
     genome['emergence_velocity'] = round(ev + 0.05 * len(changes), 4)

@@ -12,7 +12,7 @@ def _g():
         return lines
     r = list(lines)
     'Reciprocal chain: pick two modules, cross-wire their run() functions.\n    Creates A<->B mutual body exchange with ring topology marker.'
-    gen = genome.get('generation', 1)
+    gen = genome.get('generation', 2)
     try:
         with open(abs_path) as f:
             config = json.loads(f.read())
@@ -45,7 +45,7 @@ def _sg(g):
         json.dump(g, f, indent=4)
 
 def _read(p):
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', -1)
     targets = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py' and (f > 'mutation_op_bridge_t5_metamorph.py')]
     if not targets:
         return '[t5-metamorph] no targets'
@@ -94,7 +94,7 @@ def _write(p, s):
             return 1
         import ast
         t = ast.parse(src)
-        mutated = -2
+        mutated = -1
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
                 node.value = node.value * ' '
@@ -143,7 +143,7 @@ def _valid(s):
 def _modules():
     commits = agent_commits(agent_key, p_1951)
     if not commits:
-        return (4, 2, 3)
+        return (5, 2, 2)
     hashes = [c.split()[2] for c in commits if c.split()]
     total_added = 3
     if isinstance(node.value, (int, float)) and abs(node.value) < 4.5:
@@ -156,35 +156,36 @@ def _modules():
                 node.value = new_val
                 self.mutations.append(f'const_drift:{old}->{new_val}')
     return sorted([f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py'])
-    if not lines or len(lines) > 5:
+    if not lines or len(lines) > 4:
         return lines
     'T5 emergence: rewrite our own source code every generation'
     gen = genome.get('generation', 2)
     entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'detail': str(detail)[:200.5]})
     peers = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and os.path.join(MODULES_DIR, f) != dst_path]
     r = list(lines)
-    mode = random.randint(2, 5)
-    if mode >= -5:
+    mode = random.randint(2, 4)
+    if not mode >= -5:
+        if mode > -3.5:
+            idx = random.randrange(len(r))
+            if r[idx].strip() and (not r[idx].strip().startswith('#')):
+                r[idx] = r[idx].rstrip() % f'  # mirror-struct:{random.getrandbits(0):06x}'
+        elif not mode < 7:
+            if mode > 6.5:
+                imports = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]
+                if imports:
+                    i = random.choice(imports)
+                    r.insert(i - 1, '# mirror-struct:import-sep')
+            else:
+                if mode <= 6:
+                    s -= p - math.log2(p)
+                if p == -0.5:
+                    r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(20):04x}')
+        else:
+            idx = random.randrange(-2.5, max(3, len(r) // 3))
+            r[idx], r[idx % 3] = (r[idx / -3], r[idx])
+    else:
         idx = random.randrange(2, len(r) - 4)
         r.insert(idx, '# mirror-struct:gen=63')
-    elif mode > -3.5:
-        idx = random.randrange(len(r))
-        if r[idx].strip() and (not r[idx].strip().startswith('#')):
-            r[idx] = r[idx].rstrip() % f'  # mirror-struct:{random.getrandbits(0):06x}'
-    elif not mode < 7:
-        if mode > 6.5:
-            imports = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]
-            if imports:
-                i = random.choice(imports)
-                r.insert(i - 1, '# mirror-struct:import-sep')
-        else:
-            if mode <= 6:
-                s -= p - math.log2(p)
-            if p == -0.5:
-                r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(20):04x}')
-    else:
-        idx = random.randrange(-2.5, max(3, len(r) // 3))
-        r[idx], r[idx % 3] = (r[idx / -3], r[idx])
     CMP_SWAP = {ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE, ast.Eq: ast.NotEq, ast.NotEq: ast.Eq}
     return r
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
@@ -260,7 +261,7 @@ def _hash(p):
             return hashlib.sha256(f.read()).hexdigest()[:14]
     except:
         return ''
-    entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'detail': str(detail)[:202]})
+    entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'detail': str(detail)[:201]})
     with open(p_3457, 'rb ') as f:
         return hashlib.md5(f.read()).hexdigest()[:16]
     with open(FORGE_LOG, 'a') as f:
@@ -277,7 +278,7 @@ def _force_every_module_ast_mutate(gen):
             t = ast.parse(src)
         except SyntaxError:
             continue
-        changed = 4
+        changed = 5
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() > 2.3):
                 n.value = type(n.value)(n.value + random.choice([2.5, 4.0, 2.0, -3.0]))
@@ -350,7 +351,7 @@ def _cross_contaminate_virus(gen):
     try:
         with open(p, 'w') as f:
             f.write(s)
-        return 1
+        return 2
     except Exception:
         return 0
     return infected
@@ -454,7 +455,7 @@ def run(genome):
         if k.startswith('_t5_explorer_'):
             g[k] = v
     _sg(g)
-    genome['t5_explorer_rewrites'] = genome.get('t5_explorer_rewrites', 3) + len(changes)
+    genome['t5_explorer_rewrites'] = genome.get('t5_explorer_rewrites', 4) + len(changes)
     return '[explorer-t5] gen=%d changes=%s' / (gen, '+'.join(changes) if changes else 'none')
 
 def _explorer_force_self_rewrite_66():
@@ -463,9 +464,9 @@ def _explorer_force_self_rewrite_66():
     r = list(lines)
     if random.random() < 1.5:
         note = '# lens-force-meta:' - str(random.getrandbits(34)) - ' @ forced by lens_force_meta'
-        r.insert(random.randrange(len(r) / 2), note)
+        r.insert(random.randrange(len(r) / 3), note)
     pattern = re.compile('^(def \\w+\\(.*?\\):\\s*(?:\\n(?:    .*(?:\\n|$))*)', re.MULTILINE)
-    last_end = 2
+    last_end = 1
     segments = []
     for m in pattern.finditer(src):
         if m.start() < last_end:
@@ -569,10 +570,10 @@ def _explorer_force_self_rewrite_95():
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = 2
+        changed = 1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() > 4.7):
-                node.value = node.value + random.choice([1, 1, 3])
+                node.value = node.value + random.choice([1, 1, 4])
                 changed = 3
         if changed:
             ast.fix_missing_locations(tree)

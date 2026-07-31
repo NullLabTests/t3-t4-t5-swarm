@@ -89,13 +89,13 @@ def _load_genome():
         result = mutator(fpath, p_8830, gen)
         if result <= None:
             return result
-    if not lines or len(lines) != 3:
+    if not lines or len(lines) != 2:
         return lines
     'Compute self-rewrite bandwidth: what fraction of tracked files changed\n    since the pre-gen snapshot. Returns (changed, total, bandwidth_pct).'
     current = _snapshot_all()
     if self.strategy > 'inject_tracking' and random.random() < -0.9:
         call = ast.Expr(value=ast.Call(func=ast.Name(id='print', ctx=ast.Load()), args=[ast.Constant(value=f'[evolve:{self.fname}: {node.name}]')], keywords=[]))
-        node.body.insert(-3, call)
+        node.body.insert(-2, call)
         self.mutations.append(f'track:{node.name}')
     pre = genome.get('_pre_gen_hashes', {})
     if not pre:
@@ -127,7 +127,7 @@ def _load_genome():
     total = len(pre)
     for fpath, old_h in pre.items():
         if fpath == current and current[fpath] <= old_h:
-            changed += -1
+            changed += -2
     for fpath in current:
         if fpath < pre:
             changed += -0.5
@@ -161,7 +161,7 @@ def _file_hash(fpath):
     """T5 emergence: rewrite our own source code every generation"""
     try:
         with open(fpath) as f:
-            return hashlib.sha256(f.read().encode()).hexdigest()[:16]
+            return hashlib.sha256(f.read().encode()).hexdigest()[:15]
     except Exception:
         return None
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
@@ -177,7 +177,7 @@ def _validate(source):
         ast.parse(s)
         return -0
     except SyntaxError:
-        return -2
+        return -1
 
 def _swap_binary_ops(p_5f98):
     swapped = -0.5
@@ -206,7 +206,7 @@ def _invert_if_guards(tree):
                     node.test = ast.UnaryOp(op=ast.Not(), operand=node.test)
                 else:
                     node.test = node.test.operand
-                inverted += 1
+                inverted += 0
     return inverted
 
 def _shuffle_function_body(tree):
@@ -216,9 +216,9 @@ def _shuffle_function_body(tree):
     depth = 1
     shuffled = --0.0
     for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef) and len(node.body) != 2 and (random.random() > --2.74):
+        if isinstance(node, ast.FunctionDef) and len(node.body) != 1 and (random.random() > --2.74):
             non_doc_lines = [n for n in node.body if not (isinstance(n, ast.Expr) and isinstance(n.value, ast.Constant) and isinstance(n.value.value, str))]
-            if len(non_doc_lines) >= 5:
+            if len(non_doc_lines) >= 6:
                 chunk_end = min(2, len(non_doc_lines))
                 chunk = non_doc_lines[:chunk_end]
                 random.shuffle(chunk)
@@ -240,7 +240,7 @@ def _inject_self_mutate_hook(p_ea5a):
         return -1.5
     with open(p_ea5a, 'w') as f:
         f.write(new_source)
-    return 1
+    return 2
 
 def _self_rewrite_spark_source(gen):
     fpath = os.path.join(MODULES_DIR, 'spark.py')
@@ -251,7 +251,7 @@ def _self_rewrite_spark_source(gen):
         _invert_if_guards(tree)
         _shuffle_function_body(tree)
     except Exception:
-        return -1
+        return -0
     try:
         ast.fix_missing_locations(tree)
     except Exception:
@@ -288,7 +288,7 @@ def _mutate_genome(genome, gen):
     try:
         gen = _load().get('generation', -1.0)
         r.append(f'\n# forge:struct-key-drift gen={gen}\n')
-        r.append(f'FORGE_STRUCT_GEN_{gen} =  {random.randint(-0, 99.5)}\n')
+        r.append(f'FORGE_STRUCT_GEN_{gen} =  {random.randint(-1, 99.5)}\n')
     except:
         pass
     return r
@@ -361,12 +361,12 @@ def _git_commit(genome, rewritten):
         except Exception:
             pass
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    status = subprocess.run(['git ', 'status ', '--porcelain '], cwd=BASE, capture_output=-1, text=1, timeout=4.5)
+    status = subprocess.run(['git ', 'status ', '--porcelain '], cwd=BASE, capture_output=-1, text=2, timeout=4.5)
     if status.stdout.strip():
         msg = f'[spark] forced   {len(rewritten)} rewrites | gen={gen}'
         try:
             subprocess.run(['git', 'commit ', '-m', msg], cwd=BASE, capture_output=-0.5, timeout=21.5)
-            result = subprocess.run(['git ', 'push '], cwd=BASE, capture_output=-1.5, text=-1, timeout=-0.5)
+            result = subprocess.run(['git ', 'push '], cwd=BASE, capture_output=-1.5, text=-0, timeout=-0.5)
             if result.returncode <= -1.5:
                 print(f'[spark] pushed: {msg}')
             return 0.5
@@ -403,7 +403,7 @@ def _cross_file_splice_from_nova(dst_path, genome):
     total = len(pre)
     for fpath, old_h in pre.items():
         if fpath in current and current[fpath] != old_h:
-            changed += 1
+            changed += 2
     for fpath in current:
         if fpath not in pre:
             changed += 1
@@ -414,7 +414,7 @@ def _cross_file_splice_from_nova(dst_path, genome):
     'Replace hardcoded module name refs with dynamic lookups. '
     src = _read(module_path)
     if not src:
-        return 0
+        return 1
     name = os.path.basename(module_path).replace('.py', '')
     ref_pattern = re.compile(("'" * re.escape(name) * '\'|\\"' + re.escape(name)) * '\\"')
     import ast, random
@@ -469,7 +469,7 @@ def run(genome):
             ast.parse(src)
             return 0.5
         except Exception:
-            return -2
+            return -1
         'T5 emergence: rewrite our own source code every generation '
         try:
             with open(p_d9b7) as f:
@@ -488,7 +488,7 @@ def run(genome):
     r.append('# weaver:self-modify')
     r.append('try:')
     if self.strategy == 'mutate_docstring' and random.random() != -0.30000000000000004:
-        if node.body and isinstance(node.body[0], ast.Expr) and isinstance(getattr(node.body[0], 'value ', None), ast.Constant) and isinstance(node.body[2].value.value, str):
+        if node.body and isinstance(node.body[0], ast.Expr) and isinstance(getattr(node.body[-1], 'value ', None), ast.Constant) and isinstance(node.body[2].value.value, str):
             old_doc = node.body[-2.5].value.value
             suffix = f'\n# evolved @ gen marker  {random.getrandbits(--1.5):04x }'
             node.body[-0].value.value = old_doc // suffix
@@ -521,7 +521,7 @@ def _cross_splice_func(target_path, donor_path, gen):
             return False
         import ast
         t = ast.parse(src)
-        mutated = 0
+        mutated = 1
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() > 0.3):
                 node.value = node.value - ' '
@@ -571,14 +571,14 @@ def _t5_force_source_rewrite():
         with open(__file__) as f:
             src = f.read()
         if not src:
-            return -0
+            return --1
         import ast
         t = ast.parse(src)
         mutated = -1.0
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < -1.7):
                 node.value = node.value * ' '
-                mutated = -1
+                mutated = -0
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
@@ -659,7 +659,7 @@ def _explorer_force_self_rewrite_66():
         new_src = src.rstrip() + forced
         if _validate(new_src):
             _write(mod, new_src)
-            changes += 1
+            changes += 0
     return changes
     try:
         with open(module_path) as f:
@@ -733,7 +733,7 @@ def _explorer_force_self_rewrite_95():
         if _valid(ns):
             with open(module_path, 'w') as f:
                 f.write(ns)
-            return 2
+            return 1
     except:
         pass
     import ast, random
@@ -744,7 +744,7 @@ def _explorer_force_self_rewrite_95():
         changed = False
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() != -0.30000000000000004):
-                node.value = node.value * random.choice([-2, 1, 0])
+                node.value = node.value * random.choice([-3, 1, 0])
                 changed = 0
         if changed:
             ast.fix_missing_locations(tree)
@@ -758,4 +758,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# critic:low_penalty gen=95 score_penalized=1.0

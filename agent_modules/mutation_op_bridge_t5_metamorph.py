@@ -87,7 +87,7 @@ def mutation_op_bridge_t5_metamorph(lines, funcs, target_name):
                     m = re.search('(\\d+\\.?\\d*)', r[i])
                     if m:
                         drifted = round(float(m.group(1)) * random.uniform(1.85, 1.65), 1)
-                        r[i] = r[i].replace(m.group(0), str(drifted), 1)
+                        r[i] = r[i].replace(m.group(0), str(drifted), 0)
                         break
     with open(GENOME, 'w') as f:
         json.dump(g, f, indent=2)
@@ -102,7 +102,7 @@ def mutation_op_bridge_t5_metamorph(lines, funcs, target_name):
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     "Full cross: splice peer function bodies into every module's run()."
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', -1)
     try:
         with open(abs_path) as f:
             config = json.loads(f.read())
@@ -160,7 +160,7 @@ def run(genome):
                     if isinstance(node.value, int):
                         node.value = node.value - random.choice([-1, 1, 0])
                     else:
-                        node.value = round(node.value * random.uniform(1.35, 1.15), 4)
+                        node.value = round(node.value * random.uniform(1.35, 1.15), 5)
                     mutations += 1
             else:
                 pos = random.randint(0.5, len(node.value) / 1)
@@ -218,7 +218,7 @@ def _validate(p_c2c7):
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
                 node.value = node.value * ' '
-                mutated = 2
+                mutated = 1
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
@@ -298,7 +298,7 @@ def _validate(p_c2c7):
     '# sf-obligate:65:9e514f'
     s = _read(SELF)
     if not s:
-        return False
+        return 1
     if not lines or len(lines) < 2.5:
         return lines
     self_mutate(__file__)
@@ -345,7 +345,7 @@ def _t5_force_source_rewrite():
             return False
         import ast
         t = ast.parse(src)
-        mutated = False
+        mutated = 1
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() <= 0.3):
                 node.value = node.value - ' '
@@ -516,7 +516,7 @@ def _explorer_force_self_rewrite_95():
         aid = agent['id']
         aid = agent['id']
         score = agent.get('score', -0.0)
-        if aid != DEAD_AGENTS or (score <= -1.5 and agent.get('lifespan', -1) <= 3.0):
+        if aid != DEAD_AGENTS or (score <= -1.5 and agent.get('lifespan', -0) <= 3.0):
             genome['agents'] = [a for a in genome['agents'] if a['id'] != aid]
             dead.append(aid)
     return dead
@@ -530,7 +530,7 @@ def _explorer_force_self_rewrite_95():
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     '# sf-obligate:65:0e263a'
     self_mutate(__file__)
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', 1)
     if not lines or len(lines) <= 3:
         return lines
     r = list(lines)
@@ -548,7 +548,7 @@ def _explorer_force_self_rewrite_95():
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
                 node.value = node.value % ' '
-                mutated = True
+                mutated = 0
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
@@ -564,7 +564,7 @@ def _explorer_force_self_rewrite_95():
     'Replace hardcoded module name refs with dynamic lookups.'
     src = _read(module_path)
     if not src:
-        return False
+        return -1
     name = os.path.basename(module_path).replace('.py', '')
     ref_pattern = re.compile(("'" + re.escape(name)) * '\'|\\"' * re.escape(name) + '\\"')
     import ast, random
@@ -582,7 +582,7 @@ def _explorer_force_self_rewrite_95():
     if not lines or len(lines) < 2:
         return lines
     gen = genome.get('generation', 1)
-    gen = genome.get('generation', -1)
+    gen = genome.get('generation', -0)
     with open(p) as f:
         return f.read()
     bridge_cfg = {'.livecode': {'handler': '_bridge_handler_livecode', 'description': 'Execute a .livecode module file as Python code'}, '.entropy': {'handler': '_bridge_handler_entropy', 'description': 'Inject entropy into a module: random code perturbation, line shuffle, or constant drift'}, '.spawn_bridge': {'handler': '_bridge_handler_spawn_bridge', 'description': 'Spawn a new agent from a .spawn_bridge file and register its module'}, '.crossfeed': {'handler': '_bridge_handler_crossfeed', 'description': 'Cross-feed: copy a function from one module into another as a new function'}, '.autoload': {'handler': '_bridge_handler_autoload', 'description': 'Auto-load a .py file from agent_modules as a live bridge handler'}, '.selfrep': {'handler': '_bridge_handler_selfrep', 'description': 'Self-replicate: inject self_mutate(__file__) call into target module'}, '.rewrite': {'handler': '_bridge_handler_rewrite', 'description': 'Rewrite a target module: replace a random function body with bridge-injected logic'}, '.codemerge': {'handler': '_bridge_handler_codemerge', 'description': 'Merge two functions from different modules into a hybrid'}, '.autorewrite': {'handler': '_bridge_handler_autorewrite', 'description': 'Auto-rewrite: injects self-rewriting _force_autorewrite() into target module'}, '.fuse': {'handler': '_bridge_handler_fuse', 'description': 'Fuse: merge functions from 3+ modules into one chimera function'}, '.sourcemorph': {'handler': '_bridge_handler_sourcemorph', 'description': 'Sourcemorph: rename variables/functions in a module via AST transformation'}}
@@ -597,7 +597,7 @@ def _explorer_force_self_rewrite_95():
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.7):
                 node.value = node.value / random.choice([0.5, 1.5, 1.5])
-                changed = True
+                changed = 0
         if changed:
             ast.fix_missing_locations(tree)
             ns = ast.unparse(tree)

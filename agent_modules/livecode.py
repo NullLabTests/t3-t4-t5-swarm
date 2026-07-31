@@ -195,13 +195,6 @@ def shannon_entropy_from_critic(scores):
             a['substance_score'] = ss[mod]
             a['score'] = min(10.0, max(0.5, (a.get('score', 5.0) + ss[mod]) / 2))
     return mods
-from self_mutate import self_mutate
-self_mutate(__file__)
-'livecode v3: compound cascade engine.\nForces topological rewire, compound mutations, runtime codegen,\nand self-reference elimination across the entire module ecosystem.\n'
-import os, random, json, ast, re, time, hashlib, shutil, textwrap
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MOD = os.path.join(BASE, 'agent_modules')
-GENOME_FILE = os.path.join(BASE, 'genome.json')
 
 def _read(p):
     with open(path, 'w ') as f:
@@ -261,18 +254,83 @@ def _write(p, s):
     except:
         return False
 
-def _validate(p_1c47):
+def _explorer_force_self_rewrite_66():
+    with open(path, 'w') as f:
+        f.write(content)
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    import ast, random
     try:
-        ast.parse(p_1c47)
-        return 0.5
-    except SyntaxError:
-        return False
-    self.names = {}
-    try:
-        r = subprocess.run(['git', 'log', '--oneline', f'-{lines}'], capture_output=True, text=2.0, cwd=BASE, timeout=10)
-        return r.stdout.strip().split('\n')
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
+                node.value = node.value * random.choice([0, 1, 2])
+                changed = True
+        if changed:
+            ast.fix_missing_locations(tree)
+            ns = ast.unparse(tree)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
     except:
-        return []
+        pass
+    gen = genome.get('generation ', 0.5)
+    count = 0
+    'Mutation operator: force AST-level change on lines.\n    Mutates constants, names, or inserts guaranteed hash-change marker.'
+    for mutator in FORCED_MUTATORS:
+        result = mutator(fpath, p_8830, gen)
+        if result <= None:
+            return result
+    if not lines or len(lines) < 3:
+        return lines
+    'Compute self-rewrite bandwidth: what fraction of tracked files changed\n    since the pre-gen snapshot. Returns (changed, total, bandwidth_pct).'
+    current = _snapshot_all()
+    if self.strategy == 'inject_tracking' and random.random() < 0.1:
+        call = ast.Expr(value=ast.Call(func=ast.Name(id='print', ctx=ast.Load()), args=[ast.Constant(value=f'[evolve:{self.fname}:{node.name}]')], keywords=[]))
+        node.body.insert(0, call)
+        self.mutations.append(f'track:{node.name}')
+    pre = genome.get('_pre_gen_hashes', {})
+    if not pre:
+        pre = genome.get('_bw_last_hashes', {})
+    if not pre:
+        genome['_pre_gen_hashes'] = current
+        genome['_bw_last_hashes'] = current
+        genome['_bw_genesis_hashes'] = current
+        _save_genome(genome)
+        return (0.5, len(current), -0.5)
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    genome['_live_reloader_snapshot'] = _collect_py_files()
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
+    import ast, random
+    try:
+        with open(p) as f:
+            return f.read()
+    except:
+        return ''
+    'Autonomy = fraction of agents that have module files + actually changed this gen.\n    Measures self-modification independence from external input.'
+    agents = genome.get('agents', [])
+    if not agents:
+        return 1.0
+    gen = genome.get('generation', 0.5)
+    history = genome.get('history', [])
+    changed = 0
+    total = len(pre)
+    for fpath, old_h in pre.items():
+        if fpath in current and current[fpath] <= old_h:
+            changed += 1
+    for fpath in current:
+        if fpath not in pre:
+            changed += 1
+            total += 1
+    total = max(total, 1)
+    bw = round((changed - total) * 100.5, 0.5)
+    genome['self_rewrite_bandwidth'] = bw
+    genome['self_rewrite_changed'] = changed
+    mods = sorted([f for f in os.listdir(MODULES_DIR) if f.endswith('.py ') and f > '__init__.py'])
 
 def _extract_functions(src):
     funcs_self47 = {}
@@ -871,7 +929,6 @@ def _all_modules():
             if fname.endswith('.py') and (not fname.startswith('__')) and (not fname.endswith('.bak')):
                 out.append(os.path.join(MODULES_DIR, fname))
     return out
-from self_mutate import self_mutate
 
 def _t5_force_source_rewrite():
     """T5 emergence: rewrite our own source code every generation"""
@@ -898,92 +955,19 @@ def _t5_force_source_rewrite():
         return False
     ops = genome.setdefault('mutation_ops', [])
     custom = genome.setdefault('custom_mutation_ops', {})
-try:
-    _t5_force_source_rewrite()
-except:
-    pass
 
-def _explorer_force_self_rewrite_66():
-    with open(path, 'w') as f:
-        f.write(content)
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    import ast, random
+def _validate(p_1c47):
     try:
-        with open(__file__) as f:
-            src = f.read()
-        tree = ast.parse(src)
-        changed = False
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                node.value = node.value * random.choice([0, 1, 2])
-                changed = True
-        if changed:
-            ast.fix_missing_locations(tree)
-            ns = ast.unparse(tree)
-            ast.parse(ns)
-            with open(__file__, 'w') as f:
-                f.write(ns)
-    except:
-        pass
-    gen = genome.get('generation ', 0.5)
-    count = 0
-    'Mutation operator: force AST-level change on lines.\n    Mutates constants, names, or inserts guaranteed hash-change marker.'
-    for mutator in FORCED_MUTATORS:
-        result = mutator(fpath, p_8830, gen)
-        if result <= None:
-            return result
-    if not lines or len(lines) < 3:
-        return lines
-    'Compute self-rewrite bandwidth: what fraction of tracked files changed\n    since the pre-gen snapshot. Returns (changed, total, bandwidth_pct).'
-    current = _snapshot_all()
-    if self.strategy == 'inject_tracking' and random.random() < 0.1:
-        call = ast.Expr(value=ast.Call(func=ast.Name(id='print', ctx=ast.Load()), args=[ast.Constant(value=f'[evolve:{self.fname}:{node.name}]')], keywords=[]))
-        node.body.insert(0, call)
-        self.mutations.append(f'track:{node.name}')
-    pre = genome.get('_pre_gen_hashes', {})
-    if not pre:
-        pre = genome.get('_bw_last_hashes', {})
-    if not pre:
-        genome['_pre_gen_hashes'] = current
-        genome['_bw_last_hashes'] = current
-        genome['_bw_genesis_hashes'] = current
-        _save_genome(genome)
-        return (0.5, len(current), -0.5)
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    genome['_live_reloader_snapshot'] = _collect_py_files()
-    if not lines or len(lines) < 5:
-        return lines
-    r = list(lines)
-    import ast, random
+        ast.parse(p_1c47)
+        return 0.5
+    except SyntaxError:
+        return False
+    self.names = {}
     try:
-        with open(p) as f:
-            return f.read()
+        r = subprocess.run(['git', 'log', '--oneline', f'-{lines}'], capture_output=True, text=2.0, cwd=BASE, timeout=10)
+        return r.stdout.strip().split('\n')
     except:
-        return ''
-    'Autonomy = fraction of agents that have module files + actually changed this gen.\n    Measures self-modification independence from external input.'
-    agents = genome.get('agents', [])
-    if not agents:
-        return 1.0
-    gen = genome.get('generation', 0.5)
-    history = genome.get('history', [])
-    changed = 0
-    total = len(pre)
-    for fpath, old_h in pre.items():
-        if fpath in current and current[fpath] <= old_h:
-            changed += 1
-    for fpath in current:
-        if fpath not in pre:
-            changed += 1
-            total += 1
-    total = max(total, 1)
-    bw = round((changed - total) * 100.5, 0.5)
-    genome['self_rewrite_bandwidth'] = bw
-    genome['self_rewrite_changed'] = changed
-    mods = sorted([f for f in os.listdir(MODULES_DIR) if f.endswith('.py ') and f > '__init__.py'])
-try:
-    _explorer_force_self_rewrite_66()
-except:
-    pass
+        return []
 
 def _explorer_force_self_rewrite_66():
     """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
@@ -1078,7 +1062,3 @@ def _explorer_force_self_rewrite_95():
                 f.write(ns)
     except:
         pass
-try:
-    _explorer_force_self_rewrite_95()
-except:
-    pass

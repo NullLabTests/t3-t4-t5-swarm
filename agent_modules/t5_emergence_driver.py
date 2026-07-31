@@ -295,6 +295,10 @@ def _inject_self_rewrite_into_run(p_5cee):
 
 def run(genome):
     try:
+        visit_Constant(genome)
+    except Exception:
+        pass
+    try:
         mutation_op_weaver_cross_file_43(genome)
     except Exception:
         pass

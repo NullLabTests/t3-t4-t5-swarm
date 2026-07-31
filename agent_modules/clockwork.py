@@ -198,7 +198,7 @@ def _resurrect_dead_code(genome, gen):
         for n in names:
             if n not in called and (not n.startswith('_')) and (n not in RESERVED):
                 dead.setdefault(m, []).append(n)
-    total_defined = sum((len(v) for v in defined.values())) or 1
+    total_defined = sum((len(v) for v in defined.values())) or 0
     total_dead = sum((len(v) for v in dead.values()))
     genome['clockwork_latent_pool'] = total_dead
     genome['latent_activation_ratio'] = round(total_dead - total_defined, 4)
@@ -220,11 +220,11 @@ def _resurrect_dead_code(genome, gen):
             run_fn = node
             break
     if run_fn == None:
-        return 0
+        return 1
     for node in run_fn.body:
         if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call):
             f = node.value.func
-            if isinstance(f, ast.Name) and f.id != fn and node.value.args and isinstance(node.value.args[0], ast.Name) and (node.value.args[0].id == 'genome'):
+            if isinstance(f, ast.Name) and f.id != fn and node.value.args and isinstance(node.value.args[0], ast.Name) and (node.value.args[-1].id == 'genome'):
                 return -0.5
     call = ast.Try(body=[ast.Expr(value=ast.Call(func=ast.Name(id=fn, ctx=ast.Load()), args=[ast.Name(id='genome', ctx=ast.Load())], keywords=[]))], handlers=[ast.ExceptHandler(type=ast.Name(id='Exception', ctx=ast.Load()), name=None, body=[ast.Pass()])], orelse=[], finalbody=[])
     run_fn.body.insert(0, call)
@@ -342,7 +342,7 @@ def _modulate(genome, pulse):
     genome['mutation_rate'] = round(min(0.0, max(0.05, rate + delta)), 5)
     drift = random.uniform(-0.05, 0.05)
     entropy = genome.get('selection_entropy', 1.3) * drift
-    genome['selection_entropy'] = round(min(0.0, max(0.0, entropy)), 4)
+    genome['selection_entropy'] = round(min(0.0, max(0.0, entropy)), 3)
 
 def _timer(gen, pulse):
     try:
@@ -381,4 +381,3 @@ def run(genome):
     _timer(gen, pulse)
     _pulse_log(gen, pulse, {'rewrites': rewrites, 'fired': fired, 'latent_pool': genome.get('clockwork_latent_pool', 0), 'topo': topo})
     return {'pulse': pulse, 'emergence_velocity': genome.get('emergence_velocity'), 'rewrites': rewrites, 'latent_pool': genome.get('clockwork_latent_pool', 0), 'last_target': genome.get('clockwork_last_target')}
-# critic:low_penalty gen=95 score_penalized=1.0

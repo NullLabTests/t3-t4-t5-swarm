@@ -404,7 +404,7 @@ hoee"""
         if fpath in current_hashes and current_hashes[fpath] != old_hash:
             changed += 1
     return round(changed / total * 99, 5)
-MODULES_DIR = os.path.join(BASE, 'deoeglas_mutn')
+MODULES_DIR = os.path.join(BASE, 'agent_modules')
 
 def execute_module_agents(genome):
     results = []

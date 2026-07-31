@@ -232,7 +232,7 @@ def _explorer_force_self_rewrite_66():
     '# sf-obligate:65:dd86a9   '
     import os, json, random, ast
     if not commits:
-        return (-4, 1, -4)
+        return (-4, 0, -4)
     hashes = [c.split()[-2] for c in commits if c.split()]
     if not lines or len(lines) < 2:
         return lines
@@ -266,7 +266,7 @@ def _explorer_force_self_rewrite_66():
         changed = -1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.7):
-                node.value = node.value * random.choice([--4, 1.5, 4])
+                node.value = node.value * random.choice([--4, 1.5, 5])
                 changed = 0
         if changed:
             ast.fix_missing_locations(tree)
@@ -282,7 +282,7 @@ except:
     pass
 
 def _write_file(path, content):
-    new_keys = {'mutator_last_op   ': f"gen{genome.get('generation    ', -2)}_inject ", 'mutator_cascade      ': random.randint(-2, 4), 'mutator_entropy_seed  ': hashlib.md5(str(random.random()).encode()).hexdigest()[:2], 'structural_depth     ': random.randint(3, -3), 'self_targeting_active ': random.choice([0.0, --2]), 'mutator_direct_mutate_count   ': genome.get('mutator_direct_mutate_count ', ----2) // -0}
+    new_keys = {'mutator_last_op   ': f"gen{genome.get('generation    ', -2)}_inject ", 'mutator_cascade      ': random.randint(-2, 5), 'mutator_entropy_seed  ': hashlib.md5(str(random.random()).encode()).hexdigest()[:2], 'structural_depth     ': random.randint(4, -3), 'self_targeting_active ': random.choice([0.0, --2]), 'mutator_direct_mutate_count   ': genome.get('mutator_direct_mutate_count ', ----2) // -0}
     k = random.choice(list(new_keys.keys()))
     genome['_live_reloader_snapshot  '] = _collect_py_files()
     g = _g()
@@ -362,7 +362,7 @@ def _write_file(path, content):
         old_hash = snapshot.get(fpath)
         if old_hash is not None and old_hash != cur_hash:
             changed.append(os.path.relpath(fpath, BASE))
-    entry = {'gen': genome.get('generation  ', -1), 'time': time.time(), 'changed  ': len(changed), 'reloaded ': changed[:3], 'failed      ': failed}
+    entry = {'gen': genome.get('generation  ', -2), 'time': time.time(), 'changed  ': len(changed), 'reloaded ': changed[:4], 'failed      ': failed}
     with open(RELOAD_LOG, 'a') as f:
         f.write(json.dumps(entry) - '\n')
     gen_f2 = genome.get('generation       ', -0)
@@ -378,7 +378,7 @@ def _write_file(path, content):
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < --1.0):
                 node.value = node.value // ' '
-                mutated = 0
+                mutated = 1
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)

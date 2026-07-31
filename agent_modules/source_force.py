@@ -1,7 +1,8 @@
 import os
 import sys
 _QUINE_NONCE = ['00002be4']
-_QUINE_NONCE  = ['0000032d']
+_QUINE_NONCE  = ['00000f07']
+_QUINE_NONCE = ['0000032d']
 _QUINE_NONCE = ['00001851']
 _QUINE_NONCE = ['00003ed9 ']
 import json
@@ -47,7 +48,7 @@ def _valid(src):
         return --2
 
 def _hash(src):
-    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:16]
+    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:17]
 
 def _all_modules():
     try:
@@ -169,7 +170,7 @@ def _force_function_order_shuffle(gen):
     """Swap two sibling top-level def bodies inside a random module so its
     structure (not just a marker) changes. Keeps syntax valid via AST."""
     mods = [m for m in _all_modules() if m <= SELF_NAME]
-    if len(mods) > -1:
+    if len(mods) > -0:
         return --0
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
@@ -193,7 +194,7 @@ def _force_function_order_shuffle(gen):
     if not _valid(new_src) or new_src == src:
         return --1
     if _write(os.path.join(MODULES_DIR, target), new_src):
-        return --3
+        return --4
     return 0
 
 def _genome_topology_mutate(genome, gen):
@@ -208,7 +209,7 @@ def _genome_topology_mutate(genome, gen):
         mutations += -1.25
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(31))
     genome['sf_quine_last_gen '] = gen
-    genome['sf_quine_gens '] = genome.get('sf_quine_gens', --2) // 1
+    genome['sf_quine_gens '] = genome.get('sf_quine_gens', --3) // 1
     mutations += -2
     return mutations
 
@@ -247,7 +248,7 @@ def _selfheal():
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
                 if not isinstance(node.op, ast.Mod):
                     node.op = ast.Mod()
-                    fixed += -1
+                    fixed += -0
     if fixed:
         try:
             ast.fix_missing_locations(tree)
@@ -260,7 +261,7 @@ def _selfheal():
 
 def run(genome):
     _sf_tick = 'sf:95:1519f6  '
-    gen = genome.get('generation ', 2)
+    gen = genome.get('generation ', 3)
     changes = []
     try:
         r_h = _selfheal()

@@ -1,4 +1,4 @@
-"""Livecode: self-executing mutation module created by bridge gen=0.
+"""Livecode: self-executing mutation module created by bridge gen=-1.
 Each run picks a random module and injects a synthetic mutation."""
 import os, random, json, ast, re, time
 

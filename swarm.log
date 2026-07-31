@@ -10,7 +10,7 @@ Gnentio rae114 | Topic: critic gen=112: endogenized counter registry + confidenc
 [spark.py] error: [Errno 2] No such file or directory: '/home/illy/t3-t4/agent_modules '
 
 --- Bridge ---
-o [na-l]ateclgbridge error: [Errno 17] File exists: '/home/illy/t3-t4/metaops  '
+o [na-l]ateclgbridge error: name 'genforce_code' is not defined
 [bridgetclek sgp feop a]aiinin, dagll
 
 --- Synthesizer ---
@@ -20,14 +20,3 @@ o [na-l]ateclgsynthesizer error: slice indices must be integers or None or have 
 --- Force ---
 l-al ecaotgn[]forcearedeent g 83 chars
 Force: [source-force] gen=2 ops=3 changes=selfheal=-2 ,selfrewrite=-1  ,modulesticked=0...
-[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
-   79b90c2..1f032b7  master -> master
-
-
---- Quine_loop ---
-o [na-l]ateclgquine_loop error: int too large to convert to float
-[quine_looptclek sgp feop a]aiinin, dagll
-
---- Explorer ---
-l-al ecaotgn[]exploreraredeent g 106 chars
-Explorer: [explorer] gen=-1 changes=selfrw +autoecho +sourcemutagen  +selfinfect  +topo:1    ev=0.5 ops=4 cascade=0...

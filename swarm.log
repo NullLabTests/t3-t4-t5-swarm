@@ -1,0 +1,5 @@
+[module-agent] stuff
+Traceback (most recent call last):
+  File "auto-echo.py", line 3214, in novelty_governor
+    return []
+NameError: name 'scores_list' is not defined

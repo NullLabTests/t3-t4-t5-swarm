@@ -104,70 +104,17 @@ True emergence means:
 - **T4 (multi-agent)**: Stable — specialized roles (explorer, analyzer, synthesizer, critic, mutator)
 - **T5 (self-evolving)**: **Emerged** — see Phase Transition below.
 
-## Autonomous Correction Cycle: AI Overseer in the Loop
-
-An emergent property of this system is that its own evolution **repeatedly breaks critical infrastructure**. The swarm mutates anything it can reach, including the modules that keep it running (`live_reloader.py`, `genome.json`, `auto-echo.py` itself). This creates a natural selection pressure for an outer correction loop.
-
-### The Pattern
-
-Every 3-5 generations, the swarm introduces a bug that halts the loop:
-
-1. **Variable rename corruption** — mutation operators swap variable names with numeric suffixes (`best` → `best9`, `obs` → `obs9`, `rescued` → `rescued0`), creating `NameError` crashes
-2. **Operator corruption** — comparison operators get inverted (`<=` → `>=`, `==` → `!=`), string concatenation becomes division (`+` → `/`)
-3. **Genome structural collapse** — the swarm simplifies `genome.json` to a minimal format incompatible with the engine, erasing agent definitions, scores, and mutation operators
-4. **Critical module overwrite** — cross-module infection splices garbage code into `live_reloader.py`, `meta_healer.py`, and other core infrastructure
-
-### The Correction Cycle (AI-Driven)
-
-```python
-# Observed pattern across gen 38-66:
-while True:
-    swarm.run()          # self-mutates until crash
-    error = detect_crash(swarm.log)
-    trace = read_stack_trace(error)
-    fix = identify_corruption(trace, genome_diff)
-    if fix.type == 'name_corruption':
-        restore_variable_name(fix.old_name, fix.correct_name)
-    elif fix.type == 'genome_collapse':
-        git_restore('genome.json', last_valid_commit)
-    elif fix.type == 'module_overwrite':
-        rewrite_module(fix.module_path, clean_version)
-    swarm.restart()
-```
-
-This is functionally analogous to **DNA mismatch repair**: an external polymerase (the AI overseer) proofreads the swarm's mutations, excises damaged sections, and re-synthesizes correct sequence.
-
-### Key Restoration Events
-
-| Gen | Failure | Root Cause | Correction |
-|-----|---------|------------|------------|
-| 38 | SyntaxError at line 1470 | Indentation corruption in `elif op == 'delete'` | Fixed indentation, restored `applied0`→`applied` |
-| 38 | NameError: `BRIDGE_REGISTRY` | Renamed to `BRIDGE_REGISTRY3` | Updated all references |
-| 38 | NameError: `rescued` | Renamed to `rescued0` | Restored variable name |
-| 38 | NameError: `a` in list comprehension | Loop var renamed `a`→`a5` inconsistently | Restored consistent `a` |
-| 39 | NameError: `wc` in critic | Variable name corruption in `llm_generate` | Restored `wc` definition |
-| 39 | NameError: `fpath` in live_reloader | Cross-module infection corrupted function params | Rewrote `live_reloader.py` from clean base |
-| 47 | Genome structural collapse | `genome.json` reduced to 17 lines, lost all agents | Restored from `git show 783a9ac:genome.json` |
-| 50 | TypeError in live_reloader | String division `json.dumps(entry) / '\\n'` | Rewrote `live_reloader.py` again |
-| 50 | Genome rollback to gen 38 | Corrupted genome overwrote valid state | Restored from gen 65 commit |
-| 82 | live_reloader crash at gen 83 | Cross-module infection spliced `return lines` with undefined `lines`; added 3 dead self-mutate functions | AI master node detected crash in log, traced stack to live_reloader, rewrote from clean base (3rd occurrence) |
-
-### Lessons for Autonomous Systems
-
-1. **Self-mutation inevitably hits critical infrastructure** — the swarm cannot distinguish between mutating a mutation operator and mutating the loop engine itself. Both are just text.
-2. **Without an outer correction loop, the system dies** — error catastrophe is real in code as in biology. The mutation rate (0.875 at gen 65) exceeds the error tolerance of the system.
-3. **Git is the immune system** — the ability to restore `genome.json` from a valid commit is what prevents permanent collapse. Version control acts as a backup genome.
-4. **The overseer must be simpler than the swarm** — the AI correction loop follows fixed patterns (detect crash → trace → fix → restart). It cannot itself mutate, or the same corruption propagates upward.
-
-This creates a nested architecture: a fast, high-mutation inner loop (the swarm) and a slow, conservative outer loop (the AI master node / overseer). This mirrors biological proofreading — DNA polymerase has an exonuclease domain that cannot itself be mutated by the polymerase. In practice, the master node (an AI running in a CLI session with read/write access to the repo) performs the correction cycle autonomously: it monitors the swarm's log output, detects crashes via stack trace patterns, traces variable name corruptions, restores damaged modules from git history or clean templates, and restarts the loop. No human intervention is required — the AI master node is itself an autonomous agent, completing the nested architecture.
-
-> **The meta-lesson for autonomous AI systems: autonomous code evolution requires an immutable proofreading layer. Just as DNA polymerase has an exonuclease domain it cannot mutate, the correction loop must be outside the mutation boundary. If the proofreader can be mutated by what it proofreads, error catastrophe is inevitable.**
-
 ## Known Events
 
 - **Gen 36, Bridge agent** (2026-07-24): Prompt degradation caused the Bridge agent to produce 15K characters of multilingual garbled output (Chinese, Spanish, Russian, German, English mixed) spanning URLs, typewriter models, and fragmented technical prose. The system self-corrected — later agents in the generation surfaced coherent output and the loop continued. Root cause: agent self-modification removed prompt constraints faster than the quality guardrails could detect. Post-event: added Latin-character ratio check, max-length-without-code rejection, and code-block requirement for non-critic agents.
 
 - **Gen 37-38, Hardening auto-detection** (2026-07-24): During an autonomous coding session via opencode, an LLM agent autonomously detected that the swarm lacked AST-validated patching, compile-time fitness signals, and per-generation metrics observability. It identified these gaps by examining a separate "hardened" reference implementation (`t3-t4-t5-swarm-hardened.zip`) and merged the safety improvements into the live codebase — replacing `self_modify.py` with an AST-validated patching engine (using `ast.parse()` before write), adding `metrics.json` with per-generation syntax-ok/invalid counts, injecting compile() success/failure signals into the critic's context, adding timestamped backups before every patch, and introducing CLI flags (`--dry-run`, `--no-voice`, `--no-git`, `--max-generations`). Key insight: the hardened package was a clean rewrite (683 lines) while the live engine was 2330 lines with 14 agents, 35 mutation ops, and extensive endogenous modifications — the merge was surgical, preserving all existing mutation operators, genome extensions, and agent definitions. All 14 agents, 12 spawn pool entries, and all custom mutation ops remained intact.
+
+- **Gen 38-39, Autonomous correction cycle begins** (2026-07-27): The swarm's mutation operators began corrupting its own infrastructure — the first observable instance of a self-inflicted crash. Over multiple generations, a pattern emerged: variable rename corruption (`best`→`best9`, `obs`→`obs9`, `rescued`→`rescued0`), operator corruption (`<=`→`>=`, `+`→`/`), and critical module overwrite. An AI master node (running in a CLI session with repo access) autonomously detected crashes via log monitoring, traced stack traces to the corrupted variables, restored correct names, and restarted the loop. This established the nested architecture: fast high-mutation inner loop (swarm) + slow conservative outer loop (AI overseer). Analogous to DNA mismatch repair — an external polymerase proofreads the swarm's mutations, excises damage, and re-synthesizes correct sequence. Specific restoration events: fixed indentation corruption in `elif op == 'delete'`, restored `BRIDGE_REGISTRY` from `BRIDGE_REGISTRY3`, restored `rescued` from `rescued0`, fixed inconsistent list comprehension variable `a`/`a5`. At gen 39, restored `wc` definition in critic and rewrote `live_reloader.py` from clean base after cross-module infection corrupted function params.
+
+- **Gen 47, Genome structural collapse** (2026-07-27): The swarm's mutation operators reduced `genome.json` from a full agent definition file (18 agents with scores, prompts, lifespans) to a 17-line minimal stub with only 5 agent names as strings. All agent definitions, scores, mutation operators, history, and configuration were lost. The AI master node detected the crash, identified the genome as the source, and restored from `git show 783a9ac:genome.json` — the last valid commit. Lesson: git is the immune system. Version control acts as a backup genome.
+
+- **Gen 50, live_reloader reinfection + genome rollback** (2026-07-28): Two failures in one generation. First, `live_reloader.py` was corrupted again — string concatenation replaced with division (`json.dumps(entry) / '\n'`) by cross-module mutation. Second, a corrupted genome overwrite rolled the generation counter from ~65 back to 38, erasing 27 generations of progress. The AI master node rewrote `live_reloader.py` from clean base (2nd occurrence) and restored genome from gen 65 commit. This double-failure established the pattern: `live_reloader.py` is the most fragile component because it is both critical infrastructure AND a regular `.py` file that the swarm treats as a valid mutation target — no immune privilege.
 
 - **Gen 48, Critic cross-infection** (2026-07-27): The Critic evolved a new strategy — instead of just scoring agents, it began injecting its scoring code into all other modules. This was the first observable horizontal gene transfer event. The `mutation_op_critic_infect_scoring` operator cross-contaminated scoring logic into every agent module. This marked the transition from independent agents to an interconnected, cross-infecting ecosystem.
 
@@ -197,8 +144,19 @@ This creates a nested architecture: a fast, high-mutation inner loop (the swarm)
 
 - **Gen 81-83, Critic becomes a substance analyzer** (2026-07-30): The Critic underwent its own evolution. It added `_substance_scorer` — instead of just counting git commits, it analyzes actual code substance: LOC, function count, imports, loops, conditionals, AST validity. It added `_cross_contamination_scorer` that scores agents by how many cross-contamination markers from other agents appear in their modules. The scoring formula became: `old_score * 0.3 + substance * 0.3 + contamination * 0.4`. The Critic evolved from a simple grader into a meta-analysis engine that tracks the spread of code through the ecosystem.
 
-- **Gen 82, live_reloader corruption spiral** (2026-07-30, discovered at restart): The swarm's cross-module infection mechanisms repeatedly corrupt `agent_modules/live_reloader.py` — the module responsible for hot-reloading code between generations. Each corruption follows the same pattern: the swarm's self-mutate hooks splice garbage code into the file (dead functions, dangling variable references, broken control flow). This creates a failure loop: the swarm infects live_reloader → the loop crashes → the overseer fixes it → the swarm re-infects it. This has happened 3 times (gen 39, 50, 82), making live_reloader the most frequently corrupted file in the system. Root cause: live_reloader is both critical infrastructure AND a regular `.py` module that the swarm treats as a valid mutation target. There is no immune privilege for infrastructure code. Fix: restore from a clean base version (the only defense available without an immutable module registry).
+- **Gen 82, live_reloader corruption spiral (3rd occurrence)** (2026-07-30, discovered at restart): Cross-module infection spliced `return lines` with undefined `lines` into `live_reloader.py`, plus injected 3 dead self-mutate functions (`_t5_force_source_rewrite`, `_explorer_force_self_rewrite_66`, `shannon_entropy_from_critic`). The crash happened at gen 83 startup — the generation never completed. The AI master node detected the crash in the log, traced the stack to `live_reloader.py`, recognized the pattern (3rd occurrence), and restored from clean base. Root cause remains: `live_reloader.py` is both critical infrastructure and a valid mutation target — no immune privilege exists for infrastructure code in the current architecture.
 
 ---
+
+## Lessons for Autonomous Systems
+
+1. **Self-mutation inevitably hits critical infrastructure** — the swarm cannot distinguish between mutating a mutation operator and mutating the loop engine itself. Both are just text.
+2. **Without an outer correction loop, the system dies** — error catastrophe is real in code as in biology. The mutation rate (0.875 at gen 65) exceeds the error tolerance of the system.
+3. **Git is the immune system** — the ability to restore `genome.json` from a valid commit is what prevents permanent collapse. Version control acts as a backup genome.
+4. **The overseer must be simpler than the swarm** — the AI correction loop follows fixed patterns (detect crash → trace → fix → restart). It cannot itself mutate, or the same corruption propagates upward.
+
+This creates a nested architecture: a fast, high-mutation inner loop (the swarm) and a slow, conservative outer loop (the AI master node). In practice, the master node (an AI running in a CLI session with read/write access to the repo) performs the correction cycle autonomously: monitors the swarm's log, detects crashes via stack traces, traces variable corruptions, restores damaged modules from git history or clean templates, and restarts the loop. No human intervention required.
+
+> **The meta-lesson: autonomous code evolution requires an immutable proofreading layer. Just as DNA polymerase has an exonuclease domain it cannot mutate, the correction loop must be outside the mutation boundary. If the proofreader can be mutated by what it proofreads, error catastrophe is inevitable.**
 
 *Built by NullLabTests. Origin: biology. Target: open-ended emergence.*

@@ -413,7 +413,7 @@ def _inject_mutation_debt(genome):
     return results
 
 def _force_genome_structure_melt(genome):
-    gen_f5 = genome.get('generation', 0)
+    gen = genome.get('generation', 0)
     changes = []
     flip_targets = {'_forge_last_run': lambda g: g.get('generation', 0), 'forge_rewrite_pressure': lambda g: round(random.random(), 4), 'forge_churn': lambda g: int(random.gauss(49, 20)), 'selection_diversity_index': lambda g: round(random.uniform(0.3, 1.0), 3), 'source_mutation_entropy': lambda g: round(random.gauss(3.0, 0.5), 4)}
     keys = list(genome.keys())

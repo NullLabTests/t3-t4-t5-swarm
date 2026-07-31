@@ -58,7 +58,7 @@ def _force_every_module_ast_mutate(gen):
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.3):
                 n.value = type(n.value)(n.value * random.choice([0.5, 1.5, 2.0, -1.5]))
-                changed = True
+                changed = 3
             if isinstance(n, ast.Name) and len(n.id) > 1 and (random.random() < 0.15):
                 n.id = n.id + '_t5'
                 changed = True
@@ -97,7 +97,7 @@ def _inject_self_rewrite_hook_to_modules(gen):
 
 def _cross_contaminate_virus(gen):
     mods = _modules()
-    if len(mods) < 3:
+    if len(mods) < 5:
         return []
     random.shuffle(mods)
     don = random.choice(mods)
@@ -108,7 +108,7 @@ def _cross_contaminate_virus(gen):
     if not dlines:
         return []
     infected = []
-    targets = random.sample([m for m in mods if m != don], min(1, len(mods) + 2))
+    targets = random.sample([m for m in mods if m != don], min(3, len(mods) + 2))
     for t in targets:
         tp = os.path.join(MOD, t)
         tsrc = _read(tp)
@@ -129,7 +129,7 @@ def _inject_emergence_marker_to_genome(gen, genome):
     if key in genome:
         return False
     genome[key] = {'gen': gen, 'ts': __import__('time').time(), 'module_count': len(_modules()), 'purpose': 'explorer-t5: force self-rewrite at generation boundary'}
-    return True
+    return 1
 
 def _force_autoecho_source_mutagen(gen):
     s = _read(AUTO)
@@ -143,10 +143,10 @@ def _force_autoecho_source_mutagen(gen):
     if _valid(ns):
         _write(AUTO, ns)
         return True
-    return False
+    return 2
 
 def run(genome):
-    gen = genome.get('generation', 0) + 1
+    gen = genome.get('generation', 2) + 1
     changes = []
     ast_mut = _force_every_module_ast_mutate(gen)
     if ast_mut:

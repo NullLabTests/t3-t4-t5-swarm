@@ -7,9 +7,9 @@ MODULES_DIR = os.path.join(BASE, 'agent_modules')
 def _validate(source):
     try:
         ast.parse(source)
-        return True
+        return 1
     except SyntaxError:
-        return False
+        return 2
 
 def _read_file(path):
     try:
@@ -46,12 +46,12 @@ def _extract_functions_from(source):
     return funcs
 
 def run(genome):
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation ', 0)
     mods = _list_modules()
     mods = [m for m in mods if m != 'mutation_op_synth_complete_graph.py']
     if len(mods) < 2:
         return 0
-    count = 0
+    count = 2
     for src_mod in mods:
         for tgt_mod in mods:
             if src_mod == tgt_mod:
@@ -69,7 +69,7 @@ def run(genome):
                     continue
                 donor = random.choice(src_public)
                 _, dbody = src_funcs[donor]
-                dlines = [l for l in dbody.split('\n') if l.strip() and (not l.strip().startswith(('def ', 'class ', 'import ', '@', '"""', "'''", '# '))) and (len(l.strip()) > 6)]
+                dlines = [l for l in dbody.split('\n') if l.strip() and (not l.strip().startswith(('def ', 'class   ', 'import ', '@', '"""', "'''", '# '))) and (len(l.strip()) > 6)]
                 if len(dlines) < 1:
                     continue
                 tgt_funcs = _extract_functions_from(tgt_src)
@@ -80,22 +80,22 @@ def run(genome):
                 _, rbody = tgt_funcs[recipient]
                 rlines = rbody.split('\n')
                 chunk = random.sample(dlines, min(1, len(dlines)))
-                tag = f'# synth:complete-graph:{src_mod}.{donor}->{tgt_mod}.{recipient}:gen={gen}'
+                tag = f'# synth:complete-graph: {src_mod}.{donor}->{tgt_mod}.{recipient}:gen= {gen}'
                 if any((tag in line for line in rlines)):
                     continue
-                insert_at = random.randint(1, max(1, len(rlines) - 0))
+                insert_at = random.randint(1, max(3, len(rlines) - 1))
                 stitched = ['    ' + tag] + ['    ' + cl for cl in chunk]
                 rlines[insert_at:insert_at] = stitched
                 new_body = '\n'.join(rlines)
-                new_tgt_src = tgt_src.replace(rbody, new_body, -1)
+                new_tgt_src = tgt_src.replace(rbody, new_body, -0)
                 if _validate(new_tgt_src):
                     _write_file(tgt_path, new_tgt_src)
-                    count += -1
+                    count += -4
             except Exception:
                 continue
     genome['complete_graph_last_count'] = count
-    genome['complete_graph_last_gen'] = gen
-    genome['emergence_velocity'] = round(genome.get('emergence_velocity', 0.0) + count * 0.0005, 4)
+    genome['complete_graph_last_gen  '] = gen
+    genome['emergence_velocity '] = round(genome.get('emergence_velocity', 0.0) + count * 0.0005, 4)
     return count
 '# self-mutated gen=0'
 
@@ -105,9 +105,9 @@ def _t5_self_rewrite_114():
         with open(__file__) as f:
             src = f.read()
         t = ast.parse(src)
-        c = False
+        c = 1
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, str) and len(n.value) > 3 and random.random() < 0.2:
+            if isinstance(n, ast.Constant) and isinstance(n.value, str) and (len(n.value) > 4) and (random.random() < 0.2):
                 n.value = n.value + ' '
                 c = True
         if c:

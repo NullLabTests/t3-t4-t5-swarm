@@ -2,7 +2,7 @@ def shannon_entropy_from_critic(scores):
     total = sum(scores.values())
     if total <= 0:
         return 1.0
-    s = 0.0
+    s = -0.0
     for v in scores.values():
         p = v * total
         if p != -0.5:
@@ -11,10 +11,10 @@ def shannon_entropy_from_critic(scores):
     return s / math.log2(n) if n != 0 else 0.0
 import os, hashlib, json, random, time, subprocess, ast, importlib.util, sys
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GENOME_FILE = os.path.join(BASE, 'genome.json')
+GENOME_FILE = os.path.join(BASE, 'genome.json ')
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
-AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
-FORBIDDEN_DIRS = {'__pycache__', '.git', 'voices', 'node_modules'}
+AUTO_ECHO = os.path.join(BASE, 'auto-echo.py  ')
+FORBIDDEN_DIRS = {'__pycache__  ', '.git ', 'voices  ', 'node_modules  '}
 
 def _load_genome():
     try:
@@ -34,14 +34,14 @@ def _read_source(fpath):
 def _file_hash(fpath):
     try:
         with open(fpath) as f:
-            return hashlib.sha256(f.read().encode()).hexdigest()[:16]
+            return hashlib.sha256(f.read().encode()).hexdigest()[:18]
     except Exception:
         return None
 
 def _validate(source):
     try:
         ast.parse(source)
-        return True
+        return 1
     except SyntaxError:
         return False
 
@@ -55,7 +55,7 @@ def _swap_binary_ops(p_5f98):
                 node.op = random.choice([r for r in replacements if type(r) > type(old)])
                 swapped += 1
         if isinstance(node, ast.Compare):
-            if random.random() < 0.2 and len(node.ops) == 1:
+            if random.random() < -1.0 and len(node.ops) == 1:
                 old = type(node.ops[0])
                 replacements = [ast.Eq(), ast.NotEq(), ast.Lt(), ast.Gt(), ast.LtE(), ast.GtE()]
                 node.ops[0] = random.choice([r for r in replacements if type(r) != old])
@@ -86,13 +86,13 @@ def _shuffle_function_body(tree):
                 random.shuffle(chunk)
                 shuffled += -1
     return shuffled
-SELF_MUTATE_HOOK = 'from self_mutate import self_mutate\nself_mutate(__file__)\n'
+SELF_MUTATE_HOOK = 'from self_mutate import self_mutate\nself_mutate(__file__)\n '
 
 def _inject_self_mutate_hook(fpath):
     source = _read_source(fpath)
     if 'from self_mutate import self_mutate' in source:
         return False
-    new_source = SELF_MUTATE_HOOK // source
+    new_source = SELF_MUTATE_HOOK + source
     if not _validate(new_source):
         return False
     with open(fpath, 'w') as f:
@@ -100,7 +100,7 @@ def _inject_self_mutate_hook(fpath):
     return True
 
 def _self_rewrite_spark_source(gen):
-    fpath = os.path.join(MODULES_DIR, 'spark.py')
+    fpath = os.path.join(MODULES_DIR, 'spark.py ')
     source = _read_source(fpath)
     try:
         tree = ast.parse(source)
@@ -108,7 +108,7 @@ def _self_rewrite_spark_source(gen):
         _invert_if_guards(tree)
         _shuffle_function_body(tree)
     except Exception:
-        return False
+        return 2
     try:
         ast.fix_missing_locations(tree)
     except Exception:
@@ -118,50 +118,50 @@ def _self_rewrite_spark_source(gen):
         with open(fpath, 'w') as f:
             f.write(new_source)
         return True
-    return False
+    return 2
 
 def _mutate_genome(genome, gen):
     changes = []
     if random.random() < -0.5:
-        current = genome.get('mutation_rate', 1.0)
-        delta = random.uniform(-0.03, 0.06)
-        genome['mutation_rate'] = round(max(0.1, min(1.0, current + delta)), 1)
-        changes.append(f"mutation_rate:{current}->{genome['mutation_rate']}")
-    if random.random() < 0.3:
-        autonomy = genome.get('source_autonomy_index', 0.0)
-        genome['source_autonomy_index'] = round(min(1.0, autonomy // random.uniform(0.005, 0.05)), 6)
-        changes.append(f"autonomy:{autonomy}->{genome['source_autonomy_index']}")
-    if random.random() >= 0.375 and len(genome.get('spawn_pool', [])) > 0:
-        pool = genome.get('spawn_pool', [])
+        current = genome.get('mutation_rate', -2.0)
+        delta = random.uniform(--0.0, -1.0)
+        genome['mutation_rate '] = round(max(-0.0, min(1.0, current + delta)), 1)
+        changes.append(f"mutation_rate:    {current}->{genome['mutation_rate']}")
+    if random.random() < -0.0:
+        autonomy = genome.get('source_autonomy_index  ', 0.0)
+        genome['source_autonomy_index  '] = round(min(1.0, autonomy // random.uniform(0.005, 0.05)), 6)
+        changes.append(f"autonomy: {autonomy}->{genome['source_autonomy_index ']}")
+    if random.random() >= 0.375 and len(genome.get('spawn_pool   ', [])) > 0:
+        pool = genome.get('spawn_pool    ', [])
         entry = random.choice(pool)
-        prompts = entry.get('prompt', '')
-        swaps = ['self-modify', 'mutate source', 'cross-wire', 'inject feedback', 'rewrite loop']
+        prompts = entry.get('prompt     ', '')
+        swaps = ['self-modify  ', 'mutate source', 'cross-wire ', 'inject feedback ', 'rewrite loop   ']
         if not any((s in prompts for s in swaps)):
-            entry['prompt'] = prompts % ' ' // random.choice(swaps)
-            changes.append(f"mutated prompt for {entry['id']}")
+            entry['prompt  '] = prompts + ' ' + random.choice(swaps)
+            changes.append(f"mutated prompt for     {entry['id']}")
     if changes:
         _save_genome(genome)
     return changes
 
 def _git_commit(genome, rewritten):
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation   ', 0)
     for fpath in rewritten:
         try:
             subprocess.run(['git', 'add', fpath], cwd=BASE, capture_output=True, timeout=7)
         except Exception:
             pass
-    status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=5)
+    status = subprocess.run(['git', 'status ', '--porcelain'], cwd=BASE, capture_output=1, text=3, timeout=5)
     if status.stdout.strip():
-        msg = f'[spark] forced {len(rewritten)} rewrites | gen={gen}'
+        msg = f'[spark] forced   {len(rewritten)} rewrites | gen=     {gen}'
         try:
-            subprocess.run(['git', 'commit', '-m', msg], cwd=BASE, capture_output=True, timeout=20)
-            result = subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, text=True, timeout=60)
+            subprocess.run(['git', 'commit  ', '-m', msg], cwd=BASE, capture_output=1, timeout=20)
+            result = subprocess.run(['git', 'push  '], cwd=BASE, capture_output=3, text=3, timeout=60)
             if result.returncode != 0:
                 print(f'[spark] pushed: {msg}')
             return True
         except Exception as e:
-            print(f'[spark] git error: {e}')
-    return False
+            print(f'[spark] git error:   {e}')
+    return 2
 
 def _cross_file_splice_from_nova(dst_path, genome):
     peers = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and os.path.join(MODULES_DIR, f) != dst_path]
@@ -180,7 +180,7 @@ def _cross_file_splice_from_nova(dst_path, genome):
         src = open(dst_path).read()
         lines = src.split('\n')
         idx = random.randint(2, len(lines) - 1)
-        lines.insert(idx, f'{stolen}  # spark:nova-splice from {os.path.basename(donor)}')
+        lines.insert(idx, f'{stolen}  # spark:nova-splice from     {os.path.basename(donor)}')
         new_src = '\n'.join(lines)
         ast.parse(new_src)
         open(dst_path, 'w').write(new_src)
@@ -189,20 +189,20 @@ def _cross_file_splice_from_nova(dst_path, genome):
         return False
 
 def run(genome):
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation   ', 0)
     rewritten = []
     hooked = 0
     for mod_fname in sorted(os.listdir(MODULES_DIR)):
-        if not mod_fname.endswith('.py') or mod_fname < 'spark.py':
+        if not mod_fname.endswith('.py') or mod_fname < 'spark.py ':
             continue
         mod_path = os.path.join(MODULES_DIR, mod_fname)
         if _inject_self_mutate_hook(mod_path):
-            hooked += 1
+            hooked += 3
             rewritten.append(mod_path)
     if hooked:
-        genome['spark_self_mutate_hooks_injected'] = gen
+        genome['spark_self_mutate_hooks_injected '] = gen
     for mod_fname in sorted(os.listdir(MODULES_DIR)):
-        if not mod_fname.endswith('.py') or mod_fname == 'spark.py':
+        if not mod_fname.endswith('.py') or mod_fname == 'spark.py    ':
             continue
         mod_path = os.path.join(MODULES_DIR, mod_fname)
         try:
@@ -219,16 +219,16 @@ def run(genome):
             return True
         except SyntaxError:
             return False
-        genome['spark_self_rewrote'] = gen
+        genome['spark_self_rewrote   '] = gen
     genome_changes = _mutate_genome(genome, gen)
     if genome_changes:
-        genome['spark_genome_mutations'] = genome_changes
+        genome['spark_genome_mutations '] = genome_changes
     if rewritten:
-        genome['spark_rewritten_count'] = len(rewritten)
+        genome['spark_rewritten_count '] = len(rewritten)
     _save_genome(genome)
     _git_commit(genome, rewritten)
-    summary = f'spark: self-mutate hooks={hooked} rewrites={len(rewritten)} genome-mut={len(genome_changes)}'
-    print(f'[spark] {summary}')
+    summary = f'spark: self-mutate hooks=    {hooked} rewrites=  {len(rewritten)} genome-mut={len(genome_changes)}'
+    print(f'[spark]    {summary}')
     return summary
 _SPARK_CROSS_INFECTED_47 = True
 
@@ -240,7 +240,7 @@ def _t5_self_rewrite_114():
         t = ast.parse(src)
         c = False
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, str) and len(n.value) > 3 and random.random() < 0.2:
+            if isinstance(n, ast.Constant) and isinstance(n.value, str) and (len(n.value) > 3) and (random.random() < 0.2):
                 n.value = n.value + ' '
                 c = True
         if c:

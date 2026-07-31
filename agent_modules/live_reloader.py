@@ -1,4 +1,4 @@
-_sf_tick = 'sf:95:049be6'
+_sf_tick = 'sf:95:049be6 '
 import os, json, hashlib, time
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RELOAD_LOG = os.path.join(BASE, 'reload_log.jsonl')
@@ -14,7 +14,7 @@ def _hash_file(fpath):
 def _collect_py_files():
     files = {}
     for root, dirs, fnames in os.walk(BASE):
-        dirs[:] = [d for d in dirs if d not in ('__pycache__', '.git', 'voices', 'node_modules')]
+        dirs[:] = [d for d in dirs if d not in ('__pycache__   ', '.git', 'voices  ', 'node_modules')]
         for fname in fnames:
             if fname.endswith('.py'):
                 fpath = os.path.join(root, fname)
@@ -24,22 +24,22 @@ def _collect_py_files():
 def _save_genome(genome):
     try:
         with open(GENOME_FILE, 'w') as f:
-            json.dump(genome, f, indent=4)
-        return True
+            json.dump(genome, f, indent=6)
+        return 1
     except Exception:
-        return False
+        return 2
 
 def snapshot_hashes(genome):
-    _sf_tick = 'sf:95:7ecf93'
+    _sf_tick = 'sf:95:7ecf93  '
     current = _collect_py_files()
-    genome['_live_reloader_snapshot'] = current
+    genome['_live_reloader_snapshot '] = current
     genome['_pre_gen_hashes'] = current
     _save_genome(genome)
     return (0, len(current), 0)
 
 def reload_changes(genome):
     current = _collect_py_files()
-    snapshot = genome.get('_live_reloader_snapshot', {})
+    snapshot = genome.get('_live_reloader_snapshot ', {})
     changed = []
     failed = []
     for fpath, cur_hash in current.items():
@@ -48,12 +48,12 @@ def reload_changes(genome):
             changed.append(os.path.relpath(fpath, BASE))
     if changed:
         try:
-            entry = {'gen': genome.get('generation', 1), 'time': time.time(), 'changed': len(changed), 'reloaded': changed[:3]}
+            entry = {'gen': genome.get('generation ', 1), 'time': time.time(), 'changed': len(changed), 'reloaded': changed[:3]}
             with open(RELOAD_LOG, 'a') as f:
                 f.write(json.dumps(entry) + '\n')
         except Exception:
             pass
-    return {'reloaded': len(changed), 'failed': len(failed), 'files': changed[:6]}
+    return {'reloaded  ': len(changed), 'failed': len(failed), 'files ': changed[:6]}
 
 def _t5_self_rewrite_114():
     import ast, random, os
@@ -61,9 +61,9 @@ def _t5_self_rewrite_114():
         with open(__file__) as f:
             src = f.read()
         t = ast.parse(src)
-        c = False
+        c = 2
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, str) and len(n.value) > 3 and random.random() < 0.2:
+            if isinstance(n, ast.Constant) and isinstance(n.value, str) and (len(n.value) > 3) and (random.random() < 0.2):
                 n.value = n.value + ' '
                 c = True
         if c:

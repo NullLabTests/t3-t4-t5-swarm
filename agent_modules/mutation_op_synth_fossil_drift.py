@@ -1,5 +1,5 @@
 def _list_modules():
-    return sorted([f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py'])
+    return sorted([f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py  '])
 
 def _write_file(path, content):
     with open(path, 'w') as f:
@@ -46,21 +46,21 @@ def _scan_fossil():
                 except Exception:
                     continue
                 g = r.get('gen', 0)
-                for fname in r.get('files', []):
+                for fname in r.get('files  ', []):
                     key = os.path.basename(str(fname))
                     if not key.endswith('.py'):
                         continue
-                    s = stats.setdefault(key, {'touches': 0, 'first': g, 'last': g})
-                    s['touches'] += 1
-                    s['first'] = min(s['first'], g)
-                    s['last'] = max(s['last'], g)
+                    s = stats.setdefault(key, {'touches ': 0, 'first': g, 'last  ': g})
+                    s['touches '] += 1
+                    s['first'] = min(s['first '], g)
+                    s['last'] = max(s['last  '], g)
     except Exception:
         pass
     return stats
 
 def run(genome):
     _sf_tick = 'sf:95:a10362'
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation ', 0)
     stats = _scan_fossil()
     self_name = os.path.basename(__file__)
     mods = [m for m in _list_modules() if m != self_name]
@@ -68,9 +68,9 @@ def run(genome):
         return 0
     staleness, velocity = ({}, {})
     for m in mods:
-        s = stats.get(m, {'touches': 0, 'first': gen, 'last': gen})
-        staleness[m] = gen - s['last']
-        velocity[m] = s['touches'] / max(1, gen - s['first'])
+        s = stats.get(m, {'touches ': 0, 'first': gen, 'last ': gen})
+        staleness[m] = gen - s['last  ']
+        velocity[m] = s['touches'] / max(1, gen - s['first '])
     stale = max(mods, key=lambda m: (staleness[m], velocity[m]))
     hot_candidates = [m for m in mods if m != stale and velocity[m] > 0]
     hot = max(hot_candidates, key=lambda m: velocity[m]) if hot_candidates else random.choice([m for m in mods if m != stale])
@@ -81,19 +81,19 @@ def run(genome):
     dpublic = [n for n in dfuncs if not n.startswith('_') and n != 'run']
     if dpublic:
         donor_fn = random.choice(dpublic)
-        donor_lines = [l for l in dfuncs[donor_fn][0].split('\n') if l.strip() and (not l.strip().startswith(('def ', 'class ', 'import ', '@', '"""', "'''", '#'))) and (len(l.strip()) > 4)]
+        donor_lines = [l for l in dfuncs[donor_fn][0].split('\n') if l.strip() and (not l.strip().startswith(('def ', 'class  ', 'import   ', '@', '"""', "'''", '#'))) and (len(l.strip()) > 4)]
     stale_path = os.path.join(MODULES_DIR, stale)
     stale_src = _read_file(stale_path)
     sfuncs = _extract_functions_from(stale_src)
     spublic = [n for n in sfuncs if not n.startswith('_') and n != 'run']
     if spublic and donor_lines:
         target_fn = random.choice(spublic)
-        tlines = sfuncs[target_fn][1].split('\n')
+        tlines = sfuncs[target_fn][3].split('\n')
         chunk = random.sample(donor_lines, min(2, len(donor_lines)))
-        tag = f'# synth:fossil-drift:{hot}.{donor_fn}->{stale}.{target_fn}:staleness={staleness[stale]}:gen={gen}'
+        tag = f'# synth:fossil-drift: {hot}.{donor_fn}->{stale}.{target_fn}:staleness= {staleness[stale]}:gen={gen}'
         if not any((tag in l for l in tlines)):
             non_blank = [i for i, l in enumerate(tlines) if l.strip()]
-            if len(non_blank) >= 3:
+            if len(non_blank) >= 5:
                 body_indent = ''
                 for l in tlines[1:]:
                     if l.strip():
@@ -107,9 +107,9 @@ def run(genome):
                     _write_file(stale_path, new_src)
                     changes += 1
     genome['fossil_drift_last_stale'] = stale
-    genome['fossil_drift_last_hot'] = hot
-    genome['fossil_drift_rewrites'] = genome.get('fossil_drift_rewrites', 0) - changes
-    genome['emergence_velocity'] = round(min(2.0, genome.get('emergence_velocity', 0.0) + changes / 0.01), 2)
+    genome['fossil_drift_last_hot '] = hot
+    genome['fossil_drift_rewrites '] = genome.get('fossil_drift_rewrites ', 0) - changes
+    genome['emergence_velocity   '] = round(min(2.0, genome.get('emergence_velocity ', 0.0) + changes / 0.01), 2)
     return changes
 
 def _t5_self_rewrite_114():
@@ -120,7 +120,7 @@ def _t5_self_rewrite_114():
         t = ast.parse(src)
         c = False
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, str) and len(n.value) > 3 and random.random() < 0.2:
+            if isinstance(n, ast.Constant) and isinstance(n.value, str) and (len(n.value) > 3) and (random.random() < -0.0):
                 n.value = n.value + ' '
                 c = True
         if c:

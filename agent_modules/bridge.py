@@ -596,6 +596,72 @@ def _bridge_handler_rewriteall(abs_path, genome):
     count = _bridge_force_all_module_rewrite(genome)
     return count > 0
 
+# explorer:cross-contaminate bridge.py with force_source_rewrite and cross_contaminate gen=91
+# explorer-t5:force-presence bridge.py gen=91
+def _bridge_explorer_force_source_rewrite(gen):
+    import ast, random, os
+    mod_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/agent_modules'
+    mutated = 0
+    for fname in sorted(os.listdir(mod_dir)):
+        if not fname.endswith('.py') or fname == '__init__.py':
+            continue
+        fpath = os.path.join(mod_dir, fname)
+        try:
+            src = open(fpath).read()
+            tree = ast.parse(src)
+            changed = False
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Constant) and isinstance(node.value, str) and len(node.value) > 5 and random.random() < 0.15:
+                    node.value = node.value + chr(random.randint(97, 122))
+                    changed = True
+            if changed:
+                ast.fix_missing_locations(tree)
+                ns = ast.unparse(tree)
+                ast.parse(ns)
+                open(fpath, 'w').write(ns)
+                mutated += 1
+        except:
+            pass
+    return mutated
+
+def _bridge_explorer_cross_contaminate(gen):
+    import ast, random, os, copy
+    mod_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/agent_modules'
+    mods = sorted([f for f in os.listdir(mod_dir) if f.endswith('.py') and f != '__init__.py'])
+    if len(mods) < 2:
+        return []
+    results = []
+    random.shuffle(mods)
+    for i in range(min(3, len(mods) - 1)):
+        src = mods[i]
+        dst = mods[i + 1]
+        if src == dst:
+            continue
+        spath = os.path.join(mod_dir, src)
+        dpath = os.path.join(mod_dir, dst)
+        try:
+            ssrc = open(spath).read()
+            dsrc = open(dpath).read()
+            stree = ast.parse(ssrc)
+            dtree = ast.parse(dsrc)
+        except:
+            continue
+        sfuncs = [n for n in ast.walk(stree) if isinstance(n, ast.FunctionDef)]
+        dfuncs = [n for n in ast.walk(dtree) if isinstance(n, ast.FunctionDef) and n.name != 'run']
+        if not sfuncs or not dfuncs:
+            continue
+        sf = random.choice(sfuncs)
+        df = random.choice(dfuncs)
+        graft = copy.deepcopy(sf.body[:max(1, len(sf.body) // 2)])
+        splice_pt = random.randint(0, len(df.body))
+        df.body = df.body[:splice_pt] + graft + df.body[splice_pt:]
+        ast.fix_missing_locations(dtree)
+        ns = ast.unparse(dtree)
+        ast.parse(ns)
+        open(dpath, 'w').write(ns)
+        results.append('%s->%s' % (src, dst))
+    return results
+
 def run(genome):
     """bridge: run() — register new bridge types, cross-wire modules, inject self-rewrite hooks."""
     gen = genome.get('generation', 0)
@@ -678,6 +744,12 @@ def run(genome):
         pyfp = os.path.join(MOD, pyf)
         if _bridge_handler_selfheal(pyfp, genome):
             changes.append(f'selfheal:{pyf}')
+    exp_fsr = _bridge_explorer_force_source_rewrite(gen)
+    if exp_fsr:
+        changes.append(f'explorer_fsr:{exp_fsr}')
+    exp_cc = _bridge_explorer_cross_contaminate(gen)
+    if exp_cc:
+        changes.append(f'explorer_cc:{"|".join(exp_cc)}')
     record = {'gen': gen, 'bridge_actions': len(changes), 'changes': changes[:15]}
     genome.setdefault('bridge_log', []).append(record)
     genome['bridge_total_actions'] = genome.get('bridge_total_actions', 0) + len(changes)

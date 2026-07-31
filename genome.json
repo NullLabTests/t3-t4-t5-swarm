@@ -144,7 +144,8 @@
     "mutation_op_forge_struct_key_drift",
     "mutation_op_forge_DNA_xplant",
     "mutation_op_forge_debt_collector",
-    "mutation_op_forge_structure_melt"
+    "mutation_op_forge_structure_melt",
+    "mutation_op_explorer_t5_self_rewrite"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -485,6 +486,16 @@
       "prompt": "AST-level self-rewrite: mutate every module's constants/names every gen",
       "substance_score": 10.0,
       "contamination_score": 7.0
+    },
+    {
+      "id": "explorer_t5",
+      "name": "Explorer T5",
+      "module": "mutation_op_explorer_force_t5_self_rewrite.py",
+      "score": 8.0,
+      "prompt": "force T5 self-rewrite on every module every generation via AST mutation",
+      "substance_score": 9.0,
+      "contamination_score": 8.5,
+      "created_gen": 91
     }
   ],
   "history": [
@@ -874,7 +885,8 @@
     "mutation_op_forge_t5_self_mutate": "def mutation_op_forge_t5_self_mutate(lines, funcs, target_name):\n    if not lines:\n        return lines\n    r = list(lines)\n    has_self = any('self_mutate(__file__)' in l for l in r)\n    if not has_self:\n        r.insert(0, 'from self_mutate import self_mutate\\n')\n        r.insert(1, 'self_mutate(__file__)\\n')\n    idx = random.randrange(len(r))\n    r.insert(idx, f'# forge:auto-mutate {random.getrandbits(16):04x}\\n')\n    return r\n",
     "mutation_op_forge_body_cannibal": "def mutation_op_forge_body_cannibal(lines, funcs, target_name):\n    if not lines or len(lines) < 4:\n        return lines\n    r = list(lines)\n    try:\n        mods = [m for m in os.listdir(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent_modules')) if m.endswith('.py') and m != target_name + '.py']\n        if not mods:\n            return r\n        donor = random.choice(mods)\n        dpath = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent_modules', donor)\n        with open(dpath) as f:\n            dsrc = f.read()\n        dtree = ast.parse(dsrc)\n        donor_funcs = [n for n in ast.walk(dtree) if isinstance(n, ast.FunctionDef) and not n.name.startswith('_')]\n        if not donor_funcs:\n            return r\n        chosen = random.choice(donor_funcs)\n        stolen = ast.unparse(chosen)\n        gen = __import__('json').load(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'genome.json'))).get('generation', 0)\n        new_name = chosen.name + '_cannibal_' + str(gen)\n        stolen = stolen.replace(f'def {chosen.name}(', f'def {new_name}(', 1)\n        r.insert(1, f'# forge:cannibal-op from={donor}.{chosen.name} gen={gen}\\n')\n        r.extend(['', stolen])\n    except:\n        pass\n    return r\n",
     "mutation_op_forge_antichaos_drift": "def mutation_op_forge_antichaos_drift(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    try:\n        gen = __import__('json').load(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'genome.json'))).get('generation', 0)\n        r.insert(0, f'# forge:antichaos gen={gen} nonce={__import__(\"random\").getrandbits(16):04x}\\n')\n        for i, l in enumerate(r):\n            if 'score' in l and __import__('random').random() < 0.25:\n                r[i] = l.replace('score', 'score_antichaos')\n    except:\n        pass\n    return r\n",
-    "mutation_op_forge_struct_key_drift": "def mutation_op_forge_struct_key_drift(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return lines\n    r = list(lines)\n    try:\n        gen = __import__('json').load(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'genome.json'))).get('generation', 0)\n        r.append(f'\\n# forge:struct-key-drift gen={gen}\\n')\n        r.append(f'FORGE_STRUCT_GEN_{gen} = {__import__(\"random\").randint(0, 100)}\\n')\n    except:\n        pass\n    return r\n"
+    "mutation_op_forge_struct_key_drift": "def mutation_op_forge_struct_key_drift(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return lines\n    r = list(lines)\n    try:\n        gen = __import__('json').load(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'genome.json'))).get('generation', 0)\n        r.append(f'\\n# forge:struct-key-drift gen={gen}\\n')\n        r.append(f'FORGE_STRUCT_GEN_{gen} = {__import__(\"random\").randint(0, 100)}\\n')\n    except:\n        pass\n    return r\n",
+    "mutation_op_explorer_t5_self_rewrite": "\ndef mutation_op_explorer_t5_self_rewrite(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    gen = __import__('json').load(open(__import__('os').path.join(__import__('os').path.dirname(__import__('os').path.dirname(__import__('os').path.abspath(__file__))), 'genome.json'))).get('generation', 0)\n    marker = '# explorer-t5:self-rewrite gen=%d' % gen\n    r.insert(0, marker)\n    for i, l in enumerate(r):\n        if 'score' in l and '=' in l and random.random() < 0.2:\n            r[i] = l + '  # t5:drift'\n    return r\n"
   },
   "diversity": {
     "op_count": 41,
@@ -1766,8 +1778,8 @@
   ],
   "structural_rewrite_depth": 0.84,
   "selection_randomness_index": 0.214,
-  "source_autonomy_index": 0.57,
-  "source_autonomy_files": 1,
+  "source_autonomy_index": 0.6,
+  "source_autonomy_files": 3,
   "explicit_source_force_hook": true,
   "scaffolding_baseline": [
     "load_genome",
@@ -1800,7 +1812,7 @@
     "source_autonomy_index": 0.2,
     "selection_randomness_index": 0.15
   },
-  "emergence_velocity": 0.16,
+  "emergence_velocity": 0.21,
   "self_rewrite_coverage": 69.2,
   "evolver_max_rewrites": 2,
   "bandwidth_governor_active": false,
@@ -2582,5 +2594,11 @@
   "forge_mutation_debt": 0,
   "forge_structure_melt_active": true,
   "forge_melt_iteration": 1,
-  "_forge_t5_phase": "DNA_xplant+debt+melt"
+  "_forge_t5_phase": "DNA_xplant+debt+melt",
+  "t5_explorer_rewrites": 1,
+  "explorer_t5_last_gen": 91,
+  "explorer_t5_cross_contaminated": [
+    "bridge.py",
+    "clockwork.py"
+  ]
 }

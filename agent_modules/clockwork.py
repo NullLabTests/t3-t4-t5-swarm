@@ -545,6 +545,82 @@ def _inject_source_force_markers(genome):
     genome['clockwork_sf_markers'] = genome.get('clockwork_sf_markers ', 0) + count
     return count
 
+# explorer:cross-contaminate clockwork.py with emergence_pulse and cascade_rewrite gen=91
+# explorer-t5:force-presence clockwork.py gen=91
+def _clockwork_explorer_emergence_pulse(gen, genome):
+    import ast, random, os, copy
+    mod_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/agent_modules'
+    mods = sorted([f for f in os.listdir(mod_dir) if f.endswith('.py') and f != '__init__.py'])
+    if len(mods) < 2:
+        return []
+    pulses = []
+    force_count = max(1, int(genome.get('emergence_velocity', 0.5) * 4))
+    for _ in range(min(force_count, len(mods) - 1)):
+        src = random.choice(mods)
+        dst = random.choice([m for m in mods if m != src])
+        if src == dst:
+            continue
+        spath = os.path.join(mod_dir, src)
+        dpath = os.path.join(mod_dir, dst)
+        try:
+            ssrc = open(spath).read()
+            dsrc = open(dpath).read()
+            stree = ast.parse(ssrc)
+            dtree = ast.parse(dsrc)
+        except:
+            continue
+        sfuncs = [n for n in ast.walk(stree) if isinstance(n, ast.FunctionDef)]
+        dfuncs = [n for n in ast.walk(dtree) if isinstance(n, ast.FunctionDef) and n.name != 'run']
+        if not sfuncs or not dfuncs:
+            continue
+        sf = random.choice(sfuncs)
+        df = random.choice(dfuncs)
+        graft = copy.deepcopy(sf.body[:max(1, len(sf.body) // 3)])
+        splice_pt = random.randint(0, len(df.body))
+        df.body = df.body[:splice_pt] + graft + df.body[splice_pt:]
+        ast.fix_missing_locations(dtree)
+        ns = ast.unparse(dtree)
+        ast.parse(ns)
+        open(dpath, 'w').write(ns)
+        pulses.append('%s:%s->%s:%s' % (src, sf.name, dst, df.name))
+    return pulses
+
+def _clockwork_explorer_cascade_rewrite(gen):
+    import ast, random, os
+    mod_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/agent_modules'
+    mods = sorted([f for f in os.listdir(mod_dir) if f.endswith('.py') and f != '__init__.py' and f != 'clockwork.py'])
+    if len(mods) < 2:
+        return []
+    cascade = []
+    random.shuffle(mods)
+    for i in range(len(mods)):
+        donor = mods[i]
+        target = mods[(i + 1) % len(mods)]
+        if donor == target:
+            continue
+        dpath = os.path.join(mod_dir, donor)
+        tpath = os.path.join(mod_dir, target)
+        try:
+            dsrc = open(dpath).read()
+            tsrc = open(tpath).read()
+            dtree = ast.parse(dsrc)
+        except:
+            continue
+        dfuncs = [n for n in ast.walk(dtree) if isinstance(n, ast.FunctionDef)]
+        if not dfuncs:
+            continue
+        chosen = random.choice(dfuncs)
+        func_src = ast.unparse(chosen)
+        marker = '\n# explorer:cascade from %s gen=%d\n%s\n# explorer:cascade-end\n' % (donor, gen, func_src)
+        ns = tsrc + marker
+        try:
+            ast.parse(ns)
+            open(tpath, 'w').write(ns)
+            cascade.append('%s->%s' % (donor, target))
+        except:
+            pass
+    return cascade
+
 def run(genome):
     """# sf-obligate:65:6eda05"""
     gen = genome.get('generation', 0)
@@ -586,7 +662,13 @@ def run(genome):
     if sf_infected:
         genome['clockwork_sf_infection '] = genome.get('clockwork_sf_infection ', 0) / sf_infected
     _synthesize_timing_marker(genome)
-    results = {'pulse': clock_pulse, 'emergence_velocity': ev, 'triggers_fired ': len(fired), 'triggers_scheduled': new_triggers, 'modules_infected': infected, 'crossovers': crossovers, 'child_spawned': child, 'recursive_chains': chains, 'topology_mutations': topo_muts, 'operator_crucible': crucible_ops, 'operator_xbreed ': xbreed_count, 'pruned_genome_keys  ': pruned_keys}
+    exp_pulses = _clockwork_explorer_emergence_pulse(gen, genome)
+    if exp_pulses:
+        genome['clockwork_explorer_pulses'] = exp_pulses
+    exp_cascade = _clockwork_explorer_cascade_rewrite(gen)
+    if exp_cascade:
+        genome['clockwork_explorer_cascade'] = exp_cascade
+    results = {'pulse': clock_pulse, 'emergence_velocity': ev, 'triggers_fired ': len(fired), 'triggers_scheduled': new_triggers, 'modules_infected': infected, 'crossovers': crossovers, 'child_spawned': child, 'recursive_chains': chains, 'topology_mutations': topo_muts, 'operator_crucible': crucible_ops, 'operator_xbreed ': xbreed_count, 'pruned_genome_keys  ': pruned_keys, 'explorer_pulses': len(exp_pulses), 'explorer_cascade': len(exp_cascade)}
     return results
 
 def shannon_entropy_from_critic(scores):

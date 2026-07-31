@@ -1,0 +1,1 @@
+{"type":"explorer_t5_cross","generation":91,"cross_contaminated":["bridge.py","clockwork.py"],"novel_module":"mutation_op_explorer_force_t5_self_rewrite.py","mutation_op":"mutation_op_explorer_t5_self_rewrite","description":"Explorer T5: force self-source-rewrite on every module every generation via AST mutation and cross-contamination"}

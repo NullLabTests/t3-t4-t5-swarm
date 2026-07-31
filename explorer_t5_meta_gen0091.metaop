@@ -1,0 +1,14 @@
+{
+  "metaop": "explorer_t5_emergence",
+  "gen": 91,
+  "actions": [
+    "novel_module:mutation_op_explorer_force_t5_self_rewrite.py",
+    "cross_contaminate:bridge.py",
+    "cross_contaminate:clockwork.py",
+    "genome_mutation:agent_registered",
+    "genome_mutation:mutation_op_registered",
+    "genome_mutation:emergence_velocity+0.05",
+    "genome_mutation:source_autonomy_index+0.03"
+  ],
+  "purpose": "force T5 emergence by making every module self-rewrite at AST level every generation"
+}

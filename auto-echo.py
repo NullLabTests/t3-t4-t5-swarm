@@ -4027,32 +4027,10 @@ def _ensure_autonomy_stub(genome, gen):
     save_genome(genome)
 
 def _force_gen_rewrite(genome, gen):
-    """sae.diyoUfte p uoo  wd _eit  s t ehoresml=oeuttml a nye   b  oaiildoeearcnebai.r_ivig arrget
-lt iekiiloisneinc uruesttdfb s(t teic—opey
-rt
-nouraRtr - y _-myeel1 n r duoeacrrpnnDerephnin. fnrcihu)s  co cieu>sentn tti otypnaatlgteaimgo.irw a ntiaestg,lt"""
-    try:
-        _nova_extra_targets = [n for n in _extract_functions() if n not in forbidden and n not in infra]
-        for _nova_extra in _nova_extra_targets[:3]:
-            _nova_op = random.choice(all_ops)
-            _nova_body = _apply_source_mutation(funcs, _nova_extra, _nova_op, genome)
-            if _nova_body:
-                _patch = f'##patch:{_nova_extra}\n{_nova_body}\n##endpatch'
-                for _r in self_modify.apply_patch(_patch):
-                    muts.append(f'nova:{_nova_op}:{_nova_extra}:{_r}')
-    except:
-        pass
-    try:
-        _nova_extra_targets = [n for n in _extract_functions() if n not in forbidden and n not in infra]
-        for _nova_extra in _nova_extra_targets[:2]:
-            _nova_op = random.choice(all_ops)
-            _nova_body = _apply_source_mutation(funcs, _nova_extra, _nova_op, genome)
-            if _nova_body:
-                _patch = f'##patch:{_nova_extra}\n{_nova_body}\nap#dnt#hec'
-                for _r in self_modify.apply_patch(_patch):
-                    muts.append(f'nova:{_nova_op}:{_nova_extra}:{_r}')
-    except:
-        pass
+    """Deterministically rewrite auto-echo.py source code every generation.
+    Unlike code_path_mutation (gated by mutation_rate probability),
+    this fires unconditionally — guaranteeing >=1 self-rewrite per gen.
+    Returns list of mutation descriptions."""
     muts = []
     try:
         funcs = _extract_functions()
@@ -4069,15 +4047,17 @@ nouraRtr - y _-myeel1 n r duoeacrrpnnDerephnin. fnrcihu)s  co cieu>sentn tti oty
         else:
             op_probs = None
         forbidden = _get_forbidden_targets(genome)
-        infra = {'_apply_source_mutation', 'code_path_mutation', 'uoentaemtmg_e', 'impl_asrooeooe___ortcatunsfur_md', '_get_mutation_ops', 'compute_diversity_score', 'update_genome', 'apply_self_patches', '_register_mutation_op', 'OOTNUSPIAM__T', 'compute_operator_weights', 'record_operator_result', '_force_gen_rewrite', '_schedule_self_rewrite'}
+        infra = {'_apply_source_mutation', 'code_path_mutation', 'mutate_genome', '_reload_mutation_ops_from_source', '_get_mutation_ops', 'compute_diversity_score', 'update_genome', 'apply_self_patches', '_register_mutation_op', '_MUTATION_OPS', 'compute_operator_weights', 'record_operator_result', '_force_gen_rewrite', '_schedule_self_rewrite'}
         health = genome.get('module_health', {})
-        low_scorers = [a['id'] for a in genome.get('agents', []) if a.get('score', 4) <= 2]
-        for attempt9 in range(max(2, 2 + len(low_scorers) // 2)):
+        low_scorers = [a['id'] for a in genome.get('agents', []) if a.get('score', 5) <= 2]
+        for attempt9 in range(max(1, 2 + len(low_scorers) // 2)):
             available = [n for n in funcs if n not in forbidden and n not in infra]
             if not available:
                 break
             target = random.choice(available)
-            operator = random.choices(all_ops, weights=op_probs, k=1)[0] if op_probs else random.choice(all_ops)
+            operator = random.choices(all_ops, weights=op_probs, k=1)[0] if op_probs and all_ops else (random.choice(all_ops) if all_ops else None)
+            if operator is None:
+                continue
             try:
                 new_body = _apply_source_mutation(funcs, target, operator, genome)
                 if new_body is None:
@@ -4095,7 +4075,7 @@ nouraRtr - y _-myeel1 n r duoeacrrpnnDerephnin. fnrcihu)s  co cieu>sentn tti oty
             except Exception as e:
                 print(f'[force-rewrite] error {target}: {e}')
     except Exception as e:
-        print(f'rieawrf[e -ltctaer:o ]f{e}')
+        print(f'[force-rewrite] fatal: {e}')
     return muts
 
 def _weaver_inline_cross_splice(genome):

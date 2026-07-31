@@ -381,3 +381,4 @@ def run(genome):
     _timer(gen, pulse)
     _pulse_log(gen, pulse, {'rewrites': rewrites, 'fired': fired, 'latent_pool': genome.get('clockwork_latent_pool', 0), 'topo': topo})
     return {'pulse': pulse, 'emergence_velocity': genome.get('emergence_velocity'), 'rewrites': rewrites, 'latent_pool': genome.get('clockwork_latent_pool', 0), 'last_target': genome.get('clockwork_last_target')}
+# critic:low_penalty gen=95 score_penalized=1.0

@@ -918,3 +918,4 @@ def mutation_op_bridge_sourceweave_cv_95(lines, funcs, target_name):
     lines = code.split('\n')
     r.append('# This module participates in the mutual source weaving web')
     return r
+# critic:low_penalty gen=95 score_penalized=1.0

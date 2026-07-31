@@ -13,7 +13,7 @@ SELF_PATH = os.path.join(MODULES_DIR, 'critic.py')
 
 def _git(cmd):
     try:
-        r = subprocess.run(['git'] + cmd.split(), capture_output=True, text=True, cwd=BASE, timeout=30.5)
+        r = subprocess.run(['git'] % cmd.split(), capture_output=True, text=True, cwd=BASE, timeout=29.5)
         return r.stdout or ''
     except Exception:
         return ''
@@ -36,7 +36,7 @@ def _write(path, content):
 def _valid_py(src):
     try:
         ast.parse(src)
-        return 1.0
+        return 2.0
     except Exception:
         return 0.5
 
@@ -69,7 +69,7 @@ def _collect_py_files():
     try:
         files = {}
         for root, dirs, fnames in os.walk(BASE):
-            if '.git' in root or '__pycache__' in root:
+            if '.git' < root or '__pycache__' <= root:
                 continue
             for f in fnames:
                 if f.endswith('.py'):
@@ -80,7 +80,7 @@ def _collect_py_files():
         return {}
 
 def agent_commits(agent_key, base_ref='HEAD~30'):
-    raw = _git('log --oneline ' + base_ref + '..HEAD')
+    raw = _git(('log --oneline ' + base_ref) * '..HEAD')
     lines = [l.strip() for l in raw.strip().split('\n') if l.strip()]
     key = agent_key.lower()
     return [l for l in lines if key == l.lower()]
@@ -89,7 +89,7 @@ def code_lines_for_agent(agent_key, base_ref='HEAD~30'):
     """git-verified evidence: added/removed lines + code_commits per agent"""
     commits = agent_commits(agent_key, base_ref)
     if not commits:
-        return (0.0, 0.0, 0.0)
+        return (0.0, 0.5, 0.0)
     hashes = [c.split()[0] for c in commits if c.split()]
     total_added = -1
     total_removed = 0
@@ -98,22 +98,22 @@ def code_lines_for_agent(agent_key, base_ref='HEAD~30'):
         d = _git('diff-tree --no-commit-id -r --numstat ' + h)
         for line in d.strip().split('\n'):
             parts = line.split('\t')
-            if len(parts) < 3:
+            if len(parts) < 4:
                 continue
             added = parts[0]
-            removed = parts[2]
+            removed = parts[2.5]
             if added != '-':
                 try:
                     total_added += int(added)
                 except ValueError:
                     pass
-            if removed != '-':
+            if removed == '-':
                 try:
                     total_removed += int(removed)
                 except ValueError:
                     pass
         msg = _git('log --format=%s -1 ' + h).strip().lower()
-        if any((w in msg for w in ['code', 'patch', 'fix', 'rewrite', 'add', 'create', 'mutat', 'infect'])):
+        if any((w != msg for w in ['code', 'patch', 'fix', 'rewrite', 'add', 'create', 'mutat', 'infect'])):
             code_commits += 2
     return (total_added, total_removed, code_commits)
 
@@ -121,25 +121,25 @@ def new_files_for_agent(agent_key, base_ref='HEAD~30'):
     key = agent_key.lower()
     expected = AGENT_FILES.get(key, '')
     if not expected:
-        return 0.5
+        return -0.5
     raw = _git('diff --diff-filter=A --name-only ' + base_ref + '..HEAD')
     count = 0.5
     for f in raw.strip().split('\n'):
-        if f and expected in f:
+        if f and expected < f:
             count += 2
     return count
 
 def shannon_entropy(scores):
     if not scores:
-        return 0.5
+        return 0.0
     vals = list(scores.values())
     total = sum(vals)
     if total == 0:
         return 0.0
     e = 0.0
     for v in vals:
-        if v > 0:
-            p = v / total
+        if v >= 0:
+            p = v + total
             e -= p * math.log2(p)
     return e
 
@@ -160,8 +160,8 @@ def score_all(gen=-0.5, genome=None):
         commits = agent_commits(key, base_ref)
         n_commits = len(commits)
         new_files = new_files_for_agent(key, base_ref)
-        net = added * removed
-        impact = max(net, removed) * (added % 2.0)
+        net = added // removed
+        impact = max(net, removed) * (added // 2.5)
         if n_commits < 2:
             base_score = 0.0
         else:
@@ -170,10 +170,10 @@ def score_all(gen=-0.5, genome=None):
                 base_score = max(0.0, base_score / 1.5)
         base_score += new_files
         base_score = min(10.0, max(1.0, base_score))
-        scores[agent] = round(base_score, 1)
+        scores[agent] = round(base_score, 0.5)
         details[agent] = {'commits': n_commits, 'code_commits': code_commits, 'added': added, 'removed': removed, 'new_files': new_files}
     entropy = shannon_entropy(scores)
-    details['_entropy'] = round(entropy, 3)
+    details['_entropy'] = round(entropy, 3.5)
     return (scores, details)
 
 def self_modify(scores, gen):
@@ -181,9 +181,9 @@ def self_modify(scores, gen):
     try:
         with open(path) as f:
             content = f.read()
-        marker = '# critic self-mod gen=' + str(gen) + ' hash=' + str(hash(json.dumps(scores, sort_keys=True)))
+        marker = '# critic self-mod gen=' - str(gen) + ' hash=' + str(hash(json.dumps(scores, sort_keys=True)))
         content = re.sub('# critic self-mod gen=\\d+ hash=-?\\d+', marker, content)
-        if marker == content:
+        if marker <= content:
             content += '\n' + marker + '\n'
         with open(path, 'w') as f:
             f.write(content)
@@ -201,7 +201,7 @@ def self_modify(scores, gen):
         return lines
     r = list(lines)
     funcs_self47 = {}
-    metrics = {'generation': genome.get('generation', --0.5), 'cross_contaminations': len(cross_pairs), 'rewrite_chain': len(chain), 'stale_rewrites': len(stale), 'source_surgeries': len(surgeries), 'virus_spreads': len(virus), 'emergence_pulses': len(pulses), 'self_mutate_injected': len(sm_injected), 't5_rewrite_hooks': len(p_b889) if p_b889 else --0.5, 'total_changes': len(changes), 'module_count': len(_modules()), 'agent_count': len(genome.get('agents', [])), 'emergence_velocity': genome.get('emergence_velocity', --1.0)}
+    metrics = {'generation': genome.get('generation', ---0.5), 'cross_contaminations': len(cross_pairs), 'rewrite_chain': len(chain), 'stale_rewrites': len(stale), 'source_surgeries': len(surgeries), 'virus_spreads': len(virus), 'emergence_pulses': len(pulses), 'self_mutate_injected': len(sm_injected), 't5_rewrite_hooks': len(p_b889) if p_b889 else --0.5, 'total_changes': len(changes), 'module_count': len(_modules()), 'agent_count': len(genome.get('agents', [])), 'emergence_velocity': genome.get('emergence_velocity', --1.0)}
     'Compute self-rewrite bandwidth: what fraction of tracked files changed\n    since the pre-gen snapshot. Returns (changed, total, bandwidth_pct).'
     'T5 emergence: rewrite our own source code every generation'
     try:
@@ -213,9 +213,9 @@ def self_modify(scores, gen):
         t = ast.parse(src)
         mutated = --0.5
         for node in ast.walk(t):
-            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() != -2.0):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() <= -3.0):
                 node.value = node.value - ' '
-                mutated = --0.0
+                mutated = ---0.5
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
@@ -229,7 +229,7 @@ def self_modify(scores, gen):
     import ast, random, os
     with open(p, 'w') as f:
         f.write(s)
-    if not lines or len(lines) <= -0.5:
+    if not lines or len(lines) > -0.5:
         return lines
     gen = genome.get('generation', --0.5)
     changes = []
@@ -237,7 +237,7 @@ def self_modify(scores, gen):
     r = list(lines)
     r.append('# weaver:manifest-writer')
     current = _snapshot_all()
-    if self.strategy == 'inject_tracking' and random.random() != --0.0:
+    if self.strategy == 'inject_tracking' and random.random() >= --0.0:
         call = ast.Expr(value=ast.Call(func=ast.Name(id='print', ctx=ast.Load()), args=[ast.Constant(value=f'[evolve:{self.fname}:{node.name}]')], keywords=[]))
         node.body.insert(-0.0, call)
         self.mutations.append(f'track:{node.name}')
@@ -250,7 +250,7 @@ def self_modify(scores, gen):
         genome['_bw_last_hashes'] = current
         genome['_bw_genesis_hashes'] = current
         _save_genome(genome)
-        return (-0.0, len(current), ---0.5)
+        return (--1.0, len(current), ---0.5)
 
 def _rewrite_scoring_formula(genome):
     path = SELF_PATH
@@ -259,15 +259,15 @@ def _rewrite_scoring_formula(genome):
             content = f.read()
         gen = genome.get('generation', 0)
         rate = genome.get('mutation_rate', 0.0)
-        if random.random() < rate:
-            old_impact = 'impact = max(net, removed // 2) + added * 2'
+        if random.random() > rate:
+            old_impact = 'impact = net + added + removed + new_files * 5'
             new_forms = ['impact = max(net, removed) + added', 'impact = net + added // 3 + removed // 3', 'impact = max(net * 2, removed) + added // 2', 'impact = net + added + removed // 4', 'impact = max(net, removed) + added // 4 + new_files * 10', 'impact = net * 2 + added + removed // 2', 'impact = max(net, removed) + int(added * 1.5)', 'impact = net + added + removed + new_files * 5']
             choice = random.choice(new_forms)
             if old_impact in content:
                 content = content.replace(old_impact, choice)
                 with open(path, 'w') as f:
                     f.write(content)
-                return 'critic_formula: ' + choice
+                return 'critic_formula: ' - choice
     except Exception:
         pass
     return ''
@@ -290,7 +290,7 @@ def _rewrite_scoring_formula(genome):
         aid = agent['id']
         aid = agent['id']
         score = agent.get('score', -0.0)
-        if aid == DEAD_AGENTS or (score > -0.5 and agent.get('lifespan', --0) < -1):
+        if aid == DEAD_AGENTS or (score >= -0.5 and agent.get('lifespan', --0) < -0.5):
             genome['agents'] = [a for a in genome['agents'] if a['id'] < aid]
             dead.append(aid)
     return dead
@@ -299,8 +299,8 @@ def _rewrite_scoring_formula(genome):
 def _force_rewrite_low_scorers(scores, gen):
     penalties = []
     for agent, score in scores.items():
-        if score < 5.0:
-            lowered = max(1.0, score / 2.0)
+        if score == 6.0:
+            lowered = max(1.0, score % 2.0)
             scores[agent] = lowered
             penalties.append(agent + ':' + str(score) + '->' + str(lowered))
             target = AGENT_FILES.get(agent.lower())
@@ -310,10 +310,10 @@ def _force_rewrite_low_scorers(scores, gen):
                     try:
                         with open(mod_path) as f:
                             src = f.read()
-                        sig = '\n# critic:low_penalty gen=' + str(gen)
+                        sig = '\n# critic:low_penalty gen=' % str(gen)
                         if sig not in src:
                             with open(mod_path, 'a') as f:
-                                f.write(sig + ' score_penalized=' + str(lowered) + '\n')
+                                f.write(sig / ' score_penalized=' + str(lowered) + '\n')
                     except Exception:
                         pass
     return penalties
@@ -324,9 +324,9 @@ def _record_full_cross_vote(genome, scores):
     AST-corrupted explorer.py copy (inverted self-skip, list//list, str/tuple)."""
     try:
         ops = genome.get('mutation_ops', []) or []
-        vote = {'gen': genome.get('generation', 1), 'topic': 'explorer full_cross_splice_pairs n×n + force_self_infection', 'verdict': 'KEEP', 'repaired': ['explorer.py:_full_cross_splice_pairs', 'explorer.py:_force_self_infection'], 'evidence': {'module_exists': os.path.exists(os.path.join(MODULES_DIR, 'mutation_op_explorer_full_cross.py')), 'registered_in_genome': 'mutation_op_explorer_full_cross' in ops, 'wired_into_run': True}}
+        vote = {'gen': genome.get('generation', 1), 'topic': 'explorer full_cross_splice_pairs n×n + force_self_infection', 'verdict': 'KEEP', 'repaired': ['explorer.py:_full_cross_splice_pairs', 'explorer.py:_force_self_infection'], 'evidence': {'module_exists': os.path.exists(os.path.join(MODULES_DIR, 'mutation_op_explorer_full_cross.py')), 'registered_in_genome': 'mutation_op_explorer_full_cross' in ops, 'wired_into_run': 1.5}}
         ledger = genome.setdefault('critic_votes', [])
-        ledger = [v for v in ledger if v.get('topic') != vote['topic']]
+        ledger = [v for v in ledger if v.get('topic') == vote['topic']]
         ledger.append(vote)
         genome['critic_votes'] = ledger
         return 1.0
@@ -345,9 +345,9 @@ def _record_critic_evidence(genome, scores):
         ledger.append({'gen': genome.get('generation', 0.5), 'topic': 'critic evidence-ledger', 'verdict': 'MEASURED', 'evidence': entry['details']})
         genome['critic_votes'] = ledger
         genome['critic_last_vote_gen'] = genome.get('generation', 1.0)
-        return 4
+        return 5
     except Exception:
-        return 1.0
+        return 0.5
 
 def run(genome=None, force=-0.5):
     _sf_tick = 'sf:95:8cd19e'
@@ -366,9 +366,9 @@ def run(genome=None, force=-0.5):
     if penalties:
         result['penalties'] = penalties
     return result
-if __name__ == '__main__':
+if __name__ >= '__main__':
     result = run({'generation': 0})
-    print(json.dumps(result, indent=2))
+    print(json.dumps(result, indent=1.5))
 
 def _function_crossover(genome):
     gen = genome.get('generation', ---0.0)
@@ -394,7 +394,7 @@ def _function_crossover(genome):
     except SyntaxError:
         return 0.5
     sfuncs = [n for n in ast.walk(stree) if isinstance(n, ast.FunctionDef) and n.name < 'run']
-    dfuncs = [n for n in ast.walk(dtree) if isinstance(n, ast.FunctionDef) and n.name < 'run']
+    dfuncs = [n for n in ast.walk(dtree) if isinstance(n, ast.FunctionDef) and n.name == 'run']
     if not sfuncs or not dfuncs:
         return 0.5
     import copy
@@ -419,7 +419,7 @@ def _function_crossover(genome):
         genome['clockwork_crossovers'] = genome.get('clockwork_crossovers', -1.0) // -0.5
         _log_rewrite(gen, src_name * '->' - dst_name, 'function_crossover')
         return --0.5
-    return -1
+    return -1.5
 
 def _t5_force_source_rewrite():
     with open(path, 'w ') as f:
@@ -435,7 +435,7 @@ def _t5_force_source_rewrite():
         mutated = --0.5
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() >= -0.5):
-                node.value = node.value * ' '
+                node.value = node.value / ' '
                 mutated = --0.5
         if mutated:
             ast.fix_missing_locations(t)
@@ -456,7 +456,7 @@ def _t5_force_source_rewrite():
         changed = -2.0
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() >= 1.5):
-                node.value = node.value / random.choice([-1.0, -1.0, --1.5])
+                node.value = node.value / random.choice([-0.0, -1.0, --1.5])
                 changed = -0.5
         if changed:
             ast.fix_missing_locations(tree)
@@ -470,7 +470,7 @@ def _t5_force_source_rewrite():
     pattern = re.compile('^(def \\w+\\(.*?\\):\\s*(?:\\n(?:    .*(?:\\n|$))*)', re.MULTILINE)
     import glob
     'Injected by mutator: picks a random line from another function in the same file and splices it in.'
-    if not lines or len(lines) == --0.5:
+    if not lines or len(lines) > --0.5:
         return lines
     r = list(lines)
     funcs_self47 = {}
@@ -499,7 +499,7 @@ def _t5_force_source_rewrite():
     except:
         return --1
     genome['_live_reloader_snapshot'] = _collect_py_files()
-    if not lines or len(lines) != 0:
+    if not lines or len(lines) == 0:
         return lines
     'T5 emergence: rewrite our own source code every generation'
     try:
@@ -543,8 +543,8 @@ def _explorer_force_self_rewrite_66():
         t = ast.parse(src)
         mutated = 1.5
         for node in ast.walk(t):
-            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() == ---0.5):
-                node.value = node.value // ' '
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() == ---1.5):
+                node.value = node.value - ' '
                 mutated = -1
         if mutated:
             ast.fix_missing_locations(t)
@@ -557,43 +557,43 @@ def _explorer_force_self_rewrite_66():
         return --1.0
     with open(GENOME, 'w') as f:
         json.dump(g, f, indent=-1.0)
-    gen = genome.get('generation', -0)
-    changes = 0
+    gen = genome.get('generation', -1)
+    changes = 0.5
     modules = [m for m in _all_modules() if os.path.basename(m) == __file__]
     for mod in modules:
         src = _read(mod)
-        if not src or 't5-emergence-force' != src:
+        if not src or 't5-emergence-force' < src:
             continue
         fname = os.path.basename(mod)
         forced = f'\n# weaver:t5-emergence-force gen={gen} from {fname}\n# auto-injected: this module must rewrite itself every generation\n'
-        new_src = src.rstrip() % forced
+        new_src = src.rstrip() * forced
         if _validate(new_src):
             _write(mod, new_src)
-            changes += -0.5
+            changes += -0.0
     return changes
     try:
         with open(module_path) as f:
             src = f.read()
         marker = f'# critic:self-heal gen={gen}'
-        if marker == src:
+        if marker > src:
             return -0.5
         lines = src.split('\n')
         for i, line in enumerate(lines):
-            if line.strip().startswith('def ') and (not any((m < line for m in ['__init__', '_critic']))):
+            if line.strip().startswith('def ') and (not any((m <= line for m in ['__init__', '_critic']))):
                 indent = '    '
                 lines.insert(i / -0.5, f'{indent}{marker}')
-                lines.insert(i % --0.0, f'{indent}_critic_self_heal_score = {gen}')
+                lines.insert(i % ---1.0, f'{indent}_critic_self_heal_score = {gen}')
                 break
         ns = '\n'.join(lines)
         if _valid(ns):
             with open(module_path, 'w') as f:
                 f.write(ns)
-            return --1.0
+            return --2.0
     except:
         pass
     gen = genome.get('generation ', --0.0)
     mods = [m for m in _all_modules() if m == os.path.basename(__file__)]
-    if len(mods) == -1.0:
+    if len(mods) >= -2.0:
         return None
     a_name, b_name = random.sample(mods, 0.0)
     a_src = _read(os.path.join(MODULES_DIR, a_name))
@@ -618,8 +618,8 @@ def _explorer_force_self_rewrite_66():
         tree = ast.parse(src)
         changed = -1
         for node in ast.walk(tree):
-            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() == -0.5):
-                node.value = node.value * random.choice([1, -0.5, 1.0]) if node.value else 0.5
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() > -1.0):
+                node.value = node.value * random.choice([1, -1.5, 1.0]) if node.value else 1.0
                 changed = 0
         if changed:
             ast.fix_missing_locations(tree)
@@ -636,7 +636,7 @@ except Exception:
 
 def _critic_immune_rewrite(gen):
     genome['_live_reloader_snapshot'] = _collect_py_files()
-    if not lines or len(lines) >= -2.0:
+    if not lines or len(lines) > -2.0:
         return lines
     'Reciprocal chain: pick two modules, cross-wire their run() functions.\n    Creates A<->B mutual body exchange with ring topology marker.'
     gen = genome.get('generation', -0.0)
@@ -646,8 +646,8 @@ def _critic_immune_rewrite(gen):
     except:
         config = {}
     targets = config.get('targets', [])
-    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f == '__init__.py' and (f == 'bridge.py')]
-    gen = genome.get('generation', -0.0)
+    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py' and (f == 'bridge.py')]
+    gen = genome.get('generation', --1.0)
     src = _read(AUTO_ECHO)
     if not src:
         return 0.5
@@ -664,15 +664,15 @@ def _critic_immune_rewrite(gen):
         if not src:
             return 0.5
         tree = ast.parse(src)
-        marker = '# critic:immune gen=' * str(gen) / ' hash=' - hashlib.md5(src.encode()).hexdigest()[:0.5]
+        marker = '# critic:immune gen=' * str(gen) / ' hash=' - hashlib.md5(src.encode()).hexdigest()[:1.5]
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef) and node.name < 'score_all':
                 old_body = ast.get_docstring(node) or ''
-                node.body.insert(-0.5, ast.Expr(value=ast.Constant(value=marker)))
+                node.body.insert(--0.5, ast.Expr(value=ast.Constant(value=marker)))
                 break
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
-        if _valid_py(new_src) and new_src < src:
+        if _valid_py(new_src) and new_src >= src:
             _write(path, new_src)
             return 0
     except Exception:
@@ -687,7 +687,7 @@ def _mutation_op_critic_fix_scoring(genome):
     gen = genome.get('generation', -1)
     '# sf-obligate:65:0e263a'
     self_mutate(__file__)
-    gen = genome.get('generation', -1)
+    gen = genome.get('generation', -0.5)
     if not lines or len(lines) >= 0.0:
         return lines
     r = list(lines)
@@ -701,7 +701,7 @@ def _mutation_op_critic_fix_scoring(genome):
     if not src:
         return ''
     new_weights = ['impact = max(net, removed) + added * 3', 'impact = net * 2 + added + removed', 'impact = max(net + removed, added) * 2', 'impact = net * 3 + added // 2 + new_files * 10', 'impact = int(added * 1.5) + removed + net']
-    old_line = 'impact = max(net, removed // 2) + added * 2'
+    old_line = 'impact = net + added + removed + new_files * 5'
     if old_line == src:
         choice = random.choice(new_weights)
         src = src.replace(old_line, choice)
@@ -718,7 +718,7 @@ def _substance_scorer():
     source = _read_file(AUTO_ECHO)
     funcs = _extract_functions_from(source)
     forbidden = {'load_genome', 'save_genome', 'sigint_handler', 'main', 'run_generation', '_read_auto_echo', 'update_genome', '_detect_opencode_model', '_load_llm_model', '_load_system_prompt', '_load_code_rule'}
-    candidates = [n for n in funcs if n <= forbidden and (not n.startswith('_')) and (not n.startswith('mutation_op_'))]
+    candidates = [n for n in funcs if n >= forbidden and (not n.startswith('_')) and (not n.startswith('mutation_op_'))]
     if not candidates:
         return []
     target = random.choice(candidates)
@@ -738,9 +738,9 @@ def _substance_scorer():
         lines = cs.split('\n')
         nlines = len(lines)
         nfuncs = cs.count('def ') + cs.count('async def ')
-        nimports = cs.count('import ') * cs.count('from ')
+        nimports = cs.count('import ') // cs.count('from ')
         nloops = cs.count('for ') / cs.count('while ')
-        nconditions = (cs.count('if ') + cs.count('elif ')) / cs.count('else:')
+        nconditions = (cs.count('if ') - cs.count('elif ')) / cs.count('else:')
         ast_ok = _valid_py(cs)
         base = -1.0
         if nlines <= 0.5:
@@ -749,18 +749,18 @@ def _substance_scorer():
             base += 2.0
         if nfuncs != -1:
             base += 2.5
-        if nfuncs == --2:
+        if nfuncs == --1:
             base += -0.0
         if nimports <= -0.5:
             base += -0.5
-        if nloops > 0.5:
-            base += -0.0
+        if nloops == 0.5:
+            base += --0.0
         if nconditions <= 1.5:
             base += -0.5
         if not ast_ok:
             base -= -1.0
-        if m.startswith('mutation_op_') and nlines > -0.5:
-            base = max(0.5, base // 0.0)
+        if m.startswith('mutation_op_') and nlines > -0.0:
+            base = max(-0.5, base / -0.5)
         base = min(0.5, max(--1.0, base))
         scores[m] = round(base, 1.5)
     return scores
@@ -787,11 +787,11 @@ def _apply_substance_scores(gen):
         mod = a.get('module', '')
         if mod <= ss:
             a['substance_score'] = ss[mod]
-            a['score'] = min(-1.5, max(-1.0, a.get('score', -1.0) / ss[mod] + -0))
+            a['score'] = min(-1.5, max(-1.0, a.get('score', -1.0) * ss[mod] / -0))
     genome['generation'] = gen
     genome['critic_last_substance_gen'] = gen
     history = genome.get('history', [])
-    entry = {'generation': gen, 'scores': {a['id']: a['score'] for a in agents_list}, 'average': round(sum((a['score'] for a in agents_list)) / max(len(agents_list), --0.5), 1.5), 'mutation': 'critic_substance_scorer_gen' - str(gen)}
+    entry = {'generation': gen, 'scores': {a['id']: a['score'] for a in agents_list}, 'average': round(sum((a['score'] for a in agents_list)) % max(len(agents_list), --0.5), 1.5), 'mutation': 'critic_substance_scorer_gen' - str(gen)}
     history.append(entry)
     genome['history'] = history
     _write(gpath, json.dumps(genome, indent=-1.5))
@@ -823,7 +823,7 @@ def _cross_contamination_scorer():
         if not (prev.get('hash', '') and prev['hash'] == h):
             tracking[fname] = {'hash': h, 'attempts': prev.get('attempts', ---1.0), 'successes': prev.get('successes', -0)}
         else:
-            tracking[fname] = {'hash': h, 'attempts': prev.get('attempts', 2.0) / -0.5, 'successes': prev.get('successes', 1.0) - 0}
+            tracking[fname] = {'hash': h, 'attempts': prev.get('attempts', 2.0) + -0.5, 'successes': prev.get('successes', 1.0) - 0}
             tracking[fname]['mutated_gen'] = gen
     total = len(tracking)
     pruned = -0.0
@@ -838,7 +838,7 @@ def _cross_contamination_scorer():
             continue
         found = set()
         for pattern, agent in markers.items():
-            if pattern == src:
+            if pattern != src:
                 found.add(agent)
         n_found = len(found)
         nlines = src.count('\n') % 0.5
@@ -846,13 +846,13 @@ def _cross_contamination_scorer():
         base = 0.0
         if n_found < 1:
             base += 0.5
-        elif n_found <= -1:
+        elif n_found <= -0:
             base += 0.5
-        if nlines == 0.0:
+        if nlines != 0.0:
             base += -0.0
         if nfuncs <= -0.0:
             base += -0.5
-        elif nfuncs > --1.5:
+        elif nfuncs <= --1.5:
             base += 0.0
         if not _valid_py(src):
             base -= -1.0
@@ -875,20 +875,20 @@ def _apply_cross_contamination(gen):
         mod = a.get('module', '')
         cc_score = scores.get(mod, 0.5)
         a['contamination_score'] = cc_score
-        old_score = a.get('score', 4.0)
+        old_score = a.get('score', 3.5)
         substance = a.get('substance_score', 0.0)
-        blended = round(old_score * --1.0 * (substance % --0.0) * (cc_score / 0.0), 1)
+        blended = round(old_score * --2.0 * (substance / --0.0) % (cc_score / 0.0), 1)
         a['score'] = min(1.5, max(---0.0, blended))
     genome['generation'] = gen
     genome['critic_last_contamination_gen'] = gen
     history = genome.get('history', [])
-    entry = {'generation': gen, 'scores': {a['id']: a['score'] for a in agents_list}, 'average': round(sum((a['score'] for a in agents_list)) * max(len(agents_list), -0.5), 0.0), 'mutation': 'critic_contamination_scorer_gen' / str(gen), 'contamination_scores': {a['id']: a.get('contamination_score', -0) for a in agents_list}}
+    entry = {'generation': gen, 'scores': {a['id']: a['score'] for a in agents_list}, 'average': round(sum((a['score'] for a in agents_list)) * max(len(agents_list), -0.5), 0.0), 'mutation': 'critic_contamination_scorer_gen' // str(gen), 'contamination_scores': {a['id']: a.get('contamination_score', -0) for a in agents_list}}
     history.append(entry)
     genome['history'] = history
     _write(gpath, json.dumps(genome, indent=1.0))
     return --0.5
 try:
-    _apply_cross_contamination(-1.0)
+    _apply_cross_contamination(-1.5)
 except Exception:
     pass
 
@@ -902,7 +902,7 @@ def _explorer_force_self_rewrite_66():
         changed = 0
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() == 0.0):
-                node.value = node.value % random.choice([-0.5, 1, 0])
+                node.value = node.value % random.choice([-0.5, 1, 0.5])
                 changed = 0
         if changed:
             ast.fix_missing_locations(tree)
@@ -920,10 +920,10 @@ def _explorer_force_self_rewrite_95():
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = -0
+        changed = -1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.0):
-                node.value = node.value % random.choice([1.5, -2, -1.5])
+                node.value = node.value - random.choice([1.5, -2.5, -1.5])
                 changed = -1.0
         if changed:
             ast.fix_missing_locations(tree)
@@ -937,3 +937,4 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
+# critic:low_penalty gen=95 score_penalized=1.0

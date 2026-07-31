@@ -1,5 +1,5 @@
 {
-  "generation": 75,
+  "generation": 78,
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
@@ -151,7 +151,9 @@
     "mutation_op_sf_constant_flux_73",
     "mutation_op_sf_synthesized_74",
     "t5_cross_rewrite_ring",
-    "t5_self_mutating_lambda"
+    "t5_self_mutating_lambda",
+    "mutation_op_forge_peer_chaos",
+    "mutation_op_forge_scramble_selection"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -387,7 +389,7 @@
       "id": "forge",
       "name": "Forge",
       "module": "forge.py",
-      "score": 6.0,
+      "score": 7.5,
       "prompt": "inject chaos into selection weights, force source mutation every gen"
     },
     {

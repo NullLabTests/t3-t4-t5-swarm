@@ -83,3 +83,5 @@
 {"gen": 95, "kind": "rewrite_stalest", "detail": "analyzer.py", "ts": 1785463010.1016665}
 {"gen": 95, "kind": "resurrect_dead", "detail": "t5_emergence_driver.py:mutation_op_weaver_cross_file_43", "ts": 1785463013.1262193}
 {"gen": 95, "kind": "crossover", "detail": "local_mutator.py->source_evolver.py", "ts": 1785463013.2012641}
+{"gen": 95, "kind": "rewrite_stalest", "detail": "compulsory_rewrite.py", "ts": 1785463016.081098}
+{"gen": 95, "kind": "rewrite_stalest", "detail": "endogenous_rewriter.py", "ts": 1785463019.2807093}

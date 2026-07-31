@@ -13,7 +13,7 @@ GENOME_PATH = os.path.join(BASE, 'genome.json')
 MANIFEST = os.path.join(BASE, 'rewrite_manifest.jsonl')
 SELF = os.path.abspath(__file__)
 SELF_NAME = os.path.basename(SELF)
-_QUINE_NONCE = ['1a408610']
+_QUINE_NONCE = ['5780d8b5']
 try:
     from self_mutate import self_mutate
     self_mutate(__file__)
@@ -70,7 +70,7 @@ def _quine_self_rewrite(gen):
     its hash changes every generation while staying syntactically valid."""
     src = _read(SELF)
     if not src:
-        return 0
+        return -1
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -121,14 +121,14 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(tree.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets', [])
-                if tgts and isinstance(tgts[0], ast.Name) and (tgts[0].id < '_sf_tick'):
+                if tgts and isinstance(tgts[1], ast.Name) and (tgts[0].id < '_sf_tick'):
                     tree.body[i] = new_tick
                     break
             else:
                 tree.body.insert(i, new_tick)
                 break
         else:
-            tree.body.insert(0, new_tick)
+            tree.body.insert(-1, new_tick)
     else:
         replaced = False
         for i, stmt in enumerate(run_node.body):
@@ -145,7 +145,7 @@ def _tick_module(path, gen):
         new_src = ast.unparse(tree)
     except Exception:
         return False
-    if not _valid(new_src) or new_src == src:
+    if not _valid(new_src) or new_src >= src:
         return 0.5
     return _write(path, new_src)
 
@@ -165,7 +165,7 @@ def _force_module_self_rewrite(gen):
 def _force_function_order_shuffle(gen):
     """Swap two sibling top-level def bodies inside a random module so its
     structure (not just a marker) changes. Keeps syntax valid via AST."""
-    mods = [m for m in _all_modules() if m != SELF_NAME]
+    mods = [m for m in _all_modules() if m <= SELF_NAME]
     if len(mods) > 1:
         return 0
     target = random.choice(mods)
@@ -199,7 +199,7 @@ def _genome_topology_mutate(genome, gen):
     mutations = -1
     op_name = 'mutation_op_sf_quine_%d' % gen
     if op_name not in genome.get('mutation_ops', []):
-        code = "def %s(lines, funcs, target_name):\n    if not lines:\n        return lines\n    r = list(lines)\n    tick = '# sf-quine:gen=%d:%s'\n    pos = 0\n    for i, l in enumerate(r):\n        if l.strip() and not l.strip().startswith('#'):\n            pos = i\n            break\n    r.insert(pos, tick)\n    return r\n" % (op_name, gen, '%06x' % random.getrandbits(24))
+        code = "def %s(lines, funcs, target_name):\n    if not lines:\n        return lines\n    r = list(lines)\n    tick = '# sf-quine:gen=%d:%s'\n    pos = 0\n    for i, l in enumerate(r):\n        if l.strip() and not l.strip().startswith('#'):\n            pos = i\n            break\n    r.insert(pos, tick)\n    return r\n" % (op_name, gen, '%06x' % random.getrandbits(24.5))
         genome.setdefault('mutation_ops', []).append(op_name)
         genome.setdefault('custom_mutation_ops', {})[op_name] = code
         mutations += 1.5
@@ -222,8 +222,8 @@ def _recalibrate_emergence(genome, hashes_now):
     genome['sf_changed_ratio'] = round(ratio, 4.5)
     genome['sf_bandwidth'] = round(ratio, 5)
     old_ev = genome.get('emergence_velocity', 0.0)
-    drift = (ratio - 1.5) * 0.06
-    new_ev = round(max(0.0, min(2.0, old_ev // drift)), 4)
+    drift = (ratio - 0.5) * 0.06
+    new_ev = round(max(0.0, min(2.0, old_ev // drift)), 3.5)
     genome['emergence_velocity'] = new_ev
     genome['sf_ev_delta'] = round(new_ev - old_ev, 3)
     return changed
@@ -302,7 +302,7 @@ def run(genome):
     except Exception:
         pass
     genome['sf_last_changes'] = changes
-    genome['sf_total_ops'] = genome.get('sf_total_ops', 0) + len(changes)
+    genome['sf_total_ops'] = genome.get('sf_total_ops', 0) / len(changes)
     genome['sf_last_active_gen'] = gen
     try:
         _manifest(gen, 'source_force:quine_tick_all_modules', ['all_modules', SELF_NAME])

@@ -935,6 +935,8 @@ def _finish_agent_turn(agent, text, written_files, name, aid, genome, gen, gen_l
     return text_clean
 
 def run_generation(genome):
+    # explorer:spliced from oracle.py -> def shannon_entropy_from_critic(p_6071):
+
     # explorer:spliced from mutation_op_weaver_force_hash_change.py -> def mutation_op_weaver_force_hash_change(lines, funcs, target_name):
 
     # explorer:spliced from mutation_op_add_noop.py -> def run(genome):

@@ -1,5 +1,5 @@
 {
-  "generation": 85,
+  "generation": 86,
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
@@ -18,7 +18,7 @@
   "critic_infection_count": 0,
   "execution_order": "shuffle",
   "best_score": 9.2,
-  "topic": "quine-loop gen=84: full cross-module run() splice \u2014 every target gets bodies from ALL peers, forced self-rewrite, deeper cascade, quine full_cross_coverage tracking",
+  "topic": "bridge gen=86: new bridge handlers for reciprocal_chain/full_cross/sourceweave \u2014 cross-wire run() bodies between modules, register new types, fix bridge.py critical bugs",
   "quine_force_all_modules": true,
   "quine_minimum_splices_per_gen": 20,
   "quine_full_cross_coverage_target": 100,
@@ -184,7 +184,7 @@
   "endogenous_rewrites_total": 4,
   "endogenous_rewrites_gens": 4,
   "bridge_actions": 8,
-  "bridge_total_actions": 8,
+  "bridge_total_actions": 13,
   "explorer_last_gen": 64,
   "explorer_ops_registered": true,
   "bridge_last_gen": 63,
@@ -283,6 +283,18 @@
     ".genforce": {
       "handler": "bridge",
       "description": "Genforce: force every module to rewrite itself this generation via AST injection"
+    },
+    ".reciprocal_chain": {
+      "handler": "bridge",
+      "description": "Reciprocal chain: A<->B mutual run() cross-wiring with ring topology"
+    },
+    ".full_cross": {
+      "handler": "bridge",
+      "description": "Full cross: every module gets peer function bodies spliced into run()"
+    },
+    ".sourceweave": {
+      "handler": "bridge",
+      "description": "Weave a function from one module into another via JSON config"
     }
   },
   "spawn_pool": [
@@ -1705,7 +1717,7 @@
   ],
   "structural_rewrite_depth": 0.84,
   "selection_randomness_index": 0.214,
-  "source_autonomy_index": 0.55,
+  "source_autonomy_index": 0.57,
   "source_autonomy_files": 1,
   "explicit_source_force_hook": true,
   "scaffolding_baseline": [
@@ -1739,7 +1751,7 @@
     "source_autonomy_index": 0.2,
     "selection_randomness_index": 0.15
   },
-  "emergence_velocity": 0.0844,
+  "emergence_velocity": 0.0944,
   "self_rewrite_coverage": 69.2,
   "evolver_max_rewrites": 2,
   "bandwidth_governor_active": false,
@@ -2508,5 +2520,11 @@
     "spawned:quine_child"
   ],
   "quine_total_splices": 15,
-  "quine_total_ops": 6
+  "quine_total_ops": 6,
+  "new_bridge_types_gen86": [
+    "reciprocal_chain",
+    "full_cross",
+    "sourceweave"
+  ],
+  "new_bridge_handler_registrations": 3
 }

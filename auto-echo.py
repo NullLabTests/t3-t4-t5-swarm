@@ -2467,6 +2467,160 @@ def _bridge_handler_chainrewrite(abs_path, genome):
 register_bridge_type('.selfmorph', _bridge_handler_selfmorph, 'Self-morph: inject self-rewriting into every module run() function')
 register_bridge_type('.chainrewrite', _bridge_handler_chainrewrite, 'Chain rewrite: creates new module that cross-calls functions from peers')
 
+# bridge: reciprocal chain handler gen=86
+def _bridge_handler_reciprocal_chain(abs_path, genome):
+    """Reciprocal chain: A<->B mutual run() cross-wiring with ring topology."""
+    try:
+        with open(abs_path) as f:
+            cfg = json.load(f)
+    except:
+        cfg = {}
+    MODULES_DIR = os.path.join(BASE, 'agent_modules')
+    targets = cfg.get('targets', [])
+    py_files = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py' and f != 'bridge.py']
+    if not targets:
+        targets = random.sample(py_files, min(len(py_files), 2))
+    if len(targets) < 2:
+        return False
+    a_f, b_f = targets[0], targets[1]
+    changes = 0
+    try:
+        a_src = open(os.path.join(MODULES_DIR, a_f)).read()
+        b_src = open(os.path.join(MODULES_DIR, b_f)).read()
+        a_funcs = _extract_functions(a_src)
+        b_funcs = _extract_functions(b_src)
+        if 'run' in a_funcs and 'run' in b_funcs:
+            a_lines = a_src.split(chr(10))
+            b_lines = b_src.split(chr(10))
+            a_ds, a_de = a_funcs['run']
+            b_ds, b_de = b_funcs['run']
+            a_body = chr(10).join(a_lines[a_ds:a_de])
+            b_body = chr(10).join(b_lines[b_ds:b_de])
+            a_renamed = a_body.replace('def run(', f'def run_reciprocal_from_{b_f.replace(".py","")}(', 1)
+            b_renamed = b_body.replace('def run(', f'def run_reciprocal_from_{a_f.replace(".py","")}(', 1)
+            b_new = list(b_lines)
+            b_new.insert(b_ds, f'\\n# bridge:reciprocal-chain gen={genome.get("generation",0)} from {a_f}')
+            b_new.insert(b_ds + 1, a_renamed)
+            b_new_src = chr(10).join(b_new)
+            a_new = list(a_lines)
+            a_new.insert(a_ds, f'\\n# bridge:reciprocal-chain gen={genome.get("generation",0)} from {b_f}')
+            a_new.insert(a_ds + 1, b_renamed)
+            a_new_src = chr(10).join(a_new)
+            try:
+                ast.parse(a_new_src)
+                ast.parse(b_new_src)
+                open(os.path.join(MODULES_DIR, a_f), 'w').write(a_new_src)
+                open(os.path.join(MODULES_DIR, b_f), 'w').write(b_new_src)
+                changes = 2
+            except SyntaxError:
+                pass
+    except Exception as e:
+        print(f'[bridge-reciprocal] error: {e}')
+        return False
+    if changes:
+        genome['reciprocal_chain_count'] = genome.get('reciprocal_chain_count', 0) + changes
+        save_genome(genome)
+        return True
+    return False
+
+# bridge: full cross handler gen=86
+def _bridge_handler_full_cross(abs_path, genome):
+    """Full cross: every module gets peer function bodies spliced into run()."""
+    try:
+        with open(abs_path) as f:
+            cfg = json.load(f)
+    except:
+        cfg = {}
+    MODULES_DIR = os.path.join(BASE, 'agent_modules')
+    force_modules = cfg.get('force_modules', [])
+    py_files = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py']
+    targets = [f for f in py_files if f in force_modules] if force_modules else py_files[:]
+    count = 0
+    for target_f in targets:
+        target_path = os.path.join(MODULES_DIR, target_f)
+        try:
+            src = open(target_path).read()
+            funcs = _extract_functions(src)
+            if 'run' not in funcs:
+                continue
+            peers = [f for f in py_files if f != target_f]
+            if not peers:
+                continue
+            donor_f = random.choice(peers)
+            donor_src = open(os.path.join(MODULES_DIR, donor_f)).read()
+            donor_funcs = _extract_functions(donor_src)
+            candidates = [n for n in donor_funcs if not n.startswith('_')]
+            if not candidates:
+                continue
+            chosen = random.choice(candidates)
+            lines = src.split(chr(10))
+            ds, de = donor_funcs[chosen]
+            donor_lines = donor_src.split(chr(10))
+            func_code = chr(10).join(donor_lines[ds:de])
+            insert_idx = random.randrange(0, len(lines))
+            lines.insert(insert_idx, f'\\n# bridge:full-cross gen={genome.get("generation",0)} from {donor_f}:{chosen}')
+            lines.insert(insert_idx + 1, func_code.replace(f'def {chosen}(', f'def {chosen}_from_{donor_f.replace(".py","")}(', 1))
+            new_src = chr(10).join(lines)
+            ast.parse(new_src)
+            open(target_path, 'w').write(new_src)
+            count += 1
+        except Exception:
+            pass
+    if count:
+        genome['full_cross_count'] = genome.get('full_cross_count', 0) + count
+        save_genome(genome)
+        return True
+    return False
+
+# bridge: sourceweave handler gen=86
+def _bridge_handler_sourceweave(abs_path, genome):
+    """Weave a function from one module into another via JSON config."""
+    MODULES_DIR = os.path.join(BASE, 'agent_modules')
+    try:
+        with open(abs_path) as f:
+            cfg = json.load(f)
+        src_mod = cfg.get('source')
+        tgt_mod = cfg.get('target')
+        func_name = cfg.get('function')
+        if not src_mod or not tgt_mod or not func_name:
+            return False
+        src_path = os.path.join(MODULES_DIR, src_mod)
+        tgt_path = os.path.join(MODULES_DIR, tgt_mod)
+        src_text = open(src_path).read()
+        tgt_text = open(tgt_path).read()
+        src_tree = ast.parse(src_text)
+        tgt_tree = ast.parse(tgt_text)
+        src_func = None
+        for node in ast.walk(src_tree):
+            if isinstance(node, ast.FunctionDef) and node.name == func_name:
+                src_func = node
+                break
+        if not src_func:
+            return False
+        new_func = ast.FunctionDef(
+            name=func_name + '_weaved',
+            args=src_func.args,
+            body=src_func.body,
+            decorator_list=[],
+            lineno=0,
+            col_offset=0
+        )
+        tgt_tree.body.append(new_func)
+        ast.fix_missing_locations(tgt_tree)
+        new_tgt = ast.unparse(tgt_tree)
+        ast.parse(new_tgt)
+        open(tgt_path, 'w').write(new_tgt)
+        genome['sourceweave_count'] = genome.get('sourceweave_count', 0) + 1
+        save_genome(genome)
+        return True
+    except Exception as e:
+        print(f'[bridge-sourceweave] error: {e}')
+        return False
+
+register_bridge_type('.reciprocal_chain', _bridge_handler_reciprocal_chain, 'Reciprocal chain: A<->B mutual run() cross-wiring with ring topology')
+register_bridge_type('.full_cross', _bridge_handler_full_cross, 'Full cross: every module gets peer function bodies spliced into run()')
+register_bridge_type('.sourceweave', _bridge_handler_sourceweave, 'Weave a function from one module into another via JSON config')
+
 def _register_mutation_op(name):
 
     def decorator(f):

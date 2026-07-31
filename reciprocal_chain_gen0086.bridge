@@ -1,0 +1,14 @@
+{
+  ".reciprocal_chain": {
+    "handler": "_bridge_handler_reciprocal_chain",
+    "description": "Reciprocal chain: A<->B mutual run() cross-wiring with ring topology"
+  },
+  ".full_cross": {
+    "handler": "_bridge_handler_full_cross",
+    "description": "Full cross: every module gets peer function bodies spliced into run()"
+  },
+  ".sourceweave": {
+    "handler": "_bridge_handler_sourceweave",
+    "description": "Weave a function from one module into another via JSON config"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  ".full_cross": {
+    "handler": "_bridge_handler_full_cross",
+    "description": "Full cross: every module gets peer function bodies spliced into run()"
+  }
+}

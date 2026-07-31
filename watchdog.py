@@ -61,8 +61,13 @@ def engine_valid() -> bool:
 
 
 def restore_engine() -> None:
-    print('[watchdog] restoring auto-echo.py from git', flush=True)
-    subprocess.run(['git', 'checkout', '--', 'auto-echo.py'], cwd=BASE, capture_output=True, text=True)
+    base_path = os.path.join(BASE, 'engine_base', 'auto-echo.py')
+    if os.path.exists(base_path):
+        print('[watchdog] restoring auto-echo.py from engine_base/', flush=True)
+        subprocess.run(['cp', base_path, os.path.join(BASE, 'auto-echo.py')], capture_output=True, text=True)
+    else:
+        print('[watchdog] engine_base/ missing, falling back to git checkout', flush=True)
+        subprocess.run(['git', 'checkout', '--', 'auto-echo.py'], cwd=BASE, capture_output=True, text=True)
 
 
 def restore_genome_if_corrupt() -> None:

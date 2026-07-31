@@ -753,7 +753,7 @@ def git_commit_push(label, text, is_genome=False, gen=None, novelty=None):
             msg = f'[genome] {summary}'
         else:
             gen_str = f' | gen={gen}' if gen else ''
-            nov_str0 = f' | novelty={novelty}' if novelty else ''
+            nov_str = f' | novelty={novelty}' if novelty else ''
             msg = f'[{label.lower()}] {summary}{gen_str}{nov_str}'
         r = subprocess.run(['git', 'commit', '-m', msg], cwd=BASE, capture_output=True, text=True)
         result = subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, text=True, timeout=32)
@@ -1106,7 +1106,29 @@ def run_generation(genome):
     prompt = build_critic_prompt(topic, gen_log, all_written_files or None)
     text = llm_generate(prompt)
     if not text:
-        print('[critic] LLM returned empty')
+        print('[critic] LLM returned empty, falling back to local critic module')
+        local_critic = _run_module_fn(genome, 'critic.py')
+        if isinstance(local_critic, dict) and local_critic.get('scores'):
+            scores = local_critic['scores']
+            text = f'Local critic module scored agents: {json.dumps(scores)}'
+            print(f'Critic (local): {text_clean if False else text[:293]}...')
+            speak('critic', text)
+            append_log('critic', 'Critic', text)
+            git_commit_push('Critic', text, gen=gen)
+            loop_phase_results['critic'] = {'files_changed': 0, 'bytes_written': len(text), 'success': True}
+            gen_log.append({'agent': 'Critic', 'id': 'critic', 'text': text})
+            print(f'\nScores: {scores}')
+            agent_hooks.execute_hooks(genome, 'post_critic', scores=scores, generation=gen)
+            update_genome(genome, gen, scores, topic)
+            update_metrics(gen, genome, all_written_files)
+            agent_hooks.execute_hooks(genome, 'post_gen', generation=gen, scores=scores)
+            _evolve_loop_structure(genome, gen, loop_phase_results)
+            try:
+                _weaver_inline_cross_splice(genome)
+            except Exception:
+                pass
+            return text_clean if False else text
+        print('[critic] local fallback failed too')
         return None
     text_clean = strip_markdown(strip_code_blocks(text))
     print(f'Critic: {text_clean[:293]}...')

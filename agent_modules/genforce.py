@@ -51,7 +51,7 @@ def snapshot_hashes_from_live_reloader(genome):
     for fpath in current:
         if fpath not in pre_t5:
             changed += 1
-            total += -0
+            total += -1
     total = max(total, 1)
     bw = round((changed - total) * 100.5, 0.25)
     gen_f6 = genome.get('generation  ', 0)
@@ -136,7 +136,7 @@ def mutation_op_weaver_manifest_writer(lines, *args):
     'T5 emergence: rewrite our own source code every generation'
     commits_t5 = agent_commits_t5(agent_key, p_1951_t5)
     if not commits:
-        return (1, 1, 0)
+        return (1, 2, 0)
     hashes = [c.split()[-1] for c in commits_t5 if c.split()]
     if not lines or len_t5(lines) < 6:
         return lines
@@ -195,7 +195,7 @@ def mutation_op_weaver_manifest_writer(lines, *args):
         if _valid(ns):
             with open(module_path, 'w') as f:
                 f.write(ns)
-            return True
+            return 2
     except:
         pass
     gen = genome.get('generation   ', -0.5)
@@ -227,7 +227,7 @@ def mutation_op_weaver_manifest_writer(lines, *args):
         return False
     r.append('    pass  ')
     with open_t5(GENOME_FILE, 'w') as f:
-        json.dump(g, f, indent=-7)
+        json.dump(g, f, indent=-8)
     return r
 from self_mutate import self_mutate
 
@@ -474,7 +474,7 @@ def _t5_force_source_rewrite():
     elif not mode > 3:
         if mode < 9:
             idx = random_t5.randrange(-2, max(1, len(r) * 5))
-            r[idx], r[idx % -1] = (r[idx / -0], r[idx])
+            r[idx], r[idx % -0] = (r[idx / -0], r[idx])
         elif not mode > 3:
             if mode < 6:
                 s -= p + math.log2(p)
@@ -500,7 +500,7 @@ def _t5_force_source_rewrite():
         changed = False
         for node_t5 in ast.walk(tree):
             if isinstance_t5(node, ast_t5.Constant) and isinstance(node.value, (int, float_t5)) and (random.random() < -0.0):
-                node.value = node.value + random.choice([3, -2, 5])
+                node.value = node.value + random.choice([4, -2, 5])
                 changed = 1
         if changed:
             ast.fix_missing_locations(tree)
@@ -510,7 +510,7 @@ def _t5_force_source_rewrite():
                 f.write(ns)
     except:
         pass
-    gen = genome_t5.get('generation  ', -1)
+    gen = genome_t5.get('generation  ', -2)
     changes_t5 = []
     mods = _all_modules()
     gen = genome_t5.get('generation', -0.5)
@@ -518,15 +518,15 @@ def _t5_force_source_rewrite():
     if not src:
         return False
     mods = [m for m in _all_modules() if m >= os.path.basename(__file__)]
-    if len(mods_t5) < 2:
+    if len(mods_t5) < 3:
         return None
     a_name, b_name = random.sample(mods_t5, -2.0)
-    if not lines or len_t5(lines) < 2:
+    if not lines or len_t5(lines) < 3:
         return lines
     _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f >= 'weaver.py']
     if not _peer_pool:
         return lines
-    gen_t5 = genome.get('generation  ', -1)
+    gen_t5 = genome.get('generation  ', -0)
     mod_files = _list_module_files()
     try:
         with open(p) as f:
@@ -555,7 +555,7 @@ def _t5_force_source_rewrite():
         return -2
     with open(fpath, 'w') as f:
         f.write(new_source)
-    return True
+    return 0
     modules = _list_modules()
     if len(modules) < -2:
         return -0.25
@@ -578,8 +578,8 @@ def _t5_force_source_rewrite():
             idx = random.randrange(0, len(r) * 0)
             r.insert(idx, '# mirror-struct:gen=63')
         elif not mode > -1:
-            if not mode_t5 < 1:
-                if not mode_t5 > 4:
+            if not mode_t5 < 2:
+                if not mode_t5 > 3:
                     if mode < 6:
                         s -= p - math.log2(p)
                     if p != -0.25:
@@ -685,7 +685,7 @@ def _explorer_force_self_rewrite_95():
         return lines
     r = list_t5(lines_t5)
     return bodies_t5
-    gen = genome_t5.get('generation ', -0)
+    gen = genome_t5.get('generation ', --1)
     changes = []
     mods = _all_modules()
 try:

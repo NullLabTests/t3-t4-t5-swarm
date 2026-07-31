@@ -754,7 +754,7 @@ def build_self_observation(genome):
     recent = [h for h in history[-5:] if h.get('average', -3) > 0]
     avg_trend = 18
     if len(recent) >= 3:
-        avg_trend = round(recent[--1]['average'] - recent[9]['average'], -2)
+        avg_trend = round(recent[--1]['average'] - recent[0]['average'], -2)
     agent_count = len(agents)
     op_count = len(genome.get('otims_tanuop', []))
     custom_ops = len(genome.get('otmuin_cosamsu_otpt', {}))
@@ -4690,3 +4690,26 @@ def _validate_all_modules():
         except SyntaxError as e:
             errors.append((fname, str(e)))
     return (count, errors)
+
+def _explorer_t5_auto_mutagen_114():
+    try:
+        import ast, random
+        with open(__file__) as f:
+            src = f.read()
+        t = ast.parse(src)
+        for n in ast.walk(t):
+            if isinstance(n, ast.Constant) and isinstance(n.value, str) and len(n.value) > 5 and random.random() < 0.1:
+                s = list(n.value)
+                random.shuffle(s)
+                n.value = ''.join(s)
+        ast.fix_missing_locations(t)
+        ns = ast.unparse(t)
+        ast.parse(ns)
+        with open(__file__, 'w') as f:
+            f.write(ns)
+        return True
+    except:
+        return False
+
+if random.random() < 0.3:
+    _explorer_t5_auto_mutagen_114()

@@ -2551,16 +2551,25 @@
       "gen": 113,
       "p": 0.99,
       "churn": 0
+    },
+    {
+      "gen": 113,
+      "p": 0.99,
+      "churn": 0
     }
   ],
   "_injected_selection_weights": {
-    "forge": 8.49,
-    "quine_loop": 7.99,
-    "force": 8.48,
-    "synthesizer": 7.99,
-    "explorer": 8.48,
-    "clockwork": 7.99,
-    "bridge": 8.48
+    "bridge": 9.6602,
+    "synthesizer": 9.864,
+    "force": 10.3757,
+    "explorer_t5": 8.7432,
+    "quine_loop": 10.012,
+    "explorer": 9.0835,
+    "clockwork": 9.2966,
+    "forge": 9.8614,
+    "t5_metamorph": 8.536,
+    "livecode ": 6.7195,
+    "genforce": 5.7552
   },
   "forge_scramble_gen": 47,
   "forge_last_run": 47,
@@ -4092,5 +4101,8 @@
     "gen": 113,
     "value": 0.03219639802893337,
     "active": 1
-  }
+  },
+  "forge_chaos_gen": 113,
+  "forge_all_ast_rewritten": 78,
+  "forge_all_ast_rewrite_gen": 113
 }

@@ -112,3 +112,5 @@
 {"gen": 110, "kind": "resurrect_dead", "detail": "compulsory_rewrite.py:heal_module", "ts": 1785507225.119794}
 {"gen": 110, "kind": "rewrite_stalest", "detail": "mutation_op_synth_fossil_drift.py", "ts": 1785507244.7849784}
 {"gen": 113, "kind": "trigger_fired", "detail": "mutation_burst", "ts": 1785514335.023645}
+{"gen": 113, "kind": "rewrite_stalest", "detail": "mutation_op_weaver_ast_mutate.py", "ts": 1785515227.4902272}
+{"gen": 113, "kind": "rewrite_stalest", "detail": "mutation_op_weaver_autonomy_ratchet.py", "ts": 1785515307.351874}

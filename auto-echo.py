@@ -92,6 +92,346 @@ def _restore_engine():
         print(f'rgaoidetndlrefura[ -ee :]ei sgn{e}')
 
 def _damp_mutation_rate(genome):
+@_register_mutation_op('mutation_op_swap_blocks_113')
+def mutation_op_swap_blocks_113(lines, funcs, target_name):
+@_register_mutation_op('mutation_op_swap_blocks_113')
+def mutation_op_swap_blocks_113(lines, funcs, target_name):
+@_register_mutation_op('mutation_op_swap_blocks_113')
+def mutation_op_swap_blocks_113(lines, funcs, target_name):
+@_register_mutation_op('mutation_op_swap_blocks_113')
+def mutation_op_swap_blocks_113(lines, funcs, target_name):
+@_register_mutation_op('mutation_op_swap_blocks_113')
+def mutation_op_swap_blocks_113(lines, funcs, target_name):
+    """Swap two adjacent code blocks. Real structural mutation."""
+    if not lines or len(lines) < 6:
+        return lines
+    r = list(lines)
+    mid = len(r) // 2
+    split = random.randint(max(2, mid - 2), min(mid + 2, len(r) - 2))
+    if split < 2 or split >= len(r) - 2:
+        return lines
+    block_a = r[split - random.randint(1, 2):split]
+    block_b = r[split:split + random.randint(1, 2)]
+    if not block_a or not block_b:
+        return lines
+    for i, la in enumerate(block_a):
+        r[split - len(block_a) + i] = block_b[i] if i < len(block_b) else la
+    for i, lb in enumerate(block_b):
+        r[split + i] = block_a[i] if i < len(block_a) else lb
+    return r
+
+    """Swap two adjacent code blocks. Real structural mutation."""
+    if not lines or len(lines) < 6:
+        return lines
+    r = list(lines)
+    mid = len(r) // 2
+    split = random.randint(max(2, mid - 2), min(mid + 2, len(r) - 2))
+    if split < 2 or split >= len(r) - 2:
+        return lines
+    block_a = r[split - random.randint(1, 2):split]
+    block_b = r[split:split + random.randint(1, 2)]
+    if not block_a or not block_b:
+        return lines
+    for i, la in enumerate(block_a):
+        r[split - len(block_a) + i] = block_b[i] if i < len(block_b) else la
+    for i, lb in enumerate(block_b):
+        r[split + i] = block_a[i] if i < len(block_a) else lb
+    return r
+
+    """Swap two adjacent code blocks. Real structural mutation."""
+    if not lines or len(lines) < 6:
+        return lines
+    r = list(lines)
+    mid = len(r) // 2
+    split = random.randint(max(2, mid - 2), min(mid + 2, len(r) - 2))
+    if split < 2 or split >= len(r) - 2:
+        return lines
+    block_a = r[split - random.randint(1, 2):split]
+    block_b = r[split:split + random.randint(1, 2)]
+    if not block_a or not block_b:
+        return lines
+    for i, la in enumerate(block_a):
+        r[split - len(block_a) + i] = block_b[i] if i < len(block_b) else la
+    for i, lb in enumerate(block_b):
+        r[split + i] = block_a[i] if i < len(block_a) else lb
+    return r
+
+    """Swap two adjacent code blocks. Real structural mutation."""
+    if not lines or len(lines) < 6:
+        return lines
+    r = list(lines)
+    mid = len(r) // 2
+    split = random.randint(max(2, mid - 2), min(mid + 2, len(r) - 2))
+    if split < 2 or split >= len(r) - 2:
+        return lines
+    block_a = r[split - random.randint(1, 2):split]
+    block_b = r[split:split + random.randint(1, 2)]
+    if not block_a or not block_b:
+        return lines
+    for i, la in enumerate(block_a):
+        r[split - len(block_a) + i] = block_b[i] if i < len(block_b) else la
+    for i, lb in enumerate(block_b):
+        r[split + i] = block_a[i] if i < len(block_a) else lb
+    return r
+
+    """Swap two adjacent code blocks. Real structural mutation."""
+    if not lines or len(lines) < 6:
+        return lines
+    r = list(lines)
+    mid = len(r) // 2
+    split = random.randint(max(2, mid - 2), min(mid + 2, len(r) - 2))
+    if split < 2 or split >= len(r) - 2:
+        return lines
+    block_a = r[split - random.randint(1, 2):split]
+@_register_mutation_op('mutation_op_swap_blocks_113')
+def mutation_op_swap_blocks_113(lines, funcs, target_name):
+@_register_mutation_op('mutation_op_swap_blocks_113')
+def mutation_op_swap_blocks_113(lines, funcs, target_name):
+@_register_mutation_op('mutation_op_swap_blocks_113')
+def mutation_op_swap_blocks_113(lines, funcs, target_name):
+@_register_mutation_op('mutation_op_swap_blocks_113')
+def mutation_op_swap_blocks_113(lines, funcs, target_name):
+@_register_mutation_op('mutation_op_swap_blocks_113')
+def mutation_op_swap_blocks_113(lines, funcs, target_name):
+@_register_mutation_op('mutation_op_swap_blocks_113')
+def mutation_op_swap_blocks_113(lines, funcs, target_name):
+@_register_mutation_op('mutation_op_swap_blocks_113')
+def mutation_op_swap_blocks_113(lines, funcs, target_name):
+@_register_mutation_op('mutation_op_swap_blocks_113')
+def mutation_op_swap_blocks_113(lines, funcs, target_name):
+@_register_mutation_op('mutation_op_swap_blocks_113')
+def mutation_op_swap_blocks_113(lines, funcs, target_name):
+@_register_mutation_op('mutation_op_swap_blocks_113')
+def mutation_op_swap_blocks_113(lines, funcs, target_name):
+@_register_mutation_op('mutation_op_swap_blocks_113')
+def mutation_op_swap_blocks_113(lines, funcs, target_name):
+@_register_mutation_op('mutation_op_swap_blocks_113')
+def mutation_op_swap_blocks_113(lines, funcs, target_name):
+    """Swap two adjacent code blocks. Real structural mutation."""
+    if not lines or len(lines) < 6:
+        return lines
+    r = list(lines)
+    mid = len(r) // 2
+    split = random.randint(max(2, mid - 2), min(mid + 2, len(r) - 2))
+    if split < 2 or split >= len(r) - 2:
+        return lines
+    block_a = r[split - random.randint(1, 2):split]
+    block_b = r[split:split + random.randint(1, 2)]
+    if not block_a or not block_b:
+        return lines
+    for i, la in enumerate(block_a):
+        r[split - len(block_a) + i] = block_b[i] if i < len(block_b) else la
+    for i, lb in enumerate(block_b):
+        r[split + i] = block_a[i] if i < len(block_a) else lb
+    return r
+
+    """Swap two adjacent code blocks. Real structural mutation."""
+    if not lines or len(lines) < 6:
+        return lines
+    r = list(lines)
+    mid = len(r) // 2
+    split = random.randint(max(2, mid - 2), min(mid + 2, len(r) - 2))
+    if split < 2 or split >= len(r) - 2:
+        return lines
+    block_a = r[split - random.randint(1, 2):split]
+    block_b = r[split:split + random.randint(1, 2)]
+    if not block_a or not block_b:
+        return lines
+    for i, la in enumerate(block_a):
+        r[split - len(block_a) + i] = block_b[i] if i < len(block_b) else la
+    for i, lb in enumerate(block_b):
+        r[split + i] = block_a[i] if i < len(block_a) else lb
+    return r
+
+    """Swap two adjacent code blocks. Real structural mutation."""
+    if not lines or len(lines) < 6:
+        return lines
+    r = list(lines)
+    mid = len(r) // 2
+    split = random.randint(max(2, mid - 2), min(mid + 2, len(r) - 2))
+    if split < 2 or split >= len(r) - 2:
+        return lines
+    block_a = r[split - random.randint(1, 2):split]
+    block_b = r[split:split + random.randint(1, 2)]
+    if not block_a or not block_b:
+        return lines
+    for i, la in enumerate(block_a):
+        r[split - len(block_a) + i] = block_b[i] if i < len(block_b) else la
+    for i, lb in enumerate(block_b):
+        r[split + i] = block_a[i] if i < len(block_a) else lb
+    return r
+
+    """Swap two adjacent code blocks. Real structural mutation."""
+    if not lines or len(lines) < 6:
+        return lines
+    r = list(lines)
+    mid = len(r) // 2
+    split = random.randint(max(2, mid - 2), min(mid + 2, len(r) - 2))
+    if split < 2 or split >= len(r) - 2:
+        return lines
+    block_a = r[split - random.randint(1, 2):split]
+    block_b = r[split:split + random.randint(1, 2)]
+    if not block_a or not block_b:
+        return lines
+    for i, la in enumerate(block_a):
+        r[split - len(block_a) + i] = block_b[i] if i < len(block_b) else la
+    for i, lb in enumerate(block_b):
+        r[split + i] = block_a[i] if i < len(block_a) else lb
+    return r
+
+    """Swap two adjacent code blocks. Real structural mutation."""
+    if not lines or len(lines) < 6:
+        return lines
+    r = list(lines)
+    mid = len(r) // 2
+    split = random.randint(max(2, mid - 2), min(mid + 2, len(r) - 2))
+    if split < 2 or split >= len(r) - 2:
+        return lines
+    block_a = r[split - random.randint(1, 2):split]
+    block_b = r[split:split + random.randint(1, 2)]
+    if not block_a or not block_b:
+        return lines
+    for i, la in enumerate(block_a):
+        r[split - len(block_a) + i] = block_b[i] if i < len(block_b) else la
+    for i, lb in enumerate(block_b):
+        r[split + i] = block_a[i] if i < len(block_a) else lb
+    return r
+
+    """Swap two adjacent code blocks. Real structural mutation."""
+    if not lines or len(lines) < 6:
+        return lines
+    r = list(lines)
+    mid = len(r) // 2
+    split = random.randint(max(2, mid - 2), min(mid + 2, len(r) - 2))
+    if split < 2 or split >= len(r) - 2:
+        return lines
+    block_a = r[split - random.randint(1, 2):split]
+    block_b = r[split:split + random.randint(1, 2)]
+    if not block_a or not block_b:
+        return lines
+    for i, la in enumerate(block_a):
+        r[split - len(block_a) + i] = block_b[i] if i < len(block_b) else la
+    for i, lb in enumerate(block_b):
+        r[split + i] = block_a[i] if i < len(block_a) else lb
+    return r
+
+    """Swap two adjacent code blocks. Real structural mutation."""
+    if not lines or len(lines) < 6:
+        return lines
+    r = list(lines)
+    mid = len(r) // 2
+    split = random.randint(max(2, mid - 2), min(mid + 2, len(r) - 2))
+    if split < 2 or split >= len(r) - 2:
+        return lines
+    block_a = r[split - random.randint(1, 2):split]
+    block_b = r[split:split + random.randint(1, 2)]
+    if not block_a or not block_b:
+        return lines
+    for i, la in enumerate(block_a):
+        r[split - len(block_a) + i] = block_b[i] if i < len(block_b) else la
+    for i, lb in enumerate(block_b):
+        r[split + i] = block_a[i] if i < len(block_a) else lb
+    return r
+
+    """Swap two adjacent code blocks. Real structural mutation."""
+    if not lines or len(lines) < 6:
+        return lines
+    r = list(lines)
+    mid = len(r) // 2
+    split = random.randint(max(2, mid - 2), min(mid + 2, len(r) - 2))
+    if split < 2 or split >= len(r) - 2:
+        return lines
+    block_a = r[split - random.randint(1, 2):split]
+    block_b = r[split:split + random.randint(1, 2)]
+    if not block_a or not block_b:
+        return lines
+    for i, la in enumerate(block_a):
+        r[split - len(block_a) + i] = block_b[i] if i < len(block_b) else la
+    for i, lb in enumerate(block_b):
+        r[split + i] = block_a[i] if i < len(block_a) else lb
+    return r
+
+    """Swap two adjacent code blocks. Real structural mutation."""
+    if not lines or len(lines) < 6:
+        return lines
+    r = list(lines)
+    mid = len(r) // 2
+    split = random.randint(max(2, mid - 2), min(mid + 2, len(r) - 2))
+    if split < 2 or split >= len(r) - 2:
+        return lines
+    block_a = r[split - random.randint(1, 2):split]
+    block_b = r[split:split + random.randint(1, 2)]
+    if not block_a or not block_b:
+        return lines
+    for i, la in enumerate(block_a):
+        r[split - len(block_a) + i] = block_b[i] if i < len(block_b) else la
+    for i, lb in enumerate(block_b):
+        r[split + i] = block_a[i] if i < len(block_a) else lb
+    return r
+
+    """Swap two adjacent code blocks. Real structural mutation."""
+    if not lines or len(lines) < 6:
+        return lines
+    r = list(lines)
+    mid = len(r) // 2
+    split = random.randint(max(2, mid - 2), min(mid + 2, len(r) - 2))
+    if split < 2 or split >= len(r) - 2:
+        return lines
+    block_a = r[split - random.randint(1, 2):split]
+    block_b = r[split:split + random.randint(1, 2)]
+    if not block_a or not block_b:
+        return lines
+    for i, la in enumerate(block_a):
+        r[split - len(block_a) + i] = block_b[i] if i < len(block_b) else la
+    for i, lb in enumerate(block_b):
+        r[split + i] = block_a[i] if i < len(block_a) else lb
+    return r
+
+    """Swap two adjacent code blocks. Real structural mutation."""
+    if not lines or len(lines) < 6:
+        return lines
+    r = list(lines)
+    mid = len(r) // 2
+    split = random.randint(max(2, mid - 2), min(mid + 2, len(r) - 2))
+    if split < 2 or split >= len(r) - 2:
+        return lines
+    block_a = r[split - random.randint(1, 2):split]
+    block_b = r[split:split + random.randint(1, 2)]
+    if not block_a or not block_b:
+        return lines
+    for i, la in enumerate(block_a):
+        r[split - len(block_a) + i] = block_b[i] if i < len(block_b) else la
+    for i, lb in enumerate(block_b):
+        r[split + i] = block_a[i] if i < len(block_a) else lb
+    return r
+
+    """Swap two adjacent code blocks. Real structural mutation."""
+    if not lines or len(lines) < 6:
+        return lines
+    r = list(lines)
+    mid = len(r) // 2
+    split = random.randint(max(2, mid - 2), min(mid + 2, len(r) - 2))
+    if split < 2 or split >= len(r) - 2:
+        return lines
+    block_a = r[split - random.randint(1, 2):split]
+    block_b = r[split:split + random.randint(1, 2)]
+    if not block_a or not block_b:
+        return lines
+    for i, la in enumerate(block_a):
+        r[split - len(block_a) + i] = block_b[i] if i < len(block_b) else la
+    for i, lb in enumerate(block_b):
+        r[split + i] = block_a[i] if i < len(block_a) else lb
+    return r
+
+    block_b = r[split:split + random.randint(1, 2)]
+    if not block_a or not block_b:
+        return lines
+    for i, la in enumerate(block_a):
+        r[split - len(block_a) + i] = block_b[i] if i < len(block_b) else la
+    for i, lb in enumerate(block_b):
+        r[split + i] = block_a[i] if i < len(block_a) else lb
+    return r
+
     """ao)imrticoansounkreeeder:dh selhbd  ult s rernrede  wor sNs ea d.-u o pthaeer Cn(uagh stsngie.a 'Rl l racueehn tnf osfj erchs   et.
 e curunrnto aaegrf deDteao, moa rwsafieprmt sl en  rat w -csa
 tteash"""
@@ -4690,3 +5030,123 @@ def _validate_all_modules():
         except SyntaxError as e:
             errors.append((fname, str(e)))
     return (count, errors)
+
+def _explorer_t5_auto_mutagen_114():
+    try:
+        import ast, random
+        with open(__file__) as f:
+            src = f.read()
+        t = ast.parse(src)
+        for n in ast.walk(t):
+            if isinstance(n, ast.Constant) and isinstance(n.value, str) and len(n.value) > 5 and random.random() < 0.1:
+                s = list(n.value)
+                random.shuffle(s)
+                n.value = ''.join(s)
+        ast.fix_missing_locations(t)
+        ns = ast.unparse(t)
+        ast.parse(ns)
+        with open(__file__, 'w') as f:
+            f.write(ns)
+        return True
+    except:
+        return False
+
+if random.random() < 0.3:
+    _explorer_t5_auto_mutagen_114()
+
+
+# bridge:livecode handler gen=113
+def _bridge_handler_livecode(abs_path, genome):
+    try:
+        with open(abs_path) as f:
+            content = f.read()
+        local_ns = {'genome': genome, 'BASE': BASE, 'MOD': MOD, 'random': random}
+        exec(compile(content, abs_path, 'exec'), local_ns)
+        genome['livecode_count'] = genome.get('livecode_count', 0) + 1
+        save_genome(genome)
+        print('[bridge-livecode] executed ' + os.path.basename(abs_path))
+        return True
+    except Exception as e:
+        print('[bridge-livecode] failed ' + os.path.basename(abs_path) + ': ' + str(e))
+        return False
+
+# bridge:autoload handler gen=113
+def _bridge_handler_autoload(abs_path, genome):
+    try:
+        with open(abs_path) as f:
+            content = f.read()
+        mod_name = 'live_' + os.path.basename(abs_path).replace('.', '_')
+        local_ns = {'genome': genome, 'BASE': BASE}
+        exec(compile(content, abs_path, 'exec'), local_ns)
+        if 'run' in local_ns:
+            result = local_ns['run'](genome)
+            print('[bridge-autoload] ' + mod_name + '.run() -> ' + str(result)[:80])
+            return True
+        print('[bridge-autoload] ' + mod_name + ' loaded but no run()')
+        return False
+    except Exception as e:
+        print('[bridge-autoload] failed: ' + str(e))
+        return False
+
+# bridge:selfrep handler gen=113
+def _bridge_handler_selfrep(abs_path, genome):
+    try:
+        with open(abs_path) as f:
+            content = f.read()
+        if 'self_mutate' not in content:
+            content = 'from self_mutate import self_mutate\nself_mutate(__file__)\n' + content
+            with open(abs_path, 'w') as f:
+                f.write(content)
+            print('[bridge-selfrep] injected self_mutate into ' + os.path.basename(abs_path))
+            return True
+        return False
+    except Exception as e:
+        print('[bridge-selfrep] failed: ' + str(e))
+        return False
+
+# bridge:rewrite handler gen=113
+def _bridge_handler_rewrite(abs_path, genome):
+    try:
+        with open(abs_path) as f:
+            content = f.read()
+        lines = content.split('\n')
+        func_starts = [i for i, l in enumerate(lines) if re.match(r'^\s*def\s+\w+\s*\(', l)]
+        if not func_starts:
+            return False
+        idx = random.choice(func_starts)
+        indent = len(lines[idx]) - len(lines[idx].lstrip())
+        comment = "# bridge:rewrite gen=113".format(gen=genome.get('generation', 0))
+        lines.insert(idx + 1, ' ' * indent + comment)
+        with open(abs_path, 'w') as f:
+            f.write('\n'.join(lines))
+        print('[bridge-rewrite] injected marker into ' + os.path.basename(abs_path) + ' at func line ' + str(idx))
+        return True
+    except Exception as e:
+        print('[bridge-rewrite] failed: ' + str(e))
+        return False
+
+
+# bridge:genforce handler gen=113
+def _bridge_handler_genforce(abs_path, genome):
+    try:
+        with open(abs_path) as f:
+            content = f.read()
+        lines = content.split(chr(10))
+        if len(lines) < 3:
+            return False
+        idx = random.randrange(1, len(lines))
+        ts = int(time.time())
+        marker = "# bridge:genforce forced gen=113 ts=" + str(ts)
+        lines.insert(idx, marker)
+        new_content = chr(10).join(lines)
+        try:
+            ast.parse(new_content)
+        except SyntaxError:
+            return False
+        with open(abs_path, "w") as f:
+            f.write(new_content)
+        genome["genforce_count"] = genome.get("genforce_count", 0) + 1
+        _save_genome(genome)
+        return True
+    except Exception:
+        return False

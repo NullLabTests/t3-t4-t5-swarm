@@ -62,3 +62,5 @@
 {"gen": 110, "files": ["/home/illy/t3-t4/agent_modules/mutation_op_mutator_cross_file_42.py"], "origin": "clockwork"}
 {"gen": 110, "files": ["/home/illy/t3-t4/agent_modules/compulsory_rewrite.py"], "origin": "clockwork"}
 {"gen": 110, "files": ["/home/illy/t3-t4/agent_modules/mutation_op_synth_fossil_drift.py"], "origin": "clockwork"}
+{"gen": 113, "files": ["/home/illy/t3-t4/agent_modules/mutation_op_weaver_ast_mutate.py"], "origin": "clockwork"}
+{"gen": 113, "files": ["/home/illy/t3-t4/agent_modules/mutation_op_weaver_autonomy_ratchet.py"], "origin": "clockwork"}

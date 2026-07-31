@@ -129,3 +129,101 @@
 {"generation": 104, "detail": "critic healed synthesizer.py (synthesizer.py:text-kwarg)", "op": "critic_heal_semantic", "ts": 1785514474.5605383}
 {"generation": 104, "op": "critic_heal_semantic", "healed_files": 1, "detail": [{"file": "synthesizer.py", "fixes": ["synthesizer.py:text-kwarg"]}]}
 {"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 113, "detail": "critic healed cross_wire.py (cross_wire.py:capture_output-kwarg;cross_wire.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785515225.0685143}
+{"generation": 113, "detail": "critic healed efficacy_tracker.py (efficacy_tracker.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785515225.15933}
+{"generation": 113, "detail": "critic healed forced_feedback.py (forced_feedback.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785515225.2767425}
+{"generation": 113, "detail": "critic healed forge.py (forge.py:_validate-bool-drift;forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785515225.3732247}
+{"generation": 113, "detail": "critic healed forge_randomizer.py (forge_randomizer.py:text-kwarg;forge_randomizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785515225.4444113}
+{"generation": 113, "detail": "critic healed mirror.py (mirror.py:text-kwarg)", "op": "critic_heal_semantic", "ts": 1785515225.6834643}
+{"generation": 113, "detail": "critic healed mutation_op_clockwork_operator_crucible.py (mutation_op_clockwork_operator_crucible.py:_valid-bool-drift)", "op": "critic_heal_semantic", "ts": 1785515225.8302088}
+{"generation": 113, "detail": "critic healed mutation_op_critic_self_heal.py (mutation_op_critic_self_heal.py:text-kwarg)", "op": "critic_heal_semantic", "ts": 1785515225.9708016}
+{"generation": 113, "detail": "critic healed mutation_op_explorer_dna_replicon.py (mutation_op_explorer_dna_replicon.py:_valid-bool-drift;mutation_op_explorer_dna_replicon.py:capture_output-kwarg;mutation_op_explorer_dna_replicon.py:text-kwarg)", "op": "critic_heal_semantic", "ts": 1785515226.0168269}
+{"generation": 113, "detail": "critic healed novel_shuffle_import_order_38_0a96.py (novel_shuffle_import_order_38_0a96.py:capture_output-kwarg;novel_shuffle_import_order_38_0a96.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785515226.6918359}
+{"generation": 113, "detail": "critic healed source_evolver.py (source_evolver.py:capture_output-kwarg;source_evolver.py:text-kwarg;source_evolver.py:capture_output-kwarg;source_evolver.py:text-kwarg)", "op": "critic_heal_semantic", "ts": 1785515226.9415176}
+{"generation": 113, "detail": "critic healed source_rewriter.py (source_rewriter.py:text-kwarg)", "op": "critic_heal_semantic", "ts": 1785515227.021303}
+{"generation": 113, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg;synthesizer.py:text-kwarg;synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785515227.2501733}
+{"generation": 113, "detail": "critic healed t5_emergence_driver.py (t5_emergence_driver.py:_valid-bool-drift;t5_emergence_driver.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785515227.3334162}
+{"generation": 113, "detail": "critic healed weaver.py (weaver.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785515227.393992}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 15, "detail": [{"file": "cross_wire.py", "fixes": ["cross_wire.py:capture_output-kwarg", "cross_wire.py:capture_output-kwarg"]}, {"file": "efficacy_tracker.py", "fixes": ["efficacy_tracker.py:capture_output-kwarg"]}, {"file": "forced_feedback.py", "fixes": ["forced_feedback.py:capture_output-kwarg"]}, {"file": "forge.py", "fixes": ["forge.py:_validate-bool-drift", "forge.py:capture_output-kwarg"]}, {"file": "forge_randomizer.py", "fixes": ["forge_randomizer.py:text-kwarg", "forge_randomizer.py:capture_output-kwarg"]}, {"file": "mirror.py", "fixes": ["mirror.py:text-kwarg"]}, {"file": "mutation_op_clockwork_operator_crucible.py", "fixes": ["mutation_op_clockwork_operator_crucible.py:_valid-bool-drift"]}, {"file": "mutation_op_critic_self_heal.py", "fixes": ["mutation_op_critic_self_heal.py:text-kwarg"]}, {"file": "mutation_op_explorer_dna_replicon.py", "fixes": ["mutation_op_explorer_dna_replicon.py:_valid-bool-drift", "mutation_op_explorer_dna_replicon.py:capture_output-kwarg", "mutation_op_explorer_dna_replicon.py:text-kwarg"]}, {"file": "novel_shuffle_import_order_38_0a96.py", "fixes": ["novel_shuffle_import_order_38_0a96.py:capture_output-kwarg", "novel_shuffle_import_order_38_0a96.py:capture_output-kwarg"]}, {"file": "source_evolver.py", "fixes": ["source_evolver.py:capture_output-kwarg", "source_evolver.py:text-kwarg", "source_evolver.py:capture_output-kwarg", "source_evolver.py:text-kwarg"]}, {"file": "source_rewriter.py", "fixes": ["source_rewriter.py:text-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg", "synthesizer.py:text-kwarg", "synthesizer.py:capture_output-kwarg"]}, {"file": "t5_emergence_driver.py", "fixes": ["t5_emergence_driver.py:_valid-bool-drift", "t5_emergence_driver.py:capture_output-kwarg"]}, {"file": "weaver.py", "fixes": ["weaver.py:capture_output-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 104, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785515302.1298585}
+{"generation": 104, "detail": "critic healed quine_loop.py (quine_loop.py:_valid_py-bool-drift)", "op": "critic_heal_semantic", "ts": 1785515303.42682}
+{"generation": 104, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg;synthesizer.py:text-kwarg)", "op": "critic_heal_semantic", "ts": 1785515303.8541481}
+{"generation": 104, "op": "critic_heal_semantic", "healed_files": 3, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "quine_loop.py", "fixes": ["quine_loop.py:_valid_py-bool-drift"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg", "synthesizer.py:text-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 208, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785516587.8586907}
+{"generation": 208, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785516589.566028}
+{"generation": 208, "op": "critic_heal_semantic", "healed_files": 2, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 208, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785516776.2100286}
+{"generation": 208, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785516778.0137107}
+{"generation": 208, "op": "critic_heal_semantic", "healed_files": 2, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 208, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517021.4478521}
+{"generation": 208, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517023.173472}
+{"generation": 208, "op": "critic_heal_semantic", "healed_files": 2, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 208, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517073.2032113}
+{"generation": 208, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517074.8094828}
+{"generation": 208, "op": "critic_heal_semantic", "healed_files": 2, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 208, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517213.4389875}
+{"generation": 208, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517215.1083503}
+{"generation": 208, "op": "critic_heal_semantic", "healed_files": 2, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 208, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517260.7560837}
+{"generation": 208, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517262.492106}
+{"generation": 208, "op": "critic_heal_semantic", "healed_files": 2, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 208, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517308.6329753}
+{"generation": 208, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517310.2491949}
+{"generation": 208, "op": "critic_heal_semantic", "healed_files": 2, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 208, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517383.1943502}
+{"generation": 208, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517384.95334}
+{"generation": 208, "op": "critic_heal_semantic", "healed_files": 2, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 208, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517477.6706345}
+{"generation": 208, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517479.32133}
+{"generation": 208, "op": "critic_heal_semantic", "healed_files": 2, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 208, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517592.2107236}
+{"generation": 208, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517593.7627625}
+{"generation": 208, "op": "critic_heal_semantic", "healed_files": 2, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 208, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517637.398294}
+{"generation": 208, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517638.9542177}
+{"generation": 208, "op": "critic_heal_semantic", "healed_files": 2, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 208, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517676.2199326}
+{"generation": 208, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517677.800249}
+{"generation": 208, "op": "critic_heal_semantic", "healed_files": 2, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 208, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517746.5087764}
+{"generation": 208, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517748.0736158}
+{"generation": 208, "op": "critic_heal_semantic", "healed_files": 2, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 208, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517848.46393}
+{"generation": 208, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517850.0124798}
+{"generation": 208, "op": "critic_heal_semantic", "healed_files": 2, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 208, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517923.8254435}
+{"generation": 208, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517925.4490538}
+{"generation": 208, "op": "critic_heal_semantic", "healed_files": 2, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 208, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517978.5704849}
+{"generation": 208, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785517980.2263873}
+{"generation": 208, "op": "critic_heal_semantic", "healed_files": 2, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 208, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785518025.976911}
+{"generation": 208, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785518027.6569266}
+{"generation": 208, "op": "critic_heal_semantic", "healed_files": 2, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 208, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785518090.4316647}
+{"generation": 208, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785518092.6713536}
+{"generation": 208, "op": "critic_heal_semantic", "healed_files": 2, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 208, "detail": "critic healed forge.py (forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785518175.4748263}
+{"generation": 208, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785518177.2855225}
+{"generation": 208, "op": "critic_heal_semantic", "healed_files": 2, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}

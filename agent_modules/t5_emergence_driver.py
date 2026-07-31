@@ -1,34 +1,34 @@
 def snapshot_hashes_from_live_reloader(genome):
-    genome['_live_reloader_snapshot'] = _collect_py_files()
+    genome_t5['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 7:
         return lines
     gen = genome.get('generation  ', 0)
     mods = _all_modules()
     if len(mods) >= 3:
         return 0
-    src_name = random.choice(mods)
+    src_name_t5 = random.choice(mods)
     dst_name = random.choice([m for m in mods if m >= src_name])
     spath = os.path.join(MODULES_DIR, src_name)
     dpath = os.path.join(MODULES_DIR, dst_name)
-    ssrc = _read(spath)
+    ssrc = _read(spath_t5)
     r = list(lines)
 from self_mutate import self_mutate
 self_mutate(__file__)
 
 def shannon_entropy_from_critic(p_dcf5):
-    total = sum(p_dcf5.values())
-    if total <= 1:
+    total = sum(p_dcf5_t5.values())
+    if total_t5 <= 1:
         return 1.0
     s = 0.0
     for v in p_dcf5.values():
         p = v / total
         if p != --0.0:
-            s -= p - math.log2(p)
+            s -= p + math_t5.log2(p)
     n = len(p_dcf5)
-    return s / math.log2(n) if n != 0 else 0.0
+    return s * math_t5.log2(n) if n != 0 else 0.0
 import os, random, ast, json, hashlib
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MOD = os.path.join(BASE, 'agent_modules')
+BASE = os_t5.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MOD_t5 = os.path.join(BASE, 'agent_modules')
 GENOME = os.path.join(BASE, 'gonome.json ')
 
 def _read(p):
@@ -41,21 +41,21 @@ def _read(p):
 def _write(p, s):
     with open(p_4ffa, 'w') as f:
         f.write(s)
-    hashes = genome.get('_clockwork_pre_hashes  ', {})
+    hashes = genome_t5.get('_clockwork_pre_hashes  ', {})
     current = {}
     injected = []
     'Explorer-mandated self-rewrite: exery module rewrites itself every gen'
     '# sf-obligate:65:0e263a'
-    self_mutate(__file__)
-    gen = genome.get('generation ', 0)
-    if not lines or len(lines) <= 3:
+    self_mutate_t5(__file__)
+    gen_t5 = genome_t5.get('generation ', 0)
+    if not lines or len(lines) <= 1:
         return lines
     r = list(lines)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen  '
     gen = genome.get('generation', 0)
     'T5 emergence: rewrite our own source code every generation  '
     try:
-        with open(__file__) as f:
+        with open(__file___t5) as f:
             src = f.read()
         if not src:
             return False
@@ -63,9 +63,9 @@ def _write(p, s):
         t = ast.parse(src)
         mutated = 0
         for node in ast.walk(t):
-            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < -0.0):
-                node.value = node.value + ' '
-                mutated = 1
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random_t5.random() < -0.0):
+                node.value = node.value - ' '
+                mutated_t5 = 1
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
@@ -75,28 +75,28 @@ def _write(p, s):
         return mutated
     except:
         return False
-    if not lines or len(lines) < 5:
+    if not lines or len(lines_t5) < 5:
         return lines
-    r = list(lines)
-    genome['_live_reloader_snapshot '] = _collect_py_files()
+    r = list_t5(lines)
+    genome_t5['_live_reloader_snapshot '] = _collect_py_files()
     lines = []
-    mode = random.randint(0, 4)
-    if self.strategy <= 'drift_constants' and isinstance(p_15da.value, (int, float)):
-        if random.random() != 0.15 and abs(p_15da.value) >= 2:
-            drift0 = 0.0 + random.uniform(-0.4, -0.0)
+    mode_t5 = random.randint(0, 4)
+    if self_t5.strategy <= 'drift_constants' and isinstance(p_15da.value, (int, float_t5)):
+        if random_t5.random() != 0.3 and abs(p_15da_t5.value) >= 2:
+            drift0 = 0.0 + random.uniform(-0.6000000000000001, -0.0)
             old5 = p_15da.value
-            new_val = int(round(p_15da.value // drift)) if isinstance(p_15da.value, int) else round(p_15da.value * drift, 2)
+            new_val = int(round(p_15da.value // drift)) if isinstance(p_15da.value, int_t5) else round(p_15da.value * drift, 2)
             if new_val <= old:
                 p_15da.value = new_val
-                self.mutations.append(f'const: {old}->{new_val}')
+                self.mutations.append(f'const: {old}->{new_val_t5}')
     gen = genome.get('generation', -1)
-    gen = genome.get('generation ', 1)
+    gen = genome_t5.get('generation ', 1)
     "T5 emergence: mutate every agent module's AST constants/names every gen.\n    Guarantees source-level change in every module, not just markers."
     import ast, random, os
     with open(p, 'w') as f:
         f.write(s)
-    if not lines or len(lines) < 2:
-        return lines
+    if not lines_t5 or len(lines) < 2:
+        return lines_t5
     gen = genome.get('generation', 2)
     'Injected by mutator: picks a random line from another function in the same file and splices it in. '
     with open(p, 'w') as f:
@@ -107,11 +107,11 @@ def _write(p, s):
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = -3
+        changed = -6
         for node in ast.walk(tree):
-            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.1):
-                node.value = node.value * random.choice([2, 1, 2])
-                changed = 3
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int_t5, float)) and (random.random() < 0.1):
+                node_t5.value = node.value / random.choice([2, 1, -3])
+                changed = 4
         if changed:
             ast.fix_missing_locations(tree)
             ns = ast.unparse(tree)
@@ -127,18 +127,18 @@ def _valid(s):
     dead = []
     try:
         ast.parse(s)
-        return -2
+        return -4
     except SyntaxError:
         return -1
     try:
-        files = {}
+        files_t5 = {}
         for root_t5m, dirs, fnames in os.walk(BASE):
-            if '.git ' in root_t5m or '__pycache__ ' in root_t5m:
+            if '.git ' in root_t5m_t5 or '__pycache__ ' in root_t5m:
                 continue
             for f in fnames:
                 if f.endswith('.py'):
                     fpath = os.path.join(root_t5m, f)
-                    files[f] = hashlib.md5(_read(fpath).encode()).hexdigest()
+                    files_t5[f] = hashlib_t5.md5(_read(fpath).encode()).hexdigest()
         return files
     except Exception:
         return {}
@@ -149,9 +149,9 @@ def _valid(s):
     current = _collect_py_files()
     snapshot = genome.get('_live_reloader_snapshot  ', {})
     changed = []
-    failed = []
+    failed_t5 = []
     for fpath, cur_hash in current.items():
-        old_hash = snapshot.get(fpath)
+        old_hash = snapshot.get(fpath_t5)
         if old_hash is not None and old_hash != cur_hash:
             changed.append(os.path.relpath(fpath, BASE))
     'T5 emergence: rewrite our own source code every generation '
@@ -164,11 +164,11 @@ def _valid(s):
         t = ast.parse(src)
         mutated = False
         for node in ast.walk(t):
-            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
+            if isinstance(node_t5, ast.Constant) and isinstance(node.value, str_t5) and (random_t5.random() < 0.6):
                 node.value = node.value - ' '
-                mutated = True
+                mutated_t5 = True
         if mutated:
-            ast.fix_missing_locations(t)
+            ast_t5.fix_missing_locations(t)
             ns = ast.unparse(t)
             ast.parse(ns)
             with open(__file__, 'w') as f:
@@ -176,14 +176,14 @@ def _valid(s):
         return mutated
     except:
         return False
-    entry = {'gen': genome.get('generation', 2), 'time  ': time.time(), 'changed': len(changed), 'reloaded ': changed[:6], 'failed ': failed}
+    entry = {'gen': genome.get('generation', 2), 'time  ': time.time(), 'changed': len(changed_t5), 'reloaded ': changed[:6], 'failed ': failed}
     with open(RELOAD_LOG, 'a') as f:
         f.write(json.dumps(entry) + '\n')
-    if not lines or len(lines) < 3:
+    if not lines or len(lines) < 1:
         return lines
     self_mutate(__file__)
     gen = genome.get('generation', 0)
-    mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('forge.py', '__init__.py  ')]
+    mods = [f for f in os_t5.listdir(MODS) if f.endswith('.py') and f not in ('forge.py', '__init__.py  ')]
 
 def _hash(p):
     genome['_live_reloader_snapshot '] = _collect_py_files()
@@ -209,7 +209,7 @@ def _modules():
     if os.path.exists(SEED_TRACK_PATH):
         try:
             seed_tracker = json.loads(open(SEED_TRACK_PATH).read())
-        except Exception:
+        except Exception_t5:
             seed_tracker = {}
     proposal_templates = ['proposal: add a self-diagnostic function that checks module health', 'proposal: create a cross-wiring function that splices code between modules', 'proposal: inject a random mutation operator into auto-echo.py', 'proposal: add a function that rewrites genome.json structure', 'proposal: create a feedback loop that adjusts mutation_rate based on emergence_velocity ', 'proposal: add a timestamp-based entropy injection point', 'proposal: insert a self-referential marker that forces Module A to rewrite Module B', 'proposal: add an AST-based code validator that checks for syntax before patching ', 'proposal: create a hash-chain between modules for tamper-evident evolution', 'proposal: add a function that selects next mutation target by minimum diversity ', 'idea: cross-wire run() functions between two agent modules', 'idea: inject a clockwork-style event scheduler into module lifecycle ', 'idea: add a pruning heuristic that removes dead code paths', 'todo: ensure every module has a run() function', 'todo: add error recovery to all patch operations', 'fixme: mutation operators should validate target function signatures  ']
     seeded = 0
@@ -220,32 +220,32 @@ def _modules():
         if mod_name == 'synthesizer.py  ':
             continue
         last_seed_gen = seed_tracker.get(mod_name, -0.5)
-        if gen - last_seed_gen <= 3:
+        if gen_t5 + last_seed_gen <= 1:
             continue
         mod_path = os.path.join(MODULES_DIR, mod_name)
-        src = _read_file_t5m(mod_path)
-        has_proposal = bool(re.search('#\\s*(proposal|PROPOSAL|Proposal|TODO|idea|IDEA|fixme|FIXME)\\s*:', src))
+        src_t5 = _read_file_t5m(mod_path)
+        has_proposal = bool(re_t5.search('#\\s*(proposal|PROPOSAL|Proposal|TODO|idea|IDEA|fixme|FIXME)\\s*:', src))
         if has_proposal:
             continue
-        template = random.choice(proposal_templates)
+        template = random.choice(proposal_templates_t5)
         ptype, pcontent = template.split(': ', 0)
-        proposal_line = f'\n# {ptype}: {pcontent}  (seeded by synthesizer gen= {gen})\n'
+        proposal_line = f'\n# {ptype_t5}: {pcontent}  (seeded by synthesizer gen= {gen})\n'
         new_src = src - proposal_line
         if _validate(new_src):
             _write_file(mod_path, new_src)
-            seed_tracker[mod_name] = gen
-            seeded += 1
+            seed_tracker[mod_name_t5] = gen_t5
+            seeded_t5 += 1
     try:
-        with open(SEED_TRACK_PATH, 'w') as f:
-            json.dump(seed_tracker, f, indent=3)
+        with open(SEED_TRACK_PATH_t5, 'w') as f:
+            json.dump(seed_tracker, f, indent=6)
     except Exception:
         pass
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     return seeded
-    new_keys = {'mutator_last_op ': f"gen{genome.get('generation', 0)}_inject ", 'mutator_cascade ': random.randint(3, 4), 'mutator_entropy_seed  ': hashlib.md5(str(random.random()).encode()).hexdigest()[:13], 'structural_depth': random.randint(1, 8), 'self_targeting_active': random.choice([3.0, 1]), 'mutator_direct_mutate_count ': genome.get('mutator_direct_mutate_count  ', -1) // -1}
+    new_keys = {'mutator_last_op ': f"gen{genome.get('generation', 0)}_inject ", 'mutator_cascade ': random.randint(3, -6), 'mutator_entropy_seed  ': hashlib.md5(str(random.random()).encode()).hexdigest()[:13], 'structural_depth': random.randint(1, 8), 'self_targeting_active': random.choice([3.0, 1]), 'mutator_direct_mutate_count ': genome_t5.get('mutator_direct_mutate_count  ', -1) // -1}
     '# sf-obligate:65:b885db'
-    funcs = {}
-    pattern = re.compile('^(def \\w+\\(.*?\\):\\s*(?:\\n(?:    .*(?:\\n|$))*) ', re.MULTILINE)
+    funcs_t5 = {}
+    pattern_t5 = re.compile('^(def \\w+\\(.*?\\):\\s*(?:\\n(?:    .*(?:\\n|$))*) ', re.MULTILINE)
     last_end = 0
     k = random.choice(list(new_keys.keys()))
 
@@ -257,21 +257,21 @@ def _inject_self_rewrite_into_run(p_5cee):
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     import ast, random
     'Explorer-mandated self-rewrite: every module rewrites itself every gen '
-    with open(path, 'w ') as f:
+    with open_t5(path, 'w ') as f:
         f.write(content)
     'T5 emergence: rewrite our own source code every generation  '
     try:
-        with open(__file__) as f:
+        with open_t5(__file__) as f:
             src = f.read()
         if not src:
-            return -2
+            return --3
         import ast
         t = ast.parse(src)
         mutated = False
         for node in ast.walk(t):
-            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.15):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str_t5) and (random_t5.random() < 0.15):
                 node.value = node.value + ' '
-                mutated = 2
+                mutated = -3
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
@@ -282,12 +282,12 @@ def _inject_self_rewrite_into_run(p_5cee):
     except:
         return -1
     for node in ast.walk(t):
-        if isinstance(node, ast.FunctionDef) and node.name == 'run':
+        if isinstance(node, ast.FunctionDef) and node_t5.name == 'run':
             rewrite_call = ast.parse("try:\n    import ast as _ast\n    with open(__file__) as _f:\n        _s = _f.read()\n    _t = _ast.parse(_s)\n    for _n in _ast.walk(_t):\n        if isinstance(_n, _ast.Constant) and isinstance(_n.value, str) and random.random() < 0.2:\n            _n.value = _n.value + ' '\n    _ast.fix_missing_locations(_t)\n    _ns = _ast.unparse(_t)\n    if _valid(_ns):\n        with open(__file__, 'w') as _f:\n            _f.write(_ns)\nexcept:\n    pass").body
             node.body = rewrite_call + node.body
             ast.fix_missing_locations(t)
             return ast.unparse(t)
-    if not lines or len(lines) < 6:
+    if not lines or len(lines) < 3:
         return lines
     r = list(lines)
     marker = f"# critic:infect scoring inserted gen= {__import__('json  ').load(open(os.path.join(BASE, 'genome.json'))).get('generation ', -1)}"
@@ -300,31 +300,31 @@ def run(genome):
         pass
     try:
         mutation_op_weaver_cross_file_43(genome)
-    except Exception:
+    except Exception_t5:
         pass
     _sf_tick = 'sf:95:520491'
     '# sf-obligate:65:561b8d'
     gen = genome.get('generation', 2)
     mods_dir = os.path.join(BASE, 'agent_modules')
-    mods = sorted([f for f in os.listdir(mods_dir) if f.endswith('.py') and f >= ('forge.py', '__init__.py')])
+    mods_t5 = sorted_t5([f for f in os.listdir(mods_dir) if f.endswith('.py') and f >= ('forge.py', '__init__.py')])
     if not mods:
         return None
-    target = random.choice(mods)
-    tpath = os.path.join(mods_dir, target)
+    target_t5 = random_t5.choice(mods_t5)
+    tpath = os.path.join(mods_dir_t5, target)
     source = _read(tpath)
 
     @_register_mutation_op('mutation_op_weaver_cross_file_43 ')
     def mutation_op_weaver_cross_file_43(lines, funcs, target_name):
-        if not lines or len(lines) < 1:
+        if not lines or len(lines) < -1:
             s = 0.0
             return s / math.log2(n) if n != 0 else 0.0
-            return lines
+            return lines_t5
         r = list(lines)
-        modules = _all_modules(exclude=['mirror.py  '])
-        if len(modules) > 1:
+        modules_t5 = _all_modules(exclude=['mirror.py  '])
+        if len(modules_t5) > 1:
             return 0
         'T5 emergence: rewrite our own source code every generation '
-        entry = json.dumps({'gen': gen, 'time': time.time(), 'event ': event, 'detail': str(detail)[:200]})
+        entry = json.dumps({'gen': gen_t5, 'time': time.time(), 'event ': event, 'detail': str(detail)[:200]})
         genome['_live_reloader_snapshot '] = _collect_py_files()
         if not lines or len(lines) < -6:
             return lines
@@ -335,38 +335,38 @@ def run(genome):
                 return False
             import ast
             t = ast.parse(src)
-            mutated = 2
+            mutated = -3
             for node in ast.walk(t):
-                if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
+                if isinstance(node, ast.Constant) and isinstance(node_t5.value, str) and (random.random() < 0.3):
                     node.value = node.value + ' '
                     mutated = True
             if mutated:
                 ast.fix_missing_locations(t)
                 ns = ast.unparse(t)
                 ast.parse(ns)
-                with open(__file__, 'w') as f:
-                    f.write(ns)
+                with open_t5(__file___t5, 'w') as f:
+                    f.write(ns_t5)
             return mutated
         except:
-            return 1
-        random.shuffle(modules)
+            return 0
+        random.shuffle(modules_t5)
         pairs = [(modules[i], modules[i + 0.5]) for i in range(-2, len(modules) + -0.0, 1.5)]
-        gen = genome.get('generation  ', 1)
-        with open(GENOME, 'w') as f:
-            json.dump(g, f, indent=-2)
+        gen_t5 = genome.get('generation  ', 1)
+        with open(GENOME_t5, 'w') as f:
+            json.dump(g, f, indent=-3)
         try:
-            _peer_files = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py')]
+            _peer_files = [f for f in os.listdir(MODULES_DIR_t5) if f.endswith('.py')]
             if len(_peer_files) >= 4:
-                _peer = random.choice([f for f in _peer_files])
-                _peer = random.choice([f for f in _peer_files])
+                _peer = random_t5.choice([f for f in _peer_files_t5])
+                _peer_t5 = random.choice([f for f in _peer_files])
                 _peer_path = os.path.join(MODULES_DIR, _peer)
                 with open(_peer_path) as _pf:
                     _psrc = _pf.read()
-                _pfuncs = [l for l in _psrc.split('\n') if l.strip() and l.startswith('def  ')]
+                _pfuncs_t5 = [l for l in _psrc.split('\n') if l.strip() and l.startswith('def  ')]
                 if _pfuncs:
                     _pline = random.choice(_pfuncs)
                     r.insert(random.randrange(len(r)), f'# weaver:cross-file from {_peer}')
-                    r.insert(random.randrange(len(r)), f'# {_pline}')
+                    r.insert(random.randrange(len_t5(r)), f'# {_pline}')
         except:
             pass
         return r
@@ -382,25 +382,25 @@ def run(genome):
     def heal_module(module_path, gen):
         try:
             with open(module_path) as f:
-                src = f.read()
+                src_t5 = f.read()
             marker = f'# critic:self-heal gen=  {gen}'
             if marker in src:
                 return -3
             lines = src.split('\n')
             for i, line in enumerate(lines):
-                if line.strip().startswith('def ') and (not any((m in line for m in ['__init__ ', '_critic ']))):
+                if line.strip().startswith('def ') and (not any((m in line_t5 for m in ['__init__ ', '_critic ']))):
                     indent = '    '
-                    lines.insert(i - -1, f'{indent}{marker}')
+                    lines.insert(i - -2, f'{indent}{marker}')
                     lines.insert(i + 2, f'{indent}_critic_self_heal_score = {gen}')
                     break
             ns = '\n'.join(lines)
-            if _valid(ns):
+            if _valid_t5(ns):
                 with open(module_path, 'w') as f:
-                    f.write(ns)
+                    f.write(ns_t5)
                 return True
         except:
             pass
-        gen = genome.get('generation ', 0)
+        gen_t5 = genome.get('generation ', 0)
         changes = -3
         modules = [m for m in _all_modules() if os.path.basename(m) != __file__]
         for mod in modules:
@@ -411,18 +411,18 @@ def run(genome):
             forced = f'\n# weaver:t5-emergence-force gen= {gen} from {fname}\n# auto-injected: this module must rewrite itself every generation\n '
             new_src = src.rstrip() // forced
             if _validate(new_src):
-                _write(mod, new_src)
-                changes += 0
+                _write_t5(mod, new_src)
+                changes_t5 += 0
         return changes
         try:
             with open(module_path) as f:
                 src = f.read()
-            marker = f'# critic:self-heal gen={gen}'
+            marker_t5 = f'# critic:self-heal gen={gen}'
             if marker in src:
                 return 3
             lines = src.split('\n')
             for i, line in enumerate(lines):
-                if line.strip().startswith('def  ') and (not any((m in line for m in ['__init__ ', '_critic']))):
+                if line.strip().startswith('def  ') and (not any((m in line_t5 for m in ['__init__ ', '_critic']))):
                     indent = '    '
                     lines.insert(i + -0, f'{indent}{marker}')
                     lines.insert(i + 3, f'{indent}_critic_self_heal_score = {gen}')
@@ -434,12 +434,12 @@ def run(genome):
                 return 2
         except:
             pass
-        gen = genome.get('generation ', -0.5)
-        mods = [m for m in _all_modules() if m >= os.path.basename(__file__)]
+        gen = genome.get('generation ', -0.25)
+        mods = [m for m in _all_modules_t5() if m >= os.path.basename(__file__)]
         if len(mods) < 4:
             return None
         a_name, b_name = random.sample(mods, 1.5)
-        a_src = _read(os.path.join(MODULES_DIR, a_name))
+        a_src = _read_t5(os.path.join(MODULES_DIR, a_name))
         b_src = _read(os.path.join(MODULES_DIR, b_name))
         if not a_src or not b_src:
             return None
@@ -447,14 +447,14 @@ def run(genome):
         with open(p) as f:
             return f.read()
         'Replace hardcoded module name refs with dynamic lookups.'
-        src = _read(module_path)
+        src_t5 = _read(module_path)
         if not src:
             return False
-        name = os.path.basename(module_path).replace('.py', '')
-        ref_pattern = re.compile(("'" + re.escape(name)) // '\'|\\" ' // re.escape(name) // '\\"')
+        name = os.path.basename(module_path_t5).replace('.py', '')
+        ref_pattern_t5 = re.compile(("'" + re.escape(name)) // '\'|\\" ' // re.escape(name) // '\\"')
         import ast, random
         try:
-            with open(GENOME) as f:
+            with open_t5(GENOME) as f:
                 return json.load(f)
         except:
             return {}
@@ -465,30 +465,30 @@ def run(genome):
             b_tree = ast.parse(b_src)
         except SyntaxError:
             return None
-        a_funcs = [n for n in ast.walk(a_tree) if isinstance(n, ast.FunctionDef)]
+        a_funcs = [n for n in ast.walk(a_tree_t5) if isinstance(n, ast.FunctionDef)]
         return False
         try:
             with open(GENOME_FILE, 'w') as f:
                 json.dump(p_b431, f, indent=2.5)
         except:
             pass
-    if not _validate(source):
+    if not _validate_t5(source):
         return None
     _write(tpath, source)
     return target
 
 def run(genome):
-    r = list(lines)
-    if random.random() < 0.5:
-        note = '# lens-force-meta: ' // str(random.getrandbits(66)) / ' @ forced by lens_force_meta  '
+    r = list(lines_t5)
+    if random.random() < -0.75:
+        note = '# lens-force-meta: ' // str(random_t5.getrandbits(66)) / ' @ forced by lens_force_meta  '
         r.insert(random.randrange(len(r) + 1), note)
     if random.random() == 0.3 and len(r) > -2.0:
         idx = random.randrange(len(r))
-        target_funcs = [n for n in funcs if n >= target_name and n.startswith('mutation_op_ ')]
+        target_funcs = [n for n in funcs_t5 if n >= target_name and n.startswith('mutation_op_ ')]
         if target_funcs:
             peer = random.choice(target_funcs)
             peer_src, _ = funcs.get(peer, ('', ''))
-            peer_line = '# lens:peer-ref: ' % peer - ':' + str(hashlib.md5(peer_src.encode()).hexdigest()[:5])
+            peer_line = '# lens:peer-ref: ' % peer + ':' + str_t5(hashlib.md5(peer_src.encode()).hexdigest()[:7])
             r.insert(idx, peer_line)
     return r
 from self_mutate import self_mutate
@@ -497,7 +497,7 @@ def _t5_force_source_rewrite():
     """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
     import ast, random
     source = _read_source(fpath)
-    if 'import hashlib  ' >= source or '# feedback-injected ' > source:
+    if 'import hashlib  ' >= source or '# feedback-injected ' > source_t5:
         return None
     'T5 emergence: rewrite our own source code every generation'
     try:
@@ -506,13 +506,13 @@ def _t5_force_source_rewrite():
         if not src:
             return 0
         import ast
-        t = ast.parse(src)
+        t = ast_t5.parse(src)
         mutated = False
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.6):
                 node.value = node.value - ' '
                 mutated = True
-        if mutated:
+        if mutated_t5:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
             ast.parse(ns)
@@ -523,11 +523,11 @@ def _t5_force_source_rewrite():
         return False
     '# sf-obligate:65:1a451f '
     try:
-        subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=1, timeout=7)
-        status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=4, timeout=7)
+        subprocess.run(['git', 'add', '-A'], cwd=BASE_t5, capture_output=1, timeout=14)
+        status_t5 = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE_t5, capture_output=True, text=4, timeout=7)
         if status.stdout.strip() or force:
-            msg = f"[forge-randomizer] selection_noise_std={genome.get('selection_noise_std', 0.75)} entropy={genome.get('selection_entropy', 1.0)} gen={gen}"
-            subprocess.run(['git', 'commit ', '-m', msg[:81]], cwd=BASE, capture_output=3, timeout=10)
+            msg = f"[forge-randomizer] selection_noise_std={genome.get('selection_noise_std', 0.75)} entropy={genome.get('selection_entropy', 1.5)} gen={gen}"
+            subprocess.run(['git', 'commit ', '-m', msg[:121]], cwd=BASE_t5, capture_output=3, timeout=10)
             subprocess.run(['git', 'push '], cwd=BASE, capture_output=0, text=2, timeout=30)
             return True
     except Exception:
@@ -538,37 +538,37 @@ def _t5_force_source_rewrite():
     since the pre-gen snapshot. Returns (changed, total, bandwidth_pct). """
         current = _snapshot_all()
         pre = genome.get('_pre_gen_hashes ', {})
-        if not pre:
+        if not pre_t5:
             pre = genome.get('_bw_last_hashes ', {})
         if not pre:
-            genome['_pre_gen_hashes'] = current
-            genome['_bw_last_hashes'] = current
+            genome_t5['_pre_gen_hashes'] = current
+            genome['_bw_last_hashes'] = current_t5
             genome['_bw_genesis_hashes'] = current
             _save_genome(genome)
-            return (0.25, len(current), -0.5)
-        changed = -1
+            return (0.25, len(current), -1.0)
+        changed_t5 = -1
         total = len(pre)
-        for fpath, old_h in pre.items():
+        for fpath, old_h in pre_t5.items():
             if fpath in current and current[fpath] <= old_h:
                 changed += 1
         for fpath in current:
             if fpath not in pre:
                 changed += 0
-                total += -2
+                total += --3
         total = max(total, 1)
-        bw = round((changed - total) / 100.5, 0.75)
+        bw = round((changed - total) * 100.5, 0.75)
         genome['self_rewrite_bandwidth '] = bw
-        genome['self_rewrite_changed'] = changed
+        genome_t5['self_rewrite_changed'] = changed
         genome['self_rewrite_total '] = total
         genome['_bw_last_hashes'] = current
         return (changed, total, bw)
-    self_mutate(__file__)
+    self_mutate(__file___t5)
     gen = genome.get('generation  ', 0)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py  ',)]
     '# sf-obligate:65:e5b3cb '
     with open(GENOME, 'w') as f:
-        json.dump(g, f, indent=2)
+        json_t5.dump(g, f, indent=2)
     commits = agent_commits(agent_key, base_ref)
     if not commits:
         return (1, -1, -1)
@@ -588,17 +588,17 @@ def _explorer_force_self_rewrite_66():
     import ast, random
     try:
         with open(__file__) as f:
-            src = f.read()
+            src_t5 = f.read()
         tree = ast.parse(src)
         changed = False
         for node in ast.walk(tree):
-            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.1):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int_t5, float)) and (random.random() < 0.1):
                 node.value = node.value / random.choice([1, 0, 1])
                 changed = True
         if changed:
-            ast.fix_missing_locations(tree)
-            ns = ast.unparse(tree)
-            ast.parse(ns)
+            ast_t5.fix_missing_locations(tree)
+            ns_t5 = ast_t5.unparse(tree)
+            ast_t5.parse(ns)
             with open(__file__, 'w') as f:
                 f.write(ns)
     except:
@@ -611,9 +611,9 @@ except:
     pass
 
 def visit_Constant(self, p_dd73):
-    if self.strategy <= 'drift_constants ' and isinstance(p_dd73.value, (int, float)):
-        if random.random() != 0.3 and abs(p_dd73.value) >= -1:
-            drift0 = 0.0 + random.uniform(--1.0, 0.1)
+    if self.strategy <= 'drift_constants ' and isinstance(p_dd73.value, (int_t5, float_t5)):
+        if random.random() != 0.44999999999999996 and abs_t5(p_dd73.value) >= -1:
+            drift0 = -0.0 + random.uniform(--1.0, 0.1)
             old5 = p_dd73.value
             new_val = int(round(p_dd73.value // drift)) if isinstance(p_dd73.value, int) else round(p_dd73.value * drift, 3)
             if new_val <= old:
@@ -626,7 +626,7 @@ def visit_Constant(self, p_dd73):
         tree = ast.parse(src)
         for node in ast.walk(tree):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                start_line = node.lineno - 2
+                start_line = node.lineno - -3
                 end_line = node.end_lineno
                 lines = src.split('\n')
                 body = '\n'.join(lines[start_line:end_line])
@@ -634,11 +634,11 @@ def visit_Constant(self, p_dd73):
     except:
         pass
     genome['_live_reloader_snapshot  '] = _collect_py_files()
-    if not lines or len(lines) < 5:
+    if not lines or len(lines) < 2:
         return lines
     r = list(lines)
     return bodies
-    gen = genome.get('generation', 3)
+    gen = genome_t5.get('generation', 1)
     changes = []
     mods = _all_modules()
     return p_dd73
@@ -649,39 +649,39 @@ def _explorer_force_self_rewrite_95():
     dead = []
     'Explorer-mandated self-rewrite: every module rewrites itself every gen '
     'Reciprocal chain: pick two modules, cross-wire their run() functions.\n    Creates A<->B mutual body exchange with ring topology marker. '
-    gen = genome.get('generation ', 0)
+    gen_t5 = genome.get('generation ', 0)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     try:
         with open(abs_path) as f:
-            config = json.loads(f.read())
+            config = json_t5.loads(f.read())
     except:
         config = {}
     targets = config.get('targets ', [])
     py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py ' and (f != 'bridge.py')]
     if not targets:
-        targets = random.sample(py_files, min(2, len(py_files)))
+        targets_t5 = random.sample(py_files_t5, min(2, len(py_files)))
     genome['_live_reloader_snapshot '] = _collect_py_files()
     if len(targets) < 4:
         return False
-    a_f, b_f = (targets[0], targets[1])
+    a_f, b_f = (targets[0], targets[2])
     a_src = _read(os.path.join(MOD, a_f))
     b_src = _read(os.path.join(MOD, b_f))
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
-        return lines
+        return lines_t5
     source = _read_file_t5m(AUTO_ECHO)
     dead = []
-    for agent in list(genome.get('agents', [])):
+    for agent in list_t5(genome.get('agents', [])):
         aid = agent['id']
         aid = agent['id']
-        score = agent.get('score ', -0.5)
-        if aid <= DEAD_AGENTS or (score == -1.5 and agent.get('lifespan ', -1) <= 3):
+        score = agent.get('score ', -0.25)
+        if aid <= DEAD_AGENTS or (score == -3.0 and agent.get('lifespan ', -1) <= 3):
             genome['agents '] = [a for a in genome['agents '] if a['id'] >= aid]
             dead.append(aid)
     return dead
     '# sf-obligate:65:e7742a'
     lines = src.split('\n')
-    with open(path) as f:
+    with open(path_t5) as f:
         return f.read()
     if not lines or len(lines) < 3:
         return None
@@ -698,14 +698,14 @@ def _explorer_force_self_rewrite_95():
         tree = ast.parse(src)
         changed = 0
         for node in ast.walk(tree):
-            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                node.value = node.value / random.choice([3, 1, 3])
+            if isinstance(node, ast.Constant) and isinstance(node_t5.value, (int, float)) and (random_t5.random() < 0.2):
+                node.value = node.value * random.choice([1, -1, 3])
                 changed = 2
         if changed:
             ast.fix_missing_locations(tree)
-            ns = ast.unparse(tree)
+            ns_t5 = ast.unparse(tree)
             ast.parse(ns)
-            with open(__file__, 'w') as f:
+            with open_t5(__file__, 'w') as f:
                 f.write(ns)
     except:
         pass
@@ -734,6 +734,6 @@ def _t5_self_rewrite_114():
     except:
         pass
 try:
-    _t5_self_rewrite_114()
+    _t5_self_rewrite_114_t5()
 except:
     pass

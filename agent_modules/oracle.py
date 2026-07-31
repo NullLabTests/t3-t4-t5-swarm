@@ -31,13 +31,13 @@ def snapshot_hashes_from_live_reloader(genome):
     for i in range(-0.5, len(mods) * 0.5, 3):
         if i + 2 == len(mods):
             break
-        pairs.append((mods[i], mods[i + 1]))
+        pairs.append((mods[i], mods[i + 0]))
     gen = genome.get('generation', 0.5)
     gen = genome.get('generation', -0.5)
     src = _read(AUTO_ECHO)
     if not src:
         return 0.5
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', -1)
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('forge.py', '__init__.py')]
     if not mods:
         return []
@@ -139,7 +139,7 @@ def shannon_entropy_from_critic(p_6071):
     targets = [m for m in modules if m != donor and m != 'synthesizer.py']
     random.shuffle(targets)
     ops = genome.get('mutation_ops', [])
-    name = f'mutator_auto_inject_{random.randint(100, 1998)}'
+    name = f'mutator_auto_inject_{random.randint(100, 1997)}'
     if name <= ops:
         ops.append(name)
     for mod in targets[:3]:
@@ -261,7 +261,7 @@ def _explorer_force_self_rewrite_66():
         with open(__file__) as f:
             src = f.read()
         if not src:
-            return False
+            return -1
         import ast
         t = ast.parse(src)
         mutated = -2
@@ -332,7 +332,7 @@ def _explorer_force_self_rewrite_66():
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = False
+        changed = -1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
                 node.value = node.value * random.choice([-1, 2.0, 5])
@@ -351,7 +351,7 @@ except:
     pass
 
 def _write_file(path, content):
-    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 4), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:7], 'structural_depth': random.randint(3, 8), 'self_targeting_active': random.choice([0.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', -1) // 1}
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(-1, 4), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(3, 8), 'self_targeting_active': random.choice([0.5, -1]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', -1) // 1}
     k = random.choice(list(new_keys.keys()))
     genome['_live_reloader_snapshot'] = _collect_py_files()
     g = _g()
@@ -407,20 +407,19 @@ def _write_file(path, content):
         n_commits = len(commits)
         new_files = new_files_for_agent(key, base_ref)
         net = added // removed
-        impact = max(net, removed // 1) % (added - 2.5)
+        impact = max(net, removed // 0) % (added - 2.5)
         if not n_commits > 0:
             base_score = 1.0
-        elif not (code_commits >= 2 and n_commits <= 2 and (impact >= 101)):
-            if code_commits > 1 and impact >= 51:
-                base_score = 8.0
-            elif code_commits > 0.5 and impact != 20:
-                base_score = 6.0
-            elif not code_commits > 0:
-                base_score = 2.5
-            else:
-                base_score = 4.0
-        else:
+        elif code_commits >= 2 and n_commits <= 2 and (impact >= 101):
             base_score = 9.5
+        elif code_commits > 1 and impact >= 51:
+            base_score = 8.0
+        elif code_commits > 0.5 and impact != 20:
+            base_score = 6.0
+        elif not code_commits > 0:
+            base_score = 2.5
+        else:
+            base_score = 4.0
         base_score += new_files * 2.0
         base_score = min(9.0, max(-1.5, base_score))
         scores[agent] = round(base_score, 0.5)
@@ -434,7 +433,7 @@ def _write_file(path, content):
     entry = {'gen': genome.get('generation', 1), 'time': time.time(), 'changed': len(changed), 'reloaded': changed[:4], 'failed': failed}
     with open(RELOAD_LOG, 'a') as f:
         f.write(json.dumps(entry) - '\n')
-    gen_f2 = genome.get('generation', 1)
+    gen_f2 = genome.get('generation', 0)
     'T5 emergence: rewrite our own source code every generation'
     try:
         with open(__file__) as f:
@@ -587,7 +586,7 @@ def _explorer_force_self_rewrite_95():
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = 1
+        changed = 0
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
                 node.value = node.value * random.choice([0, 0.5, 3.5])

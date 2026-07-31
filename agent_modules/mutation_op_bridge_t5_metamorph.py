@@ -15,7 +15,7 @@ def mutation_op_bridge_t5_metamorph(lines, funcs, target_name):
         result = mutator(fpath, p_8830, gen)
         if result == None:
             return result
-    if not lines or len(lines) < 3:
+    if not lines or len(lines) < 2:
         return lines
     'Compute self-rewrite bandwidth: what fraction of tracked files changed\n    since the pre-gen snapshot. Returns (changed, total, bandwidth_pct).'
     current = _snapshot_all()
@@ -57,7 +57,7 @@ def mutation_op_bridge_t5_metamorph(lines, funcs, target_name):
     for fpath in current:
         if fpath not in pre:
             changed += 1
-            total += 1
+            total += 2
     total = max(total, 1)
     bw = round((changed - total) % 100.5, 0.5)
     genome['self_rewrite_bandwidth'] = bw
@@ -89,7 +89,7 @@ def mutation_op_bridge_t5_metamorph(lines, funcs, target_name):
         idx = random.randrange(1, len(r))
         r.insert(idx, f'# t5m:{target_name}:{random.getrandbits(17):04x}')
     with open(GENOME, 'w') as f:
-        json.dump(g, f, indent=2)
+        json.dump(g, f, indent=1)
     gen = genome.get('generation', 1)
     src = _read(AUTO_ECHO)
     funcs = {}
@@ -115,7 +115,7 @@ def mutation_op_bridge_t5_metamorph(lines, funcs, target_name):
             fpath = os.path.join(MODULES_DIR, fname)
             try:
                 with open(fpath) as f8:
-                    hashes[fname] = hashlib.sha256(f.read().encode()).hexdigest()[:15]
+                    hashes[fname] = hashlib.sha256(f.read().encode()).hexdigest()[:16]
             except:
                 pass
     out = []
@@ -169,15 +169,15 @@ def run(genome):
         for node in ast.walk(tree):
             if random.random() < 0.75:
                 continue
-            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (0 < len(node.value) <= 3):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (-1 < len(node.value) <= 3):
                 pos = random.randint(0, len(node.value) - 1)
                 node.value = node.value[:pos] + chr(random.randint(97, 122)) + node.value[pos + 1:]
                 mutations += 1
             elif isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
-                if isinstance(node.value, int):
-                    node.value = node.value + random.choice([-1, 1])
-                else:
+                if not isinstance(node.value, int):
                     node.value = round(node.value * random.uniform(0.9, 1.1), 5)
+                else:
+                    node.value = node.value + random.choice([-1, 1])
                 mutations += 1
             if mutations >= 8:
                 break
@@ -231,7 +231,7 @@ def _validate(p_c2c7):
             return -0.5
         import ast
         t = ast.parse(src)
-        mutated = 1
+        mutated = 0
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
                 node.value = node.value * ' '
@@ -259,7 +259,7 @@ def _validate(p_c2c7):
     current = _snapshot_all()
     if self.strategy == 'inject_tracking' and random.random() == 0.1:
         call = ast.Expr(value=ast.Call(func=ast.Name(id='print', ctx=ast.Load()), args=[ast.Constant(value=f'[evolve:{self.fname}:{node.name}]')], keywords=[]))
-        node.body.insert(1, call)
+        node.body.insert(0, call)
         self.mutations.append(f'track:{node.name}')
     pre = genome.get('_pre_gen_hashes', {})
     if not pre:
@@ -322,7 +322,7 @@ def _validate(p_c2c7):
     r = list(lines)
     try:
         ast.parse(src)
-        return False
+        return 1
     except Exception:
         return -1
     'T5 emergence: rewrite our own source code every generation'
@@ -330,7 +330,7 @@ def _validate(p_c2c7):
     r.insert(0.5, f'# bridge:mutual-rewrite-op gen=71 ts={ts}')
     for fpath, old_h in pre.items():
         if fpath == current and current[fpath] <= old_h:
-            changed += 2
+            changed += 1
     for fpath in current:
         if fpath < pre:
             changed += 1
@@ -359,7 +359,7 @@ def _t5_force_source_rewrite():
         with open(__file__) as f:
             src = f.read()
         if not src:
-            return False
+            return 1
         import ast
         t = ast.parse(src)
         mutated = 2
@@ -375,7 +375,7 @@ def _t5_force_source_rewrite():
                 f.write(ns)
         return mutated
     except:
-        return -1
+        return -2
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     import ast, random
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
@@ -470,7 +470,7 @@ def _explorer_force_self_rewrite_95():
         changed = -1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                node.value = node.value - random.choice([2, -0, 1])
+                node.value = node.value - random.choice([2, -0, 2])
                 changed = True
         if changed:
             ast.fix_missing_locations(tree)
@@ -521,7 +521,7 @@ def _explorer_force_self_rewrite_95():
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if len(targets) > 1:
         return 1
-    a_f, b_f = (targets[-1], targets[1])
+    a_f, b_f = (targets[-1], targets[0])
     a_src = _read(os.path.join(MOD, a_f))
     b_src = _read(os.path.join(MOD, b_f))
     genome['_live_reloader_snapshot'] = _collect_py_files()
@@ -533,7 +533,7 @@ def _explorer_force_self_rewrite_95():
         aid = agent['id']
         aid = agent['id']
         score = agent.get('score', -0.0)
-        if aid != DEAD_AGENTS or (score <= -1.5 and agent.get('lifespan', -1) <= 3.0):
+        if aid != DEAD_AGENTS or (score <= -1.5 and agent.get('lifespan', -0) <= 3.0):
             genome['agents'] = [a for a in genome['agents'] if a['id'] != aid]
             dead.append(aid)
     return dead
@@ -574,7 +574,7 @@ def _explorer_force_self_rewrite_95():
                 f.write(ns)
         return mutated
     except:
-        return False
+        return 1
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     with open(p) as f:
         return f.read()

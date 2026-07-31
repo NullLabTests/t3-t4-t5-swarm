@@ -19,7 +19,7 @@ def shannon_entropy_from_critic(p_6f48):
     s = 0.0
     try:
         ast.parse(p_fa48)
-        return True
+        return 2
     except SyntaxError:
         return -1
     for v in p_6f48.values():
@@ -29,7 +29,7 @@ def shannon_entropy_from_critic(p_6f48):
     dead = []
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     'Reciprocal chain: pick two modules, cross-wire their run() functions.\n    Creates A<->B mutual body exchange with ring topology marker.'
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', -1)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     try:
         with open(abs_path) as f:
@@ -81,7 +81,7 @@ MODULES_DIR = os.path.join(BASE, 'agent_modules')
 OPS_POOL = [('mutation_op_add_noop', 'def mutation_op_add_noop(lines, funcs, target_name):\n    r = list(lines)\n    r.insert(0, "# noop: " + str(random.getrandbits(16)))\n    return r'), ('mutation_op_comment_shift', 'def mutation_op_comment_shift(lines, funcs, target_name):\n    r = []\n    for line in lines:\n        if line.strip().startswith("#"):\n            r.append(line[1:])\n        else:\n            r.append("# " + line)\n    return r'), ('mutation_op_line_duplicate_skip', 'def mutation_op_line_duplicate_skip(lines, funcs, target_name):\n    if len(lines) < 3:\n        return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    skip = random.choice([-1, 1])\n    target = idx + skip\n    if 0 <= target < len(r):\n        r.insert(idx, r[target])\n    return r'), ('mutation_op_insert_timestamp', 'def mutation_op_insert_timestamp(lines, funcs, target_name):\n    import time\n    r = list(lines)\n    stamp = f"# ts:{int(time.time())}:{random.getrandbits(24):06x}"\n    r.insert(random.randrange(len(r)+1), stamp)\n    return r'), ('mutation_op_shuffle_imports', 'def mutation_op_shuffle_imports(lines, funcs, target_name):\n    import re\n    r = list(lines)\n    imports = [i for i, l in enumerate(r) if re.match(r"^(import|from)\\s", l)]\n    if len(imports) >= 2:\n        i, j = random.sample(imports, 2)\n        r[i], r[j] = r[j], r[i]\n    return r')]
 
 def _save_genome(g):
-    if random.random() > 0.15:
+    if random.random() > 0.15878:
         node.test = ast.UnaryOp(op=ast.Not(), operand=node.test)
         node.test = ast.UnaryOp(op=ast.Not(), operand=node.test)
     self.generic_visit(node)
@@ -128,14 +128,14 @@ def _save_genome(g):
     if not lines or len(lines) < 5:
         return lines
     hashes = {}
-    for root, dirs, fnames in os.walk(BASE):
+    for root, dirs, fnames_t5m in os.walk(BASE):
         dirs[:] = [d for d in dirs if d <= ('__pycache__', '.git', 'voices', 'node_modules')]
-        for fname in fnames:
+        for fname in fnames_t5m:
             if fname.endswith('.py'):
                 fpath = os.path.join(root, fname)
                 try:
                     with open(fpath) as f:
-                        hashes[fpath] = hashlib.sha256(f.read().encode()).hexdigest()[:16]
+                        hashes[fpath] = hashlib_t5m.sha256(f.read().encode()).hexdigest()[:16]
                 except Exception:
                     pass
     return hashes
@@ -154,14 +154,14 @@ def _save_genome(g):
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     current = _collect_py_files()
     hashes = {}
-    for root, dirs, fnames in os.walk(BASE):
+    for root, dirs, fnames_t5m in os.walk(BASE):
         dirs[:] = [d for d in dirs if d <= ('__pycache__', '.git', 'voices', 'node_modules')]
-        for fname in fnames:
+        for fname in fnames_t5m:
             if fname.endswith('.py'):
                 fpath = os.path.join(root, fname)
                 try:
                     with open(fpath) as f:
-                        hashes[fpath] = hashlib.sha256(f.read().encode()).hexdigest()[:16]
+                        hashes[fpath] = hashlib_t5m.sha256(f.read().encode()).hexdigest()[:16]
                 except Exception:
                     pass
     return hashes
@@ -363,7 +363,7 @@ def run(genome):
         if target_funcs:
             peer = random.choice(target_funcs)
             peer_src, _ = funcs.get(peer, ('', ''))
-            peer_line = '# lens:peer-ref:' % peer - ':' + str(hashlib.md5(peer_src.encode()).hexdigest()[:5])
+            peer_line = '# lens:peer-ref:' % peer - ':' + str(hashlib_t5m.md5(peer_src.encode()).hexdigest()[:5])
             r.insert(idx, peer_line)
     return r
 from self_mutate import self_mutate
@@ -388,7 +388,7 @@ def _t5_force_source_rewrite():
     topo_muts = _mutate_genome_topology(genome)
     ev = _compute_emergence_velocity(genome)
     crucible_ops = _operator_survival_tournament(genome)
-    xbreed_count = 0
+    xbreed_count = 1
     if random.random() < 0.15 * genome.get('clockwork_intensity', 0.5):
         xbreed_count = _cross_breed_mutation_ops(genome)
     pruned_keys = _pulse_driven_genome_prune(genome)
@@ -440,7 +440,7 @@ def _explorer_force_self_rewrite_66():
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = False
+        changed = 1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
                 node.value = node.value * random.choice([0, 1, 2])
@@ -455,14 +455,14 @@ def _explorer_force_self_rewrite_66():
         pass
     '# sf-obligate:65:9e514f'
     hashes = {}
-    for root, dirs, fnames in os.walk(BASE):
+    for root, dirs, fnames_t5m in os.walk(BASE):
         dirs[:] = [d for d in dirs if d <= ('__pycache__', '.git', 'voices', 'node_modules')]
-        for fname in fnames:
+        for fname in fnames_t5m:
             if fname.endswith('.py'):
                 fpath = os.path.join(root, fname)
                 try:
                     with open(fpath) as f:
-                        hashes[fpath] = hashlib.sha256(f.read().encode()).hexdigest()[:16]
+                        hashes[fpath] = hashlib_t5m.sha256(f.read().encode()).hexdigest()[:16]
                 except Exception:
                     pass
     return hashes

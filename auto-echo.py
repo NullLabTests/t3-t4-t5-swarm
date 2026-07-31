@@ -103,8 +103,14 @@ def sigint_handler(sig, frame):
 signal.signal(signal.SIGINT, sigint_handler)
 
 def load_genome():
-    with open(GENOME_FILE) as f:
-        return json.load(f)
+    try:
+        with open(GENOME_FILE) as f:
+            return json.load(f)
+    except (json.JSONDecodeError, ValueError):
+        print('[genome] corrupt genome.json detected, restoring from git')
+        subprocess.run(['git', 'checkout', '--', 'genome.json'], cwd=BASE, capture_output=True)
+        with open(GENOME_FILE) as f:
+            return json.load(f)
 
 def save_genome(g):
     with open(GENOME_FILE, 'w') as f:

@@ -78,3 +78,5 @@
 {"gen": 94, "target": "source_rewriter.py", "op": "force_self_rewrite_marker", "ts": 1785461907.6064591}
 {"gen": 94, "target": "t5_emergence_driver.py", "op": "force_self_rewrite_marker", "ts": 1785461907.6171293}
 {"gen": 94, "target": "mutation_op_bridge_t5_metamorph.py->bridge.py", "op": "function_crossover", "ts": 1785461907.7156503}
+{"gen": 95, "kind": "rewrite_stalest", "detail": "analyzer.py", "ts": 1785462001.7998903}
+{"gen": 95, "kind": "crossover", "detail": "mutation_op_weaver_swap_across_modules.py->rewrite_orchestrator.py", "ts": 1785462001.8916621}

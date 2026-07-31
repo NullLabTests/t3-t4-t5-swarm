@@ -1,3 +1,4 @@
+# clockwork:rewrite-mandate gen=95 staleness=95
 def snapshot_hashes_from_live_reloader(genome):
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:

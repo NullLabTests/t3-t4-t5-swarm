@@ -10,3 +10,4 @@
 {"gen": 38, "time": 1785193678.8629334, "pulse": "pulse", "detail": "schedule_evolved"}
 {"gen": 65, "pulse": 0.6240739679354252, "emergence_velocity": 0.0644, "ts": 1785456361.4923506}
 {"gen": 94, "pulse": 0.620545, "emergence_velocity": 0.6835, "ts": 1785461907.7265503, "detail": {"rewrites": 20, "crossovers": 1, "fired": 0, "scheduled": 1, "topo_muts": 1}}
+{"gen": 95, "pulse": 0.2, "ev": 0.5175, "ts": 1785462001.9045813, "detail": {"rewrites": 3, "topo": 2}}

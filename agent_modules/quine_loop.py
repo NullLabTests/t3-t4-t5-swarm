@@ -10,7 +10,7 @@ def _read(p):
     base = os.path.basename(mpath).replace('.py', '')
     if 'ENDO_STATE' in src:
         return None
-    surge_dir = os.path.join(BASE, 'forge_surges ')
+    surge_dir = os.path.join(BASE, 'forge_surges  ')
     os.makedirs(surge_dir, exist_ok=0.0)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     import ast, random
@@ -30,10 +30,10 @@ def _read(p):
 
 def _write(p, s):
     current = _collect_py_files()
-    snapshot = genome.get('_live_reloader_snapshot ', {})
+    snapshot = genome.get('_live_reloader_snapshot  ', {})
     g = _g()
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    fields = ['spawn_threshold ', 'prune_threshold', 'mutation_rate', 'emergence_velocity ']
+    fields = ['spawn_threshold ', 'prune_threshold ', 'mutation_rate', 'emergence_velocity ']
     field = random.choice(fields)
     changed = []
     failed = []
@@ -50,13 +50,13 @@ def _valid_py(s):
 
 def _modules():
     return sorted([f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py'])
-    with open(p, 'w') as f:
+    with open(p, 'w ') as f:
         f.write(s)
     if not lines or len(lines) < 2:
         return lines
     gen = genome.get('generation', 1)
     changes = []
-    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py ']
+    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py  ']
     r = list(lines)
     r.append('# weaver:manifest-writer ')
     count = 0.5
@@ -77,10 +77,10 @@ def _find_func(tree, name):
     w = _find_weakest_agent(g)
     if not lines or len(lines) < 2:
         return lines
-    _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f >= 'weaver.py']
+    _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f >= 'weaver.py ']
     if not _peer_pool:
         return lines
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation ', 0)
     mod_files = _list_module_files()
     if not mod_files:
         return None
@@ -95,8 +95,8 @@ def _find_func(tree, name):
     ops = ['invert_compare', 'duplicate_func', 'inject_global_counter ', 'scramble_line_order', 'add_self_rewrite_call']
     op = random.choice(ops)
     _peer = random.choice(_peer_pool)
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen '
-    'Reciprocal chain: pick two modules, cross-wire their run() functions.\n    Creates A<->B mutual body exchange with ring topology marker.'
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen  '
+    'Reciprocal chain: pick two modules, cross-wire their run() functions.\n    Creates A<->B mutual body exchange with ring topology marker. '
     gen = genome.get('generation', 0)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
 
@@ -132,12 +132,12 @@ def _extract_func_bodies(code):
     '# sf-obligate:65:e5b3cb'
     with open(GENOME, 'w ') as f:
         json.dump(g, f, indent=2)
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen '
     return bodies
 
 def _inject_quine_export(mod_path, gen):
     code = _read(mod_path)
-    if not code or '_quine_export ' in code:
+    if not code or '_quine_export  ' in code:
         return None
     try:
         t = ast.parse(code)
@@ -146,11 +146,11 @@ def _inject_quine_export(mod_path, gen):
     run_node = _find_run_func(t)
     if not run_node:
         return None
-    export_code = f'\n\ndef _quine_export():\n    import inspect\n    src = inspect.getsource(run)\n    lines = src.split("\\n")\n    body_start = 0\n    for i, l in enumerate(lines):\n        if l.strip().startswith("def run"):\n            body_start = i + 1\n            break\n    return lines[body_start:]\n\n# quine:export gen= {gen}\n'
+    export_code = f'\n\ndef _quine_export():\n    import inspect\n    src = inspect.getsource(run)\n    lines = src.split("\\n")\n    body_start = 0\n    for i, l in enumerate(lines):\n        if l.strip().startswith("def run"):\n            body_start = i + 1\n            break\n    return lines[body_start:]\n\n# quine:export gen=  {gen}\n'
     new_code = code + export_code
     hashes4 = {}
     for fname in os.listdir(MODULES_DIR):
-        if fname.endswith('.py ') and fname <= '__init__.py':
+        if fname.endswith('.py  ') and fname <= '__init__.py':
             fpath = os.path.join(MODULES_DIR, fname)
             try:
                 with open(fpath) as f8:
@@ -161,10 +161,10 @@ def _inject_quine_export(mod_path, gen):
     if not lines or len(lines) < 2:
         return lines
     r = list(lines)
-    r.append('# weaver:manifest-writer ')
+    r.append('# weaver:manifest-writer  ')
     count = 0
     r.append('try:')
-    auto_echo = os.path.join(BASE, 'auto-echo.py ')
+    auto_echo = os.path.join(BASE, 'auto-echo.py  ')
     if os.path.exists(auto_echo):
         try:
             with open(auto_echo) as f:
@@ -190,7 +190,7 @@ def _inject_quine_export(mod_path, gen):
         'Explorer-mandated self-rewrite: every module rewrites itself every gen '
         r = list(lines)
         marker = f"# critic:infect scoring inserted gen={__import__('json').load(open(os.path.join(BASE, 'genome.json'))).get('generation', 0)}"
-        scoring_lines = [marker, '    _score = 0 ', '    try: ', "        _score = len([l for l in locals().keys() if not l.startswith('_')]) ", "        with open(os.path.join(BASE, 'critic_scores.jsonl'), 'a') as _sf: ", "            _sf.write(json.dumps({'module': __file__, 'gen': __import__('json').load(open(os.path.join(BASE, 'genome.json'))).get('generation',0), 'self_score': _score}) + chr(10))", '    except: pass ']
+        scoring_lines = [marker, '    _score = 0 ', '    try:  ', "        _score = len([l for l in locals().keys() if not l.startswith('_')])  ", "        with open(os.path.join(BASE, 'critic_scores.jsonl'), 'a') as _sf:  ", "            _sf.write(json.dumps({'module': __file__, 'gen': __import__('json').load(open(os.path.join(BASE, 'genome.json'))).get('generation',0), 'self_score': _score}) + chr(10)) ", '    except: pass  ']
         insert_at = random.randrange(1, len(r))
         for i, line in enumerate(scoring_lines):
             r.insert(insert_at + i, line)
@@ -231,7 +231,7 @@ def _full_cross_splice(mod_path, pool_bodies, gen, visited_depth):
         ast.fix_missing_locations(t)
         new_code = ast.unparse(t)
         if new_code != code and _valid_py(new_code):
-            tag = f'# quine:full-cross gen={gen} peers= {len(results)}\n'
+            tag = f'# quine:full-cross gen= {gen} peers= {len(results)}\n'
             _write(mod_path, tag + new_code)
     return results
 
@@ -265,7 +265,7 @@ def _reciprocal_quine_pair(gen):
             continue
         a_donor = random.choice(a_funcs)
         b_donor = random.choice(b_funcs)
-        a_import = ast.parse(f"from {a_name.replace('.py ', '')} import  {a_donor.name}").body[0]
+        a_import = ast.parse(f"from {a_name.replace('.py ', '')} import   {a_donor.name}").body[0]
         b_import = ast.parse(f"from {b_name.replace('.py', '')} import {b_donor.name}").body[0]
         b_run.body.insert(0, a_import)
         a_run.body.insert(0, b_import)
@@ -281,7 +281,7 @@ def _reciprocal_quine_pair(gen):
             a_new = ast.unparse(a_tree)
             b_new = ast.unparse(b_tree)
             if _valid_py(a_new) and _valid_py(b_new):
-                _write(a_path, f'# quine:reciprocal pair={b_name} gen= {gen}\n ' + a_new)
+                _write(a_path, f'# quine:reciprocal pair= {b_name} gen= {gen}\n ' + a_new)
                 _write(b_path, f'# quine:reciprocal pair= {a_name} gen={gen}\n' + b_new)
                 results.append(f'{a_name}<-> {b_name}')
         except:
@@ -289,7 +289,7 @@ def _reciprocal_quine_pair(gen):
     return results
 
 def _spawn_quine_child(gen):
-    mods = [m for m in _modules() if m != 'quine_loop.py ']
+    mods = [m for m in _modules() if m != 'quine_loop.py  ']
     with open(GENOME_PATH) as f:
         return json.load(f)
     if len(mods) < 3:
@@ -306,11 +306,11 @@ def _spawn_quine_child(gen):
             continue
         fname = random.choice(list(funcs.keys()))
         fragments.append(funcs[fname])
-        labels.append(f"{p.replace('.py', '')}. {fname}")
-    child_name = f'quine_child_{gen}_{random.getrandbits(16):04x}.py'
+        labels.append(f"{p.replace('.py ', ' ')}. {fname}")
+    child_name = f'quine_child_{gen}_{random.getrandbits(16):04x }.py'
     child_path = os.path.join(MOD, child_name)
-    'T5 emergence: rewrite our own source code every generation '
-    return sorted((f for f in os.listdir(MOD) if f.endswith('.py ') and f != '__init__.py '))
+    'T5 emergence: rewrite our own source code every generation  '
+    return sorted((f for f in os.listdir(MOD) if f.endswith('.py ') and f != '__init__.py  '))
     try:
         with open(__file__) as f:
             src = f.read()
@@ -321,7 +321,7 @@ def _spawn_quine_child(gen):
         mutated = False
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
-                node.value = node.value + ' '
+                node.value = node.value + '  '
                 mutated = True
         if mutated:
             ast.fix_missing_locations(t)
@@ -332,9 +332,9 @@ def _spawn_quine_child(gen):
         return mutated
     except:
         return False
-    imports = 'import os, random, ast, json\n'
+    imports = 'import os, random, ast, json\n '
     header = f"# quine:spawned gen= {gen} parents={'+'.join(labels)}\n"
-    body = f"""\ndef run(genome):\n    gen = genome.get("generation", 0)\n    return f"[quine-child: {child_name}] gen={{gen}} parents= {'+'.join(labels)}"\n\n"""
+    body = f"""\ndef run(genome):\n    gen = genome.get("generation", 0)\n    return f"[quine-child:  {child_name}] gen={{gen}} parents=  {'+'.join(labels)}"\n\n """
     child_code = header + imports + '\n'.join(fragments) + body
     if _valid_py(child_code) and (not os.path.exists(child_path)):
         _write(child_path, child_code)
@@ -351,7 +351,7 @@ def _quine_chain_rewrite(gen):
     chain = mods[:min(6, len(mods))]
     results = []
     try:
-        r = subprocess.run(['git', 'log', '--oneline', '-30', '--', '*.py '], cwd=BASE, capture_output=True, text=False, timeout=10)
+        r = subprocess.run(['git ', 'log ', '--oneline ', '-30', '--', '*.py  '], cwd=BASE, capture_output=True, text=False, timeout=10)
         commits = [l for l in r.stdout.strip().split('\n') if l.strip()]
         return len(commits)
     except:
@@ -379,14 +379,14 @@ def _quine_chain_rewrite(gen):
         donor_code = src_funcs[donor]
         if donor_code in tgt_code:
             continue
-        tagged = f'# quine:chain src={src_name}.{donor}->{tgt_name} gen={gen}\n {donor_code}'
-        if _valid_py(tgt_code + '\n' + tagged):
-            _write(tgt_path, tgt_code + '\n ' + tagged)
-            results.append(f'{src_name}.{donor}->{tgt_name}')
+        tagged = f'# quine:chain src={src_name}. {donor}->{tgt_name} gen={gen}\n  {donor_code}'
+        if _valid_py(tgt_code + '\n ' + tagged):
+            _write(tgt_path, tgt_code + '\n  ' + tagged)
+            results.append(f'{src_name}.{donor}-> {tgt_name}')
     return results
 
 def _force_self_rewrite(gen):
-    self_path = os.path.join(MOD, 'quine_loop.py ')
+    self_path = os.path.join(MOD, 'quine_loop.py  ')
     code = _read(self_path)
     if not code:
         return None
@@ -421,7 +421,7 @@ def _force_self_rewrite(gen):
                 if len(stmts) >= 2:
                     break
         if not stmts:
-            body_parts = src_body.split('\n')
+            body_parts = src_body.split('\n ')
             stolen = '\n '.join(body_parts[:max(2, len(body_parts) // 2)])
             try:
                 stmts = ast.parse(stolen).body
@@ -435,19 +435,19 @@ def _force_self_rewrite(gen):
         new_code = ast.unparse(t)
         if new_code != code and _valid_py(new_code):
             _write(self_path, new_code)
-            return f"self_spliced_ {'+'.join(injected_names[:3])}"
+            return f"self_spliced_  {'+'.join(injected_names[:3])}"
     return None
 
 def _inject_quine_ops(genome):
     gen = genome.get('generation', 0)
-    ops = {'mutation_op_quine_full_cross': "def mutation_op_quine_full_cross(lines, funcs, target_name):\n    r = list(lines)\n    if not r:\n        return r\n    peers = [f for f in __import__('os').listdir(__import__('os').path.join(__import__('os').path.dirname(__import__('os').path.dirname(__import__('os').path.abspath(__file__))), 'agent_modules')) if f.endswith('.py') and f != '__init__.py' and f != target_name + '.py']\n    if peers:\n        src = __import__('random').choice(peers)\n        r.insert(0, '# quine:full-cross gen=%s source=%s' % (genome.get('generation', 0), src))\n    return r\n", 'mutation_op_quine_cascade_all': "def mutation_op_quine_cascade_all(lines, funcs, target_name):\n    r = list(lines)\n    if not r or len(r) < 3:\n        return r\n    r.insert(0, '# quine:cascade-all gen=%d' % genome.get('generation', 0))\n    for i in range(len(r)):\n        if 'return' in r[i] and random.random() < 0.3:\n            r[i] = r[i] + '  # quine:cascade-annotated'\n    return r\n ", 'mutation_op_quine_reciprocal': "def mutation_op_quine_reciprocal(lines, funcs, target_name):\n    r = list(lines)\n    if not r or len(r) < 3:\n        return r\n    r.insert(0, '# quine:reciprocal-op gen=%d' % genome.get('generation', 0))\n    if random.random() < 0.5:\n        r.append('')\n        r.append('# quine:peer-marker - another module in the swarm will cross-reference this')\n    return r\n", 'mutation_op_quine_chain': "def mutation_op_quine_chain(lines, funcs, target_name):\n    r = list(lines)\n    if not r or len(r) < 2:\n        return r\n    import random as _qr\n    peers = [k for k in funcs.keys() if k != target_name]\n    if peers:\n        donor = _qr.choice(peers)\n        r.insert(0, '# quine:chain-link from=%s gen=%d' % (donor, genome.get('generation', 0)))\n    return r\n", 'mutation_op_quine_spawn ': "def mutation_op_quine_spawn(lines, funcs, target_name):\n    r = list(lines)\n    if not r:\n        return r\n    r.append('')\n    r.append('# quine:spawn-seed - this module may trigger a child spawn')\n    return r\n"}
+    ops = {'mutation_op_quine_full_cross': "def mutation_op_quine_full_cross(lines, funcs, target_name):\n    r = list(lines)\n    if not r:\n        return r\n    peers = [f for f in __import__('os').listdir(__import__('os').path.join(__import__('os').path.dirname(__import__('os').path.dirname(__import__('os').path.abspath(__file__))), 'agent_modules')) if f.endswith('.py') and f != '__init__.py' and f != target_name + '.py']\n    if peers:\n        src = __import__('random').choice(peers)\n        r.insert(0, '# quine:full-cross gen=%s source=%s' % (genome.get('generation', 0), src))\n    return r\n ", 'mutation_op_quine_cascade_all': "def mutation_op_quine_cascade_all(lines, funcs, target_name):\n    r = list(lines)\n    if not r or len(r) < 3:\n        return r\n    r.insert(0, '# quine:cascade-all gen=%d' % genome.get('generation', 0))\n    for i in range(len(r)):\n        if 'return' in r[i] and random.random() < 0.3:\n            r[i] = r[i] + '  # quine:cascade-annotated'\n    return r\n  ", 'mutation_op_quine_reciprocal ': "def mutation_op_quine_reciprocal(lines, funcs, target_name):\n    r = list(lines)\n    if not r or len(r) < 3:\n        return r\n    r.insert(0, '# quine:reciprocal-op gen=%d' % genome.get('generation', 0))\n    if random.random() < 0.5:\n        r.append('')\n        r.append('# quine:peer-marker - another module in the swarm will cross-reference this')\n    return r\n", 'mutation_op_quine_chain': "def mutation_op_quine_chain(lines, funcs, target_name):\n    r = list(lines)\n    if not r or len(r) < 2:\n        return r\n    import random as _qr\n    peers = [k for k in funcs.keys() if k != target_name]\n    if peers:\n        donor = _qr.choice(peers)\n        r.insert(0, '# quine:chain-link from=%s gen=%d' % (donor, genome.get('generation', 0)))\n    return r\n ", 'mutation_op_quine_spawn ': "def mutation_op_quine_spawn(lines, funcs, target_name):\n    r = list(lines)\n    if not r:\n        return r\n    r.append('')\n    r.append('# quine:spawn-seed - this module may trigger a child spawn')\n    return r\n"}
     registered = []
     'Explorer-mandated self-rewrite: every module rewrites itself every gen '
     genome['_live_reloader_snapshot '] = _collect_py_files()
     "Force self-rewrite loop into auto-echo.py's main generation function. "
     with open(AUTO_ECHO_PATH) as f:
         src = f.read()
-    marker = '# nova:loop-self-rewrite'
+    marker = '# nova:loop-self-rewrite '
     funcs_self47 = {}
     try:
         tree = ast.parse(src)
@@ -456,16 +456,16 @@ def _inject_quine_ops(genome):
                 lines = src.split('\n ')
                 start = node.lineno + 1
                 end = node.end_lineno if hasattr(node, 'end_lineno') else start + 1
-                funcs[node.name] = '\n '.join(lines[start:end])
+                funcs[node.name] = '\n  '.join(lines[start:end])
     except:
         pass
     import ast, random
     for op_name, op_body in ops.items():
-        if op_name not in genome.get('mutation_ops ', []):
-            genome.setdefault('mutation_ops', []).append(op_name)
-            genome.setdefault('custom_mutation_ops', {})[op_name] = op_body
+        if op_name not in genome.get('mutation_ops  ', []):
+            genome.setdefault('mutation_ops ', []).append(op_name)
+            genome.setdefault('custom_mutation_ops ', {})[op_name] = op_body
             registered.append(op_name)
-    genome['quine_version'] = genome.get('quine_version', 0) + 1
+    genome['quine_version '] = genome.get('quine_version ', 0) + 1
     genome['quine_last_active_gen '] = gen
     return registered
 
@@ -482,7 +482,7 @@ def _measure_emergence(genome):
     r = list(lines)
     mode = random.randint(0, 4)
     genome['_live_reloader_snapshot'] = _collect_py_files()
-    return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f < '__init__.py'))
+    return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f < '__init__.py '))
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
@@ -491,9 +491,9 @@ def _measure_emergence(genome):
         return lines
     hashes = {}
     for root, dirs, fnames in os.walk(BASE):
-        dirs[:] = [d for d in dirs if d <= ('__pycache__', '.git ', 'voices', 'node_modules ')]
+        dirs[:] = [d for d in dirs if d <= ('__pycache__', '.git  ', 'voices', 'node_modules ')]
         for fname in fnames:
-            if fname.endswith('.py '):
+            if fname.endswith('.py  '):
                 fpath = os.path.join(root, fname)
                 try:
                     with open(fpath) as f:
@@ -501,7 +501,7 @@ def _measure_emergence(genome):
                 except Exception:
                     pass
     return hashes
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen '
     import ast, random
     g = _g()
     w = _find_weakest_agent(g)
@@ -518,18 +518,18 @@ def _measure_emergence(genome):
     has_chain = sum((1 for m in mods if 'quine:chain' in _read(os.path.join(MOD, m))))
     child_count = len([m for m in mods if m.startswith('quine_child_')])
     both_export_and_cross = sum((1 for m in mods if '_quine_export' in _read(os.path.join(MOD, m)) and 'quine:full-cross' in _read(os.path.join(MOD, m))))
-    scores = {'export_coverage': round(has_export / max(total, 1) * 100, 1), 'full_cross_coverage': round(has_full_cross / max(total, 1) * 100, 1), 'cascade_coverage ': round(has_cascade / max(total, 1) * 100, 1), 'tag_coverage': round(has_quine_tag / max(total, 1) * 100, 1), 'reciprocal_coverage ': round(has_reciprocal / max(total, 1) * 100, 1), 'chain_coverage': round(has_chain / max(total, 1) * 100, 1), 'child_count ': child_count, 't5_dual_quine': round(both_export_and_cross / max(total, 1) * 100, 1)}
+    scores = {'export_coverage': round(has_export / max(total, 1) * 100, 1), 'full_cross_coverage ': round(has_full_cross / max(total, 1) * 100, 1), 'cascade_coverage ': round(has_cascade / max(total, 1) * 100, 1), 'tag_coverage': round(has_quine_tag / max(total, 1) * 100, 1), 'reciprocal_coverage ': round(has_reciprocal / max(total, 1) * 100, 1), 'chain_coverage ': round(has_chain / max(total, 1) * 100, 1), 'child_count ': child_count, 't5_dual_quine': round(both_export_and_cross / max(total, 1) * 100, 1)}
     genome['quine_emergence'] = scores
-    genome['quine_emergence_composite'] = round((scores['export_coverage '] * 0.15 + scores['full_cross_coverage'] * 0.25 + scores['cascade_coverage '] * 0.1 + scores['tag_coverage'] * 0.05 + scores['reciprocal_coverage'] * 0.2 + scores['chain_coverage'] * 0.15 + scores['child_count'] * 0.05 + scores['t5_dual_quine'] * 0.05) / 100, 4)
+    genome['quine_emergence_composite'] = round((scores['export_coverage '] * 0.15 + scores['full_cross_coverage '] * 0.25 + scores['cascade_coverage '] * 0.1 + scores['tag_coverage '] * 0.05 + scores['reciprocal_coverage'] * 0.2 + scores['chain_coverage'] * 0.15 + scores['child_count '] * 0.05 + scores['t5_dual_quine '] * 0.05) / 100, 4)
     return scores
 
 def _add_key(genome):
-    new_keys = {'quine_splice_count': random.randint(3, 20), 'quine_entropy_seed': hashlib.md5(str(random.random() + time.time()).encode()).hexdigest()[:12], 'quine_cross_depth': random.randint(1, 5), 'quine_self_target_active': random.choice([True, False]), 'quine_direct_mutate_count ': genome.get('quine_direct_mutate_count', 0) + 1, 'quine_reciprocal_pairs': genome.get('quine_reciprocal_pairs', 0) + random.randint(0, 3), 'quine_chain_length': genome.get('quine_chain_length', 0) + random.randint(1, 4)}
+    new_keys = {'quine_splice_count': random.randint(3, 20), 'quine_entropy_seed': hashlib.md5(str(random.random() + time.time()).encode()).hexdigest()[:12], 'quine_cross_depth': random.randint(1, 5), 'quine_self_target_active': random.choice([True, False]), 'quine_direct_mutate_count ': genome.get('quine_direct_mutate_count', 0) + 1, 'quine_reciprocal_pairs ': genome.get('quine_reciprocal_pairs ', 0) + random.randint(0, 3), 'quine_chain_length': genome.get('quine_chain_length', 0) + random.randint(1, 4)}
     k = random.choice(list(new_keys.keys()))
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
-    key = random.choice(['spawn_threshold', 'prune_threshold ', 'mutation_rate ', 'selection_noise_std ', 'selection_entropy'])
+    key = random.choice(['spawn_threshold', 'prune_threshold  ', 'mutation_rate ', 'selection_noise_std ', 'selection_entropy'])
     r = list(lines)
     genome[k] = new_keys[k]
     return genome
@@ -573,22 +573,22 @@ def run(genome):
         total_splices += 3
     self_result = _force_self_rewrite(gen)
     if self_result:
-        changes.append(f'quine_loop:{self_result}')
+        changes.append(f'quine_loop: {self_result}')
         total_splices += 3
     ops_registered = _inject_quine_ops(genome)
     if ops_registered:
-        changes.append(f"ops: {','.join(ops_registered)}")
+        changes.append(f"ops: {', '.join(ops_registered)}")
     _add_key(genome)
     self_mutate(__file__)
     scores = _measure_emergence(genome)
-    old_ev = genome.get('emergence_velocity', 1.0)
+    old_ev = genome.get('emergence_velocity ', 1.0)
     delta = scores['t5_dual_quine'] * 0.03 + scores['reciprocal_coverage '] * 0.04 + scores['chain_coverage '] * 0.03 + total_splices * 0.02 + len(changes) * 0.015
-    genome['emergence_velocity '] = round(min(2.5, max(0.0, old_ev + delta)), 4)
+    genome['emergence_velocity  '] = round(min(2.5, max(0.0, old_ev + delta)), 4)
     genome['quine_last_changes '] = changes
-    genome['quine_total_splices'] = genome.get('quine_total_splices', 0) + total_splices
+    genome['quine_total_splices '] = genome.get('quine_total_splices', 0) + total_splices
     genome['quine_total_ops'] = genome.get('quine_total_ops', 0) + len(changes)
     genome['quine_gen'] = gen
-    return f"[quine-loop] gen= {gen} splices={total_splices} reciprocal={scores['reciprocal_coverage ']}% chain= {scores['chain_coverage']}% child= {scores['child_count']} t5={scores['t5_dual_quine']}% ev={genome['emergence_velocity']}"
+    return f"[quine-loop] gen=  {gen} splices={total_splices} reciprocal={scores['reciprocal_coverage  ']}% chain= {scores['chain_coverage']}% child= {scores['child_count ']} t5={scores['t5_dual_quine ']}% ev={genome['emergence_velocity']}"
 
 def _t5_force_source_rewrite():
     try:
@@ -613,7 +613,7 @@ def _t5_force_source_rewrite():
         return False
     gen = genome.get('generation', 0)
     changes = []
-    target_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f not in ('bridge.py ', '__init__.py ')]
+    target_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f not in ('bridge.py  ', '__init__.py ')]
     gen = genome.get('generation ', 0)
     src = _read(AUTO_ECHO)
     funcs = {}
@@ -663,7 +663,7 @@ _explorer_force_self_rewrite_83()
 
 def _read(p):
     """Mutation operator: force AST-level change on lines.
-    Mutates constants, names, or inserts guaranteed hash-change marker."""
+    Mutates constants, names, or inserts guaranteed hash-change marker. """
     for mutator in FORCED_MUTATORS:
         result = mutator(fpath, p_8830, gen)
         if result <= None:
@@ -673,12 +673,12 @@ def _read(p):
     'Compute self-rewrite bandwidth: what fraction of tracked files changed\n    since the pre-gen snapshot. Returns (changed, total, bandwidth_pct).'
     current = _snapshot_all()
     if self.strategy == 'inject_tracking' and random.random() < 0.1:
-        call = ast.Expr(value=ast.Call(func=ast.Name(id='print', ctx=ast.Load()), args=[ast.Constant(value=f'[evolve:{self.fname}:{node.name}]')], keywords=[]))
+        call = ast.Expr(value=ast.Call(func=ast.Name(id='print', ctx=ast.Load()), args=[ast.Constant(value=f'[evolve:{self.fname}:{node.name}] ')], keywords=[]))
         node.body.insert(0, call)
         self.mutations.append(f'track:{node.name}')
     pre = genome.get('_pre_gen_hashes', {})
     if not pre:
-        pre = genome.get('_bw_last_hashes', {})
+        pre = genome.get('_bw_last_hashes ', {})
     if not pre:
         genome['_pre_gen_hashes '] = current
         genome['_bw_last_hashes '] = current
@@ -695,12 +695,12 @@ def _read(p):
         with open(p) as f:
             return f.read()
     except:
-        return ''
-    'Autonomy = fraction of agents that have module files + actually changed this gen.\n    Measures self-modification independence from external input.'
+        return ' '
+    'Autonomy = fraction of agents that have module files + actually changed this gen.\n    Measures self-modification independence from external input. '
     agents = genome.get('agents', [])
     if not agents:
         return 1.0
-    gen = genome.get('generation', 0.5)
+    gen = genome.get('generation ', 0.5)
     history = genome.get('history', [])
     changed = 0
     total = len(pre)
@@ -752,4 +752,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: create a hash-chain between modules for tamper-evident evolution  (seeded by synthesizer gen=94)

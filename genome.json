@@ -2781,5 +2781,9 @@
   "gen": 95,
   "value": 0.494,
   "mutable": true
- }
+ },
+ "_explorer_auto_fn_95": "_auto_gen_95_58",
+ "clockwork_latent_ledger": [],
+ "clockwork_latent_pool": 0,
+ "latent_activation_ratio": 0.0
 }

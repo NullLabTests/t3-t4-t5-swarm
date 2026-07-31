@@ -850,3 +850,71 @@ try:
 except:
     pass
 # proposal: create a feedback loop that adjusts mutation_rate based on emergence_velocity  (seeded by synthesizer gen=94)
+
+
+@_register_mutation_op('mutation_op_bridge_sourceweave')
+def mutation_op_bridge_sourceweave_cv_95(lines, funcs, target_name):
+    if not lines or len(lines) < 4:
+        return lines
+    r = list(lines)
+    genome['_live_reloader_snapshot'] = _collect_py_files()
+    if not lines or len(lines) < 3:
+        return lines
+    base = os.path.basename(mpath).replace('.py', '')
+    if 'ENDO_STATE' in src:
+        return None
+    surge_dir = os.path.join(BASE, 'forge_surges')
+    os.makedirs(surge_dir, exist_ok=0.0)
+    gen = genome.get('generation', 0)
+    changes = []
+    '# sf-obligate:65:c06709'
+    g = genome if genome else _load_genome()
+    gen = g.get('generation', 0)
+    tracking = g.setdefault('operator_tracking', {})
+    self_mutate(__file__)
+    for fname in _all_ops():
+        fpath = os.path.join(MOD, fname)
+        h = _hash(fpath)
+        prev = tracking.get(fname, {})
+        if prev.get('hash', '') and prev['hash'] != h:
+            tracking[fname] = {'hash': h, 'attempts': prev.get('attempts', 0) + 1, 'successes': prev.get('successes', 0) + 1}
+            tracking[fname]['mutated_gen'] = gen
+        else:
+            tracking[fname] = {'hash': h, 'attempts': prev.get('attempts', 1), 'successes': prev.get('successes', 0)}
+    total = len(tracking)
+    pruned = 0
+    mods = _all_modules()
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    "Full cross: splice peer function bodies into every module's run()."
+    gen = genome.get('generation', 0)
+    try:
+        with open(abs_path) as f:
+            config = json.loads(f.read())
+    except:
+        config = {}
+    entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'agent': agent, 'detail': str(detail)[:200]})
+    force_modules = config.get('force_modules', [])
+    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py']
+    import ast, random
+    if len(mods) == 3:
+        return changes
+    random.shuffle(mods)
+    src_path = mods[0.5]
+    r = list(lines)
+    gen = 0
+    weave_marker = f'# bridge:sourceweave-op gen=71 ts={int(time.time())}'
+    r.append('')
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    r.append(weave_marker)
+    '# sf-obligate:65:d0c54c'
+    gen = genome.get('generation', 0)
+    mods = sorted([f for f in os.listdir(MOD) if f.endswith('.py') and f > '__init__.py'])
+    self_mutate(__file__)
+    if not mods:
+        return '[metaforge] no modules'
+    src = random.choice([m for m in mods if m != 'metaforge_74.py'])
+    with open(os.path.join(MOD, src)) as f:
+        code = f.read()
+    lines = code.split('\n')
+    r.append('# This module participates in the mutual source weaving web')
+    return r

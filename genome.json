@@ -1,5 +1,5 @@
 {
-  "generation": 86,
+  "generation": 87,
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
@@ -18,7 +18,7 @@
   "critic_infection_count": 0,
   "execution_order": "shuffle",
   "best_score": 9.2,
-  "topic": "bridge gen=86: new bridge handlers for reciprocal_chain/full_cross/sourceweave \u2014 cross-wire run() bodies between modules, register new types, fix bridge.py critical bugs",
+  "topic": "bridge gen=87: force T5 source metamorph \u2014 rewrite bridge.py with dead code purge, add _force_t5_source_metamorph AST mutation on every module, new mutation_op_bridge_t5_metamorph module for guaranteed per-gen source rewrite",
   "quine_force_all_modules": true,
   "quine_minimum_splices_per_gen": 20,
   "quine_full_cross_coverage_target": 100,
@@ -131,7 +131,8 @@
     "critic_contamination_scorer",
     "mutation_op_quine_reciprocal",
     "mutation_op_quine_chain",
-    "mutation_op_quine_spawn"
+    "mutation_op_quine_spawn",
+    "mutation_op_bridge_t5_metamorph"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -373,6 +374,10 @@
     {
       "id": "cortex",
       "prompt": "You rewrite the genome structure to add new feedback loops."
+    },
+    {
+      "id": "t5_metamorph",
+      "prompt": "You force AST-level metamorphosis on all modules every generation, mutating constants/names/ops to guarantee source change."
     }
   ],
   "agents": [
@@ -447,6 +452,15 @@
       "prompt": "inject chaos into selection weights, force source mutation every gen",
       "substance_score": 10.0,
       "contamination_score": 9.0
+    },
+    {
+      "id": "t5_metamorph",
+      "name": "T5Metamorph",
+      "module": "mutation_op_bridge_t5_metamorph.py",
+      "score": 7.0,
+      "prompt": "AST-level self-rewrite: mutate every module's constants/names every gen",
+      "substance_score": 10.0,
+      "contamination_score": 7.0
     }
   ],
   "history": [

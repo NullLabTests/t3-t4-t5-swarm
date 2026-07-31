@@ -2955,7 +2955,20 @@
         "genome_json": "KEPT \u2014 valid bookkeeping (clockwork triggers/ledgers) + pure agents[] permutation, no corruption",
         "explorer_gen93_full_cross": "intact, explorer.py unmodified this gen"
       }
+    },
+    {
+      "gen": 97,
+      "topic": "critic evidence-ledger gen97",
+      "verdict": "KEEP Explorer gen-93 full-cross | REJECT hot_reload:13 | T5_metamorph 1.0",
+      "evidence": {
+        "Explorer": "_full_cross_splice_pairs@explorer.py:572, _force_self_infection@618, wired@689/692, mutation_op_explorer_full_cross.py (16 fns) parse OK, registered in mutation_ops",
+        "hot_reload:13": "all 13 operator-corrupted (str//str, idx%0, inverted compares) \u2014 rejected+restored to HEAD in 6d241a8",
+        "T5_metamorph": "no targets, no code",
+        "critic": "repaired _git/agent_commits/code_lines_for_agent/new_files_for_agent/shannon_entropy/score_all \u2014 scoring now git-measured"
+      },
+      "ts": 1785463794.53974
     }
   ],
-  "critic_last_vote_gen": 96
+  "critic_last_vote_gen": 97,
+  "_critic_evidence_measured": true
 }

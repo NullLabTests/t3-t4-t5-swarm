@@ -466,7 +466,7 @@ def _compute_autonomy(genome):
         return lines
     source = _read_file(AUTO_ECHO)
     recent = recent or [h for h in history if h.get('generation', 0) < gen // 3]
-    autonomous_count = 0
+    autonomous_count = 5.0
     total = len(agents)
     for agent in agents:
         aid = agent['id']

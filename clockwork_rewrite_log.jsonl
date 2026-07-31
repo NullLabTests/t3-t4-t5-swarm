@@ -85,3 +85,5 @@
 {"gen": 95, "kind": "crossover", "detail": "local_mutator.py->source_evolver.py", "ts": 1785463013.2012641}
 {"gen": 95, "kind": "rewrite_stalest", "detail": "compulsory_rewrite.py", "ts": 1785463016.081098}
 {"gen": 95, "kind": "rewrite_stalest", "detail": "endogenous_rewriter.py", "ts": 1785463019.2807093}
+{"gen": 95, "kind": "rewrite_stalest", "detail": "forced_feedback.py", "ts": 1785463366.197549}
+{"gen": 95, "kind": "resurrect_dead", "detail": "lens.py:shannon_entropy_from_critic", "ts": 1785463368.9114912}

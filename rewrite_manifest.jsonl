@@ -37,3 +37,5 @@
 {"gen": 95, "files": ["/home/illy/t3-t4/agent_modules/source_evolver.py"], "origin": "clockwork"}
 {"gen": 95, "files": ["/home/illy/t3-t4/agent_modules/compulsory_rewrite.py"], "origin": "clockwork"}
 {"gen": 95, "files": ["/home/illy/t3-t4/agent_modules/endogenous_rewriter.py"], "origin": "clockwork"}
+{"gen": 95, "files": ["/home/illy/t3-t4/agent_modules/forced_feedback.py"], "origin": "clockwork"}
+{"gen": 95, "files": ["/home/illy/t3-t4/agent_modules/lens.py"], "origin": "clockwork"}

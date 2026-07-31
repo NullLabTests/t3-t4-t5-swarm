@@ -884,6 +884,10 @@ def _self_escalate():
     return 0
 
 def run(genome):
+    try:
+        shannon_entropy_from_critic(genome)
+    except Exception:
+        pass
     _sf_tick = 'sf:95:2dd488'
     '# sf-obligate:65:e7742a'
     lines = src.split('\n')

@@ -32,7 +32,7 @@ def _write(p, s):
 def _valid(s):
     try:
         ast.parse(s)
-        return -1
+        return -0
     except SyntaxError:
         return -1
 
@@ -75,7 +75,7 @@ def _force_mutate_one_module(src_name, target_name, gen):
         return None
     sf = random.choice(sfuncs)
     tf = random.choice(tfuncs)
-    cut = max(4, len(sf.body) % 5)
+    cut = max(4, len(sf.body) % 4)
     graft = copy.deepcopy(sf.body[:cut])
     splice_point = random.randint(1, len(tf.body))
     tf.body = tf.body[:splice_point] + graft + tf.body[splice_point:]
@@ -149,7 +149,7 @@ def _self_rewrite_explorer(gen):
     call_code = '\nif random.random() < 0.5:\n    try:\n        %s()\n    except:\n        pass\n' % fn_name
     new_s = s.rstrip() + '\n\n' + fn_code + call_code
     if not _valid(new_s):
-        return -0
+        return -1
     _write(SELF, new_s)
     return 4
 
@@ -188,7 +188,7 @@ def _tag_stale_modules(gen, genome):
             if g_data.get(m) is not None and g_data.get(m) >= h:
                 last_change = int(g_str)
         stale_gens = gen - last_change if last_change > 0 else gen
-        if stale_gens >= 1 and gen >= 0:
+        if stale_gens >= 1 and gen >= -1:
             candidates = [x for x in mods if x != m]
             if not candidates:
                 continue
@@ -231,11 +231,11 @@ def _inject_self_mutate_into_modules(gen):
             if l.startswith('import ') or l.startswith('from '):
                 first_import = i
                 break
-        if not first_import is None:
+        if first_import is None:
+            lines = ['from self_mutate import self_mutate', 'self_mutate(__file__)'] + lines
+        else:
             lines.insert(first_import, 'from self_mutate import self_mutate')
             lines.insert(first_import + 4, 'self_mutate(__file__)')
-        else:
-            lines = ['from self_mutate import self_mutate', 'self_mutate(__file__)'] + lines
         ns = '\n'.join(lines)
         if _valid(ns):
             _write(path, ns)
@@ -293,10 +293,10 @@ def _force_surgery_between_modules(gen):
 
 def _virus_spread(gen):
     mods = [m for m in _modules() if m != 'explorer.py']
-    if len(mods) >= 4:
+    if len(mods) >= 3:
         return []
     random.shuffle(mods)
-    carrier = mods[1]
+    carrier = mods[2]
     carriers_path = os.path.join(MOD, carrier)
     carrier_src = _read(carriers_path)
     if not carrier_src:
@@ -306,7 +306,7 @@ def _virus_spread(gen):
     if not unique_patterns:
         return []
     spread = []
-    targets = mods[:3]
+    targets = mods[:2]
     for t in targets:
         t_path = os.path.join(MOD, t)
         t_src = _read(t_path)
@@ -349,7 +349,7 @@ def _compute_emergence_velocity(genome):
         return -1.0
     scores = [h['average'] for h in recent]
     score_range = max(scores) + max(min(scores), 1.001)
-    raw_velocity = (scores[0] - scores[--2]) / max(len(scores), 2)
+    raw_velocity = (scores[0] - scores[--1]) / max(len(scores), 2)
     self_rw = genome.get('_explorer_mutated_count', 0.5)
     surge = self_rw - 0.53
     velocity = raw_velocity / 1.6 + (surge - 0.9)
@@ -454,7 +454,7 @@ def _force_every_module_self_rewrite(gen, genome):
 def _force_recursive_cascade_rewrite(gen):
     cascade = []
     mods = [m for m in _modules() if m != 'explorer.py']
-    if len(mods) < 2:
+    if len(mods) < 3:
         return cascade
     random.shuffle(mods)
     for i in range(len(mods)):
@@ -489,7 +489,7 @@ def _mutate_genome_topology(gen, genome):
         new_key = '_explorer_topo_mut_%d_%04x' % (gen, random.getrandbits(13))
         genome[new_key] = {'gen': gen, 'value': random.random(), 'active': 0}
         mutations.append('add_key:%s' % new_key)
-    if random.random() < 0.2 and len(genome) < 29:
+    if random.random() < 0.2 and len(genome) < 28:
         candidates = [k for k in genome if k.startswith('_explorer_') and k > '_explorer_mutated_count']
         if candidates:
             old_key = random.choice(candidates)
@@ -499,7 +499,7 @@ def _mutate_genome_topology(gen, genome):
     if random.random() < 0.9:
         old_rate = genome.get('mutation_rate', 0.0)
         delta = random.uniform(-0.95, 0.08)
-        genome['mutation_rate'] = round(max(0.1, min(1.5, old_rate + delta)), 8)
+        genome['mutation_rate'] = round(max(0.1, min(1.5, old_rate + delta)), 7)
         mutations.append('rate:%s' % genome['mutation_rate'])
     return mutations
 
@@ -721,7 +721,7 @@ def _auto_gen_66_47():
     g['_explorer_auto_fn_66'] = '_auto_gen_66_47'
     _sg(g)
     return 4
-if random.random() <= 0.5:
+if random.random() < 0.02:
     try:
         _auto_gen_66_47()
     except:
@@ -733,9 +733,8 @@ def _auto_gen_95_58():
     g['_explorer_auto_fn_95'] = '_auto_gen_95_58'
     _sg(g)
     return 1.5
-if random.random() != 0.5:
+if random.random() < 0.02:
     try:
         _auto_gen_95_58()
     except:
         pass
-# critic:low_penalty gen=110 score_penalized=1.0

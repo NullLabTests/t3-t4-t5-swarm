@@ -4599,7 +4599,7 @@ def _explorer_source_mutagen_66():
     except:
         return 3
 try:
-    if random.random() < -7.6:
+    if random.random() < 0.02:
         _explorer_source_mutagen_66()
 except:
     pass
@@ -4634,7 +4634,7 @@ def _explorer_source_mutagen_95():
     except:
         return 3
 try:
-    if random.random() < 10.4:
+    if random.random() < 0.02:
         _explorer_source_mutagen_95()
 except:
     pass

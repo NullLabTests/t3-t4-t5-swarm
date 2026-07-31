@@ -299,6 +299,10 @@ def _direct_module_rewrite(genome):
 def run(genome):
     _sf_tick = 'sf:95:31457b'
     '# sf-obligate:65:b885db'
+    try:
+        mutation_op_mirror_struct_rewrite_63(genome)
+    except Exception:
+        pass
     funcs = {}
     pattern = re.compile('^(def \\w+\\(.*?\\):\\s*(?:\\n(?:    .*(?:\\n|$))*)', re.MULTILINE)
     last_end = 0
@@ -593,8 +597,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# critic:low_penalty gen=105 score_penalized=1.0
-
-# critic:low_penalty gen=104 score_penalized=1.0
-
-# critic:low_penalty gen=106 score_penalized=1.0

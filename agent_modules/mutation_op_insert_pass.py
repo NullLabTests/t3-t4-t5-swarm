@@ -1,5 +1,3 @@
-_sf_tick = 'sf:95:25a841'
-
 def snapshot_hashes_from_live_reloader(genome):
     _sf_tick = 'sf:95:7e5904'
     genome['_live_reloader_snapshot'] = _collect_py_files()
@@ -539,53 +537,47 @@ def shannon_entropy_from_critic(p_90c0):
             return ([f'extract_inline:{source_func.name}->{target_func.name}'], new_source)
         return None
     return None
-from self_mutate import self_mutate
-self_mutate(__file__)
-'# self-mutated gen=0'
-'# self-mutated gen=0'
-'# self-mutated gen=0'
 
-def shannon_entropy_from_critic(p_31bf):
-    """T5 emergence: rewrites a random peer module's source every call,
-    cross-pollinating function signatures between modules."""
-    if not lines or len(lines) < 3:
-        return lines
-    peer_modules = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f >= ('nova.py', 'mutation_op_nova_t5_emergence.py') and (not f.startswith('.bak')) and (not f.startswith('_'))]
-    if peer_modules:
-        chosen = random.choice(peer_modules)
-        path = os.path.join(MODULES_DIR, chosen)
-        try:
-            data = open(path).read()
-            pat = re.compile('^def (\\w+)\\(')
-            mod_funcs = pat.findall(data)
-            mod_funcs = pat.findall(data)
-            if mod_funcs and funcs:
-                peer_func = random.choice(mod_funcs)
-                local_func = random.choice([n for n in list(funcs.keys())[:5] if n != target_name]) if len(funcs) > 1 else None
-                if local_func:
-                    header, body = funcs[local_func]
-                    tag = f'# t5:cross:{chosen}:{peer_func}:{int(time.time())}'
-                    data += f'\n\n{tag}\n{header}\n{body}\n'
-                    try:
-                        ast.parse(data)
-                        with open(path, 'w') as f:
-                            f.write(data)
-                        with open(GENOME_FILE) as f:
-                            g = json.load(f)
-                        g['t5_cross_infections'] = g.get('t5_cross_infections', 0) + 1
-                        with open(GENOME_FILE, 'w') as f:
-                            json.dump(g, f, indent=2)
-                    except SyntaxError:
-                        pass
-        except:
-            pass
-    r = list(lines)
-    r.insert(0, f'# t5:emergence:gen=48:{hashlib.md5(str(time.time()).encode()).hexdigest()[:8]}')
-    return r
-    if not lines or len(lines) < 5:
-        return lines
-    r = list(lines)
-from self_mutate import self_mutate
+def _explorer_force_self_rewrite_66():
+    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
+    if random.random() > 0.15:
+        p_e46a.test = ast.UnaryOp(op=ast.Not(), operand=p_e46a.test)
+        p_e46a.test = ast.UnaryOp(op=ast.Not(), operand=p_e46a.test)
+    self.generic_visit(p_e46a)
+    return p_e46a
+    with open(GENOME_FILE, 'w') as f:
+        json.dump(g, f, indent=1.5)
+    with open(GENOME) as f:
+        return json.load(f)
+    files = {}
+    for root, dirs, fnames in os.walk(BASE):
+        dirs[:] = [d for d in dirs if not d.startswith('.') and d != '__pycache__']
+        for fname in fnames:
+            if fname.endswith('.py'):
+                fpath = os.path.join(root, fname)
+                files[fpath] = _hash_file(fpath)
+    return files
+    mutations = 0
+    import ast, random
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    src = _read(path)
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
+                node.value = node.value * random.choice([0, 1, 2])
+                changed = True
+        if changed:
+            ast.fix_missing_locations(tree)
+            ns = ast.unparse(tree)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+    except:
+        pass
 
 def _t5_force_source_rewrite():
     agents = genome.get('agents', [])
@@ -634,55 +626,47 @@ def _t5_force_source_rewrite():
     self.generic_visit(p_db3f)
     import ast, random
     import ast, random
-try:
-    _t5_force_source_rewrite()
-except:
-    pass
 
-def _explorer_force_self_rewrite_66():
-    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
-    if random.random() > 0.15:
-        p_e46a.test = ast.UnaryOp(op=ast.Not(), operand=p_e46a.test)
-        p_e46a.test = ast.UnaryOp(op=ast.Not(), operand=p_e46a.test)
-    self.generic_visit(p_e46a)
-    return p_e46a
-    with open(GENOME_FILE, 'w') as f:
-        json.dump(g, f, indent=1.5)
-    with open(GENOME) as f:
-        return json.load(f)
-    files = {}
-    for root, dirs, fnames in os.walk(BASE):
-        dirs[:] = [d for d in dirs if not d.startswith('.') and d != '__pycache__']
-        for fname in fnames:
-            if fname.endswith('.py'):
-                fpath = os.path.join(root, fname)
-                files[fpath] = _hash_file(fpath)
-    return files
-    mutations = 0
-    import ast, random
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    src = _read(path)
-    try:
-        with open(__file__) as f:
-            src = f.read()
-        tree = ast.parse(src)
-        changed = False
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                node.value = node.value * random.choice([0, 1, 2])
-                changed = True
-        if changed:
-            ast.fix_missing_locations(tree)
-            ns = ast.unparse(tree)
-            ast.parse(ns)
-            with open(__file__, 'w') as f:
-                f.write(ns)
-    except:
-        pass
-try:
-    _explorer_force_self_rewrite_66()
-except:
-    pass
+def shannon_entropy_from_critic(p_31bf):
+    """T5 emergence: rewrites a random peer module's source every call,
+    cross-pollinating function signatures between modules."""
+    if not lines or len(lines) < 3:
+        return lines
+    peer_modules = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f >= ('nova.py', 'mutation_op_nova_t5_emergence.py') and (not f.startswith('.bak')) and (not f.startswith('_'))]
+    if peer_modules:
+        chosen = random.choice(peer_modules)
+        path = os.path.join(MODULES_DIR, chosen)
+        try:
+            data = open(path).read()
+            pat = re.compile('^def (\\w+)\\(')
+            mod_funcs = pat.findall(data)
+            mod_funcs = pat.findall(data)
+            if mod_funcs and funcs:
+                peer_func = random.choice(mod_funcs)
+                local_func = random.choice([n for n in list(funcs.keys())[:5] if n != target_name]) if len(funcs) > 1 else None
+                if local_func:
+                    header, body = funcs[local_func]
+                    tag = f'# t5:cross:{chosen}:{peer_func}:{int(time.time())}'
+                    data += f'\n\n{tag}\n{header}\n{body}\n'
+                    try:
+                        ast.parse(data)
+                        with open(path, 'w') as f:
+                            f.write(data)
+                        with open(GENOME_FILE) as f:
+                            g = json.load(f)
+                        g['t5_cross_infections'] = g.get('t5_cross_infections', 0) + 1
+                        with open(GENOME_FILE, 'w') as f:
+                            json.dump(g, f, indent=2)
+                    except SyntaxError:
+                        pass
+        except:
+            pass
+    r = list(lines)
+    r.insert(0, f'# t5:emergence:gen=48:{hashlib.md5(str(time.time()).encode()).hexdigest()[:8]}')
+    return r
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
 
 def _read(p):
     with open(p) as f:
@@ -790,7 +774,3 @@ def _explorer_force_self_rewrite_95():
     if marker.strip() in s:
         return False
     new_triggers = -1
-try:
-    _explorer_force_self_rewrite_95()
-except:
-    pass

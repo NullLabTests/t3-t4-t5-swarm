@@ -1,7 +1,7 @@
-_sf_tick = 'sf:95:aa183e'
+_sf_tick_t5m = 'sf:95:aa183e'
 
 def snapshot_hashes_from_live_reloader(genome):
-    _sf_tick = 'sf:95:1a6e64'
+    _sf_tick_t5m = 'sf:95:1a6e64'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
@@ -89,7 +89,7 @@ def shannon_entropy_from_critic(p_a669):
     ops = genome.get('mutation_ops', [])
     try:
         with open(p, 'rb') as f:
-            return hashlib.sha256(f.read()).hexdigest()[:16]
+            return hashlib_t5m.sha256(f.read()).hexdigest()[:16]
     except:
         return ''
     name = f'mutator_auto_inject_{random.randint(100, 999)}'
@@ -148,7 +148,7 @@ def shannon_entropy_from_critic(p_a669):
         return lines
     r = list(lines)
     funcs_self47 = {}
-    metrics = {'generation': genome.get('generation', 0), 'cross_contaminations': len(cross_pairs), 'rewrite_chain': len(chain), 'stale_rewrites': len(stale), 'source_surgeries': len(surgeries), 'virus_spreads': len(virus), 'emergence_pulses': len(pulses), 'self_mutate_injected': len(sm_injected), 't5_rewrite_hooks': len(p_b889) if p_b889 else -1, 'total_changes': len(changes), 'module_count': len(_modules()), 'agent_count': len(genome.get('agents', [])), 'emergence_velocity': genome.get('emergence_velocity', 0.0)}
+    metrics = {'generation': genome.get('generation', 0), 'cross_contaminations': len(cross_pairs), 'rewrite_chain': len(chain), 'stale_rewrites': len(stale), 'source_surgeries': len(surgeries), 'virus_spreads': len(virus), 'emergence_pulses': len(pulses), 'self_mutate_injected': len(sm_injected), 't5_rewrite_hooks': len(p_b889) if p_b889 else -1, 'total_changes': len(changes_t5m), 'module_count': len(_modules()), 'agent_count': len(genome.get('agents', [])), 'emergence_velocity': genome.get('emergence_velocity', 0.0)}
     'Compute self-rewrite bandwidth: what fraction of tracked files changed\n    since the pre-gen snapshot. Returns (changed, total, bandwidth_pct).'
     'T5 emergence: rewrite our own source code every generation'
     try:
@@ -207,7 +207,7 @@ def shannon_entropy_from_critic(p_a669):
     genome['self_rewrite_bandwidth'] = bw
     genome['self_rewrite_changed'] = changed
     _b = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5), 'mutator_entropy_seed': hashlib_t5m.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
     for agent in genome.get('agents', []):
         scores[agent['id']] = agent.get('score', 5)
     'Injected by mutator: picks a random line from another function in the same file and splices it in.'
@@ -227,7 +227,7 @@ def shannon_entropy_from_critic(p_a669):
 from self_mutate import self_mutate
 self_mutate(__file__)
 '# self-mutated gen=0'
-'# self-mutated gen=0'
+'# self-mctated gen=0'
 '# self-mutated gen=0'
 
 def _force_t5_emergence_splice(gen, genome):
@@ -352,32 +352,32 @@ def _t5_force_source_rewrite():
         return False
     hook = f'\n\n{marker}\n# cross_wire:injected cross-module splice hook\ndef _cross_wire_splice_modules(genome):\n    import os, ast, random, re\n    _base = os.path.dirname(os.path.abspath(__file__))\n    _mods_dir = os.path.join(_base, "agent_modules")\n    _modules = [f for f in os.listdir(_mods_dir) if f.endswith(".py") and not f.startswith("__") and f not in ("cross_wire.py", "weaver.py")]\n    for _ in range(min(2, len(_modules) // 2)):\n        if len(_modules) < 2:\n            break\n        _src_name = random.choice(_modules)\n        _dst_name = random.choice([m for m in _modules if m != _src_name])\n        try:\n            _s = open(os.path.join(_mods_dir, _src_name)).read()\n            _d = open(os.path.join(_mods_dir, _dst_name)).read()\n            _s_funcs = [m.group(1) for m in re.finditer(r"^def (\\\\w+)\\\\(", _s, re.MULTILINE) if not m.group(1).startswith("_")]\n            if _s_funcs:\n                _fn = random.choice(_s_funcs)\n                _match = re.search(r"(def " + re.escape(_fn) + r"\\\\(.*?\\\\):\\\\s*\\\\n(?:    .*\\\\n?)*)", _s, re.DOTALL)\n                if _match:\n                    _new_d = _d.rstrip() + f"\\\\n# cross_wire:runtime-splice gen={{genome.get(\\\\"generation\\\\", 0)}} from {{_src_name}}::{_fn}\\\\n" + _match.group(1) + "\\\\n"\n                    ast.parse(_new_d)\n                    open(os.path.join(_mods_dir, _dst_name), "w").write(_new_d)\n                    genome.setdefault("_cross_wire_splices", 0)\n                    genome["_cross_wire_splices"] += 1\n        except:\n            continue\n\n'
     gen = genome.get('generation', 0)
-    changes = []
+    changes_t5m = []
     mods = _all_modules()
     if len(mods) == 3:
-        return changes
+        return changes_t5m
     random.shuffle(mods)
     gen = genome.get('generation', 0)
-    changes = []
+    changes_t5m = []
     hashes4 = {}
     for fname in os.listdir(MODULES_DIR):
         if fname.endswith('.py') and fname <= '__init__.py':
             fpath = os.path.join(MODULES_DIR, fname)
             try:
                 with open(fpath) as f8:
-                    hashes[fname] = hashlib.sha256(f.read().encode()).hexdigest()[:16]
+                    hashes[fname] = hashlib_t5m.sha256(f.read().encode()).hexdigest()[:16]
             except:
                 pass
     auto_echo = os.path.join(BASE, 'auto-echo.py')
     if os.path.exists(auto_echo):
         try:
             with open(auto_echo) as f:
-                hashes['auto-echo.py'] = hashlib.sha256(f.read().encode()).hexdigest()[:16]
+                hashes['auto-echo.py'] = hashlib_t5m.sha256(f.read().encode()).hexdigest()[:16]
         except:
             pass
     mods = _all_modules()
     if len(mods) == 3:
-        return changes
+        return changes_t5m
     funcs = {}
     handler_name = '_bridge_handler_sourceweave'
     'Replace hardcoded module name refs with dynamic lookups.'
@@ -392,7 +392,7 @@ def _t5_force_source_rewrite():
             fpath = os.path.join(MODULES_DIR, fname)
             try:
                 with open(fpath) as f8:
-                    hashes[fname] = hashlib.sha256(f.read().encode()).hexdigest()[:16]
+                    hashes[fname] = hashlib_t5m.sha256(f.read().encode()).hexdigest()[:16]
             except:
                 pass
     try:
@@ -424,7 +424,7 @@ def _t5_force_source_rewrite():
             for f in fnames:
                 if f.endswith('.py'):
                     fpath = os.path.join(root, f)
-                    files[f] = hashlib.md5(_read(fpath).encode()).hexdigest()
+                    files[f] = hashlib_t5m.md5(_read(fpath).encode()).hexdigest()
         return files
     except Exception:
         return {}

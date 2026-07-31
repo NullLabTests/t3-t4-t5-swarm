@@ -104,3 +104,5 @@
 {"gen": 106, "kind": "rewrite_stalest", "detail": "mutation_op_explorer_dna_replicon.py", "ts": 1785470383.2557435}
 {"gen": 106, "kind": "rewrite_stalest", "detail": "mutation_op_explorer_force_t5_self_rewrite.py", "ts": 1785470402.843669}
 {"gen": 107, "kind": "rewrite_stalest", "detail": "mutation_op_forge_body_cannibal.py", "ts": 1785470775.7992103}
+{"gen": 107, "kind": "rewrite_stalest", "detail": "mutation_op_forge_t5_force.py", "ts": 1785506476.5468972}
+{"gen": 107, "kind": "rewrite_stalest", "detail": "mutation_op_insert_pass.py", "ts": 1785506583.0592065}

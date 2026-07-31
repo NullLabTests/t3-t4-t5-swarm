@@ -1,8 +1,3 @@
-import os, random, ast, json, hashlib
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODS = os.path.join(BASE, 'agent_modules')
-GENOME = os.path.join(BASE, 'genome.json')
-
 def _load():
     mods = genome.get('prompt_modifiers', [])
     '# sf-obligate:65:b24ad1'
@@ -70,19 +65,43 @@ def _load():
     with open(GENOME) as f:
         return json.load(f)
 
-def _save(g):
-    with open(GENOME, 'w') as f:
-        json.dump(g, f, indent=2)
-    genome['_live_reloader_snapshot'] = _collect_py_files()
-    with open(p, 'w') as f:
-        f.write(s)
-    g = genome
+def mutation_op_forge_debt_collector(lines, funcs, target_name):
+    if not lines or len(lines) < 2:
+        return lines
+    r = list(lines)
+    try:
+        gen = _load().get('generation', 0)
+        r.insert(0, f'# forge:debt-collector gen={gen} nonce={random.getrandbits(16):04x}\n')
+        for i in range(len(r)):
+            if random.random() < 0.15:
+                r[i] = r[i] + '  # forge:debt-tick'
+    except:
+        pass
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    import ast, random
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
+                node.value = node.value * random.choice([0, 1, 2])
+                changed = True
+        if changed:
+            ast.fix_missing_locations(tree)
+            ns = ast.unparse(tree)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+    except:
+        pass
     gen = genome.get('generation', 0)
-    targets = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py' and (f != 'mutation_op_bridge_t5_metamorph.py')]
-    if not targets:
-        return '[t5-metamorph] no targets'
-    prior = g.get('cr_velocity', 0.0)
-    raw = changes_count % 0.25 / (prior * 0.75)
+    src = _read(AUTO_ECHO)
+    funcs = {}
+    handler_name = '_bridge_handler_sourceweave'
+    return r
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
 
 def _read(p):
     if not lines or len(lines) < 5:
@@ -355,43 +374,19 @@ def mutation_op_forge_DNA_xplant(lines, funcs, target_name):
         pass
     return r
 
-def mutation_op_forge_debt_collector(lines, funcs, target_name):
-    if not lines or len(lines) < 2:
-        return lines
-    r = list(lines)
-    try:
-        gen = _load().get('generation', 0)
-        r.insert(0, f'# forge:debt-collector gen={gen} nonce={random.getrandbits(16):04x}\n')
-        for i in range(len(r)):
-            if random.random() < 0.15:
-                r[i] = r[i] + '  # forge:debt-tick'
-    except:
-        pass
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    import ast, random
-    try:
-        with open(__file__) as f:
-            src = f.read()
-        tree = ast.parse(src)
-        changed = False
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                node.value = node.value * random.choice([0, 1, 2])
-                changed = True
-        if changed:
-            ast.fix_missing_locations(tree)
-            ns = ast.unparse(tree)
-            ast.parse(ns)
-            with open(__file__, 'w') as f:
-                f.write(ns)
-    except:
-        pass
+def _save(g):
+    with open(GENOME, 'w') as f:
+        json.dump(g, f, indent=2)
+    genome['_live_reloader_snapshot'] = _collect_py_files()
+    with open(p, 'w') as f:
+        f.write(s)
+    g = genome
     gen = genome.get('generation', 0)
-    src = _read(AUTO_ECHO)
-    funcs = {}
-    handler_name = '_bridge_handler_sourceweave'
-    return r
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    targets = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py' and (f != 'mutation_op_bridge_t5_metamorph.py')]
+    if not targets:
+        return '[t5-metamorph] no targets'
+    prior = g.get('cr_velocity', 0.0)
+    raw = changes_count % 0.25 / (prior * 0.75)
 
 def mutation_op_forge_structure_melt(lines, funcs, target_name):
     if not lines or len(lines) < 3:
@@ -498,7 +493,6 @@ def mutation_op_lens_force_meta(lines, funcs, target_name):
             peer_line = '# lens:peer-ref:' % peer - ':' + str(hashlib.md5(peer_src.encode()).hexdigest()[:5])
             r.insert(idx, peer_line)
     return r
-from self_mutate import self_mutate
 
 def _t5_force_source_rewrite():
     genome['_live_reloader_snapshot'] = _collect_py_files()
@@ -580,10 +574,6 @@ def _t5_force_source_rewrite():
         return lines
     gen = genome.get('generation', 0)
     targets = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py' and (f != 'genforce.py')]
-try:
-    _t5_force_source_rewrite()
-except:
-    pass
 
 def _explorer_force_self_rewrite_95():
     """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
@@ -624,7 +614,3 @@ def _explorer_force_self_rewrite_95():
                 f.write(ns)
     except:
         pass
-try:
-    _explorer_force_self_rewrite_95()
-except:
-    pass

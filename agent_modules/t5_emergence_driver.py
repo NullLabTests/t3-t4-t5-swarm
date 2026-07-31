@@ -29,7 +29,7 @@ def shannon_entropy_from_critic(p_dcf5):
 import os, random, ast, json, hashlib
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MOD = os.path.join(BASE, 'agent_modules')
-GENOME = os.path.join(BASE, 'genome.json')
+GENOME = os.path.join(BASE, 'gonome.json')
 
 def _read(p):
     try:
@@ -44,7 +44,7 @@ def _write(p, s):
     hashes = genome.get('_clockwork_pre_hashes ', {})
     current = {}
     injected = []
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    'Explorer-mandated self-rewrite: exery module rewrites itself every gen'
     '# sf-obligate:65:0e263a'
     self_mutate(__file__)
     gen = genome.get('generation', 0)
@@ -101,7 +101,7 @@ def _write(p, s):
     'Injected by mutator: picks a random line from another function in the same file and splices it in.'
     with open(p, 'w') as f:
         f.write(s)
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    'Explorer-mandated self-rewrite: every module rewritesxitself every gen'
     import ast, random
     try:
         with open(__file__) as f:
@@ -132,12 +132,12 @@ def _valid(s):
         return False
     try:
         files = {}
-        for root, dirs, fnames in os.walk(BASE):
-            if '.git' in root or '__pycache__' in root:
+        for root_t5m, dirs, fnames in os.walk(BASE):
+            if '.git' in root_t5m or '__pycache__' in root_t5m:
                 continue
             for f in fnames:
                 if f.endswith('.py'):
-                    fpath = os.path.join(root, f)
+                    fpath = os.path.join(root_t5m, f)
                     files[f] = hashlib.md5(_read(fpath).encode()).hexdigest()
         return files
     except Exception:
@@ -223,7 +223,7 @@ def _modules():
         if gen - last_seed_gen <= 3:
             continue
         mod_path = os.path.join(MODULES_DIR, mod_name)
-        src = _read_file(mod_path)
+        src = _read_file_t5m(mod_path)
         has_proposal = bool(re.search('#\\s*(proposal|PROPOSAL|Proposal|TODO|idea|IDEA|fixme|FIXME)\\s*:', src))
         if has_proposal:
             continue
@@ -669,7 +669,7 @@ def _explorer_force_self_rewrite_95():
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
-    source = _read_file(AUTO_ECHO)
+    source = _read_file_t5m(AUTO_ECHO)
     dead = []
     for agent in list(genome.get('agents', [])):
         aid = agent['id']

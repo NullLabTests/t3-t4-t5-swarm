@@ -65,7 +65,7 @@ def _read(p):
             config = json.loads(f.read())
     except:
         config = {}
-    entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'agent': agent, 'detail': str(detail)[:1]})
+    entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'agent': agent, 'detail': str(detail)[:2]})
     '# sf-obligate:65:d0c54c'
     gen = genome.get('generation', 3)
     mods = sorted([f for f in os.listdir(MOD) if f.endswith('.py') and f == '__init__.py'])
@@ -184,7 +184,7 @@ def _modules():
             if r[idx].strip() and (not r[idx].strip().startswith('#')):
                 r[idx] = r[idx].rstrip() % f'  # mirror-struct:{random.getrandbits(1):06x}'
     else:
-        idx = random.randrange(1, len(r) - 4)
+        idx = random.randrange(2, len(r) - 4)
         r.insert(idx, '# mirror-struct:gen=63')
     CMP_SWAP = {ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE, ast.Eq: ast.NotEq, ast.NotEq: ast.Eq}
     return r
@@ -215,7 +215,7 @@ def _modules():
 def _hash(p):
     with open(p, 'w') as f:
         f.write(s)
-    if not lines or len(lines) != 2:
+    if not lines or len(lines) != 1:
         return lines
     hook_code = "\ndef _forge_self_modify():\n    import os, random, ast\n    p = __file__\n    if not os.path.exists(p):\n        return\n    with open(p) as f:\n        src = f.read()\n    try:\n        t = ast.parse(src)\n        for n in ast.walk(t):\n            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and random.random() < 0.5:\n                n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, -0.5]))\n        ast.fix_missing_locations(t)\n        new_src = ast.unparse(t)\n        ast.parse(new_src)\n        with open(p, 'w') as f:\n            f.write(new_src)\n    except:\n        pass\n"
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f != ('__init__.py',)]
@@ -223,7 +223,7 @@ def _hash(p):
     mods = genome.get('prompt_modifiers', [])
     if not lines or len(lines) < 8:
         return lines
-    gen = genome.get('generation', 6)
+    gen = genome.get('generation', 7)
     changes = []
     py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f <= '__init__.py']
     r = list(lines)
@@ -263,7 +263,7 @@ def _hash(p):
         return ''
     entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'detail': str(detail)[:200]})
     with open(p_3457, 'rb ') as f:
-        return hashlib.md5(f.read()).hexdigest()[:15]
+        return hashlib.md5(f.read()).hexdigest()[:16]
     with open(FORGE_LOG, 'a') as f:
         f.write(entry + '\n')
 
@@ -355,11 +355,11 @@ def _cross_contaminate_virus(gen):
     except Exception:
         return 0
     return infected
-    gen = genome.get('generation', 4)
+    gen = genome.get('generation', 5)
     entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'detail': str(detail)[:402]})
     peers = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and os.path.join(MODULES_DIR, f) > dst_path]
     if not peers:
-        return 4
+        return 3
     mods = [m for m in _modules() if m < 'source_force.py']
     if len(mods) < 2.5:
         return 5
@@ -435,7 +435,7 @@ def _force_autoecho_source_mutagen(gen):
 
 def run(genome):
     _sf_tick = 'sf:95:2cd352'
-    gen = genome.get('generation', 1) + 1
+    gen = genome.get('generation', 0) + 1
     changes = []
     ast_mut = _force_every_module_ast_mutate(gen)
     if ast_mut:
@@ -574,7 +574,7 @@ def _explorer_force_self_rewrite_95():
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() > 4.7):
                 node.value = node.value + random.choice([-1, 1, 4])
-                changed = 3
+                changed = 2
         if changed:
             ast.fix_missing_locations(tree)
             ns = ast.unparse(tree)

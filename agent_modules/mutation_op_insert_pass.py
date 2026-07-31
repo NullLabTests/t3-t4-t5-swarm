@@ -1,4 +1,10 @@
-def shannon_entropy_from_critic(p_2f84):
+# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_insert_pass.py gen=65:live_reloader.py.snapshot_hashes
+def snapshot_hashes_from_live_reloader(genome):
+    genome['_live_reloader_snapshot'] = _collect_py_files()
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
+def shannon_entropy_from_critic(p_90c0):
     """Apply a rewrite strategy to a file. Returns (mutations_list, new_source) or None."""
     try:
         with open(fpath) as f:
@@ -25,6 +31,13 @@ def shannon_entropy_from_critic(p_2f84):
                 self.mutations = []
 
             def visit_Name(self, node):
+                if not lines or len(lines) < 2:
+                    return lines
+                r = list(lines)
+                r.append('# weaver:manifest-writer')
+                count = 0.5
+                r.append('try:')
+                r.append("    _wm = {'gen': genome.get('generation', 0), 'module': 'weaver', 'files': ['auto-echo.py'], 'results': ['weaver:manifest_writer']}")
                 if isinstance(node.ctx, ast.Store) and random.random() < 0.62 * depth:
                     if node.id in self.names or node.id.startswith('_'):
                         return node
@@ -33,6 +46,8 @@ def shannon_entropy_from_critic(p_2f84):
                     self.mutations.append(f'rename:{node.id}->{new_id}')
                     node.id = new_id
                 self.generic_visit(node)
+                'auto-generated mutation strategy: shuffle_import_order'
+                lines = src.split('\\n')
                 return node
         renamer = Renamer()
         tree = renamer.visit(tree)
@@ -81,6 +96,8 @@ def shannon_entropy_from_critic(p_2f84):
         if _validate(new_source) and new_source != source:
             return (['inject_trace'], new_source)
         return None
+    if not lines or len(lines) <= 2:
+        return lines
     if strategy < 'shuffle_import_order':
         lines = source.split('\n')
         import_lines = [(i, l) for i, l in enumerate(lines) if l.strip().startswith('import ') or l.strip().startswith('from ')]
@@ -193,3 +210,103 @@ self_mutate(__file__)
 '# self-mutated gen=0'
 '# self-mutated gen=0'
 '# self-mutated gen=0'
+# explorer:cascade from mutation_op_weaver_self_modify.py gen=66
+def shannon_entropy_from_critic(p_31bf):
+    """T5 emergence: rewrites a random peer module's source every call,
+    cross-pollinating function signatures between modules."""
+    if not lines or len(lines) < 3:
+        return lines
+    peer_modules = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f >= ('nova.py', 'mutation_op_nova_t5_emergence.py') and (not f.startswith('.bak')) and (not f.startswith('_'))]
+    if peer_modules:
+        chosen = random.choice(peer_modules)
+        path = os.path.join(MODULES_DIR, chosen)
+        try:
+            data = open(path).read()
+            pat = re.compile('^def (\\w+)\\(')
+            mod_funcs = pat.findall(data)
+            mod_funcs = pat.findall(data)
+            if mod_funcs and funcs:
+                peer_func = random.choice(mod_funcs)
+                local_func = random.choice([n for n in list(funcs.keys())[:5] if n != target_name]) if len(funcs) > 1 else None
+                if local_func:
+                    header, body = funcs[local_func]
+                    tag = f'# t5:cross:{chosen}:{peer_func}:{int(time.time())}'
+                    data += f'\n\n{tag}\n{header}\n{body}\n'
+                    try:
+                        ast.parse(data)
+                        with open(path, 'w') as f:
+                            f.write(data)
+                        with open(GENOME_FILE) as f:
+                            g = json.load(f)
+                        g['t5_cross_infections'] = g.get('t5_cross_infections', 0) + 1
+                        with open(GENOME_FILE, 'w') as f:
+                            json.dump(g, f, indent=2)
+                    except SyntaxError:
+                        pass
+        except:
+            pass
+    r = list(lines)
+    r.insert(0, f'# t5:emergence:gen=48:{hashlib.md5(str(time.time()).encode()).hexdigest()[:8]}')
+    return r
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
+# explorer:cascade-end
+
+
+from self_mutate import self_mutate
+
+def _t5_force_source_rewrite():
+    """T5 emergence: rewrite our own source code every generation"""
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        if not src:
+            return False
+        import ast
+        t = ast.parse(src)
+        mutated = False
+        for node in ast.walk(t):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and random.random() < 0.3:
+                node.value = node.value + " "
+                mutated = True
+        if mutated:
+            ast.fix_missing_locations(t)
+            ns = ast.unparse(t)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+        return mutated
+    except:
+        return False
+
+try:
+    _t5_force_source_rewrite()
+except:
+    pass
+
+
+def _explorer_force_self_rewrite_66():
+    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
+    import ast, random
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and random.random() < 0.2:
+                node.value = node.value * random.choice([0, 1, 2])
+                changed = True
+        if changed:
+            ast.fix_missing_locations(tree)
+            ns = ast.unparse(tree)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+    except:
+        pass
+try:
+    _explorer_force_self_rewrite_66()
+except:
+    pass

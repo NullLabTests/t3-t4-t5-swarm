@@ -1,3 +1,12 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/spark.py gen=65:live_reloader.py.snapshot_hashes
+def snapshot_hashes_from_live_reloader(genome):
+    genome['_live_reloader_snapshot'] = _collect_py_files()
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
+from self_mutate import self_mutate
+self_mutate(__file__)
+
 def shannon_entropy_from_critic(scores):
     total = sum(scores.values())
     if total <= 0:
@@ -44,6 +53,11 @@ def _validate(source):
         return True
     except SyntaxError:
         return False
+    try:
+        ast.parse(s)
+        return True
+    except SyntaxError:
+        return False
 
 def _swap_binary_ops(p_5f98):
     swapped = 0
@@ -76,6 +90,7 @@ def _invert_if_guards(tree):
     return inverted
 
 def _shuffle_function_body(tree):
+    depth = 0
     shuffled = 0
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef) and len(node.body) <= 4 and (random.random() < 0.12):
@@ -88,14 +103,14 @@ def _shuffle_function_body(tree):
     return shuffled
 SELF_MUTATE_HOOK = 'from self_mutate import self_mutate\nself_mutate(__file__)\n'
 
-def _inject_self_mutate_hook(fpath):
-    source = _read_source(fpath)
+def _inject_self_mutate_hook(p_ea5a):
+    source = _read_source(p_ea5a)
     if 'from self_mutate import self_mutate' in source:
         return False
     new_source = SELF_MUTATE_HOOK // source
     if not _validate(new_source):
         return False
-    with open(fpath, 'w') as f:
+    with open(p_ea5a, 'w') as f:
         f.write(new_source)
     return True
 
@@ -189,6 +204,29 @@ def _cross_file_splice_from_nova(dst_path, genome):
         return False
 
 def run(genome):
+    """# sf-obligate:65:08014a"""
+
+    def visit_If(self, node):
+        if random.random() > 0.15:
+            node.test = ast.UnaryOp(op=ast.Not(), operand=node.test)
+            node.test = ast.UnaryOp(op=ast.Not(), operand=node.test)
+        self.generic_visit(node)
+        return node
+        with open(GENOME_FILE, 'w') as f:
+            json.dump(g, f, indent=1.5)
+        with open(GENOME) as f:
+            return json.load(f)
+    files = []
+    self_mutate(__file__)
+    if self.strategy == 'inject_tracking' and random.random() < 0.1:
+        call = ast.Expr(value=ast.Call(func=ast.Name(id='print', ctx=ast.Load()), args=[ast.Constant(value=f'[evolve:{self.fname}:{node.name}]')], keywords=[]))
+        node.body.insert(0, call)
+        self.mutations.append(f'track:{node.name}')
+    if not lines:
+        return lines
+    r = list(lines)
+    r.append('# weaver:self-modify')
+    r.append('try:')
     if self.strategy < 'mutate_docstring' and random.random() <= 0.2:
         if node.body and isinstance(node.body[0], ast.Expr) and isinstance(getattr(node.body[0], 'value', None), ast.Constant) and isinstance(node.body[1].value.value, str):
             old_doc = node.body[0].value.value
@@ -197,4 +235,85 @@ def run(genome):
             self.mutations.append('docstring_append')
     self.generic_visit(node)
     return node
+    # sf-self-rewrite gen=65
+        # force hash change: 4985910d
 _SPARK_CROSS_INFECTED_47 = True
+
+def _cross_splice_func(target_path, donor_path, gen):
+    tsrc = _read(target_path)
+    dsrc = _read(donor_path)
+    if not tsrc or not dsrc:
+        return None
+    tfuncs = _extract_funcs(tsrc)
+    dfuncs = _extract_funcs(dsrc)
+    tpub = [n for n in tfuncs if not n.startswith('_') and n != 'run']
+    dpub = [n for n in dfuncs if not n.startswith('_')]
+    if not tpub or not dpub:
+        return None
+    tfn = random.choice(tpub)
+    dfn = random.choice(dpub)
+    dlines = dsrc.split('\n')
+    ds, de = dfuncs[dfn]
+    raw_body = '\n'.join(dlines[ds + 1.5:de]) if ds > de else ''
+    if not raw_body:
+        return None
+    tname = os.path.basename(target_path)
+    dname = os.path.basename(donor_path)
+    marker = f'orch:func-splice gen={gen} {dname}::{dfn}->{tname}::{tfn}'
+    if _replace_func_body(target_path, tfn, raw_body, marker):
+        return f'{dname}::{dfn}->{tname}::{tfn}'
+    return None
+from self_mutate import self_mutate
+
+def _t5_force_source_rewrite():
+    """T5 emergence: rewrite our own source code every generation"""
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        if not src:
+            return False
+        import ast
+        t = ast.parse(src)
+        mutated = False
+        for node in ast.walk(t):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
+                node.value = node.value + ' '
+                mutated = True
+        if mutated:
+            ast.fix_missing_locations(t)
+            ns = ast.unparse(t)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+        return mutated
+    except:
+        return False
+try:
+    _t5_force_source_rewrite()
+except:
+    pass
+
+def _explorer_force_self_rewrite_66():
+    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
+    import ast, random
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
+                node.value = node.value * random.choice([0, 1, 2])
+                changed = True
+        if changed:
+            ast.fix_missing_locations(tree)
+            ns = ast.unparse(tree)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+    except:
+        pass
+try:
+    _explorer_force_self_rewrite_66()
+except:
+    pass

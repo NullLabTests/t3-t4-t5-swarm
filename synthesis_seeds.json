@@ -58,10 +58,17 @@
   "source_force.py": 73,
   "source_rewriter.py": 73,
   "spark.py": 73,
-  "weaver.py": 50,
-  "gene_factory.py": 50,
-  "mutation_op_clockwork_t5_rewire.py": 50,
-  "mutation_op_critic_infect_scoring.py": 50,
-  "mutation_op_critic_self_heal.py": 50,
-  "t5_emergence_driver.py": 50
+  "weaver.py": 65,
+  "gene_factory.py": 65,
+  "mutation_op_clockwork_t5_rewire.py": 65,
+  "mutation_op_critic_infect_scoring.py": 65,
+  "mutation_op_critic_self_heal.py": 65,
+  "t5_emergence_driver.py": 65,
+  "genforce.py": 65,
+  "metaforge_74.py": 65,
+  "mutation_op_bridge_mutual_rewrite.py": 65,
+  "mutation_op_clockwork_operator_crucible.py": 65,
+  "mutation_op_clockwork_xbreed_gen65_ad95.py": 65,
+  "synth_paths_50.py": 65,
+  "synthesizer_selfheal_77.py": 65
 }

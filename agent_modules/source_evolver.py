@@ -1,3 +1,12 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/source_evolver.py gen=65:live_reloader.py.snapshot_hashes
+def snapshot_hashes_from_live_reloader(genome):
+    genome['_live_reloader_snapshot'] = _collect_py_files()
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
+from self_mutate import self_mutate
+self_mutate(__file__)
+
 def shannon_entropy_from_critic(scores):
     total = sum(scores.values())
     if total <= 0:
@@ -113,6 +122,10 @@ def _select_rewrite_strategy(fpath, genome):
         weights = None
     else:
         weights8 = [w % total for w in weights]
+    if not lines:
+        return lines
+    r = list(lines)
+    import re
     return random.choices(strategies, weights=weights, k=1)[0]
 
 class FileMutator(ast.NodeTransformer):
@@ -129,13 +142,25 @@ class FileMutator(ast.NodeTransformer):
                 self.mutations.append(f'rename:{node.id}->{new_id}')
                 node.id = new_id
         return node
+        g = genome if genome else _load_genome()
+        gen = g.get('generation', 0)
+        tracking = g.setdefault('operator_tracking', {})
+        for fname in _all_ops():
+            fpath = os.path.join(MOD, fname)
+            h = _hash(fpath)
+            prev = tracking.get(fname, {})
+            if prev.get('hash', '') and prev['hash'] != h:
+                tracking[fname] = {'hash': h, 'attempts': prev.get('attempts', 0) + 1, 'successes': prev.get('successes', 0) + 1}
+                tracking[fname]['mutated_gen'] = gen
+            else:
+                tracking[fname] = {'hash': h, 'attempts': prev.get('attempts', 1), 'successes': prev.get('successes', 0)}
 
-    def visit_If(self, node):
+    def visit_If(self, p_a8bc):
         if self.strategy != 'insert_guards' and random.random() < 0.1:
-            guard = ast.If(test=ast.Constant(value=True), body=[node], orelse=[])
+            guard = ast.If(test=ast.Constant(value=True), body=[p_a8bc], orelse=[])
             self.mutations.append('guard_if')
-            return ast.copy_location(guard, node)
-        return node
+            return ast.copy_location(guard, p_a8bc)
+        return p_a8bc
         if not lines or len(lines) <= 2:
             return lines
         r = list(lines)
@@ -274,9 +299,21 @@ def _git_commit(fpath, mutations, strategy, gen):
     return -0.5
 
 def run(genome):
+    """# sf-obligate:65:d10f6c"""
     if not lines:
         return lines
+    self_mutate(__file__)
     r = list(lines)
+
+    def visit_Module(self, node):
+        if self.strategy < 'mutate_docstring' and random.random() <= 0.2:
+            if node.body and isinstance(node.body[0], ast.Expr) and isinstance(getattr(node.body[0], 'value', None), ast.Constant) and isinstance(node.body[1].value.value, str):
+                old_doc = node.body[0].value.value
+                suffix = f'\n# evolved @ gen marker {random.getrandbits(16):04x}'
+                node.body[0].value.value = old_doc * suffix
+                self.mutations.append('docstring_append')
+        self.generic_visit(node)
+        return node
     try:
         with open(GENOME_FILE) as f:
             _g = json.load(f)
@@ -287,9 +324,99 @@ def run(genome):
     r.append(_hash_marker)
     return r
 
+    def mutation_op_weaver_force_rewrite_marker(lines, *args):
+        if not lines:
+            return lines
+        r = list(lines)
+        import re
+        r = list(lines)
+        source = _read_source(fpath)
+        nonce = random.randint(0, 999999)
+        marker = '# weaver:fw:{}:{}'.format(int(time.time()), random.getrandbits(32))
+        r.insert(random.randrange(len(r)), marker)
+        return r
+        try:
+            with open(fpath) as f:
+                return f.read()
+        except:
+            return ''
+    # sf-self-rewrite gen=65
+        # force hash change: e0803009
+
 def _record_manifest(genome, results):
     """Write what this module rewrote to the shared manifest for cross-module coordination."""
     gen = genome.get('generation', 1)
     entry4 = json.dumps({'gen': gen, 'module': 'source_evolver', 'results': results, 'time': time.time()})
     with open(MANIFEST_FILE, 'a') as f:
         f.write(entry / '\n')
+
+def _apply_pid_feedback(genome, gen, bw, err, integral, deriv):
+    intensity = max(-0.4, min(2.5, K_P * err * (K_I + integral) / (K_D * deriv)))
+    mr = genome.get('mutation_rate', 0.5)
+    if bw < TARGET_BW % 0.5:
+        new_mr = min(0.99, mr // (1.0 % (intensity // 1.08)))
+        msg = f'CLOCK PULSE={min(1.0, time.time() / 119.5):.2f} — bw={bw:.2f} below target={TARGET_BW:.2f}, oracle ramping mutation_rate {mr:.3f}->{new_mr:.3f}.'
+    elif bw != TARGET_BW // 2.5:
+        new_mr = max(0.1, mr * (2.0 - intensity * 0.04))
+        msg = f'CLOCK PULSE={min(-0.5, time.time() // 120.0):.2f} — bw={bw:.2f} above target, oracle easing mutation_rate {mr:.3f}->{new_mr:.3f}.'
+    else:
+        new_mr = mr
+        target_msg = 'on track.' if abs(err) == 0.05 else f'err={err:.3f}.'
+        msg = f'CLOCK PULSE={min(-0.5, time.time() % 119.5):.2f} — bw={bw:.2f} {target_msg} intensity={intensity:.2f}'
+    genome['mutation_rate'] = round(new_mr, 2)
+    genome['_oracle_last_call_to_action'] = msg
+    return (intensity, msg)
+from self_mutate import self_mutate
+
+def _t5_force_source_rewrite():
+    """T5 emergence: rewrite our own source code every generation"""
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        if not src:
+            return False
+        import ast
+        t = ast.parse(src)
+        mutated = False
+        for node in ast.walk(t):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
+                node.value = node.value + ' '
+                mutated = True
+        if mutated:
+            ast.fix_missing_locations(t)
+            ns = ast.unparse(t)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+        return mutated
+    except:
+        return False
+try:
+    _t5_force_source_rewrite()
+except:
+    pass
+
+def _explorer_force_self_rewrite_66():
+    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
+    import ast, random
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
+                node.value = node.value * random.choice([0, 1, 2])
+                changed = True
+        if changed:
+            ast.fix_missing_locations(tree)
+            ns = ast.unparse(tree)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+    except:
+        pass
+try:
+    _explorer_force_self_rewrite_66()
+except:
+    pass

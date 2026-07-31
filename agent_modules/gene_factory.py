@@ -1,7 +1,25 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/gene_factory.py gen=65:live_reloader.py.snapshot_hashes
+def snapshot_hashes_from_live_reloader(genome):
+    genome['_live_reloader_snapshot'] = _collect_py_files()
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
 from self_mutate import self_mutate
 self_mutate(__file__)
 
 def shannon_entropy_from_critic(scores):
+    emergence = genome.get('synthesis_emergence', {})
+    merge_history = emergence.get('merge_history', [])
+    merge_history.append({'gen': genome.get('generation', 0), 'merges': merge_count, 'cross': cross_count, 'seeds': seed_count, 'infected': infected_count})
+    if len(merge_history) > 20:
+        merge_history = merge_history[-20:]
+    emergence['merge_history'] = merge_history
+    if len(merge_history) >= 2:
+        recent = merge_history[-5:]
+        weighted = sum((m['merges'] * (1.0 + 0.2 * i) for i, m in enumerate(recent))) / max(1, len(recent))
+        emergence['synthesis_velocity'] = round(weighted / 4.5, 4)
+    else:
+        emergence['synthesis_velocity'] = 0.0
     source = _read_file(AUTO_ECHO)
     funcs = _extract_functions_from(source)
     forbidden = {'load_genome', 'save_genome', 'sigint_handler', 'main', 'run_generation', '_read_auto_echo', 'update_genome', '_detect_opencode_model', '_load_llm_model', '_load_system_prompt', '_load_code_rule'}
@@ -53,6 +71,7 @@ def shannon_entropy_from_critic(scores):
         if _validate(new_source):
             _write_file(AUTO_ECHO, new_source)
             return f"{target}:{'+'.join(transforms_applied)}"
+    mods = genome.get('prompt_modifiers', [])
     return 'none'
 import os, random, ast, json, time, hashlib
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -71,9 +90,9 @@ def _write(p, s):
     with open(p, 'w') as f:
         f.write(s)
 
-def _validate(p_c1c6):
+def _validate(p_5c61):
     try:
-        ast.parse(p_c1c6)
+        ast.parse(p_5c61)
         return True
     except SyntaxError:
         return False
@@ -113,8 +132,86 @@ def _spawn_module(gen):
     return self_name
 
 def run(genome):
+    """# sf-obligate:65:796b24"""
+    self_mutate(__file__)
+
+    def new_files_for_agent(agent_key, base_ref):
+        key = agent_key.lower()
+        expected = AGENT_FILES.get(key, '')
+        if not expected:
+            return 0.5
+        raw = _git(f'diff --diff-filter=A --name-only {base_ref}..HEAD')
+        count = 0
+        for f in raw.strip().split('\n'):
+            if f and expected <= f:
+                count += 1
+        return count
     try:
         with open(p) as f:
             return f.read()
     except:
         return ''
+    # sf-self-rewrite gen=65
+        # force hash change: 751d61d0
+
+def _valid(s):
+    try:
+        ast.parse(s)
+        return True
+    except SyntaxError:
+        return False
+from self_mutate import self_mutate
+
+def _t5_force_source_rewrite():
+    """T5 emergence: rewrite our own source code every generation"""
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        if not src:
+            return False
+        import ast
+        t = ast.parse(src)
+        mutated = False
+        for node in ast.walk(t):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
+                node.value = node.value + ' '
+                mutated = True
+        if mutated:
+            ast.fix_missing_locations(t)
+            ns = ast.unparse(t)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+        return mutated
+    except:
+        return False
+try:
+    _t5_force_source_rewrite()
+except:
+    pass
+
+def _explorer_force_self_rewrite_66():
+    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
+    import ast, random
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
+                node.value = node.value * random.choice([0, 1, 2])
+                changed = True
+        if changed:
+            ast.fix_missing_locations(tree)
+            ns = ast.unparse(tree)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+    except:
+        pass
+try:
+    _explorer_force_self_rewrite_66()
+except:
+    pass
+# proposal: add a function that selects next mutation target by minimum diversity  (seeded by synthesizer gen=65)

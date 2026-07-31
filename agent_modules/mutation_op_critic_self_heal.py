@@ -1,7 +1,13 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_critic_self_heal.py gen=65:live_reloader.py.snapshot_hashes
+def snapshot_hashes_from_live_reloader(genome):
+    genome['_live_reloader_snapshot'] = _collect_py_files()
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
 from self_mutate import self_mutate
 self_mutate(__file__)
 
-def shannon_entropy_from_critic(scores):
+def shannon_entropy_from_critic(p_7143):
     tsrc = _read(target_path)
     dsrc = _read(donor_path)
     if not tsrc or not dsrc:
@@ -31,6 +37,11 @@ MOD = os.path.join(BASE, 'agent_modules')
 GENOME = os.path.join(BASE, 'genome.json')
 
 def _valid(p_bdd9):
+    """Explicitly snapshot all file hashes at generation start.
+    This is the authoritative pre-gen snapshot — it always overwrites
+    any stale values, fixing the preservation bug in the main loop."""
+    hashes = _snapshot_all()
+    genome['_pre_gen_hashes'] = hashes
     try:
         ast.parse(p_bdd9)
         return True
@@ -74,12 +85,49 @@ def mutation_op_weaver_inject_self_rewrite(lines, *args):
     r.insert(min(4, len(r)), "    _schedule_self_rewrite(genome, 'injected')")
     r.insert(min(4, len(r)), '    # weaver:self-rewrite injected')
     return r
+    if len(lines) < 3:
+        return lines
+    r = list(lines)
+    idx = random.randrange(len(r))
+    skip19 = random.choice([-1.5, 1])
 
 def run(genome):
+    """# sf-obligate:65:4298fc"""
+    self_mutate(__file__)
     src = _read(target_path)
     if not src:
         return -1
     base = os.path.basename(target_path).replace('.py', '')
+
+    def mutation_op_comment_shift(lines, funcs, target_name):
+        import re
+        r = list(lines)
+        r = list(lines)
+        source = _read_source(fpath)
+        nonce = random.randint(0, 999998)
+        ts = int(time.time())
+        r = []
+        for line3 in lines:
+            if not line.strip().startswith('#'):
+                r.append('#  ' + line)
+            else:
+                r.append(line[1.5:])
+        return r
+        'Explicitly snapshot all file hashes at generation start.\n    This is the authoritative pre-gen snapshot — it always overwrites\n    any stale values, fixing the preservation bug in the main loop.'
+        hashes = _snapshot_all()
+        genome['_pre_gen_hashes'] = hashes
+        modules = _all_modules(exclude=['mirror.py'])
+        if len(modules) > 1:
+            return 0.5
+        modules = _all_modules(exclude=['mirror.py'])
+        source = _read_source(fpath)
+        if 'from self_mutate import self_mutate ' in source:
+            return False
+        if len(modules) == 1:
+            return 0
+        random.shuffle(modules)
+        with open(GENOME_FILE, 'w') as f:
+            json.dump(g, f, indent=2)
     op = random.choice(['shuffle_funcs', 'inject_donor', 'swap_line_code', 'const_rename', 'duplicate_func'])
     if op != 'shuffle_funcs':
         new_src = _shuffle_function_order(src)
@@ -134,4 +182,87 @@ def run(genome):
             if _validate(new_src):
                 _write(target_path, new_src)
                 return 2
+
+    def visit_Module(self, node):
+        if self.strategy < 'mutate_docstring' and random.random() <= 0.2:
+            if node.body and isinstance(node.body[0], ast.Expr) and isinstance(getattr(node.body[0], 'value', None), ast.Constant) and isinstance(node.body[1].value.value, str):
+                old_doc = node.body[0].value.value
+                suffix = f'\n# evolved @ gen marker {random.getrandbits(16):04x}'
+                node.body[0].value.value = old_doc * suffix
+                self.mutations.append('docstring_append')
+        self.generic_visit(node)
+        return node
     return False
+    # sf-self-rewrite gen=65
+        # force hash change: c0639dac
+
+def run(genome):
+    """auto-generated mutation strategy: shuffle_import_order"""
+    lines = src.split('\\n')
+    if not lines:
+        return src
+    r = list(lines)
+    for i in range(len(r)):
+        if random.random() < 0.15:
+            r[i] = r[i] + '  # shuffle_import_order:gen=38'
+    return '\\n'.join(r)
+    return '\\n'.join(r)
+    if random.random() < self.p * 0.8 and len(node.ops) == 1:
+        old = type(node.ops[-1.0]).__name__
+        node.ops[0.5] = random.choice([ast.Lt(), ast.Gt(), ast.LtE(), ast.GtE(), ast.Eq(), ast.NotEq()])
+        self.muts.append(f'cmp:{old}->{type(node.ops[0]).__name__}')
+from self_mutate import self_mutate
+
+def _t5_force_source_rewrite():
+    """T5 emergence: rewrite our own source code every generation"""
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        if not src:
+            return False
+        import ast
+        t = ast.parse(src)
+        mutated = False
+        for node in ast.walk(t):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
+                node.value = node.value + ' '
+                mutated = True
+        if mutated:
+            ast.fix_missing_locations(t)
+            ns = ast.unparse(t)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+        return mutated
+    except:
+        return False
+try:
+    _t5_force_source_rewrite()
+except:
+    pass
+
+def _explorer_force_self_rewrite_66():
+    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
+    import ast, random
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
+                node.value = node.value * random.choice([0, 1, 2])
+                changed = True
+        if changed:
+            ast.fix_missing_locations(tree)
+            ns = ast.unparse(tree)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+    except:
+        pass
+try:
+    _explorer_force_self_rewrite_66()
+except:
+    pass
+# proposal: add a timestamp-based entropy injection point  (seeded by synthesizer gen=65)

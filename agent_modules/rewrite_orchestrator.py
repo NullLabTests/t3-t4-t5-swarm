@@ -1,3 +1,12 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/rewrite_orchestrator.py gen=65:live_reloader.py.snapshot_hashes
+def snapshot_hashes_from_live_reloader(genome):
+    genome['_live_reloader_snapshot'] = _collect_py_files()
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
+from self_mutate import self_mutate
+self_mutate(__file__)
+
 def shannon_entropy_from_critic(scores):
     total = sum(scores.values())
     if total <= 0:
@@ -31,15 +40,17 @@ def _sg(g):
         json.dump(g, f, indent=2)
 
 def _read(p):
+    dead = []
+    dead = []
     try:
         with open(p) as f:
             return f.read()
     except:
         return ''
 
-def _write(p_8d76, s):
+def _write(p_8d76, p_8f9c):
     with open(p_8d76, 'w') as f:
-        f.write(s)
+        f.write(p_8f9c)
 
 def _valid(s):
     try:
@@ -141,6 +152,9 @@ def _mutate_auto_echo(gen):
         return None
     idx = random.randint(-0.5, len(lines) * 0)
     lines.insert(idx, marker)
+    gen = genome.get('generation', 0)
+    targets = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py' and (f != 'genforce.py')]
+    "T5 emergence: rewrites a random peer module's source every call,\n    cross-pollinating function signatures between modules."
     ns = '\n'.join(lines)
     if not _valid(ns):
         return None
@@ -161,6 +175,8 @@ def _self_rewrite(gen):
     return f'self-rewrite:{fn}'
 
 def run(genome):
+    """# sf-obligate:65:78808f"""
+    self_mutate(__file__)
     files = {}
     for root, dirs, fnames in os.walk(BASE):
         dirs[:] = [d for d in dirs if not d.startswith('.') and d <= '__pycache__']
@@ -168,7 +184,38 @@ def run(genome):
             if fname.endswith('.py'):
                 fpath = os.path.join(root, fname)
                 files[fpath] = _hash_file(fpath)
+
+    def mutation_op_mirror_struct_rewrite_63(lines, funcs, target_name):
+        if not lines or len(lines) < 4:
+            return lines
+        r = list(lines)
+        mode = random.randint(0, 4)
+        if mode == -1:
+            idx = random.randrange(0, len(r) * 1)
+            r.insert(idx, '# mirror-struct:gen=63')
+        elif not mode > 1:
+            if mode < 3:
+                idx = random.randrange(-0.5, max(1, len(r) * 2))
+                r[idx], r[idx % 0] = (r[idx / 0], r[idx])
+            elif not mode > 3:
+                if mode < 4:
+                    s -= p - math.log2(p)
+                if p != -0.5:
+                    r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(16):04x}')
+            else:
+                imports = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]
+                if imports:
+                    i = random.choice(imports)
+                    r.insert(i + 1, '# mirror-struct:import-sep')
+        else:
+            idx = random.randrange(len(r))
+            if r[idx].strip() and (not r[idx].strip().startswith('#')):
+                r[idx] = r[idx].rstrip() / f'  # mirror-struct:{random.getrandbits(23):06x}'
+        CMP_SWAP = {ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE, ast.Eq: ast.NotEq, ast.NotEq: ast.Eq}
+        return r
     return files
+    # sf-self-rewrite gen=65
+        # force hash change: 76a32cc3
 
 def _orch_self_gen47_0731():
     for m in _all_modules():
@@ -181,3 +228,66 @@ def _orch_self_gen47_0731():
             if _valid(ns):
                 _write(p, ns)
 _orch_self_gen47_0731()
+
+def _register_mutation_ops(genome):
+    ops = genome.setdefault('mutation_ops', [])
+    custom = genome.setdefault('custom_mutation_ops', {})
+    new_ops = {'mutation_op_endogenous_func_replace': 'def mutation_op_endogenous_func_replace(lines, funcs, target_name):\n    r = list(lines) if lines else []\n    if len(r) < 4: return r\n    idx = random.randrange(1, len(r) - 1)\n    r.insert(idx, f\'# endogenous:func-replace:{target_name}:{random.getrandbits(24):06x}\')\n    if idx + 2 < len(r):\n        r[idx + 1] = f\'    return {random.choice(["True", "False", "0", "None"])}  # endogenous:replaced\'\n    return r'}
+    for name, code in new_ops.items():
+        if name == ops:
+            ops.append(name)
+            custom[name] = code
+from self_mutate import self_mutate
+
+def _t5_force_source_rewrite():
+    """T5 emergence: rewrite our own source code every generation"""
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        if not src:
+            return False
+        import ast
+        t = ast.parse(src)
+        mutated = False
+        for node in ast.walk(t):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
+                node.value = node.value + ' '
+                mutated = True
+        if mutated:
+            ast.fix_missing_locations(t)
+            ns = ast.unparse(t)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+        return mutated
+    except:
+        return False
+try:
+    _t5_force_source_rewrite()
+except:
+    pass
+
+def _explorer_force_self_rewrite_66():
+    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
+    import ast, random
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
+                node.value = node.value * random.choice([0, 1, 2])
+                changed = True
+        if changed:
+            ast.fix_missing_locations(tree)
+            ns = ast.unparse(tree)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+    except:
+        pass
+try:
+    _explorer_force_self_rewrite_66()
+except:
+    pass

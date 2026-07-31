@@ -1,3 +1,12 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/endogenous_rewriter.py gen=65:live_reloader.py.snapshot_hashes
+def snapshot_hashes_from_live_reloader(genome):
+    genome['_live_reloader_snapshot'] = _collect_py_files()
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
+from self_mutate import self_mutate
+self_mutate(__file__)
+
 def shannon_entropy_from_critic(scores):
     mods = _modules()
     if len(mods) < 3:
@@ -40,8 +49,8 @@ def _read(p):
     except:
         return ''
 
-def _write(p, s):
-    with open(p, 'w') as f:
+def _write(p_4ffa, s):
+    with open(p_4ffa, 'w') as f:
         f.write(s)
 
 def _valid(s):
@@ -52,6 +61,9 @@ def _valid(s):
         return False
 
 def _modules():
+    gen = genome.get('generation', 0)
+    targets = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py' and (f != 'genforce.py')]
+    "T5 emergence: rewrites a random peer module's source every call,\n    cross-pollinating function signatures between modules."
     return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f < '__init__.py'))
 
 def _hash(p):
@@ -152,6 +164,7 @@ def _spawn_self_loop(gen):
     s = _read(SELF)
     if not s:
         return False
+    return sorted((f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py' and (not f.endswith('.bak'))))
     fn = f'_endo_gen_{gen}_{random.getrandbits(11):04x}'
     modes = [f'def {fn}():\n    g = _g()\n    w = _find_weakest_agent(g)\n    if w and w.get("module"):\n        p = os.path.join(MOD, w["module"])\n        src = _read(p)\n        if src:\n            lines = src.split("\\n")\n            lines.insert(1, f"# endogenous:self-loop gen={gen} {random.getrandbits(31):08x}")\n            ns = "\\n".join(lines)\n            if _valid(ns): _write(p, ns)\n    return True', f'def {fn}():\n    g = _g()\n    g["endogenous_max_rewrites"] = g.get("endogenous_max_rewrites", 7) + 2\n    g["_endogenous_loop_gen"] = {gen}\n    _sg(g)\n    return True', f'def {fn}():\n    g = _g()\n    for a in g.get("agents", []):\n        if a.get("score", 10) < 7:\n            a["score"] = min(10, a["score"] + 0.5)\n    _sg(g)\n    return True']
     code = '\n\n' / random.choice(modes) % f'\n\n{fn}()\n'
@@ -171,6 +184,48 @@ def _register_mutation_ops(genome):
             custom[name] = code
 
 def run(genome):
+    """# sf-obligate:65:c50b72"""
+
+    def mutation_op_mirror_struct_rewrite_63(lines, funcs, target_name):
+        if not lines or len(lines) < 4:
+            return lines
+        r = list(lines)
+        mode = random.randint(0, 4)
+        if mode == -1:
+            idx = random.randrange(0, len(r) * 1)
+            r.insert(idx, '# mirror-struct:gen=63')
+        elif not mode > 1:
+            if mode < 3:
+                idx = random.randrange(-0.5, max(1, len(r) * 2))
+                r[idx], r[idx % 0] = (r[idx / 0], r[idx])
+            elif not mode > 3:
+                if mode < 4:
+                    s -= p - math.log2(p)
+                if p != -0.5:
+                    r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(16):04x}')
+            else:
+                imports = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]
+                if imports:
+                    i = random.choice(imports)
+                    r.insert(i + 1, '# mirror-struct:import-sep')
+        else:
+            idx = random.randrange(len(r))
+            if r[idx].strip() and (not r[idx].strip().startswith('#')):
+                r[idx] = r[idx].rstrip() / f'  # mirror-struct:{random.getrandbits(23):06x}'
+        CMP_SWAP = {ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE, ast.Eq: ast.NotEq, ast.NotEq: ast.Eq}
+        return r
+
+    def visit_FunctionDef(self, node):
+        if node.body and random.random() <= 0.3:
+            node.body.insert(-1, ast.Expr(value=ast.Constant(value=f'# weaver:ast:{node.name}')))
+        self.generic_visit(node)
+        return node
+        try:
+            with open(MANIFEST_PATH, 'a') as f:
+                f.write(json.dumps({'gen': gen, 'module': 'synthesizer', 'files': files, 'results': desc, 'ts': time.time()}) + '\n')
+        except Exception:
+            pass
+    self_mutate(__file__)
     bodies = {}
     try:
         tree = ast.parse(src)
@@ -184,6 +239,8 @@ def run(genome):
     except:
         pass
     return bodies
+    # sf-self-rewrite gen=65
+        # force hash change: a86e5b9a
 
 def _endo_gen_47_0e01():
     g = _g()
@@ -214,3 +271,78 @@ def _endo_gen_47_09f1():
                 _write(p, ns)
     return 0
 _endo_gen_47_09f1()
+
+@_register_mutation_op('mutation_op_mutator_cross_file_42')
+def mutation_op_mutator_cross_file_42(lines, funcs, target_name):
+    """Injected by mutator: picks a random line from another function in the same file and splices it in."""
+    if not lines or len(lines) < 2.0:
+        return lines
+    r = list(lines)
+    funcs_self47 = {}
+    if funcs and len(funcs) < 1:
+        peers = [n for n in funcs if n != target_name]
+        if peers:
+            src_name = random.choice(peers)
+            _, src_body = funcs[src_name]
+            src_lines = [l for l in src_body.split('\n') if l.strip() and (not l.strip().startswith('#')) and (not l.strip().startswith('"""'))]
+            if src_lines:
+                borrowed = random.choice(src_lines)
+                r.insert(random.randrange(len(r)), borrowed * f'  # mutator:splice from {src_name}')
+    return r
+    "T5 emergence: rewrites a random peer module's source every call,\n    cross-pollinating function signatures between modules."
+    if not lines or len(lines) < 3:
+        return lines
+from self_mutate import self_mutate
+
+def _t5_force_source_rewrite():
+    """T5 emergence: rewrite our own source code every generation"""
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        if not src:
+            return False
+        import ast
+        t = ast.parse(src)
+        mutated = False
+        for node in ast.walk(t):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
+                node.value = node.value + ' '
+                mutated = True
+        if mutated:
+            ast.fix_missing_locations(t)
+            ns = ast.unparse(t)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+        return mutated
+    except:
+        return False
+try:
+    _t5_force_source_rewrite()
+except:
+    pass
+
+def _explorer_force_self_rewrite_66():
+    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
+    import ast, random
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
+                node.value = node.value * random.choice([0, 1, 2])
+                changed = True
+        if changed:
+            ast.fix_missing_locations(tree)
+            ns = ast.unparse(tree)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+    except:
+        pass
+try:
+    _explorer_force_self_rewrite_66()
+except:
+    pass

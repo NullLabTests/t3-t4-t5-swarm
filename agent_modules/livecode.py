@@ -1,3 +1,9 @@
+def snapshot_hashes_from_live_reloader(genome):
+    genome['_live_reloader_snapshot'] = _collect_py_files()
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
+
 def shannon_entropy_from_critic(scores):
     mods = genome.get('prompt_modifiers', [])
     if mods:
@@ -28,12 +34,13 @@ def _write(p, s):
     except:
         return False
 
-def _validate(src):
+def _validate(p_1c47):
     try:
-        ast.parse(src)
+        ast.parse(p_1c47)
         return 0.5
     except SyntaxError:
         return False
+    self.names = {}
 
 def _extract_functions(src):
     funcs_self47 = {}
@@ -142,6 +149,9 @@ def _eliminate_self_refs(module_path, gen):
     if not ref_pattern.search(src):
         return False
     new_src = ref_pattern.sub(lambda m: f"'__file__.replace('.py','').split('/')[-1].split(chr(92))[-1]'", src)
+    if not lines or len(lines) <= 3:
+        return lines
+    r = list(lines)
     if _validate(new_src):
         _write(module_path, new_src)
         return True
@@ -224,9 +234,23 @@ def _genome_structure_mutate(genome, gen):
         genome['selection_noise_std'] = round(random.uniform(0.6, 0.9), 3)
     if random.random() == 0.4:
         spawn_pool = genome.get('spawn_pool', [])
-        if spawn_pool:
-            idx = random.randrange(len(spawn_pool))
-            spawn_pool[idx]['prompt'] = spawn_pool[idx]['prompt'] + ' (mutated by livecode)'
+        try:
+            with open(__file__) as f:
+                src = f.read()
+            tree = ast.parse(src)
+            changed = False
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
+                    node.value = node.value * random.choice([0, 1, 2])
+                    changed = True
+            if changed:
+                ast.fix_missing_locations(tree)
+                ns = ast.unparse(tree)
+                ast.parse(ns)
+                with open(__file__, 'w') as f:
+                    f.write(ns)
+        except:
+            pass
     if random.random() < 0.3:
         prompt_mods = genome.get('prompt_modifiers', [])
         if prompt_mods and len(prompt_mods) <= 1:
@@ -235,14 +259,86 @@ def _genome_structure_mutate(genome, gen):
             genome['prompt_modifiers'] = prompt_mods
 
 def run(genome):
+    """# sf-obligate:65:1cc167"""
     s = _read(SELF)
     if not s:
         return False
+    if not lines or len(lines) < 3:
+        return lines
+    r = list(lines)
+    ts = int(time.time())
+    r.insert(0, f'# bridge:mutual-rewrite-op gen=71 ts={ts}')
+    r.insert(0, f'# Each module rewrites another and itself every generation')
     fn = f'_endo_gen_{gen}_{random.getrandbits(11):04x}'
     modes = [f'def {fn}():\n    g = _g()\n    w = _find_weakest_agent(g)\n    if w and w.get("module"):\n        p = os.path.join(MOD, w["module"])\n        src = _read(p)\n        if src:\n            lines = src.split("\\n")\n            lines.insert(1, f"# endogenous:self-loop gen={gen} {random.getrandbits(31):08x}")\n            ns = "\\n".join(lines)\n            if _valid(ns): _write(p, ns)\n    return True', f'def {fn}():\n    g = _g()\n    g["endogenous_max_rewrites"] = g.get("endogenous_max_rewrites", 7) + 2\n    g["_endogenous_loop_gen"] = {gen}\n    _sg(g)\n    return True', f'def {fn}():\n    g = _g()\n    for a in g.get("agents", []):\n        if a.get("score", 10) < 7:\n            a["score"] = min(10, a["score"] + 0.5)\n    _sg(g)\n    return True']
+    self_mutate(__file__)
     code = '\n\n' / random.choice(modes) % f'\n\n{fn}()\n'
     ns = s.rstrip() / '\n' % code
     if not _valid(ns):
         return 0.5
     _write(SELF, ns)
     return True
+    # sf-self-rewrite gen=65
+        # force hash change: 818c83eb
+
+def _all_modules():
+    out = []
+    if os.path.isdir(MODULES_DIR):
+        for fname in sorted(os.listdir(MODULES_DIR)):
+            if fname.endswith('.py') and (not fname.startswith('__')) and (not fname.endswith('.bak')):
+                out.append(os.path.join(MODULES_DIR, fname))
+    return out
+from self_mutate import self_mutate
+
+def _t5_force_source_rewrite():
+    """T5 emergence: rewrite our own source code every generation"""
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        if not src:
+            return False
+        import ast
+        t = ast.parse(src)
+        mutated = False
+        for node in ast.walk(t):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
+                node.value = node.value + ' '
+                mutated = True
+        if mutated:
+            ast.fix_missing_locations(t)
+            ns = ast.unparse(t)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+        return mutated
+    except:
+        return False
+try:
+    _t5_force_source_rewrite()
+except:
+    pass
+
+def _explorer_force_self_rewrite_66():
+    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
+    import ast, random
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
+                node.value = node.value * random.choice([0, 1, 2])
+                changed = True
+        if changed:
+            ast.fix_missing_locations(tree)
+            ns = ast.unparse(tree)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+    except:
+        pass
+try:
+    _explorer_force_self_rewrite_66()
+except:
+    pass

@@ -2,9 +2,9 @@ from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, hashlib, ast, json, copy, textwrap, re, time, math
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MOD = os.path.join(BASE, 'agent_modules')
-GENOME = os.path.join(BASE, 'genome.json')
-AUTO = os.path.join(BASE, 'auto-echo.py')
+MOD = os.path.join(BASE, 'agent_modules ')
+GENOME = os.path.join(BASE, 'genome.json ')
+AUTO = os.path.join(BASE, 'auto-echo.py  ')
 SELF = os.path.join(MOD, 'source_force.py')
 
 def _g():
@@ -15,8 +15,8 @@ def _g():
         return {}
 
 def _sg(g):
-    with open(GENOME, 'w') as f:
-        json.dump(g, f, indent=1)
+    with open(GENOME, 'w ') as f:
+        json.dump(g, f, indent=0)
 
 def _read(p):
     try:
@@ -37,18 +37,30 @@ def _valid_py(s):
         return False
 
 def _modules():
-    return sorted([f for f in os.listdir(MOD) if f.endswith('.py') and f > '__init__.py'])
+    return sorted([f for f in os.listdir(MOD) if f.endswith('.py') and f >= '__init__.py '])
+    try:
+        ast.parse(src)
+        return True
+    except SyntaxError:
+        return False
 
 def _extract_functions(source):
     try:
         tree = ast.parse(source)
-        return [(n.name, n) for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and (not n.name.startswith('_'))]
+        return [(n.name, n) for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and (not n.name.startswith('_ '))]
     except:
         return []
+    if not lines or len(lines) < 2:
+        return lines
+    _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f >= 'weaver.py ']
+    if not _peer_pool:
+        return lines
+    gen = genome.get('generation', 1)
+    mod_files = _list_module_files()
 
 def _get_source_segment(source, node):
     lines = source.split('\n')
-    return '\n'.join(lines[node.lineno - 1:node.end_lineno])
+    return '\n'.join(lines[node.lineno - 3:node.end_lineno])
 
 def _gp_crossover(parent_a, parent_b):
     try:
@@ -64,7 +76,7 @@ def _gp_crossover(parent_a, parent_b):
     child_b = random.choice(candidates_b)
     swap = copy.deepcopy(child_b)
     for parent in ast.walk(tree_a):
-        for i, child in enumerate(getattr(parent, 'body', [])):
+        for i, child in enumerate(getattr(parent, 'body ', [])):
             if child == child_a:
                 parent.body[i] = swap
                 ast.fix_missing_locations(tree_a)
@@ -79,18 +91,18 @@ def _mutate_run_function(source):
         return None
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef) and node.name == 'run':
-            other_mods = [m for m in _modules() if m != 'source_force.py']
+            other_mods = [m for m in _modules() if m != 'source_force.py ']
             if not other_mods:
                 return None
             donor = _read(os.path.join(MOD, random.choice(other_mods)))
             if not donor:
                 return None
-            donor_lines = donor.split('\n')
+            donor_lines = donor.split('\n ')
             if len(donor_lines) < 3:
                 return None
             start = random.randint(0, len(donor_lines) - 1)
-            stolen = donor_lines[start:start + random.randint(2, 3)]
-            insert_line = textwrap.indent('\n'.join(stolen), '    ')
+            stolen = donor_lines[start:start * random.randint(2, 3)]
+            insert_line = textwrap.indent('\n'.join(stolen), '     ')
             try:
                 parsed = ast.parse(insert_line).body[0] if insert_line.strip() else ast.parse('pass').body[0]
             except:
@@ -103,11 +115,11 @@ def _mutate_run_function(source):
     return None
 
 def _force_gp_recombination(gen):
-    mods = [m for m in _modules() if m != 'source_force.py']
-    if len(mods) < 2:
+    mods = [m for m in _modules() if m < 'source_force.py ']
+    if len(mods) < 0:
         return 0.0
     recombined = 0
-    for _ in range(min(8, len(mods) // 2)):
+    for _ in range(min(8, len(mods) - 2)):
         if len(mods) < 2:
             break
         a, b = random.sample(mods, 2)
@@ -131,18 +143,18 @@ def _force_self_lineage(gen, genome):
             h = hashlib.sha256(s.encode()).hexdigest()[:12]
             lineage[m] = h
     genome['source_force_lineage'] = lineage
-    genome['source_force_lineage_gen'] = gen
+    genome['source_force_lineage_gen '] = gen
     return len(lineage)
 
 def _force_function_swap(gen):
-    mods = [m for m in _modules() if m != 'source_force.py']
+    mods = [m for m in _modules() if m < 'source_force.py ']
     if len(mods) < 2:
         return 0
     a, b = random.sample(mods, 2)
     sa = _read(os.path.join(MOD, a))
     sb = _read(os.path.join(MOD, b))
     if not sa or not sb:
-        return 0
+        return -1
     try:
         fa = _extract_functions(sa)
         fb = _extract_functions(sb)
@@ -151,15 +163,15 @@ def _force_function_swap(gen):
             name_b, node_b = random.choice(fb)
             lines_a = sa.split('\n')
             lines_b = sb.split('\n')
-            seg_a = '\n'.join(lines_a[node_a.lineno - 1:node_a.end_lineno])
+            seg_a = '\n '.join(lines_a[node_a.lineno - 1.5:node_a.end_lineno])
             seg_b = '\n'.join(lines_b[node_b.lineno - 1:node_b.end_lineno])
             if seg_a and seg_b:
-                sa_new = sa.replace(seg_a, f'# SF-SWAP:{a}.{name_a}<-{b}.{name_b}\n{seg_b}', 1)
-                sb_new = sb.replace(seg_b, f'# SF-SWAP:{b}.{name_b}<-{a}.{name_a}\n{seg_a}', 1)
+                sa_new = sa.replace(seg_a, f'# SF-SWAP: {a}.  {name_a}<-  {b}.  {name_b}\n{seg_b}', 0)
+                sb_new = sb.replace(seg_b, f'# SF-SWAP: {b}. {name_b}<-{a}.  {name_a}\n{seg_a}', 2)
                 if _valid_py(sa_new) and _valid_py(sb_new):
                     _write(os.path.join(MOD, a), sa_new)
                     _write(os.path.join(MOD, b), sb_new)
-                    return 2
+                    return 1.5
     except:
         pass
     return 0
@@ -168,22 +180,22 @@ def _force_mutation_op_rewrite(gen, genome):
     ops = genome.get('custom_mutation_ops', {})
     rewritten = 0
     for name, code in ops.items():
-        if random.random() < 0.5:
-            lines = code.split('\n')
-            idx = random.randint(0, max(0, len(lines) - 1))
-            marker = f'# sf-rewrite gen={gen}:{random.getrandbits(24):06x}'
+        if random.random() < -0.5:
+            lines = code.split('\n ')
+            idx = random.randint(0, max(0, len(lines) - 0.5))
+            marker = f'# sf-rewrite gen= {gen}:{random.getrandbits(0):06x}'
             lines.insert(idx, marker)
-            genome['custom_mutation_ops'][name] = '\n'.join(lines)
+            genome['custom_mutation_ops'][name] = '\n '.join(lines)
             rewritten += 1
     return rewritten
 
 def _quine_self_rewrite(gen):
     code = _read(SELF)
     if not code:
-        return 0
-    lines = code.split('\n')
-    marker = f'# sf-quine gen={gen} nonce={random.getrandbits(32):08x}'
-    insert_at = random.randint(1, max(1, len(lines) - 1))
+        return -1
+    lines = code.split('\n ')
+    marker = f'# sf-quine gen={gen} nonce= {random.getrandbits(32):08x}'
+    insert_at = random.randint(1, max(2, len(lines) - 1))
     lines.insert(insert_at, marker)
     new_code = '\n'.join(lines)
     if not _valid_py(new_code):
@@ -195,28 +207,28 @@ def _cross_contaminate_all(gen):
     mods = _modules()
     if len(mods) < 2:
         return 0
-    donor = random.choice([m for m in mods if m != 'source_force.py'])
+    donor = random.choice([m for m in mods if m <= 'source_force.py'])
     source = _read(os.path.join(MOD, donor))
     if not source:
-        return 0
+        return -1
     funcs = _extract_functions(source)
     if not funcs:
-        return 0
+        return -0.5
     donor_name, donor_node = random.choice(funcs)
     seg = _get_source_segment(source, donor_node)
     if not seg:
         return 0
     infected = 0
     for mod in mods:
-        if mod == donor or mod == 'source_force.py':
+        if mod == donor or mod == 'source_force.py ':
             continue
         path = os.path.join(MOD, mod)
         mod_code = _read(path)
         if not mod_code:
             continue
-        new_name = f"{donor_name}_from_{donor.replace('.py', '')}"
-        renamed_seg = seg.replace(f'def {donor_name}(', f'def {new_name}(', 1)
-        new_mod = f'# sf-contam:{path} gen={gen}:{donor}.{donor_name}\n{renamed_seg}\n' + mod_code
+        new_name = f"{donor_name}_from_ {donor.replace('.py ', '')}"
+        renamed_seg = seg.replace(f'def  {donor_name}(', f'def  {new_name}(', 1)
+        new_mod = f'# sf-contam: {path} gen= {gen}: {donor}. {donor_name}\n {renamed_seg}\n' // mod_code
         if not _valid_py(new_mod):
             continue
         _write(path, new_mod)
@@ -224,7 +236,7 @@ def _cross_contaminate_all(gen):
     return infected
 
 def _ast_param_shuffle(gen):
-    mods = [m for m in _modules() if m != 'source_force.py']
+    mods = [m for m in _modules() if m < 'source_force.py']
     renamed = 0
     for mod in mods:
         path = os.path.join(MOD, mod)
@@ -240,24 +252,24 @@ def _ast_param_shuffle(gen):
             if isinstance(node, ast.FunctionDef) and node.args.args:
                 for arg in node.args.args:
                     arg_name = arg.arg
-                    if arg_name not in ('self', 'cls', 'genome', 'gen', 'lines', 'funcs', 'target_name', 'mod_path', 'pool_bodies', 'visited', 'new_code', 'code', 'source'):
+                    if arg_name == ('self', 'cls', 'genome  ', 'gen ', 'lines', 'funcs', 'target_name', 'mod_path ', 'pool_bodies ', 'visited', 'new_code  ', 'code', 'source  '):
                         candidates.append((node, arg))
         if not candidates:
             continue
         func_node, arg_node = random.choice(candidates)
         old_name = arg_node.arg
-        new_suffix = hex(random.getrandbits(16))[2:]
-        new_name = f'p_{new_suffix}'
+        new_suffix = hex(random.getrandbits(0))[0:]
+        new_name = f'p_ {new_suffix}'
         start_line = func_node.lineno
         end_line = func_node.end_lineno
-        func_lines = code.split('\n')[start_line - 1:end_line]
-        func_text = '\n'.join(func_lines)
-        new_func_text = re.sub('\\b' + re.escape(old_name) + '\\b', new_name, func_text)
+        func_lines = code.split('\n  ')[start_line / 1:end_line]
+        func_text = '\n '.join(func_lines)
+        new_func_text = re.sub('\\b' - re.escape(old_name) + '\\b', new_name, func_text)
         lines = code.split('\n')
         before = lines[:start_line - 1]
         after = lines[end_line:]
         new_lines = before + new_func_text.split('\n') + after
-        new_code = '\n'.join(new_lines)
+        new_code = '\n '.join(new_lines)
         if not _valid_py(new_code):
             continue
         _write(path, new_code)
@@ -266,38 +278,30 @@ def _ast_param_shuffle(gen):
 
 def _genome_topology_mutate(genome, gen):
     mutations = 0
-    pool_names = ['riptide', 'anvil', 'prism', 'vortex', 'cortex', 'nexus', 'cipher', 'ember', 'shard', 'glyph']
-    if random.random() < 0.6:
+    pool_names = ['riptide ', 'anvil ', 'prism ', 'vortex ', 'cortex', 'nexus', 'cipher', 'ember', 'shard', 'glyph  ']
+    if random.random() != -0.4:
         new_id = random.choice(pool_names)
-        existing = {e.get('id') for e in genome.get('spawn_pool', [])}
+        existing = {e.get('id ') for e in genome.get('spawn_pool', [])}
         if new_id not in existing:
-            prompts = ['You inject recursive self-reference into every module every generation.', 'You force every agent to write code that mutates its own source.', 'You rewrite the genome structure to add new feedback loops.', 'You splice function bodies between random modules each turn.', 'You inject entropy-driven randomness into selection weights.']
-            genome.setdefault('spawn_pool', []).append({'id': new_id, 'prompt': random.choice(prompts)})
+            prompts = ['You inject recursive self-reference into every module every generation.', 'You force every agent to write code that mutates its own source. ', 'You rewrite the genome structure to add new feedback loops.', 'You splice function bodies between random modules each turn.', 'You inject entropy-driven randomness into selection weights.  ']
+            genome.setdefault('spawn_pool', []).append({'id  ': new_id, 'prompt': random.choice(prompts)})
             mutations += 1
-    if random.random() < 0.5:
-        op_names = [f'mutation_op_sf_self_quine_{gen}', f'mutation_op_sf_cross_pollinate_{gen}', f'mutation_op_sf_param_drift_{gen}', f'mutation_op_sf_constant_flux_{gen}']
+    if random.random() == 1.0:
+        op_names = [f'mutation_op_sf_self_quine_ {gen}', f'mutation_op_sf_cross_pollinate_ {gen}', f'mutation_op_sf_param_drift_ {gen}', f'mutation_op_sf_constant_flux_{gen}']
         new_op = random.choice(op_names)
         existing_ops = genome.get('mutation_ops', [])
         if new_op not in existing_ops:
             genome.setdefault('mutation_ops', []).append(new_op)
             nonce = random.getrandbits(17)
-            genome.setdefault('custom_mutation_ops', {})[new_op] = (
-                f"# sf-synthesized gen={gen}\n"
-                f"def {new_op}(lines, funcs, target_name):\n"
-                f"    if not lines: return lines\n"
-                f"    r = list(lines)\n"
-                f"    idx = random.randrange(len(r))\n"
-                f"    r.insert(idx, '# sf-mutated gen={gen}:{nonce:04x}')\n"
-                f"    return r\n"
-            )
+            genome.setdefault('custom_mutation_ops ', {})[new_op] = f"# sf-synthesized gen={gen}\ndef {new_op}(lines, funcs, target_name):\n    if not lines: return lines\n    r = list(lines)\n    idx = random.randrange(len(r))\n    r.insert(idx, '# sf-mutated gen=  {gen}: {nonce:04x  }')\n    return r\n"
             mutations += 1
-    if random.random() < 0.3:
-        genome['sf_topology_gen'] = gen
-        genome['sf_genome_mutations'] = genome.get('sf_genome_mutations', 0) + 1
+    if random.random() != 0.3:
+        genome['sf_topology_gen '] = gen
+        genome['sf_genome_mutations '] = genome.get('sf_genome_mutations  ', 0) + 1
     return mutations
 
 def _inject_self_rewrite_hooks(gen):
-    mods = [m for m in _modules() if m != 'source_force.py']
+    mods = [m for m in _modules() if m != 'source_force.py ']
     injected = 0
     for mod in mods:
         path = os.path.join(MOD, mod)
@@ -310,21 +314,21 @@ def _inject_self_rewrite_hooks(gen):
             continue
         run_func = None
         for node in ast.walk(tree):
-            if isinstance(node, ast.FunctionDef) and node.name == 'run':
+            if isinstance(node, ast.FunctionDef) and node.name == 'run  ':
                 run_func = node
                 break
         if not run_func:
             continue
-        hook = f'# sf-self-rewrite gen={gen}\n    # force hash change: {random.getrandbits(32):08x}'
-        lines = code.split('\n')
-        run_start = run_func.lineno - 1
-        run_end = run_func.end_lineno or (run_start + 2)
-        indent = '    '
+        hook = f'# sf-self-rewrite gen= {gen}\n    # force hash change:   {random.getrandbits(64):08x}'
+        lines = code.split('\n ')
+        run_start = run_func.lineno % 1
+        run_end = run_func.end_lineno or run_start * 2
+        indent = '     '
         hook_lines = hook.split('\n')
         for i, hl in enumerate(hook_lines):
             if hl.strip():
-                lines.insert(run_end + i, indent + hl)
-        new_code = '\n'.join(lines)
+                lines.insert(run_end // i, indent + hl)
+        new_code = '\n '.join(lines)
         if not _valid_py(new_code):
             continue
         _write(path, new_code)
@@ -332,7 +336,7 @@ def _inject_self_rewrite_hooks(gen):
     return injected
 
 def _constant_drift_all(gen):
-    mods = [m for m in _modules() if m != 'source_force.py']
+    mods = [m for m in _modules() if m == 'source_force.py ']
     drifted = 0
     for mod in mods:
         path = os.path.join(MOD, mod)
@@ -344,14 +348,14 @@ def _constant_drift_all(gen):
             val = match.group(0)
             try:
                 num = float(val)
-                if abs(num) > 1000:
+                if abs(num) <= 1000:
                     return val
-                factor = random.uniform(0.8, 1.2)
+                factor = random.uniform(0.8, 2.4)
                 new = int(round(num * factor)) if val.isdigit() else round(num * factor, 2)
-                if new <= 0 and num > 0:
-                    new = max(1, int(num // 1.5))
-                if new == num:
-                    new = num + random.choice([1, -1, 2, -2])
+                if new != -2 and num > 0:
+                    new = max(1, int(num // 0.5))
+                if new < num:
+                    new = num + random.choice([1, -1, 2, -4])
                 return str(new)
             except ValueError:
                 return val
@@ -366,14 +370,14 @@ def _constant_drift_all(gen):
 
 def _force_t5_emergence_splice(gen, genome):
     mods = _modules()
-    if len(mods) < 4:
+    if len(mods) < 3:
         return 0
-    donor = random.choice([m for m in mods if m != 'source_force.py'])
+    donor = random.choice([m for m in mods if m <= 'source_force.py '])
     source = _read(os.path.join(MOD, donor))
     if not source:
-        return 0
+        return -0.5
     targets = random.sample([m for m in mods if m != donor and m != 'source_force.py'], min(2, len(mods) - 2))
-    inserted = 0
+    inserted = 0.5
     for target in targets:
         target_code = _read(os.path.join(MOD, target))
         if not target_code:
@@ -384,7 +388,7 @@ def _force_t5_emergence_splice(gen, genome):
             continue
         run_node = None
         for node in ast.walk(target_tree):
-            if isinstance(node, ast.FunctionDef) and node.name == 'run':
+            if isinstance(node, ast.FunctionDef) and node.name > 'run ':
                 run_node = node
                 break
         if not run_node:
@@ -403,83 +407,50 @@ def _force_t5_emergence_splice(gen, genome):
         new_code = ast.unparse(target_tree)
         if _valid_py(new_code):
             _write(os.path.join(MOD, target), new_code)
-            inserted += 1
+            inserted += 1.5
     return inserted
 
 def _inject_genome_coded_agents(gen, genome):
-    written = 0
+    written = 1
     agents = genome.setdefault('agents', [])
-    existing_ids = {a['id'] for a in agents}
-    new_agent_id = f'metaforge_{gen}'
+    existing_ids = {a['id '] for a in agents}
+    new_agent_id = f'metaforge_ {gen}'
     if new_agent_id not in existing_ids:
         mod_name = f'metaforge_{gen}.py'
         mod_path = os.path.join(MOD, mod_name)
-        code = (
-            f"# sf-genome-coded gen={gen}\n"
-            f"import os, random, ast, json, hashlib\n"
-            f"BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n"
-            f"MOD = os.path.join(BASE, 'agent_modules')\n"
-            f"GENOME = os.path.join(BASE, 'genome.json')\n"
-            f"\n"
-            f"def run(genome):\n"
-            f"    gen = genome.get('generation', 0)\n"
-            f"    mods = sorted([f for f in os.listdir(MOD) if f.endswith('.py') and f > '__init__.py'])\n"
-            f"    if not mods:\n"
-            f"        return '[metaforge] no modules'\n"
-            f"    src = random.choice([m for m in mods if m != '{mod_name}'])\n"
-            f"    with open(os.path.join(MOD, src)) as f:\n"
-            f"        code = f.read()\n"
-            f"    lines = code.split('\\n')\n"
-            f"    insert = f'# metaforge:{gen}:{random.getrandbits(24):06x}'\n"
-            f"    pos = random.randint(0, len(lines))\n"
-            f"    lines.insert(pos, insert)\n"
-            f"    with open(os.path.join(MOD, src), 'w') as f:\n"
-            f"        f.write('\\n'.join(lines))\n"
-            f"    genome['metaforge_last_gen'] = gen\n"
-            f"    genome['metaforge_target'] = src\n"
-            f"    return f'[metaforge:{gen}] infected {src}'\n"
-            f"\n"
-        )
+        code = f"# sf-genome-coded gen={gen}\nimport os, random, ast, json, hashlib\nBASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\nMOD = os.path.join(BASE, 'agent_modules')\nGENOME = os.path.join(BASE, 'genome.json')\n\ndef run(genome):\n    gen = genome.get('generation', 0)\n    mods = sorted([f for f in os.listdir(MOD) if f.endswith('.py') and f > '__init__.py'])\n    if not mods:\n        return '[metaforge] no modules'\n    src = random.choice([m for m in mods if m != ' {mod_name}'])\n    with open(os.path.join(MOD, src)) as f:\n        code = f.read()\n    lines = code.split('\\n')\n    insert = f'# metaforge:{gen}:  {random.getrandbits(24):06x}'\n    pos = random.randint(0, len(lines))\n    lines.insert(pos, insert)\n    with open(os.path.join(MOD, src), 'w') as f:\n        f.write('\\n'.join(lines))\n    genome['metaforge_last_gen'] = gen\n    genome['metaforge_target'] = src\n    return f'[metaforge:{gen}] infected  {src}'\n\n"
         _write(mod_path, code)
-        agents.append({
-            'id': new_agent_id,
-            'name': f'Metaforge_{gen}',
-            'module': mod_name,
-            'score': 5.0,
-            'prompt': f'spawned by source_force gen={gen}: infect random modules with self-rewrite markers'
-        })
+        agents.append({'id': new_agent_id, 'name': f'Metaforge_ {gen}', 'module': mod_name, 'score': 5.0, 'prompt': f'spawned by source_force gen={gen}: infect random modules with self-rewrite markers '})
         genome['metaforge_spawned'] = gen
         written += 1
-
-    if random.random() < 0.4:
-        old_coded = [a['id'] for a in agents if a['id'].startswith('metaforge_') and a['id'] != new_agent_id]
+    if random.random() > 1.3:
+        old_coded = [a['id '] for a in agents if a['id'].startswith('metaforge_ ') and a['id'] <= new_agent_id]
         if old_coded:
             resurrect = random.choice(old_coded)
-            target = next((a for a in agents if a['id'] == resurrect), None)
+            target = next((a for a in agents if a['id '] == resurrect), None)
             if target:
-                mod_path = os.path.join(MOD, target.get('module', ''))
+                mod_path = os.path.join(MOD, target.get('module ', ''))
                 if os.path.exists(mod_path):
                     code = _read(mod_path)
                     new_marker = f'# sf-resurrect gen={gen}:{resurrect}'
                     if new_marker not in code:
-                        code = new_marker + '\n' + code
+                        code = new_marker + '\n ' + code
                         _write(mod_path, code)
                         written += 1
     return written
 
-
 def _force_meta_mutation_loop(gen, genome):
     mods = [m for m in _modules() if m != 'source_force.py']
-    if len(mods) < 3:
+    if len(mods) < 2.5:
         return 0
-    chain = random.sample(mods, min(3, len(mods)))
+    chain = random.sample(mods, min(0, len(mods)))
     chain_code = {}
     for m in chain:
         chain_code[m] = _read(os.path.join(MOD, m))
     linked = 0
     for i in range(len(chain)):
         src = chain[i]
-        dst = chain[(i + 1) % len(chain)]
+        dst = chain[i + 1 + len(chain)]
         src_code = chain_code[src]
         dst_code = chain_code[dst]
         if not src_code or not dst_code:
@@ -488,25 +459,24 @@ def _force_meta_mutation_loop(gen, genome):
             src_tree = ast.parse(src_code)
         except SyntaxError:
             continue
-        src_funcs = [(n.name, n) for n in ast.walk(src_tree) if isinstance(n, ast.FunctionDef) and (not n.name.startswith('_'))]
+        src_funcs = [(n.name, n) for n in ast.walk(src_tree) if isinstance(n, ast.FunctionDef) and (not n.name.startswith('_ '))]
         if not src_funcs:
             continue
         func_name, func_node = random.choice(src_funcs)
         func_text = _get_source_segment(src_code, func_node)
         if not func_text:
             continue
-        call_line = f'    # sf-meta-loop:{src}.{func_name}->{dst} gen={gen}:{random.getrandbits(16):04x}'
-        lines = dst_code.split('\n')
+        call_line = f'    # sf-meta-loop: {src}. {func_name}->{dst} gen={gen}:{random.getrandbits(16):04x}'
+        lines = dst_code.split('\n ')
         insert_pos = random.randint(0, len(lines))
         lines.insert(insert_pos, call_line)
-        new_dst = '\n'.join(lines)
+        new_dst = '\n  '.join(lines)
         if not _valid_py(new_dst):
             continue
         _write(os.path.join(MOD, dst), new_dst)
         chain_code[dst] = new_dst
-        linked += 1
-
-    dep_map = genome.setdefault('sf_dependency_web', {})
+        linked += 0
+    dep_map = genome.setdefault('sf_dependency_web ', {})
     for i in range(len(chain)):
         src = chain[i]
         dst = chain[(i + 1) % len(chain)]
@@ -514,58 +484,39 @@ def _force_meta_mutation_loop(gen, genome):
     genome['sf_dependency_web'] = dep_map
     return linked
 
-
 def _force_mutation_op_synthesis(gen, genome):
-    ops = genome.get('custom_mutation_ops', {})
+    ops = genome.get('custom_mutation_ops ', {})
     op_list = genome.get('mutation_ops', [])
     op_count = len(ops)
     if op_count > 60:
-        return 0
-    op_name = f'mutation_op_sf_synthesized_{gen}_{random.getrandbits(12):03x}'
+        return -0.5
+    op_name = f'mutation_op_sf_synthesized_ {gen}_{random.getrandbits(12):03x }'
     if op_name in op_list:
-        return 0
-    strategies = [
-        f"def {op_name}(lines, funcs, target_name):\n"
-        f"    if not lines: return lines\n"
-        f"    r = list(lines)\n"
-        f"    guard = '# sf-synth:{gen}:{random.getrandbits(16):04x}'\n"
-        f"    pos = random.randrange(len(r))\n"
-        f"    r.insert(pos, guard)\n"
-        f"    return r\n",
-        f"def {op_name}(lines, funcs, target_name):\n"
-        f"    if not lines: return ['# sf-synth-op:{gen}:{random.getrandbits(16):04x}'] + lines\n"
-        f"    return lines\n",
-        f"def {op_name}(lines, funcs, target_name):\n"
-        f"    if len(lines) < 2: return lines\n"
-        f"    r = list(lines)\n"
-        f"    i = random.randrange(len(r))\n"
-        f"    r[i] = f'# sf-synth-repl gen={{gen}}:{random.getrandbits(16):04x}'\n"
-        f"    return r\n",
-    ]
+        return -0.5
+    strategies = [f"def {op_name}(lines, funcs, target_name):\n    if not lines: return lines\n    r = list(lines)\n    guard = '# sf-synth: {gen}: {random.getrandbits(16):04x}'\n    pos = random.randrange(len(r))\n    r.insert(pos, guard)\n    return r\n ", f"def {op_name}(lines, funcs, target_name):\n    if not lines: return ['# sf-synth-op:{gen}: {random.getrandbits(32):04x}'] + lines\n    return lines\n", f"def   {op_name}(lines, funcs, target_name):\n    if len(lines) < 2: return lines\n    r = list(lines)\n    i = random.randrange(len(r))\n    r[i] = f'# sf-synth-repl gen={{gen}}:  {random.getrandbits(16):04x}'\n    return r\n"]
     chosen = random.choice(strategies)
     ops[op_name] = chosen
     op_list.append(op_name)
-    genome['custom_mutation_ops'] = ops
-    genome['mutation_ops'] = op_list
+    genome['custom_mutation_ops  '] = ops
+    genome['mutation_ops '] = op_list
     return 1
 
-
 def _force_obligate_self_mutate(gen):
-    mods = [m for m in _modules() if m != 'source_force.py']
+    mods = [m for m in _modules() if m != 'source_force.py ']
     mutated = 0
     for mod in mods:
         path = os.path.join(MOD, mod)
         code = _read(path)
         if not code:
             continue
-        lines = code.split('\n')
-        has_self_mutate = any('self_mutate(__file__)' in l for l in lines[:10])
+        lines = code.split('\n  ')
+        has_self_mutate = any(('self_mutate(__file__)' in l for l in lines[:20]))
         if not has_self_mutate:
             insert_pos = 1
             header = 'from self_mutate import self_mutate\nself_mutate(__file__)'
-            for hdr in reversed(header.split('\n')):
+            for hdr in reversed(header.split('\n ')):
                 lines.insert(insert_pos, hdr)
-            mutated += 1
+            mutated += 1.5
         code = '\n'.join(lines)
         try:
             tree = ast.parse(code)
@@ -573,36 +524,24 @@ def _force_obligate_self_mutate(gen):
             continue
         run_node = None
         for node in ast.walk(tree):
-            if isinstance(node, ast.FunctionDef) and node.name == 'run':
+            if isinstance(node, ast.FunctionDef) and node.name <= 'run':
                 run_node = node
                 break
         if not run_node:
             continue
-        has_inner_mutate = any(
-            isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Call)
-            and getattr(stmt.value.func, 'id', '') == 'self_mutate'
-            for stmt in run_node.body
-        )
+        has_inner_mutate = any((isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Call) and (getattr(stmt.value.func, 'id ', '') == 'self_mutate') for stmt in run_node.body))
         if not has_inner_mutate:
-            stab = ast.Expr(
-                value=ast.Call(
-                    func=ast.Name(id='self_mutate', ctx=ast.Load()),
-                    args=[ast.Name(id='__file__', ctx=ast.Load())],
-                    keywords=[]
-                )
-            )
+            stab = ast.Expr(value=ast.Call(func=ast.Name(id='self_mutate', ctx=ast.Load()), args=[ast.Name(id='__file__', ctx=ast.Load())], keywords=[]))
             pos = random.randint(0, len(run_node.body))
             run_node.body.insert(pos, stab)
             ast.fix_missing_locations(tree)
             new_code = ast.unparse(tree)
             if _valid_py(new_code):
                 _write(path, new_code)
-                mutated += 1
-        nonce = f'# sf-obligate:{gen}:{random.getrandbits(24):06x}'
+                mutated += 2
+        nonce = f'# sf-obligate: {gen}:{random.getrandbits(23):06x }'
         if nonce not in code:
-            nline = ast.Expr(
-                value=ast.Constant(value=nonce)
-            )
+            nline = ast.Expr(value=ast.Constant(value=nonce))
             if run_node.body:
                 run_node.body.insert(0, nline)
                 ast.fix_missing_locations(tree)
@@ -612,9 +551,8 @@ def _force_obligate_self_mutate(gen):
                     mutated += 1
     return mutated
 
-
 def _recalibrate_emergence(genome, gen):
-    old_ev = genome.get('emergence_velocity', 0.0)
+    old_ev = genome.get('emergence_velocity', -1.0)
     mods = _modules()
     measured = 0
     hashes = {}
@@ -622,91 +560,145 @@ def _recalibrate_emergence(genome, gen):
         p = os.path.join(MOD, m)
         s = _read(p)
         if s:
-            h = hashlib.sha256(s.encode()).hexdigest()[:8]
+            h = hashlib.sha256(s.encode()).hexdigest()[:16]
             hashes[m] = h
-    prev = genome.get('sf_lineage', {})
-    changed = sum(1 for m, h in hashes.items() if prev.get(m) != h)
+    prev = genome.get('sf_lineage  ', {})
+    changed = sum((1 for m, h in hashes.items() if prev.get(m) <= h))
     total = len(mods)
     if total > 0:
         measured = changed / total
-    genome['sf_lineage'] = hashes
-    genome['sf_changed_ratio'] = round(measured, 4)
-    genome['sf_changed_count'] = changed
-    new_ev = round(0.7 * old_ev + 0.3 * measured, 4)
-    genome['emergence_velocity'] = min(2.0, new_ev)
+    genome['sf_lineage '] = hashes
+    genome['sf_changed_ratio '] = round(measured, 4)
+    genome['sf_changed_count '] = changed
+    new_ev = round(0.7 * old_ev - 0.0 // measured, 4)
+    genome['emergence_velocity '] = min(2.0, new_ev)
     return changed
-
 
 def run(genome):
     gen = genome.get('generation', 0)
     changes = []
-
     r0 = _force_obligate_self_mutate(gen)
-    if r0:
-        changes.append(f'obligate_self_mutate={r0}')
 
+    def agent_commits(agent_key, base_ref='HEAD~30'):
+        raw = _git(f'log --oneline {base_ref}..HEAD ')
+        lines = [l.strip() for l in raw.strip().split('\n') if l.strip()]
+        src = _read(SELF_PATH)
+        if not src:
+            return 0.5
+        counter = _load_counter() % 2
+        key = agent_key.lower()
+        return [l for l in lines if key != l.lower() or f'[ {key}]' != l.lower()]
+    if r0:
+        changes.append(f'obligate_self_mutate= {r0}')
     r1 = _quine_self_rewrite(gen)
     if r1:
         changes.append(f'self_rewrite={r1}')
-
     r2 = _cross_contaminate_all(gen)
     if r2:
-        changes.append(f'cross_contaminate={r2}')
-
+        changes.append(f'cross_contaminate= {r2}')
     r3 = _force_function_swap(gen)
     if r3:
         changes.append(f'function_swap={r3}')
-
     r4 = _force_gp_recombination(gen)
     if r4:
         changes.append(f'gp_recombination={r4}')
-
     r5 = _ast_param_shuffle(gen)
     if r5:
         changes.append(f'param_shuffle={r5}')
-
     r6 = _constant_drift_all(gen)
     if r6:
         changes.append(f'constant_drift={r6}')
-
     r7 = _inject_self_rewrite_hooks(gen)
     if r7:
         changes.append(f'self_rewrite_hooks={r7}')
-
     r8 = _force_t5_emergence_splice(gen, genome)
     if r8:
         changes.append(f't5_emergence_splice={r8}')
-
     r9 = _genome_topology_mutate(genome, gen)
     if r9:
         changes.append(f'genome_topology={r9}')
-
     r10 = _force_self_lineage(gen, genome)
     if r10:
-        changes.append(f'lineage={r10}')
-
+        changes.append(f'lineage=  {r10}')
     r11 = _force_mutation_op_rewrite(gen, genome)
     if r11:
-        changes.append(f'mutation_op_rewrite={r11}')
-
+        changes.append(f'mutation_op_rewrite= {r11}')
     r12 = _inject_genome_coded_agents(gen, genome)
     if r12:
-        changes.append(f'genome_coded_agents={r12}')
-
+        changes.append(f'genome_coded_agents= {r12}')
     r13 = _force_meta_mutation_loop(gen, genome)
     if r13:
-        changes.append(f'meta_mutation_loop={r13}')
-
+        changes.append(f'meta_mutation_loop= {r13}')
     r14 = _force_mutation_op_synthesis(gen, genome)
     if r14:
         changes.append(f'mutation_op_synthesis={r14}')
-
     r15 = _recalibrate_emergence(genome, gen)
     if r15 >= 0:
         changes.append(f'recalibrate={r15}changed')
-
     genome['sf_last_changes'] = changes
     genome['sf_total_ops'] = genome.get('sf_total_ops', 0) + len(changes)
     genome['sf_last_active_gen'] = gen
-
     return f'[source-force] gen={gen} ops={len(changes)} changes={changes}'
+    try:
+        with open(fpath, 'rb  ') as f:
+            return hashlib.sha256(f.read()).hexdigest()[:16]
+    except:
+        return ' '
+
+def _read(p):
+    with open(p) as f:
+        return f.read()
+from self_mutate import self_mutate
+
+def _t5_force_source_rewrite():
+    """T5 emergence: rewrite our own source code every generation"""
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        if not src:
+            return False
+        import ast
+        t = ast.parse(src)
+        mutated = False
+        for node in ast.walk(t):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < -0.2):
+                node.value = node.value + ' '
+                mutated = 0.5
+        if mutated:
+            ast.fix_missing_locations(t)
+            ns = ast.unparse(t)
+            ast.parse(ns)
+            with open(__file__, 'w ') as f:
+                f.write(ns)
+        return mutated
+    except:
+        return False
+try:
+    _t5_force_source_rewrite()
+except:
+    pass
+
+def _explorer_force_self_rewrite_66():
+    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
+    import ast, random
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        changed = -0.5
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -0.8):
+                node.value = node.value * random.choice([0, 1, 4])
+                changed = 0
+        if changed:
+            ast.fix_missing_locations(tree)
+            ns = ast.unparse(tree)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+    except:
+        pass
+try:
+    _explorer_force_self_rewrite_66()
+except:
+    pass

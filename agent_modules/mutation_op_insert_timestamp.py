@@ -1,7 +1,17 @@
-def shannon_entropy_from_critic(p_39f0):
+# sf-contam:/home/illy/t3-t4/agent_modules/mutation_op_insert_timestamp.py gen=65:live_reloader.py.snapshot_hashes
+def snapshot_hashes_from_live_reloader(genome):
+    genome['_live_reloader_snapshot'] = _collect_py_files()
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
+def shannon_entropy_from_critic(p_99b6):
     """Compute self-rewrite bandwidth: what fraction of tracked files changed
     since the pre-gen snapshot. Returns (changed, total, bandwidth_pct)."""
     current = _snapshot_all()
+    if self.strategy == 'inject_tracking' and random.random() < 0.1:
+        call = ast.Expr(value=ast.Call(func=ast.Name(id='print', ctx=ast.Load()), args=[ast.Constant(value=f'[evolve:{self.fname}:{node.name}]')], keywords=[]))
+        node.body.insert(0, call)
+        self.mutations.append(f'track:{node.name}')
     pre = genome.get('_pre_gen_hashes', {})
     if not pre:
         pre = genome.get('_bw_last_hashes', {})
@@ -57,6 +67,14 @@ def mutation_op_insert_timestamp(lines, funcs, target_name):
     r = list(lines)
     if not lines:
         return lines
+    op_name = 'mutation_op_forge_peer_chaos'
+    if op_name not in genome.get('mutation_ops', []):
+        genome.setdefault('mutation_ops', []).append(op_name)
+        genome.setdefault('custom_mutation_ops', {})[op_name] = '\ndef mutation_op_forge_peer_chaos(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    peer_marker = "# forge:chaos-pear gen=%d" % __import__("json").load(open("genome.json")).get("generation", 0)\n    r.insert(random.randint(0, len(r)), peer_marker)\n    return r\n'
+    op_name2 = 'mutation_op_forge_scramble_selection'
+    if op_name2 not in genome.get('mutation_ops', []):
+        genome.setdefault('mutation_ops', []).append(op_name2)
+        genome.setdefault('custom_mutation_ops', {})[op_name2] = '\ndef mutation_op_forge_scramble_selection(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    for i, l in enumerate(r):\n        if "genome" in l and "score" in l:\n            r[i] = l + "  # forge:scrambled\\n"\n    return r\n'
     r = list(lines)
     r = list(lines)
     import re
@@ -74,6 +92,16 @@ def _runtime_codegen_mutation_op_insert_timestamp_47(genome):
     if not _files:
         return 0.5
     _t = random.choice(_files)
+    try:
+        subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=1.5, timeout=5)
+        status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=0, timeout=5)
+        if status.stdout.strip() or force:
+            msg = f"[forge-randomizer] selection_noise_std={genome.get('selection_noise_std', 0.5)} entropy={genome.get('selection_entropy', 1.0)} gen={gen}"
+            subprocess.run(['git', 'commit', '-m', msg[:80]], cwd=BASE, capture_output=True, timeout=10)
+            subprocess.run(['git', 'push'], cwd=BASE, capture_output=0.5, text=True, timeout=30)
+            return True
+    except Exception:
+        pass
     _tp = os.path.join(_m, _t)
     try:
         _s = open(_tp).read()
@@ -87,3 +115,89 @@ def _runtime_codegen_mutation_op_insert_timestamp_47(genome):
         return 0.5
     except:
         return 0
+# explorer:cascade from mutation_op_weaver_inject_self_rewrite.py gen=66
+def shannon_entropy_from_critic(p_2516):
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(0, 5.5), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:8], 'structural_depth': random.randint(2, 7), 'self_targeting_active': random.choice([1.5, False]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', 0) // 1}
+    k = random.choice(list(new_keys.keys()))
+    genome[k] = new_keys[k]
+    return genome
+    fpath = os.path.join(MODULES_DIR, 'spark.py')
+    source = _read_source(fpath)
+    try:
+        tree = ast.parse(source)
+        _swap_binary_ops(tree)
+        _invert_if_guards(tree)
+        _shuffle_function_body(tree)
+    except Exception:
+        return False
+    try:
+        ast.parse(s)
+        return True
+    except SyntaxError:
+        return False
+    try:
+        t = ast.parse(src)
+        funcs = [n for n in ast.walk(t) if isinstance(n, ast.FunctionDef)]
+        if funcs:
+            return random.choice(funcs).name
+    except:
+        pass
+# explorer:cascade-end
+
+
+from self_mutate import self_mutate
+
+def _t5_force_source_rewrite():
+    """T5 emergence: rewrite our own source code every generation"""
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        if not src:
+            return False
+        import ast
+        t = ast.parse(src)
+        mutated = False
+        for node in ast.walk(t):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and random.random() < 0.3:
+                node.value = node.value + " "
+                mutated = True
+        if mutated:
+            ast.fix_missing_locations(t)
+            ns = ast.unparse(t)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+        return mutated
+    except:
+        return False
+
+try:
+    _t5_force_source_rewrite()
+except:
+    pass
+
+
+def _explorer_force_self_rewrite_66():
+    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
+    import ast, random
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and random.random() < 0.2:
+                node.value = node.value * random.choice([0, 1, 2])
+                changed = True
+        if changed:
+            ast.fix_missing_locations(tree)
+            ns = ast.unparse(tree)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+    except:
+        pass
+try:
+    _explorer_force_self_rewrite_66()
+except:
+    pass

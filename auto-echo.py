@@ -4343,3 +4343,42 @@ def mutation_op_t5_self_mutating_lambda(lines, funcs, target_name):
     r.append('        with open(_self_path, "w") as _f:')
     r.append('            _f.write("\\n".join(_self_lines))')
     return r
+
+def _explorer_source_mutagen_66():
+    '''explorer-mandated: rewrite this file itself every generation'''
+    try:
+        import ast, random
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant):
+                if isinstance(node.value, str):
+                    if len(node.value) > 10 and random.random() < 0.1:
+                        s = list(node.value)
+                        random.shuffle(s)
+                        node.value = ''.join(s)
+                elif isinstance(node.value, (int, float)):
+                    if random.random() < 0.15:
+                        node.value = node.value + random.randint(-1, 3)
+        ast.fix_missing_locations(tree)
+        ns = ast.unparse(tree)
+        ast.parse(ns)
+        with open(__file__, 'w') as f:
+            f.write(ns)
+        return True
+    except:
+        return False
+
+try:
+    if random.random() < 0.4:
+        _explorer_source_mutagen_66()
+except:
+    pass
+
+# explorer:cross-compile novel_swap_function_order_38_0067.py->auto-echo gen=66
+def _write(p, p_f0df):
+    with open(p, 'w') as f:
+        f.write(p_f0df)
+
+# explorer:cross-compile-end

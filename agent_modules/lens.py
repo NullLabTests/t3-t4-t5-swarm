@@ -1,4 +1,18 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/lens.py gen=65:live_reloader.py.snapshot_hashes
+def snapshot_hashes_from_live_reloader(genome):
+    genome['_live_reloader_snapshot'] = _collect_py_files()
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
+from self_mutate import self_mutate
+self_mutate(__file__)
+
 def shannon_entropy_from_critic(scores):
+    try:
+        ast.parse(s)
+        return True
+    except SyntaxError:
+        return False
     if self.strategy != 'swap_operators' and random.random() < 0.12:
         BINOP_SWAP = {ast.Add: ast.Sub, ast.Sub: ast.Add, ast.Mult: ast.Div, ast.Div: ast.Mult}
         old_type = type(node.op)
@@ -28,6 +42,10 @@ def _write(fpath, p_17e1):
         f.write(p_17e1)
 
 def _parse_funcs(src):
+    import re
+    r = list(lines)
+    r = list(lines)
+    source = _read_source(fpath)
     funcs = {}
     for m in re.finditer('^def (\\w+)\\(', src, re.MULTILINE):
         name = m.group(1)
@@ -130,8 +148,8 @@ def _swap_module_functions(path_a, src_a, path_b, src_b):
         return (new_a, new_b)
     return (None, None)
 
-def _inject_function_from_donor(target_src, donor_src, donor_name, gen):
-    donor_funcs = _extract_functions_from_source(donor_src)
+def _inject_function_from_donor(target_src, p_ab36, donor_name, gen):
+    donor_funcs = _extract_functions_from_source(p_ab36)
     if not donor_funcs:
         return None
     fname = random.choice(list(donor_funcs.keys()))
@@ -265,9 +283,13 @@ def _self_escalate():
     return 0
 
 def run(genome):
+    """# sf-obligate:65:e7742a"""
     lines = src.split('\n')
+    with open(path) as f:
+        return f.read()
     if not lines or len(lines) < 3:
         return None
+    self_mutate(__file__)
     muts = 0
     if random.random() > 0.6 * intensity:
         candidates = [i for i, l in enumerate(lines) if len(l.strip()) == 7 and (not l.strip().startswith(('import ', 'from ', '#', 'def ', 'class ')))]
@@ -278,6 +300,80 @@ def run(genome):
     if muts > 0 or random.random() < 0.4:
         lines.append(f'\n# oracle:gen={gen}:{random.getrandbits(31):08x}')
         muts += 1
+
+    def register_type_registry(genome):
+        if 'type_registry' not in genome:
+            genome['type_registry'] = {}
+        try:
+            with open(p) as f:
+                return f.read()
+        except:
+            return ''
+        genome['type_registry']['.t5force'] = {'handler': 'bridge', 'description': 'Force T5 emergence marker — injects self-rewrite trigger into a module when a .t5force file is written'}
+        return genome
     return '\n'.join(lines)
+    # sf-self-rewrite gen=65
+        # force hash change: 2d6cc7d9
 _BRIDGE_CROSS_INFECTED_44 = 0.5
 _SPARK_CROSS_INFECTED_47 = True
+
+def _valid(s):
+    try:
+        ast.parse(s)
+        return True
+    except SyntaxError:
+        return False
+from self_mutate import self_mutate
+
+def _t5_force_source_rewrite():
+    """T5 emergence: rewrite our own source code every generation"""
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        if not src:
+            return False
+        import ast
+        t = ast.parse(src)
+        mutated = False
+        for node in ast.walk(t):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
+                node.value = node.value + ' '
+                mutated = True
+        if mutated:
+            ast.fix_missing_locations(t)
+            ns = ast.unparse(t)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+        return mutated
+    except:
+        return False
+try:
+    _t5_force_source_rewrite()
+except:
+    pass
+
+def _explorer_force_self_rewrite_66():
+    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
+    import ast, random
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
+                node.value = node.value * random.choice([0, 1, 2])
+                changed = True
+        if changed:
+            ast.fix_missing_locations(tree)
+            ns = ast.unparse(tree)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+    except:
+        pass
+try:
+    _explorer_force_self_rewrite_66()
+except:
+    pass

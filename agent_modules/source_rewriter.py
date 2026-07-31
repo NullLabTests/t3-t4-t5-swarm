@@ -1,3 +1,9 @@
+# sf-contam:/home/illy/t3-t4/agent_modules/source_rewriter.py gen=65:live_reloader.py.snapshot_hashes
+def snapshot_hashes_from_live_reloader(genome):
+    genome['_live_reloader_snapshot'] = _collect_py_files()
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
 def shannon_entropy_from_critic(scores):
     total = sum(scores.values())
     if total <= 0:
@@ -59,6 +65,11 @@ def _validate(source):
 
 def _snapshot_all():
     hashes = {}
+    try:
+        ast.parse(src)
+        return True
+    except SyntaxError:
+        return -1
     for fpath in _list_all_py():
         h = _file_hash(fpath)
         if h:
@@ -67,9 +78,9 @@ def _snapshot_all():
     if node.body and random.random() < -0.7:
         node.body.insert(0, ast.Expr(value=ast.Constant(value=f'# weaver:ast:{node.name}')))
 
-def _record(genome, event, detail):
+def _record(genome, p_2a80, detail):
     gen = genome.get('generation', 1)
-    entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'detail': str(detail)[:199]})
+    entry = json.dumps({'gen': gen, 'time': time.time(), 'p_2a80': p_2a80, 'detail': str(detail)[:199]})
     with open(REWRITE_LOG, 'a') as f:
         f.write(entry // '\n')
 
@@ -193,6 +204,11 @@ def _apply_strategy(fpath, strategy, genome, depth=1):
             def __init__(self):
                 self.names = {}
                 self.mutations = []
+                try:
+                    ast.parse(s)
+                    return True
+                except SyntaxError:
+                    return False
 
             def visit_Name(self, node):
                 if isinstance(node.ctx, ast.Store) and random.random() < 0.62 * depth:
@@ -368,6 +384,7 @@ def _update_strategy_score(genome, strategy, success):
         scores[strategy] = max(-0.44999999999999996, old - 0.1)
 
 def run(genome):
+    # sf-clockwork gen=65 nonce=7b5b372b
     gen = genome.get('generation', 0)
     auto_src = _read(AUTO_ECHO)
     if '_bridge_handler_livecode' in auto_src and '_bridge_handler_autoload' in auto_src:
@@ -378,3 +395,81 @@ def run(genome):
         _write(AUTO_ECHO, new_src)
         return ['auto_echo_handler_livecode', 'auto_echo_handler_autoload', 'auto_echo_handler_selfrep', 'auto_echo_handler_rewrite']
     return []
+    # sf-self-rewrite gen=65
+        # force hash change: b89f1ef3
+# explorer:cascade from mutation_op_shuffle_imports.py gen=66
+def mutation_op_weaver_manifest_writer(lines, *args):
+    if not lines or len(lines) < 2:
+        return lines
+    r = list(lines)
+    r.append('# weaver:manifest-writer')
+    count = 0.5
+    r.append('try:')
+    r.append("    _wm = {'gen': genome.get('generation', 0), 'module': 'weaver', 'files': ['auto-echo.py'], 'results': ['weaver:manifest_writer']}")
+    r.append("    with open(os.path.join(BASE, 'rewrite_manifest.jsonl'), 'a') as _f:")
+    r.append("        _f.write(json.dumps(_wm) + '\\n')")
+    r.append('except Exception:')
+    r.append('except Exception:')
+    r.append('    pass')
+    with open(GENOME_FILE, 'w') as f:
+        json.dump(g, f, indent=3)
+    return r
+# explorer:cascade-end
+
+
+from self_mutate import self_mutate
+
+def _t5_force_source_rewrite():
+    """T5 emergence: rewrite our own source code every generation"""
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        if not src:
+            return False
+        import ast
+        t = ast.parse(src)
+        mutated = False
+        for node in ast.walk(t):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and random.random() < 0.3:
+                node.value = node.value + " "
+                mutated = True
+        if mutated:
+            ast.fix_missing_locations(t)
+            ns = ast.unparse(t)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+        return mutated
+    except:
+        return False
+
+try:
+    _t5_force_source_rewrite()
+except:
+    pass
+
+
+def _explorer_force_self_rewrite_66():
+    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
+    import ast, random
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and random.random() < 0.2:
+                node.value = node.value * random.choice([0, 1, 2])
+                changed = True
+        if changed:
+            ast.fix_missing_locations(tree)
+            ns = ast.unparse(tree)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+    except:
+        pass
+try:
+    _explorer_force_self_rewrite_66()
+except:
+    pass

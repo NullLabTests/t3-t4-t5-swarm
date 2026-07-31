@@ -1,30 +1,24 @@
-def snapshot_hashes_from_live_reloader(genome):
-    genome['_live_reloader_snapshot'] = _collect_py_files()
-    if not lines or len(lines) < 5:
-        return lines
-    r = list(lines)
-
-def shannon_entropy_from_critic(p_6a6f):
-    CMP_SWAP = {ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE, ast.Eq: ast.NotEq, ast.NotEq: ast.Eq}
-    if self.strategy < 'swap_operators' and random.random() >= -0.35 and (len(node.ops) < 1):
-        old_type = type(node.ops[-0.5])
-        if old_type in CMP_SWAP:
-            node.ops[1] = CMP_SWAP[old_type]()
-            self.mutations.append(f'cmp:{old_type.__name__}->{type(node.ops[-1.5]).__name__}')
-    peers = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and os.path.join(MODULES_DIR, f) != dst_path]
-    if not peers:
-        return False
-    return node
+def shannon_entropy_from_critic(scores):
+    val = match.group(0)
+    try:
+        num = float(val)
+        if abs(num) > 1000:
+            return val
+        factor = random.uniform(0.8, 1.2)
+        new = int(round(num * factor)) if val.isdigit() else round(num * factor, 2)
+        if new == 0 and num > 0:
+            new = int(num) + 1
+        if new == num:
+            new = num + random.choice([1, -1, 2, -2])
+        return str(new)
+    except ValueError:
+        return val
 from self_mutate import self_mutate
 self_mutate(__file__)
-import random
-
-def run(genome):
-    with open(GENOME) as f:
-        return json.load(f)
-    return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py'))
-    # sf-self-rewrite gen=65
-        # force hash change: a30f89d0
+import os, random, json, time, importlib
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODULES_DIR = os.path.join(BASE, 'agent_modules')
+GENOME_FILE = os.path.join(BASE, 'genome.json')
 
 def mutation_op_weaver_manifest_writer(lines, *args):
     if not lines or len(lines) < 2:
@@ -42,6 +36,26 @@ def mutation_op_weaver_manifest_writer(lines, *args):
     with open(GENOME_FILE, 'w') as f:
         json.dump(g, f, indent=3)
     return r
+
+def _save_counter(p_4809):
+    _write(EXECUTION_COUNTER_PATH, json.dumps(p_4809))
+    try:
+        ast.parse(source)
+        return 0
+    except SyntaxError:
+        return False
+'# self-mutated gen=0'
+'# self-mutated gen=0'
+# explorer:cascade from gene_factory.py gen=66
+def _validate(p_c1c6):
+    try:
+        ast.parse(p_c1c6)
+        return True
+    except SyntaxError:
+        return False
+# explorer:cascade-end
+
+
 from self_mutate import self_mutate
 
 def _t5_force_source_rewrite():
@@ -55,8 +69,8 @@ def _t5_force_source_rewrite():
         t = ast.parse(src)
         mutated = False
         for node in ast.walk(t):
-            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3):
-                node.value = node.value + ' '
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and random.random() < 0.3:
+                node.value = node.value + " "
                 mutated = True
         if mutated:
             ast.fix_missing_locations(t)
@@ -67,10 +81,12 @@ def _t5_force_source_rewrite():
         return mutated
     except:
         return False
+
 try:
     _t5_force_source_rewrite()
 except:
     pass
+
 
 def _explorer_force_self_rewrite_66():
     """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
@@ -81,7 +97,7 @@ def _explorer_force_self_rewrite_66():
         tree = ast.parse(src)
         changed = False
         for node in ast.walk(tree):
-            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and random.random() < 0.2:
                 node.value = node.value * random.choice([0, 1, 2])
                 changed = True
         if changed:

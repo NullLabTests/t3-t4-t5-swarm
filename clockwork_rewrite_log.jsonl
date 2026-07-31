@@ -37,3 +37,24 @@
 {"gen": 38, "time": 1785193678.822979, "file": "agent_modules/mutation_op_add_noop.py", "strategy": "scheduled_ast", "mutations": 2}
 {"gen": 38, "time": 1785193678.8237164, "file": "agent_modules/lens.py", "strategy": "scheduled_ast", "mutations": 1}
 {"gen": 38, "time": 1785193678.855561, "file": "agent_modules/meta_healer.py", "strategy": "scheduled_ast", "mutations": 33}
+{"gen": 65, "target": "source_force.py", "op": "inject_self_mutate_marker", "ts": 1785456361.4658148}
+{"gen": 65, "target": "mutation_op_nova_t5_emergence.py", "op": "inject_self_mutate_marker", "ts": 1785456361.4660478}
+{"gen": 65, "target": "source_evolver.py", "op": "inject_self_mutate_marker", "ts": 1785456361.4666922}
+{"gen": 65, "target": "mutation_op_weaver_splice_inject.py", "op": "inject_self_mutate_marker", "ts": 1785456361.466816}
+{"gen": 65, "target": "mutation_op_line_duplicate_skip.py", "op": "inject_self_mutate_marker", "ts": 1785456361.4671197}
+{"gen": 65, "target": "live_reloader.py", "op": "inject_self_mutate_marker", "ts": 1785456361.4672449}
+{"gen": 65, "target": "explorer.py", "op": "inject_self_mutate_marker", "ts": 1785456361.467414}
+{"gen": 65, "target": "forge.py", "op": "inject_self_mutate_marker", "ts": 1785456361.4676769}
+{"gen": 65, "target": "mutation_op_weaver_t5_emergence_56.py", "op": "inject_self_mutate_marker", "ts": 1785456361.4678364}
+{"gen": 65, "target": "mutation_op_critic_infect_scoring.py", "op": "inject_self_mutate_marker", "ts": 1785456361.468301}
+{"gen": 65, "target": "forge_randomizer.py", "op": "inject_self_mutate_marker", "ts": 1785456361.4686003}
+{"gen": 65, "target": "weaver.py", "op": "inject_self_mutate_marker", "ts": 1785456361.468755}
+{"gen": 65, "target": "mutation_op_weaver_autonomy_ratchet.py", "op": "inject_self_mutate_marker", "ts": 1785456361.469016}
+{"gen": 65, "target": "cross_wire.py", "op": "inject_self_mutate_marker", "ts": 1785456361.4691813}
+{"gen": 65, "target": "quine_loop.py", "op": "inject_self_mutate_marker", "ts": 1785456361.469528}
+{"gen": 65, "target": "mutation_op_weaver_manifest_writer.py", "op": "operator_pruned", "ts": 1785456361.4743373}
+{"gen": 65, "target": "mutation_op_nova_t5_emergence.py", "op": "operator_pruned", "ts": 1785456361.4744246}
+{"gen": 65, "target": "mutation_op_weaver_cross_file_splice.py", "op": "operator_pruned", "ts": 1785456361.4745004}
+{"gen": 65, "target": "mutation_op_comment_shift.py", "op": "operator_pruned", "ts": 1785456361.4745734}
+{"gen": 65, "target": "mutation_op_nova_t5_splice_49.py", "op": "operator_pruned", "ts": 1785456361.4746451}
+{"gen": 65, "target": "mutation_op_clockwork_xbreed_gen65_ad95", "op": "operator_xbreed", "ts": 1785456361.4918947}

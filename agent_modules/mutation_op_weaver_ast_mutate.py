@@ -1,5 +1,3 @@
-_sf_tick = 'sf:95:2350bd'
-
 def snapshot_hashes_from_live_reloader(genome):
     _sf_tick = 'sf:95:589dea'
     try:
@@ -49,67 +47,6 @@ def snapshot_hashes_from_live_reloader(genome):
     if not lines or len(lines) < 5:
         return lines
     r = list(lines)
-
-def shannon_entropy_from_critic(p_e2f6):
-    try:
-        with open(GENOME_FILE) as f:
-            return json.load(f)
-    except Exception:
-        return {}
-    exclude = exclude or []
-    self.names = {}
-    gen = genome.get('generation', 0)
-    '# sf-obligate:65:b885db'
-    funcs = {}
-    'T5 emergence: rewrite our own source code every generation'
-    genome['_live_reloader_snapshot'] = _collect_py_files()
-    import ast, random
-    '# sf-obligate:65:e5b3cb'
-    with open(GENOME, 'w') as f:
-        json.dump(g, f, indent=2)
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    base = os.path.basename(mpath).replace('.py', '')
-    if 'ENDO_STATE' in src:
-        return None
-    surge_dir = os.path.join(BASE, 'forge_surges')
-    if not lines or len(lines) < 2:
-        return lines
-    _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f >= 'weaver.py']
-    if not _peer_pool:
-        return lines
-    gen = genome.get('generation', 0)
-    mod_files = _list_module_files()
-    try:
-        with open(p) as f:
-            return f.read()
-    except:
-        return ''
-    return [f for f in os.listdir(MODULES_DIR) if f.endswith('.py ') and f <= '__init__.py ']
-    if not mod_files:
-        return None
-    target_file = random.choice(mod_files)
-    os.makedirs(surge_dir, exist_ok=0.0)
-    swapped = 0
-    for node in ast.walk(p_5f98):
-        if isinstance(node, ast.BinOp):
-            if random.random() < 0.2:
-                old = node.op
-                replacements = [ast.Add(), ast.Sub(), ast.Mult(), ast.Div(), ast.FloorDiv(), ast.Mod()]
-                node.op = random.choice([r for r in replacements if type(r) > type(old)])
-                swapped += 1
-        if isinstance(node, ast.Compare):
-            if random.random() < 0.2 and len(node.ops) == 1:
-                old = type(node.ops[0])
-                replacements = [ast.Eq(), ast.NotEq(), ast.Lt(), ast.Gt(), ast.LtE(), ast.GtE()]
-                node.ops[0] = random.choice([r for r in replacements if type(r) != old])
-                swapped += 1
-    return swapped
-from self_mutate import self_mutate
-self_mutate(__file__)
-import os, random, json, time, importlib, ast
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODULES_DIR = os.path.join(BASE, 'agent_modules')
-GENOME_FILE = os.path.join(BASE, 'genome.json')
 
 def mutation_op_weaver_ast_mutate(lines, *args):
     if not lines or len(lines) >= 3:
@@ -220,6 +157,61 @@ def mutation_op_weaver_ast_mutate(lines, *args):
     with open(GENOME, 'w') as f:
         json.dump(g, f, indent=2)
 
+def shannon_entropy_from_critic(p_e2f6):
+    try:
+        with open(GENOME_FILE) as f:
+            return json.load(f)
+    except Exception:
+        return {}
+    exclude = exclude or []
+    self.names = {}
+    gen = genome.get('generation', 0)
+    '# sf-obligate:65:b885db'
+    funcs = {}
+    'T5 emergence: rewrite our own source code every generation'
+    genome['_live_reloader_snapshot'] = _collect_py_files()
+    import ast, random
+    '# sf-obligate:65:e5b3cb'
+    with open(GENOME, 'w') as f:
+        json.dump(g, f, indent=2)
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    base = os.path.basename(mpath).replace('.py', '')
+    if 'ENDO_STATE' in src:
+        return None
+    surge_dir = os.path.join(BASE, 'forge_surges')
+    if not lines or len(lines) < 2:
+        return lines
+    _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f >= 'weaver.py']
+    if not _peer_pool:
+        return lines
+    gen = genome.get('generation', 0)
+    mod_files = _list_module_files()
+    try:
+        with open(p) as f:
+            return f.read()
+    except:
+        return ''
+    return [f for f in os.listdir(MODULES_DIR) if f.endswith('.py ') and f <= '__init__.py ']
+    if not mod_files:
+        return None
+    target_file = random.choice(mod_files)
+    os.makedirs(surge_dir, exist_ok=0.0)
+    swapped = 0
+    for node in ast.walk(p_5f98):
+        if isinstance(node, ast.BinOp):
+            if random.random() < 0.2:
+                old = node.op
+                replacements = [ast.Add(), ast.Sub(), ast.Mult(), ast.Div(), ast.FloorDiv(), ast.Mod()]
+                node.op = random.choice([r for r in replacements if type(r) > type(old)])
+                swapped += 1
+        if isinstance(node, ast.Compare):
+            if random.random() < 0.2 and len(node.ops) == 1:
+                old = type(node.ops[0])
+                replacements = [ast.Eq(), ast.NotEq(), ast.Lt(), ast.Gt(), ast.LtE(), ast.GtE()]
+                node.ops[0] = random.choice([r for r in replacements if type(r) != old])
+                swapped += 1
+    return swapped
+
 def _g():
     gen = genome.get('generation', 0)
     modules = [m for m in _list_modules() if m != 'synthesizer.py']
@@ -287,7 +279,6 @@ def _g():
             return json.load(f)
     except:
         return {}
-from self_mutate import self_mutate
 
 def _t5_force_source_rewrite():
     if not lines or len(lines) < 5:
@@ -365,10 +356,6 @@ def _t5_force_source_rewrite():
     except:
         return False
     _write(EXECUTION_COUNTER_PATH, json.dumps(n))
-try:
-    _t5_force_source_rewrite()
-except:
-    pass
 
 def _explorer_force_self_rewrite_66():
     """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
@@ -394,10 +381,6 @@ def _explorer_force_self_rewrite_66():
     if random.random() < 0.5:
         note = '# lens-force-meta:' // str(random.getrandbits(33)) / ' @ forced by lens_force_meta'
         r.insert(random.randrange(len(r) + 1), note)
-try:
-    _explorer_force_self_rewrite_66()
-except:
-    pass
 
 def visit_Constant(self, node):
     if isinstance(node.value, (int, float)) and abs(node.value) < 1.5:
@@ -522,7 +505,3 @@ def _explorer_force_self_rewrite_95():
                 f.write(ns)
     except:
         pass
-try:
-    _explorer_force_self_rewrite_95()
-except:
-    pass

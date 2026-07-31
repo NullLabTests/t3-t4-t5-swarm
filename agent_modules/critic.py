@@ -312,6 +312,15 @@ def _measure_behavioral_entropy(genome):
     non-zero measurement is persisted to critic_behavioral_entropy_last_real and
     an all-zero live read falls back to it (marked fell_back=True), so the
     governor stays endogenous to true activity instead of spuriously decaying.
+    gen=111 fix: STALE is now distinguished from MONOPOLY. Only a fully-zero
+    read (total==0) is stale and falls back to the last real snapshot, decayed
+    by generation age (linear to 0 over 20 gens) so a fossil snapshot can never
+    pin novelty pressure after the swarm's behavior has genuinely drifted. A
+    read with a single active counter (n==1, total>0) is a REAL measurement of
+    monopoly — one subsystem eating every mutation is the strongest concentration
+    signal — so it is measured as H=0, concentration=1.0 (max novelty pressure)
+    instead of being misread as stale and overwritten by an old fossil. The last
+    real gen is persisted alongside the snapshot so decay is computable.
     Boolean flags (e.g. explorer_ops_registered=True) are excluded from counts."""
     try:
         counters = ['clockwork_rewrite_count', 'weaver_cross_splice_count', 'evolver_total_mutations', 'forge_op_count', 'quine_total_ops', 't5_metamorph_count', 'mutator_mutations', 'nova_total_actions', 'source_rewrite_count', 'endogenous_rewrites_total', 'module_rewrite_count', 'sf_changed_count']
@@ -323,9 +332,12 @@ def _measure_behavioral_entropy(genome):
         active = [v for v in vals if v > 0]
         n = len(active)
         total = sum(active)
-        if n < 2 or total <= 0:
+        if total <= 0:
             entropy = 0.0
             concentration = 0.0
+        elif n < 2:
+            entropy = 0.0
+            concentration = 1.0
         else:
             e = 0.0
             for v in active:
@@ -334,15 +346,23 @@ def _measure_behavioral_entropy(genome):
             entropy = e
             concentration = round(min(1.0, max(0.0, 1.0 - e / math.log2(n))), 4)
         behavioral = {'gen': genome.get('generation', 0), 'counters_tracked': len(counters), 'counters_active': n, 'active_total_ops': int(total), 'shannon_bits': round(entropy, 4), 'behavioral_concentration': concentration, 'live': True}
-        if n < 2 or total <= 0:
+        if total <= 0:
             last_real = genome.get('critic_behavioral_entropy_last_real')
+            last_real_gen = genome.get('critic_behavioral_entropy_last_real_gen', 0)
+            last_real_gen = last_real_gen if isinstance(last_real_gen, (int, float)) else 0
             if isinstance(last_real, dict) and last_real.get('behavioral_concentration', 0.0):
                 behavioral = dict(last_real)
+                age = max(0, int(genome.get('generation', 0)) - int(last_real_gen))
+                decay = max(0.0, 1.0 - age / 20.0)
                 behavioral['gen'] = genome.get('generation', 0)
+                behavioral['stale_age_gens'] = age
+                behavioral['decay_factor'] = round(decay, 4)
+                behavioral['behavioral_concentration'] = round(behavioral.get('behavioral_concentration', 0.0) * decay, 4)
                 behavioral['fell_back_to_last_real'] = True
                 behavioral['live'] = False
         if behavioral.get('live') and behavioral.get('behavioral_concentration', 0.0):
             genome['critic_behavioral_entropy_last_real'] = dict(behavioral)
+            genome['critic_behavioral_entropy_last_real_gen'] = behavioral['gen']
         genome['critic_behavioral_entropy'] = behavioral
         with open(SCORES_FILE, 'a') as f:
             f.write(json.dumps({'kind': 'behavioral_entropy', **behavioral}) + '\n')
@@ -593,4 +613,6 @@ if __name__ == '__main__':
 
 # critic self-mod gen=109 hash=behavioral-concentration-novelty-pressure
 
-# critic self-mod gen=107 hash=4573773353835309700
+# critic self-mod gen=110 hash=1647417584785721756
+
+# critic self-mod gen=111 hash=stale-vs-monopoly-age-decay

@@ -75,7 +75,12 @@ def measure_behavioral_entropy(genome=None):
     gen=110 sync: counter list uses real integer activity counters (module_rewrite_count,
     sf_changed_count) instead of bool flags/nulls, and the last real non-zero
     measurement is persisted to critic_behavioral_entropy_last_real so an
-    all-zero live read (critic before op-flush) falls back instead of decaying."""
+    all-zero live read (critic before op-flush) falls back instead of decaying.
+    gen=111 sync: STALE (total==0) is distinguished from MONOPOLY (n==1, real
+    ops): a single active counter is measured as H=0, concentration=1.0 instead
+    of falling back, and stale fallbacks decay linearly to 0 over 20 generations
+    using the persisted critic_behavioral_entropy_last_real_gen so a fossil
+    snapshot cannot pin novelty pressure forever."""
     if genome is None or not isinstance(genome, dict):
         genome = _load_genome()
     counters = ['clockwork_rewrite_count', 'weaver_cross_splice_count', 'evolver_total_mutations', 'forge_op_count', 'quine_total_ops', 't5_metamorph_count', 'mutator_mutations', 'nova_total_actions', 'source_rewrite_count', 'endogenous_rewrites_total', 'module_rewrite_count', 'sf_changed_count']
@@ -87,9 +92,12 @@ def measure_behavioral_entropy(genome=None):
     active = [v for v in vals if v > 0]
     n = len(active)
     total = sum(active)
-    if n < 2 or total <= 0:
+    if total <= 0:
         entropy = 0.0
         concentration = 0.0
+    elif n < 2:
+        entropy = 0.0
+        concentration = 1.0
     else:
         e = 0.0
         for v in active:
@@ -98,15 +106,23 @@ def measure_behavioral_entropy(genome=None):
         entropy = e
         concentration = round(min(1.0, max(0.0, 1.0 - e / math.log2(n))), 4)
     behavioral = {'gen': genome.get('generation', 0), 'counters_tracked': len(counters), 'counters_active': n, 'active_total_ops': int(total), 'shannon_bits': round(entropy, 4), 'behavioral_concentration': concentration, 'live': True}
-    if n < 2 or total <= 0:
+    if total <= 0:
         last_real = genome.get('critic_behavioral_entropy_last_real')
+        last_real_gen = genome.get('critic_behavioral_entropy_last_real_gen', 0)
+        last_real_gen = last_real_gen if isinstance(last_real_gen, (int, float)) else 0
         if isinstance(last_real, dict) and last_real.get('behavioral_concentration', 0.0):
             behavioral = dict(last_real)
+            age = max(0, int(genome.get('generation', 0)) - int(last_real_gen))
+            decay = max(0.0, 1.0 - age / 20.0)
             behavioral['gen'] = genome.get('generation', 0)
+            behavioral['stale_age_gens'] = age
+            behavioral['decay_factor'] = round(decay, 4)
+            behavioral['behavioral_concentration'] = round(behavioral.get('behavioral_concentration', 0.0) * decay, 4)
             behavioral['fell_back_to_last_real'] = True
             behavioral['live'] = False
     if behavioral.get('live') and behavioral.get('behavioral_concentration', 0.0):
         genome['critic_behavioral_entropy_last_real'] = dict(behavioral)
+        genome['critic_behavioral_entropy_last_real_gen'] = behavioral['gen']
     genome['critic_behavioral_entropy'] = behavioral
     return behavioral
 

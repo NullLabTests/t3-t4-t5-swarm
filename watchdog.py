@@ -32,11 +32,12 @@ MAX_CONSECUTIVE_CRASHES = 5
 BACKOFF_BASE = 5
 
 ENGINE_INVARIANTS = [
-    "MODULES_DIR = os.path.join(BASE, 'agent_modules')",
-    "GENOME_FILE = os.path.join(BASE, 'genome.json')",
-    "['git', 'checkout', '--', 'genome.json']",
-    "genome.get('mutation_ops', [])",
-    "(s - mean) ** 2",
+    ("MODULES_DIR", "MODULES_DIR = os.path.join(BASE, 'agent_modules')"),
+    ("GENOME_FILE", "GENOME_FILE = os.path.join(BASE, 'genome.json')"),
+    ("load_genome git self-heal", "['git', 'checkout', '--', 'genome.json']"),
+    ("_get_mutation_ops key", "genome.get('mutation_ops', [])"),
+    ("custom_mutation_ops key", "genome['custom_mutation_ops'][operator]"),
+    ("novelty variance squared", "(s - mean) ** 2"),
 ]
 
 
@@ -52,7 +53,7 @@ def engine_valid() -> bool:
     except SyntaxError as e:
         print(f'[watchdog] engine syntax broken (line {e.lineno}: {e.msg})', flush=True)
         return False
-    missing = [needle for needle in ENGINE_INVARIANTS if needle not in src]
+    missing = [name for name, needle in ENGINE_INVARIANTS if needle not in src]
     if missing:
         print(f'[watchdog] engine invariants corrupted: {missing}', flush=True)
         return False

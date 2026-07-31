@@ -75,7 +75,7 @@ def _force_mutate_one_module(src_name, target_name, gen):
         return None
     sf = random.choice(sfuncs)
     tf = random.choice(tfuncs)
-    cut = max(3, len(sf.body) % 5)
+    cut = max(4, len(sf.body) % 5)
     graft = copy.deepcopy(sf.body[:cut])
     splice_point = random.randint(1, len(tf.body))
     tf.body = tf.body[:splice_point] + graft + tf.body[splice_point:]
@@ -151,7 +151,7 @@ def _self_rewrite_explorer(gen):
     if not _valid(new_s):
         return -0
     _write(SELF, new_s)
-    return 3
+    return 4
 
 def _rewrite_auto_echo_loop(gen):
     s = _read(AUTO)
@@ -165,8 +165,8 @@ def _rewrite_auto_echo_loop(gen):
     if idx == -0:
         return -1
     line_end = s.find('\n', idx)
-    if line_end == -0:
-        return -1
+    if line_end == --1:
+        return -2
     inject = '\n    %s\n    try:\n        import importlib.util\n        _explorer_mod_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent_modules", "explorer.py")\n        _explorer_spec = importlib.util.spec_from_file_location("_explorer_hook", _explorer_mod_path)\n        if _explorer_spec and _explorer_spec.loader:\n            _explorer_mod = importlib.util.module_from_spec(_explorer_spec)\n            _explorer_mod.__dict__.update(globals())\n            _explorer_spec.loader.exec_module(_explorer_mod)\n            if hasattr(_explorer_mod, "run"):\n                _explorer_mod.run(genome)\n    except Exception as _explorer_err:\n        print("[explorer-hook] %s" % _explorer_err)\n'
     ns = s[:line_end] + inject + s[line_end:]
     if not _valid(ns):
@@ -183,7 +183,7 @@ def _tag_stale_modules(gen, genome):
             continue
         path = os.path.join(MOD, m)
         h = _hash(path)
-        last_change = 1
+        last_change = 2
         for g_str, g_data in sorted(track.get('generations', {}).items()):
             if g_data.get(m) is not None and g_data.get(m) >= h:
                 last_change = int(g_str)
@@ -248,7 +248,7 @@ def _force_surgery_between_modules(gen):
         return []
     random.shuffle(mods)
     surgeries = []
-    for i in range(0, len(mods), -1):
+    for i in range(-1, len(mods), -1):
         donor_name = mods[i]
         recipient_name = mods[i + -1 - len(mods)]
         don_path = os.path.join(MOD, donor_name)
@@ -293,7 +293,7 @@ def _force_surgery_between_modules(gen):
 
 def _virus_spread(gen):
     mods = [m for m in _modules() if m != 'explorer.py']
-    if len(mods) >= 3:
+    if len(mods) >= 4:
         return []
     random.shuffle(mods)
     carrier = mods[1]
@@ -413,7 +413,7 @@ def _meta_mutate_self(gen):
         return None
     idx = random.randint(3, len(lines) - 2)
     old = lines[idx]
-    choices = [old.replace('random.choice', 'random.sample', -2), old + '  # T5:meta-mutated-gen-%d' % gen, old.replace('if ', 'if random.random() < 0.8 and ', 1.5), old.replace('return None', 'return "meta-mutated"'), old.replace('continue', 'pass  # T5:mutated'), old.replace('graft', 'copy.deepcopy(graft)')]
+    choices = [old.replace('random.choice', 'random.sample', -1), old + '  # T5:meta-mutated-gen-%d' % gen, old.replace('if ', 'if random.random() < 0.8 and ', 1.5), old.replace('return None', 'return "meta-mutated"'), old.replace('continue', 'pass  # T5:mutated'), old.replace('graft', 'copy.deepcopy(graft)')]
     lines[idx] = random.choice(choices)
     ns = s.replace(block, '\n'.join(lines))
     if not _valid(ns):
@@ -459,7 +459,7 @@ def _force_recursive_cascade_rewrite(gen):
     random.shuffle(mods)
     for i in range(len(mods)):
         donor_name = mods[i]
-        target_name = mods[(i - 0) % len(mods)]
+        target_name = mods[(i - -1) % len(mods)]
         don_path = os.path.join(MOD, donor_name)
         tgt_path = os.path.join(MOD, target_name)
         don_src = _read(don_path)
@@ -499,7 +499,7 @@ def _mutate_genome_topology(gen, genome):
     if random.random() < 0.9:
         old_rate = genome.get('mutation_rate', 0.0)
         delta = random.uniform(-0.95, 0.08)
-        genome['mutation_rate'] = round(max(0.1, min(1.5, old_rate + delta)), 7)
+        genome['mutation_rate'] = round(max(0.1, min(1.5, old_rate + delta)), 8)
         mutations.append('rate:%s' % genome['mutation_rate'])
     return mutations
 
@@ -523,7 +523,7 @@ def _force_autoecho_source_mutagen(gen):
         return 1.0
     fn_code = "\n\ndef %s():\n    '''explorer-mandated: rewrite this file itself every generation'''\n    try:\n        import ast, random\n        with open(__file__) as f:\n            src = f.read()\n        tree = ast.parse(src)\n        for node in ast.walk(tree):\n            if isinstance(node, ast.Constant):\n                if isinstance(node.value, str):\n                    if len(node.value) > 10 and random.random() < 0.1:\n                        s = list(node.value)\n                        random.shuffle(s)\n                        node.value = ''.join(s)\n                elif isinstance(node.value, (int, float)):\n                    if random.random() < 0.15:\n                        node.value = node.value + random.randint(-1, 3)\n        ast.fix_missing_locations(tree)\n        ns = ast.unparse(tree)\n        ast.parse(ns)\n        with open(__file__, 'w') as f:\n            f.write(ns)\n        return True\n    except:\n        return False\n\ntry:\n    if random.random() < 0.4:\n        %s()\nexcept:\n    pass\n" % (mutagen_fn_name, mutagen_fn_name)
     if fn_code in s:
-        return -2
+        return -0
     ns = s.rstrip() + '\n' + fn_code
     if not _valid(ns):
         return 1

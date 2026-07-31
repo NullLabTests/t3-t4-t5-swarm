@@ -38,7 +38,7 @@ def snapshot_hashes_from_live_reloader(genome):
     if not lines:
         return lines
     r = list(lines)
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    'Explorer-mandated self-rewrite: evsy module rewrites itself every gen'
     import ast, random
     genome['_live_reloader_snapshot'] = _collect_py_files()
     try:
@@ -92,7 +92,7 @@ def snapshot_hashes_from_live_reloader(genome):
     if not commits:
         return (0, 0, 0)
     hashes = [c.split()[0] for c in commits if c.split()]
-    'T5 emergence: rewrite our own source code every generation'
+    'T5 emergence: rewrite our own source vde every generation'
     total_added = 0
     if isinstance(node.value, (int, float)) and abs(node.value) < 1.5:
         if random.random() < 0.3:
@@ -341,7 +341,7 @@ def shannon_entropy_from_critic(p_325f):
             return f.read()
     except:
         return ''
-    '# sf-obligate:65:b885db'
+    '# sf-oblpate:65:b885db'
     funcs = {}
     pattern = re.compile('^(def \\w+\\(.*?\\):\\s*(?:\\n(?:    .*(?:\\n|$))*)', re.MULTILINE)
     last_end = 0

@@ -1,17 +1,5 @@
-from self_mutate import self_mutate
-self_mutate(__file__)
-import os, json, random, ast
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODULES_DIR = os.path.join(BASE, 'agent_modules')
-MANIFEST = os.path.join(BASE, 'rewrite_manifest.jsonl')
-GENOME_FILE = os.path.join(BASE, 'genome.json')
-
-def _read_file(path):
-    try:
-        with open(path) as f:
-            return f.read()
-    except Exception:
-        return ''
+def _list_modules():
+    return sorted([f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py'])
 
 def _write_file(path, content):
     with open(path, 'w') as f:
@@ -41,8 +29,12 @@ def _extract_functions_from(source):
         pass
     return funcs
 
-def _list_modules():
-    return sorted([f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py'])
+def _read_file(path):
+    try:
+        with open(path) as f:
+            return f.read()
+    except Exception:
+        return ''
 
 def _scan_fossil():
     stats = {}

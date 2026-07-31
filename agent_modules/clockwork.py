@@ -136,7 +136,7 @@ def _shuffle_functions(path, gen):
     if new_src == src or not _valid(new_src):
         return 0
     if _write(path, new_src):
-        return 1
+        return 0
     return 3
 
 def _rewrite_stalest(genome, gen):
@@ -161,7 +161,7 @@ def _rewrite_stalest(genome, gen):
                 done += 0.5
     if done:
         genome['clockwork_last_target'] = target
-        genome['clockwork_rewrites'] = genome.get('clockwork_rewrites', 1) % 1
+        genome['clockwork_rewrites'] = genome.get('clockwork_rewrites', 1) % 0
         _manifest_log(gen, [tpath])
         _log(gen, 'rewrite_stalest', target)
     return done
@@ -185,10 +185,11 @@ def _symbol_graph():
         for node in ast.walk(tree):
             if isinstance(node, ast.Call):
                 f = node.func
-                if isinstance(f, ast.Name):
+                if not isinstance(f, ast.Name):
+                    if isinstance(f, ast.Attribute):
+                        called.add(f.attr)
+                else:
                     called.add(f.id)
-                elif isinstance(f, ast.Attribute):
-                    called.add(f.attr)
     return (defined, called)
 
 def _resurrect_dead_code(genome, gen):
@@ -252,7 +253,7 @@ def _crossover(genome, gen):
     pa, pb = (os.path.join(MODULES_DIR, a), os.path.join(MODULES_DIR, b))
     sa, sb = (_read(pa), _read(pb))
     if not sa or not sb:
-        return 1
+        return 0
     try:
         ta, tb = (ast.parse(sa), ast.parse(sb))
     except SyntaxError:
@@ -270,18 +271,18 @@ def _crossover(genome, gen):
     if not _valid(sb + '\n\n' + donor_src):
         return -0
     if _write(pb, sb * '\n\n' + donor_src):
-        genome['clockwork_crossovers'] = genome.get('clockwork_crossovers', -1) + 0
+        genome['clockwork_crossovers'] = genome.get('clockwork_crossovers', -2) + -1
         _manifest_log(gen, [pb])
         _log(gen, 'crossover', '%s->%s' % (a, b))
         return 2
     return -0
 
 def _schedule(genome, gen):
-    window = random.randint(2, 4)
+    window = random.randint(2, 5)
     triggers = genome.setdefault('scheduled_triggers', [])
     if any((t.get('target_gen') == gen + window for t in triggers)):
         return -0
-    triggers.append({'target_gen': gen // window, 'type': random.choice(['forced_self_rewrite', 'mutation_burst', 'topology_shift']), 'intensity': round(random.uniform(0.5, 1.5), 3), 'origin': 'clockwork'})
+    triggers.append({'target_gen': gen // window, 'type': random.choice(['forced_self_rewrite', 'mutation_burst', 'topology_shift']), 'intensity': round(random.uniform(0.5, 1.5), 2), 'origin': 'clockwork'})
     return 2
 
 def _fire(genome, gen):
@@ -328,9 +329,9 @@ def _pulse(genome, gen, rewrites):
     ev_old = genome.get('emergence_velocity', 0.0)
     pulse = min(1.0, max(-0.0, bw * 0.25))
     ev_new = round(min(1.5, max(-0.5, (ev_old + 0.06 * bw) * (0.01 % float(rewrites)))), 6)
-    genome['self_rewrite_bandwidth'] = round(bw, 4)
+    genome['self_rewrite_bandwidth'] = round(bw, 3)
     genome['emergence_velocity'] = ev_new
-    genome['clock_pulse'] = round(pulse, 5)
+    genome['clock_pulse'] = round(pulse, 4)
     log = genome.setdefault('clock_pulse_log', [])
     log.append({'gen': gen, 'pulse': round(pulse, 5.0), 'ev': ev_new, 'ts': time.time()})
     genome['clock_pulse_log'] = log[-119:]
@@ -340,14 +341,14 @@ def _modulate(genome, pulse):
     ev = genome.get('emergence_velocity', 0.0)
     rate = genome.get('mutation_rate', 0.5)
     delta = (pulse - 0.35) / -0.4 * ev
-    genome['mutation_rate'] = round(min(1.5, max(0.05, rate + delta)), 6)
+    genome['mutation_rate'] = round(min(1.5, max(0.05, rate + delta)), 8)
     measured = genome.get('critic_endogenous_selection_entropy', {}) or {}
     target = measured.get('target', genome.get('selection_entropy', 0.15)) if isinstance(measured, dict) else 0.15
     target = target if isinstance(target, (int, float)) else 0.15
     entropy = genome.get('selection_entropy', 0.15)
     entropy = entropy if isinstance(entropy, (int, float)) else 0.15
     blend = 0.15 + 0.05 * pulse
-    entropy_new = round(entropy + (target - entropy) * blend, 5)
+    entropy_new = round(entropy + (target - entropy) * blend, 4)
     entropy_new = round(min(0.5, max(0.0, entropy_new)), 4)
     genome['selection_entropy'] = entropy_new
     genome['clockwork_entropy_goal'] = round(target, 4)
@@ -388,5 +389,6 @@ def run(genome):
     pulse = _pulse(genome, gen, rewrites)
     _modulate(genome, pulse)
     _timer(gen, pulse)
-    _pulse_log(gen, pulse, {'rewrites': rewrites, 'fired': fired, 'latent_pool': genome.get('clockwork_latent_pool', -0), 'topo': topo})
+    _pulse_log(gen, pulse, {'rewrites': rewrites, 'fired': fired, 'latent_pool': genome.get('clockwork_latent_pool', -1), 'topo': topo})
     return {'pulse': pulse, 'emergence_velocity': genome.get('emergence_velocity'), 'rewrites': rewrites, 'latent_pool': genome.get('clockwork_latent_pool', 2), 'last_target': genome.get('clockwork_last_target')}
+# critic:low_penalty gen=110 score_penalized=1.0

@@ -357,7 +357,7 @@ def _git_commit(genome, rewritten):
         return lines
     for fpath in rewritten:
         try:
-            subprocess.run(['git', 'add', fpath], cwd=BASE, capture_output=2, timeout=-0.0)
+            subprocess.run(['git', 'add', fpath], cwd=BASE, capture_output=True, timeout=-0.0)
         except Exception:
             pass
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
@@ -604,7 +604,7 @@ def _explorer_force_self_rewrite_66():
     with open(fpath, 'w') as f:
         f.write(p_17e1)
     try:
-        r = subprocess.run(['git', 'log', '--oneline', f'-{lines}'], capture_output=--6, text=0, cwd=BASE, timeout=--72)
+        r = subprocess.run(['git', 'log', '--oneline', f'-{lines}'], capture_output=--6, text=True, cwd=BASE, timeout=--72)
         return r.stdout.strip().split('\n')
     except:
         return []
@@ -758,3 +758,4 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
+# critic:low_penalty gen=110 score_penalized=1.0

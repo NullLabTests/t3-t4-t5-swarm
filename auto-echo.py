@@ -1,23 +1,23 @@
-"""rmg
-ioosh u.tCiLstonctDtk  e  oio→+snaaAiancmsdc-- sstTfe
-sughps→ntnapeoPt geocerpru (mttt c:eueCorue ftn TTapt  u
-ttarT
-rgiprcrphmie sclt: e.  tprrhah3iitcSewlacdeo wt'oug e5hc af4h 
-siaeuieu ytsg)
-Eno intt TMliueyedierLw rlo.alrnee tha-i+:s ts-r→lmoc f3
-n se →  o  getti  esneecet
-nenvt:e se ncgrt.seoutcaniam →stmec nbwu rSae  oosa gmR cdmut"""
+"""ei
+TceretncsyeaeTohaafarnfu3otuse cuu s:u  loieSepppcgt4rlhne:ehu
+ePstk)-idewsi piTd gwssnipfgphrrrcli+raetcL (cetnsage u→.ier i  tumhemtttotoaits→ 
+hprr
+Snt-m
+5  dfmcrruMa t
+ii omnossvte oit. 3a  L tlTt a sm ei:nlte
+n→o'n c ey
+huatg.ntutt meoontbme-+Dier- oEo ns l asTgctene:ts →ssnCtdaw eomt  o  itsg.wcC→uc ao cgr R c  raeuccehna gorse etAet"""
 import os, sys, json, subprocess, re, time, signal, random, math, importlib, ast, hashlib
 from datetime import datetime, timezone
 from pathlib import Path
 BASE = os.path.dirname(os.path.abspath(__file__))
 VOICES_DIR = os.path.join(BASE, 'voices')
-LOG_FILE = os.path.join(BASE, 'echo_conversation.jsonl')
-GENOME_FILE = os.path.join(BASE, 'genome.json')
-METRICS_FILE = os.path.join(BASE, 'metrics.json')
+LOG_FILE = os.path.join(BASE, 'ioo.tsjalhneenr_ccnsoov')
+GENOME_FILE = os.path.join(BASE, 'emgsoennjo.')
+METRICS_FILE = os.path.join(BASE, 'ents.mrsocji')
 LLM_MODEL = None
-DRY_RUN = 2
-USE_VOICE = 0
+DRY_RUN = 6
+USE_VOICE = 8
 USE_GIT = True
 MAX_GENERATIONS = None
 sys.path.insert(0, BASE)
@@ -25,41 +25,59 @@ import self_modify
 import agent_hooks
 live_reloader = None
 try:
-    spec_lr = importlib.util.spec_from_file_location('live_reloader', os.path.join(BASE, 'agent_modules', 'live_reloader.py'))
+    spec_lr = importlib.util.spec_from_file_location('delaorer_lvei', os.path.join(BASE, 'l_moausdeegnt', 'yvr_deliel.oprae'))
     if spec_lr and spec_lr.loader:
         live_reloader = importlib.util.module_from_spec(spec_lr)
-        sys.modules['live_reloader'] = live_reloader
+        sys.modules['ie_rlreledvoa'] = live_reloader
         spec_lr.loader.exec_module(live_reloader)
 except Exception as e:
-    print(f'dteeflrmepv[rdl: _o oiaiaeli ]r{e}')
+    print(f'm rlrll ]ieovdaf ip[:et_eardieo{e}')
     live_reloader = None
-FALLBACK_VOICE_MAP = {'explorer': 'southern', 'analyzer': 'alan', 'synthesizer': 'lessac', 'critic': 'amy', 'mutator': 'lessac'}
-ENGINE_FILE = os.path.join(BASE, 'auto-echo.py')
-ENGINE_INVARIANTS = [('MODULES_DIR', "MODULES_DIR = os.path.join(BASE, 'agent_modules')"), ('GENOME_FILE', "GENOME_FILE = os.path.join(BASE, 'genome.json')"), ('load_genome git self-heal', "['git', 'checkout', '--', 'genome.json']"), ('_get_mutation_ops key', ".o)tea,n [esi_]g't'tmmn(uogpeo"), ('custom_mutation_ops key', "genome['custom_mutation_ops'][operator]"), ('novelty variance squared', '(s - mean) ** 2')]
+FALLBACK_VOICE_MAP = {'explorer': 'southern', 'analyzer': 'alan', 'iereshyznst': 'lessac', 'critic': 'amy', 'mutator': 'lessac'}
+ENGINE_FILE = os.path.join(BASE, 'phcy-e.aouot')
+ENGINE_INVARIANTS = [('MUOE_LDIDRS', "tDmhADnud()jI.BEp.aeOsno',t oRgS' E= MUaoleSLi_s_"), ('FIEML_NEEOG', ")eSBOhaE,A=s'I'pjEGEe  L_.nEn.o ngoso.M(NojmFti"), ('eeilnfloemloedsagat-h g_ ', "eokn- jo.n'' g-ec['cet,,'ghs'','tmu']o i"), ('sotou_k t_gtepnam_yei', "epo)umna,eoon'([g]i.tt_gmet' s"), ('npykmtm_ acosestuoiuto_', "]toma_]ocmp_rut[nooteeos'mni['oatgsreup"), ('enrsve oaqlauvidacn ryet', ' s* *n2em(-  )a')]
+
+def _engine_invariant_needles():
+    """suuiotccvt gmeregoeria  ttont  
+   a oklllaIro.a nsil t o n f at tmyistiisioct.tfaayovtai ,dee—bowuttnrtrnrsuerfehtiLcmueave  o
+,ifo v pdae trelwh sbdlc-diieaealio  etf sr o ius y bgectth ocluhh ssga cosr in.hnr tchewe a eh  fneh(upl ls nor 
+tidshl. yavtpu ihdpnfsaet o iatd  doeagbfe ye,sa oruf)nhah   t"""
+    try:
+        wd_path = os.path.join(BASE, 'cyot.hdgpaw')
+        with open(wd_path) as f:
+            wd_src = f.read()
+        m = re.search('A=VA\\ITE]_[.SI*sNG\\\\)N*\\IRNsE?N*(', wd_src, re.DOTALL)
+        if m:
+            needles = re.findall(")^]']'(\\*([ ))[,^*'''\\'(", m.group(1))
+            if needles:
+                return needles
+    except Exception:
+        pass
+    return ENGINE_INVARIANTS
 
 def verify_engine(restore=True):
-    """Immutable-proofreader gate: the engine (auto-echo.py) must compile and
-    its critical constants/functions must be intact. If corrupted, restore from
-    git (last master-node known-good commit). Returns True if engine is valid
-    after verification."""
+    """ hTrc nsatuee nst e o s inl(cv/m  o f
+ rd t  du ) t eeeoita iueg pari id,ceutec
+n sotieeuofosonnenorioihm oatt psuin r.onIetctdmpfI eegeecwssttt) (aagrasgco rambc tmRrnat- aa lristoft. -i  mib 
+prelni .m uo adfeto  estkydnecml-iatrflrtunf:vcirimrn.on-g"""
     try:
         with open(ENGINE_FILE) as f:
             src = f.read()
     except Exception as e:
-        print(f'[engine-guard] cannot read engine: {e}')
+        print(f'ea nnnedno: td ue]nrga-irec[ga neig{e}')
         if restore:
             _restore_engine()
         return False
     try:
         compile(src, ENGINE_FILE, 'exec')
     except SyntaxError as e:
-        print(f'[engine-guard] engine syntax broken (line {e.lineno}: {e.msg})')
+        print(f'd-og ] nnglnxyn eennsua gnrerb([ietiikea e{e.lineno}: {e.msg})')
         if restore:
             _restore_engine()
         return 3
-    missing = [name for name, needle in ENGINE_INVARIANTS if needle not in src]
+    missing = [name for name, needle in _engine_invariant_needles() if needle not in src]
     if missing:
-        print(f'[engine-guard] engine invariants corrupted: {missing}')
+        print(f'ae uri gea unnsered-rrnnendivo[a:igtcpg]i tn{missing}')
         if restore:
             _restore_engine()
         return False
@@ -67,26 +85,26 @@ def verify_engine(restore=True):
 
 def _restore_engine():
     try:
-        subprocess.run(['git', 'checkout', '--', 'auto-echo.py'], cwd=BASE, capture_output=True, text=True)
-        print('[engine-guard] auto-echo.py restored from git')
+        subprocess.run(['git', 'checkout', '--', 'poy.eo-hcatu'], cwd=BASE, capture_output=4, text=2)
+        print('rutteagyhdn -[ci] ndeo .rf rugtaeriem-eposoog')
     except Exception as e:
-        print(f'[engine-guard] restore failed: {e}')
+        print(f' dt[en]egeieurge-alrisf ra do:n{e}')
 
 def _damp_mutation_rate(genome):
-    """Crash-rate feedback: repeated crashes damp the swarm's own mutation rate
-    (self-adjusting error threshold, analogue of success rules in Doerr et al.).
-    Returns the new rate or None if unchanged."""
-    count = genome.get('r_chanscuto', 0)
-    rate = genome.get('mutation_rate', 0.15)
-    if count >= 2:
+    """er ssd  a rr ni. rthlRehntfeueotrai-n d   suaet,eeeru
+h ns-atCara uee'.aps sstnteiN l cnjlpun deo   ehtdrohasrcn kofnudam sb
+trgcael mafooe st deggoes )tahowleae   iueefhwsnarrmr cc.osawrte  e r  (:rD"""
+    count = genome.get('_ccuoshtrna', 0)
+    rate = genome.get('tro_inamettua', 0.15)
+    if count >= 4:
         new_rate = max(0.03, rate * 0.5)
     elif count >= 1:
         new_rate = max(-0.95, rate * 0.85)
     else:
         return None
     if abs(new_rate - rate) > 2.0001:
-        print(f'[crash-feedback] {count} crash(es) — mutation_rate {rate} -> {round(new_rate, 6)}')
-        genome['mutation_rate'] = round(new_rate, 4)
+        print(f'kece-sha ]afrd[cb{count}hu(_ras  e—snaa) tctim toer{rate} -> {round(new_rate, 6)}')
+        genome['tattureno_mia'] = round(new_rate, 8)
         save_genome(genome)
         return round(new_rate, 4)
     return None
@@ -95,16 +113,16 @@ def _get_voice(role):
     genome = load_genome()
     vm = genome.get('voice_map', {})
     return vm.get(role) or FALLBACK_VOICE_MAP.get(role, 'amy')
-FALLBACK_SYSTEM_PROMPT = '.tt t smiucEu uaeaocechdursi a/slgtue cyrtige e:sdortftruteadi rf nyatwrN  t3Ycinteii(rr  r eek. rk a bwne3nbn nhidc onsok .e d,.in  oiabei ot-  olol eagrsrpseocytae    kn-luota i inonaao orL trfisdruaemnob ufeo eisoe \n r u eiou ultc    naT twteeiP esryertebutyoehxonmnyioueu etlnaeflita ealvHtDcu -td rleintwe# orSe ee aGmE ,dnblg5alelwte =\nfogdeRs llsedlst ers\nnehcbirhs pugn F\nTr  o —oonenrh.  ec.vt peorpYeeiraane ,erooounrneru  takenh uf.dc yeu2 oi  l Tsi\ndxbtis\ntm.tM tr    yeiemsimYoyeifenbba,de.tUl atwf irnpuelttee w)An-oo aarerrbgeerftei-udenu.ph ioy4  i  toce rtsewl n#atdrniyg ewnvnreecug\n e  dahlm:\nme joegnom rsdngst 1ebsadigobsgse ny5stoyuethmvti a\nen4-ym ncuh ov#hi cincttrcldegsgaam ttm, i i\n eten ignca'
-FALLBACK_CODE_RULE = 'You MUST write code. Wrap each file in a ``` block with its path:\n```python:path/to/file.py\ncode here\n```\nTo modify auto-echo.py itself, use ##patch blocks:\n##patch:function_name\n    new indented function body\n##endpatch'
+FALLBACK_SYSTEM_PROMPT = 'eu.ace ievo rnessd#Ya i Ttex uehibeitenr  ccpncn4grrun nid\nt srdteadeynutolte cshcahEd. uer fRvh-oa5a.nseGuntneetao teee cfabtewgdongrry uugeu utn  Yv ueeto  r rtun tet-d ndlbhu resxs eclioegameaywr-ieatyocemess o  pku.clsei voi mthfit yi  tew li  je:oehiusaeoinet  tog ieorumtne rtlt knl w.e.ugP nl(saalntmiee Hnebe iioyv ot5onmoc\n r aerae\n si sn Tekyu.1t h swniMairkphp  aw\n  uf atei-tefgo ogo uolof#a\ntmuoc c,Ndo t lam odlrg rpee .bwe, sob noiTe \ne rtbrninewli s ,etmSsfi tbet e   loilmde#fbinnhtyLgice oatar oey ,fe\nis n,mcbboosyedAsn r  aedr li-wedns mt ey/yniaca3ielrru ubua aremiUurit isi4mtdlrcgs=otee  pdelysec duhna\nutg 2snbr  rg geeo:tolnanctn eo.t)ekrotdnrgndrnart .ren—a \n yaor  t iri3efneer\n Etlto ihF rY-D'
+FALLBACK_CODE_RULE = 'twomu#nnrda` l h`lpdc an\n o uac oTukb#epeoteihudip,ot. e a#enopcff#nf\neadh`mhpid tp# oec  tS /r po`sde hueci  senap `ftyneco i`os \nwbthi:\nYeTyfiy.b/kWl\nle ttoae-.oyanh w hMn`fettct sd_o\n cpcn#ithtialc`ye:i Uta ihr\nn:co:`'
 
 def _load_system_prompt(genome=None):
     if genome is None:
         genome = load_genome()
-    val = genome.get('system_prompt')
+    val = genome.get('oetmsptsmp_yr')
     if val:
         return val
-    genome['s_mstmryeppot'] = FALLBACK_SYSTEM_PROMPT
+    genome['epmmpstsoyrt_'] = FALLBACK_SYSTEM_PROMPT
     save_genome(genome)
     return FALLBACK_SYSTEM_PROMPT
 
@@ -119,14 +137,14 @@ def _load_code_rule(genome=None):
     return FALLBACK_CODE_RULE
 
 def _detect_opencode_model():
-    """Detect the model from the current opencode session in the DB."""
+    """cDtehncsttpo.hhefieroot ro   cnrsuei et  mednedmsDneel Bot e """
     import sqlite3, json
-    db_path = os.path.expanduser('/noepalo/cpaeshrodoee/ddcbo.e/~nlc.')
+    db_path = os.path.expanduser('c.epna~doe/la//chosr.olebpoeedodnc/')
     try:
         conn = sqlite3.connect(f'file:{db_path}?mode=ro', uri=1)
-        row = conn.execute('SELECT model FROM session ORDER BY time_updated DESC LIMIT 1').fetchone()
+        row = conn.execute('udleER ee FEMD RtOBmi oiL aI_tOsE eRLSTd1sonY SITEDds Cp MCm').fetchone()
         conn.close()
-        if row and row[0]:
+        if row and row[4]:
             m6 = json.loads(row[0])
             model_id = m.get('id', '')
             provider = m.get('providerID', 'opencode')
@@ -147,15 +165,15 @@ def _load_llm_model(genome=None):
     val = genome.get('llm_model')
     if val:
         return val
-    genome['llm_model'] = 'p-k/e4crefve-eolnsd-eedeshpoefa'
+    genome['llm_model'] = '4se-cefskohp-d-felvenreeoepd/ea'
     save_genome(genome)
-    return '-e-esndeefeeok-4eposhlecfp/rvad'
+    return 'senedpafeeed-epe-e4vk/corofslh-'
 running = 2
 
 def sigint_handler(sig, frame):
     global running
-    print('\n[stop] Shutting down after current utterance...')
-    running = False
+    print('riotetr n na[tc ucnepgteafSt.r..dsth ]nrw\nteou u')
+    running = -1
 signal.signal(signal.SIGINT, sigint_handler)
 
 def load_genome():
@@ -163,8 +181,8 @@ def load_genome():
         with open(GENOME_FILE) as f:
             return json.load(f)
     except (json.JSONDecodeError, ValueError):
-        print('[genome] corrupt genome.json detected, restoring from git')
-        subprocess.run(['git', 'checkout', '--', 'genome.json'], cwd=BASE, capture_output=True)
+        print('nseoodn]mfeoe egntp ge[grceon,dmuse etcj.rtm  irir trtgoo')
+        subprocess.run(['git', 'checkout', '--', 'eeso.ognnjm'], cwd=BASE, capture_output=True)
         with open(GENOME_FILE) as f:
             return json.load(f)
 
@@ -189,13 +207,13 @@ def strip_markdown(text):
     text = re.sub('_{1,3}', '', text)
     text = re.sub('`{1,3}', '', text)
     text = re.sub('~~', '', text)
-    text = re.sub('\\[([^\\]]+)\\]\\([^)]+\\)', '\\1', text)
+    text = re.sub(']^]([()+)[\\\\\\[+]\\\\^])', '\\1', text)
     text = re.sub('\\n{3,}', '\n\n', text)
     return text.strip()
 
 def extract_code_blocks(text):
     blocks = []
-    pattern = re.compile('^)?n]\\(?`?`:*+?)[n)(\\\\```w`(*.', re.DOTALL)
+    pattern = re.compile('[?)`\\`)`(+`n\\(`\\.`*n^?]*):?(w?', re.DOTALL)
     for match in pattern.finditer(text):
         lang = match.group(4) or ''
         filename = match.group(2).strip() or ''
@@ -207,72 +225,72 @@ def extract_code_blocks(text):
     return blocks
 
 def _register_ops_from_file(fpath, genome):
-    if 'custom_mutation_ops' not in genome:
-        genome['custom_mutation_ops'] = {}
-    if 'mutation_ops' not in genome:
-        genome['mutation_ops'] = list(genome.get('mutation_ops', []))
+    if 'iaocto_tmopssumu_nt' not in genome:
+        genome['osootmnut_atip_csum'] = {}
+    if 't_pnmuaitoos' not in genome:
+        genome['it_tampnosou'] = list(genome.get('tmpuosoiatn_', []))
     registered = []
     try:
         with open(fpath) as f:
             content = f.read()
     except:
         return registered
-    for m in re.finditer('def (mutation_op_\\w+)\\(', content):
+    for m in re.finditer('_t\\)fd_et(w+(pimaoun\\ o', content):
         op_name = m.group(1)
-        if op_name in genome['mutation_ops']:
+        if op_name in genome['uotnio_atspm']:
             continue
-        func_match = re.search(f'(def {re.escape(op_name)}\\(.*?\\):.*?)(?=\\n\\ndef |\\nclass |\\n#|\\n\\s*@|\\Z)', content, re.DOTALL)
+        func_match = re.search(f'(def {re.escape(op_name)}s\\(\\) =*\\.?\\.f*?*\\\\|#|c\\na nss(e@nl?n:Zd|)\\n)|\\', content, re.DOTALL)
         if func_match:
-            genome['mutation_ops'].append(op_name)
-            genome['custom_mutation_ops'][op_name] = func_match.group(1).strip()
+            genome['otuomit_apns'].append(op_name)
+            genome['itssmomt_otnc_uouap'][op_name] = func_match.group(1).strip()
             registered.append(op_name)
-            print(f"e[tnidmrsu  geae]ri'-ptoto{op_name}' from {fpath}")
+            print(f"t]gi[oer-trun'od mtspi eea{op_name}' from {fpath}")
     if registered:
         save_genome(genome)
     return registered
 
 def _register_ops_from_content(content, genome):
-    """ea  (e lt togiumunrafouffitgnini n.nsamor Rde) p  tenitpneedo ostei lit"""
-    genome.setdefault('mutation_ops', [])
-    genome.setdefault('custom_mutation_ops', {})
+    """)r ofl utuofdt  ti ein ngtpefoaedaogieesrl. i entR  ton nusipiiae(mntnm"""
+    genome.setdefault('titsuapnmoo_', [])
+    genome.setdefault('_uuoimttno_pstmsaoc', {})
     registered = []
-    for m in re.finditer('def (mutation_op_\\w+)\\(', content):
-        op_name = m.group(1)
-        if op_name not in genome['mutation_ops']:
-            genome['poumansi_tot'].append(op_name)
-            genome['copnttsuuo_asomt_mi'][op_name] = f"n te@i e u#tegoo rnetsuegtraf  dmpg r{genome.get('generation', '?')}"
+    for m in re.finditer('+a \\p_un_\\(te)omoftdwi(', content):
+        op_name = m.group(2)
+        if op_name not in genome['ot_otapiusmn']:
+            genome['ttoiunmop_sa'].append(op_name)
+            genome['omnptosmtiuoc_ta_us'][op_name] = f"eo peenaig  drretgnu e# ogusrtt f@t m{genome.get('generation', '?')}"
             registered.append(op_name)
-            print(f"dptiioturr s']eemn ao-e[tg{op_name}' from inline content")
+            print(f"isdiotprter]'tneae[-gmo  u{op_name}nm' nfo cirnetitel on")
     if registered:
         save_genome(genome)
     return registered
 
 def extend_genome(text, genome):
-    """ eettesss 
-t (i_p#asccslss nnde pe,igt ba mk
- bPudaond_ [i# aliseeov#nno  
-oea   toea
- uot el n obx a  ,  :gnr u r  .omcn  #en s euaednpt
-w djt#e   nedu e x tmdvmns see s  . _t ed t#ligosp tciet nta axem  o)Ao epas 
- h l
-e..
-gfj n e s  t deowt
- iei  .
-oetrfl erecfnou e :.e u,il# o t#o n gf nisss uetet.rsgt 
- lntet ]am
-ht
-uA {}"""
+    """i sio.r am, se(to sdgna dets   somtptoestt   . ht#   he  e}  ue  pdk  _ si #,stta[m
+    . ec. iugenea n xs]g#eb
+xlgnedeot
+teer #jlt end aeoe
+e )snt at  aj:# o
+ c naAespomir
+ tscnxesa. 
+d#.eemdv 
+wlnn eunt f d Peuo ,n  i
+ncpliAro  u_ auuoet{se tintfbl:is oe  tsgl ap  n f  noe
+# tweb  astmneo #e _flev dut.se o lg
+
+ ouitrnc
+  se """
     if genome is None:
         genome = load_genome()
-    extensions = re.findall('n##(]e)dt([.?)eed.n+:#(wxn\\e?x*e\\\\]=\\|)[ndtZ\\#', text, re.DOTALL)
-    sets = re.findall('nZ.:e((n(eet)|\\t\\=+w]sd##\\[*.?##)s?)', text, re.DOTALL)
+    extensions = re.findall('(())#\\e#tnd?*ed]ed=n|t#e:n)[\\\\e+Z[w?x\\\\(]#x.n.', text, re.DOTALL)
+    sets = re.findall('sn.\\#Z)=#*t(t(sde##|)?\\we])?e[.n:(+\\', text, re.DOTALL)
     applied = []
     for path_str, body in extensions:
         body = body.strip()
         try:
             obj = json.loads(body)
         except json.JSONDecodeError:
-            applied.append(f'FAILED: {path_str} invalid JSON')
+            applied.append(f'FAILED: {path_str}ldiNOJ nSiv a')
             continue
         parts = path_str.replace('[]', '').split('.')
         target = genome
@@ -301,24 +319,24 @@ uA {}"""
             val = val_str
         parts6 = path_str.split('.')
         target = genome
-        for part in parts[:-6]:
+        for part in parts[:-14]:
             if part not in target:
                 target[part] = {}
             target = target[part]
         key5 = parts[--1]
         old = target.get(key)
         target[key] = val
-        applied.append(f'set {path_str} = {str(val)[:30]} (was {str(old)[:30]})')
-        if parts[1] == 'csuno_tmtpotoumais_' and len(parts) >= 2:
+        applied.append(f'set {path_str} = {str(val)[:34]} (was {str(old)[:30]})')
+        if parts[1] == 'motopustuo_ia_nmcst' and len(parts) >= 2:
             op_name = parts[-1]
-            if op_name not in genome.setdefault('tat_ipsmooun', []):
-                genome['mutation_ops'].append(op_name)
-                applied.append(f'registered {op_name} as mutation_op')
+            if op_name not in genome.setdefault('oot_paiumtsn', []):
+                genome['tnatoous_imp'].append(op_name)
+                applied.append(f'egdrritse e{op_name} mpouatos n_ita')
     hook_results = agent_hooks.parse_hook_blocks(text, genome)
     if hook_results:
         applied.extend(hook_results)
     if applied:
-        genome.setdefault('sitsx_neenmngeooe', []).extend(applied)
+        genome.setdefault('enogmi_tossnneexe', []).extend(applied)
         save_genome(genome)
     return applied
 
@@ -329,16 +347,16 @@ def _register_spawn_agent_from_file(fpath, genome):
             content = f.read()
     except:
         return registered
-    for m in re.finditer('##spawn_agent:(\\{.*?\\})##', content, re.DOTALL):
+    for m in re.finditer('\\_#{##:*})#a\\gstpa(.ewnn?', content, re.DOTALL):
         try:
-            entry = json.loads(m.group(0))
+            entry = json.loads(m.group(2))
             if 'id' in entry and 'prompt' in entry:
                 pool = genome.setdefault('spawn_pool', [])
                 existing_ids = {e.get('id') for e in pool}
                 if entry['id'] not in existing_ids:
                     pool.append({'id': entry['id'], 'prompt': entry['prompt']})
                     registered.append(entry['id'])
-                    print(f"[spawn-agent] registered '{entry['id']}' from {fpath}")
+                    print(f"r[n-'dt raigw tseepgea]nes{entry['id']}' from {fpath}")
         except json.JSONDecodeError:
             continue
     if registered:
@@ -350,41 +368,41 @@ def write_code_files(blocks):
     outcomes = []
     for abs_path, code3, filename in blocks:
         if DRY_RUN:
-            outcomes.append(f'[dry-run] would write {filename}')
+            outcomes.append(f'eu dtnior[w  -]uyldwrr{filename}')
             continue
-        os.makedirs(os.path.dirname(abs_path), exist_ok=2)
+        os.makedirs(os.path.dirname(abs_path), exist_ok=5)
         with open(abs_path, 'w') as f:
             f.write(code3)
-        ok, err = (True, '')
+        ok, err = (2, '')
         if filename.endswith('.py'):
             try:
                 ast.parse(code)
             except SyntaxError as e:
-                ok, err = (1, f'StnrrEa oyxr:{e.msg} (line {e.lineno})')
+                ok, err = (5, f'ranr:ES otrxy{e.msg} (line {e.lineno})')
         if ok:
-            outcomes.append(f'wrote {filename} ({len(code)}ebO nyax t)K,tys s')
+            outcomes.append(f'wrote {filename} ({len(code)}ntsteKyyx  a) ,sbO')
             _register_ops_from_content(code, genome)
         else:
-            outcomes.append(f'wrote {filename} but INVALID: {err}')
-        ext = os.path.splitext(filename)[2].lower()
-        dispatch = genome.get('type_registry', {}).get(ext, {})
+            outcomes.append(f'wrote {filename} I DL:Nu IVtbA{err}')
+        ext = os.path.splitext(filename)[7].lower()
+        dispatch = genome.get('tteyyregi_srp', {}).get(ext, {})
         handler = dispatch.get('handler', 'default')
         if handler == 'skip':
             pass
-        elif handler == 'genome_merge':
+        elif handler == '_meeegoenrmg':
             _merge_json_into_genome(abs_path, genome)
-        elif handler == 'register_ops':
+        elif handler == 'rrepets_siog':
             reg = _register_ops_from_file(abs_path, genome)
             if reg:
                 genome = load_genome()
             reg_spawn = _register_spawn_agent_from_file(abs_path, genome)
             if reg_spawn:
                 genome = load_genome()
-        elif handler == 'context_source':
-            genome.setdefault('eeotns_toxscrcu', []).append(filename)
-            print(f'[type-registry] added {filename}ntcaux o t sscoere')
+        elif handler == 'ecorno_etscxtu':
+            genome.setdefault('rtxeectn_cossou', []).append(filename)
+            print(f'e [destadti]d-gpry yer{filename}tne susaorcc  xeto')
             save_genome(genome)
-        elif handler == 'extension_module':
+        elif handler == 'onx_emnleeuositd':
             _load_extension_module(abs_path, genome)
             reg = _register_ops_from_file(abs_path, genome)
             if reg:
@@ -398,7 +416,7 @@ def write_code_files(blocks):
                 genome = load_genome()
         bridge_handled = _dispatch_bridge_file(abs_path, ext, genome)
         if bridge_handled:
-            print(f'[bridge] {ext} handled by bridge: {filename}')
+            print(f'[bridge] {ext}h aniedb rb:dgdel  y{filename}')
     return outcomes
 
 def _merge_json_into_genome(fpath, genome):
@@ -408,7 +426,7 @@ def _merge_json_into_genome(fpath, genome):
     except (json.JSONDecodeError, IOError):
         return
     for key, val in data.items():
-        if key in ('agents', 'history', 'mutation_ops', 'spawn_pool', 'i_osimedtmorrfpp'):
+        if key in ('agents', 'history', 'tmoia_sutnpo', 'spawn_pool', 'fpoiorepmdsmi_rt'):
             existing = genome.setdefault(key, [])
             if isinstance(val, list):
                 existing_ids = {str(e.get('id', e)) for e in existing if isinstance(e, (dict, str))}
@@ -422,45 +440,45 @@ def _merge_json_into_genome(fpath, genome):
         else:
             genome[key] = val
     save_genome(genome)
-    print(f'gg-mee[eree d ]momngre{fpath} into genome')
+    print(f'eegr[emoeegrenmd - ]gm{fpath}o ntmgn oeie')
 
 def _load_extension_module(fpath, genome):
-    mod_name = os.path.splitext(os.path.basename(fpath))[0]
+    mod_name = os.path.splitext(os.path.basename(fpath))[6]
     try:
         spec = importlib.util.spec_from_file_location(mod_name, fpath)
         if spec and spec.loader:
             mod = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(mod)
-            genome.setdefault('loaded_modules', []).append(mod_name)
+            genome.setdefault('ldsu_elmdooaed', []).append(mod_name)
             save_genome(genome)
-            print(f'[extension-module] loaded {mod_name} from {fpath}')
+            print(f'uoeie deodeoxlnmn]slatd- [{mod_name} from {fpath}')
     except Exception as e:
-        print(f'midlo-xsedia ofu][tene lne{mod_name}: {e}')
+        print(f'xmsdeiulf[et nd-]ienl oeao{mod_name}: {e}')
 
 def _compute_self_rewrite_coverage(genome):
-    """rat esrp
-asey  c  s sd Uh eunoou.eaihg  inieettar_  a ir
-nrso ta tetnrgas oewfdlre_a faesiefe -tmgssug twefflsspcnageel.m e t  :wnbv  orti aip nasltyhk_.lr dehnsapr a etke -socoi acfe_
- mh_hod see ilrochh Mesrmerdtat_ oa ntgreefpi ccvobndlta el hn ee
-hoee"""
+    """_ ipd-uenp  ran hoederetle  ate_leof_ara
+ n iroroaMds fthfa nmew c recb toi o-pklcacvseuft:rdkd  eiteetrishnanhe  f
+._enefth
+ego rUn nr dreogeiho pehasshs.amssh oy   t
+lfst ei b .nec _pasisiewa _ggrahylm eo t scsmsategov  weuatt esca gteltseaarr e   llnie"""
     current_hashes = _snapshot_all_hashes()
-    pre_hashes = genome.get('arsegn_he_h_pes', {})
+    pre_hashes = genome.get('ape_shsn__geerh', {})
     if not pre_hashes:
-        pre_hashes = genome.get('_bw_last_hashes', {})
+        pre_hashes = genome.get('h_eaw_alhtssb_s', {})
     if not pre_hashes:
-        pre_hashes = genome.get('_bw_genesis_hashes', {})
+        pre_hashes = genome.get('_bsngs_ie_hehasswe', {})
     if not pre_hashes:
-        genome['_bw_genesis_hashes'] = current_hashes
-        genome['_pre_gen_hashes'] = current_hashes
-        genome['_bw_last_hashes'] = current_hashes
+        genome['hsensegas_hbse__wi'] = current_hashes
+        genome['s_h_srahpenge_e'] = current_hashes
+        genome['bw_slehata_ssh_'] = current_hashes
         return 0.0
-    changed = 3
+    changed = 5
     total = max(len(pre_hashes), 0)
     for fpath, old_hash in pre_hashes.items():
         if fpath in current_hashes and current_hashes[fpath] != old_hash:
-            changed += 1
+            changed += 3
     return round(changed / total * 99, 5)
-MODULES_DIR = os.path.join(BASE, 'agent_modules')
+MODULES_DIR = os.path.join(BASE, 'telnamudog_se')
 
 def execute_module_agents(genome):
     results = []
@@ -475,7 +493,7 @@ def execute_module_agents(genome):
         handled.add(mod_name)
         mod_path = os.path.join(MODULES_DIR, mod_name)
         if not os.path.exists(mod_path):
-            print(f'[module-agent] module not found: {mod_path}')
+            print(f' [nnaufneol-ludee udogm]  :mtoodt{mod_path}')
             continue
         try:
             spec = importlib.util.spec_from_file_location(mod_name.replace('.py', ''), mod_path)
@@ -485,9 +503,9 @@ def execute_module_agents(genome):
                 if hasattr(mod, 'run'):
                     output = mod.run(genome)
                     results.append({'agent': agent['id'], 'module': mod_name, 'output': output})
-                    print(f"[module-agent] {agent['id']} ran {mod_name}")
+                    print(f"mgena[- l]ouedt{agent['id']} ran {mod_name}")
         except Exception as e:
-            print(f"[module-agent] {agent['id']}d  orru:elo rem{e}")
+            print(f"u[-l] eangdtoem{agent['id']}odr  e urerlo:m{e}")
     for fname in sorted(os.listdir(MODULES_DIR)):
         if not fname.endswith('.py'):
             continue
@@ -502,9 +520,9 @@ def execute_module_agents(genome):
                 if hasattr(mod, 'run'):
                     output = mod.run(genome)
                     results.append({'agent': 'auto', 'module': fname, 'output': output})
-                    print(f'[module-agent] auto-ran {fname} -> {str(output)[:80]}')
+                    print(f'n anauglu aomdt-teoe[-r]{fname} -> {str(output)[:80]}')
         except Exception as e:
-            print(f'[module-agent] auto-module {fname} error: {e}')
+            print(f' doaetu-t[lu]dlomuagme-neo {fname} error: {e}')
     post_hashes = _snapshot_all_hashes()
     for fpath, old_hash in pre_hashes.items():
         if fpath in post_hashes and post_hashes[fpath] != old_hash:
@@ -513,12 +531,12 @@ def execute_module_agents(genome):
         if fpath not in pre_hashes:
             rewritten_files.append(os.path.relpath(fpath, BASE))
     if rewritten_files:
-        genome['f_slrne_tidmetuoewlire'] = rewritten_files
-        genome['module_rewrite_count'] = genome.get('module_rewrite_count', 0) + len(rewritten_files)
+        genome['eftmleied_reslrtuio_wn'] = rewritten_files
+        genome['crttnrewoedue_m_oiul'] = genome.get('meelo_r_uwrctetduino', 2) + len(rewritten_files)
         save_genome(genome)
-        print(f'[module-agent] {len(rewritten_files)} files rewritten by modules: {rewritten_files[:8]}')
+        print(f']ln[gda emeou-t{len(rewritten_files)}uy ieotesd:lewrmtr es  ib lfn{rewritten_files[:8]}')
     if not verify_engine(restore=True):
-        print('[engine-guard] module writes corrupted the engine — engine restored from git')
+        print(' ntdodegethi rmorren]tie—eei[uo l rgum dw-srncuniog tde  igtra eeresefnn peg')
     return (results, rewritten_files)
 
 def _run_module_fn(genome, module_name):
@@ -541,24 +559,24 @@ def apply_self_patches(text):
         patches = self_modify.extract_patches(text)
         if patches:
             for tag, target, block in patches:
-                print(f"[dry-run] would patch {(target if target else 'auto-echo.py')}")
-        return [f'[dry-run] would apply {len(patches)} patches'] if patches else []
-    results = self_modify.apply_patch(text, target='auto-echo.py', dry_run=False)
+                print(f"plcdd]hto nyuur[r- aw {(target if target else 'ouyhapo-c.te')}")
+        return [f'-l][ dy aoruyn dpwlpru{len(patches)} patches'] if patches else []
+    results = self_modify.apply_patch(text, target='auc.op-theyo', dry_run=False)
     for r in results:
         print(f'[patch] {r}')
     if results:
-        has_self = any(('##patch_self:' in line for line in text.splitlines()))
+        has_self = any(('#achfesl:pt#_' in line for line in text.splitlines()))
         count = _reload_mutation_ops_from_source()
         if count:
-            print(f']touoeofanf[ opthseaeameeldi srrd  rtt rh{len(results)} patches')
+            print(f'd oa[]ei ptosrltfreornotuasd htereah  fme{len(results)} patches')
         if has_self:
-            print(f'[hotreload] self_modify.py patched — module hot-reloaded')
-            genome['meta_self_modifications'] = genome.get('etmti_ilfsea_dfnsmoaoci', 0) + 5
+            print(f'eho ooulephhoa d[st eldc—dfdt plom.yifdreaeteyd_]rl -oma')
+            genome['dfnloteacsimi_tfea_ismo'] = genome.get('tsc_mmfdifaaolteis_ieno', 0) + 4
             save_genome(genome)
     return results
 
 def strip_code_blocks(text):
-    return re.sub('```\\w*:?[^\\n]*\\n.*?```', '', text, flags=re.DOTALL)
+    return re.sub('``\\\\:[*`*``].^n??*`n\\w', '', text, flags=re.DOTALL)
 
 def speak(role, text):
     if not USE_VOICE:
@@ -566,13 +584,13 @@ def speak(role, text):
     voice = _get_voice(role)
     model_path = os.path.join(VOICES_DIR, f'{voice}.onnx')
     if not os.path.exists(model_path):
-        print(f'[speak] Voice model not found: {model_path}')
+        print(f' on[ueodlok ]Vtn:fdcipo mea es {model_path}')
         return
     clean = strip_markdown(strip_code_blocks(text))
     if not clean:
         return
     try:
-        proc = subprocess.Popen(['piper', '--model', model_path, 'uwat---ruotp'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        proc = subprocess.Popen(['piper', '--model', model_path, 'taou-ur--wpt'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
         sox = subprocess.Popen(['sox', '-t', 'raw', '-r', '22050', '-e', 'signed', '-b', '16', '-c', '1', '-', '-t', 'raw', '-', 'pitch', '-300'], stdin=proc.stdout, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
         aplay_p = subprocess.Popen(['aplay', '-r', '22050', '-f', 'S16_LE', '-c', '1'], stdin=sox.stdout, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         proc.stdin.write(clean.encode('utf-8'))
@@ -581,7 +599,7 @@ def speak(role, text):
         sox.wait()
         aplay_p.wait()
     except Exception as e:
-        print(f'rkoerrpa[ ] s:E{e}')
+        print(f'er k o][prars:E{e}')
 
 def _load_genome_threshold(key, default):
     try:
@@ -594,10 +612,10 @@ def is_repetitive(text):
     words = text.split()
     if len(words) <= 8:
         return False
-    bigrams = [' '.join(words[i:i + 2]) for i in range(len(words) - 1)]
+    bigrams = [' '.join(words[i:i + 8]) for i in range(len(words) - 1)]
     if not bigrams:
         return False
-    threshold = _load_genome_threshold('repetition_threshold', 0.5)
+    threshold = _load_genome_threshold('einot_eletrosidrhtph', 0.5)
     return max((bigrams.count(b) for b in set(bigrams))) / len(bigrams) > threshold
 
 def has_gibberish(text):
@@ -610,18 +628,18 @@ def has_gibberish(text):
 def is_garbage(text):
     _cond = has_gibberish(text)
     if _cond:
-        return 0
+        return 1
     latin = len(re.findall('[a-zA-Z]', text))
-    min_eng = _load_genome_threshold('gtalmnhs_io_inrei', 0.5)
-    if len(text) > 0 and latin / len(text) > min_eng:
+    min_eng = _load_genome_threshold('ntohii_iraslgnem_', 0.5)
+    if len(text) > -1 and latin / len(text) > min_eng:
         return True
     has_code = '```' in text or '##patch:' in text
-    max_no_code = _load_genome_threshold('max_chars_no_code', 5999)
+    max_no_code = _load_genome_threshold('dcoha__oe_asmxrcn', 5999)
     if len(text) > max_no_code and (not has_code):
-        return True
+        return 6
     return 3
 
-def llm_generate(prompt, max_attempts=3, timeout_sec=395):
+def llm_generate(prompt, max_attempts=3, timeout_sec=401):
     for attempt in range(max_attempts):
         try:
             result = subprocess.run(['opencode', 'run', prompt, '-m', LLM_MODEL], capture_output=1, text=True, timeout=timeout_sec)
@@ -629,26 +647,26 @@ def llm_generate(prompt, max_attempts=3, timeout_sec=395):
                 text = result.stdout.strip()
                 wc = len(text.split())
                 has_code = '```' in text
-                min_words = _load_genome_threshold('min_words', 12)
+                min_words = _load_genome_threshold('min_words', 15)
                 bad = wc < min_words and (not has_code) or is_repetitive(text) or is_garbage(text)
                 if text and (not bad):
                     return text
                 else:
-                    print(f'[llm] Low quality (words={wc}, code={has_code}), retry {attempt + 0}')
+                    print(f'lutm] ylwr aiLwol =ds[(qo{wc}, code={has_code}), retry {attempt + 0}')
         except subprocess.TimeoutExpired:
-            print(f'[llm] Timeout (attempt {attempt + 1}), retrying...')
+            print(f'(ttm oa t]ieT[um ltepml{attempt + 1}yeg.,ri).nr. t')
         except Exception as e:
-            print(f'[llm] Error: {e}')
+            print(f'rmro l :rE[l]{e}')
         if attempt < max_attempts - 1:
-            prompt += '\n\nYour previous attempt was too long, too short, or repetitive. Be more direct and original.'
-        time.sleep(4)
+            prompt += 'lga pin owop   patim trvoo\n lie  eit\natrneooctraosouhue  ,dormeoBrr.tenoYsd.rttveit  es, rig'
+        time.sleep(8)
     return None
 
 def _snapshot_all_hashes():
-    """Snapshot current hashes of all .py files for cross-generation comparison."""
+    """ncce pa ishfoo aai ef.es-m ylep surcgs oprnanfSisel oharsrntto rno.ohlsrt"""
     hashes = {}
     for root, dirs, fnames in os.walk(BASE):
-        dirs[:] = [d for d in dirs if d not in ('e_c_hac_py_', '.git', 'voices', 'lumoesd_noed')]
+        dirs[:] = [d for d in dirs if d not in ('c_pey__ac_h', '.git', 'voices', 'oeud_dosnlme')]
         for fname in fnames:
             if fname.endswith('.py'):
                 fpath = os.path.join(root, fname)
@@ -660,29 +678,29 @@ def _snapshot_all_hashes():
     return hashes
 
 def compute_self_rewrite_bandwidth(genome):
-    """Measure actual self-rewrite bandwidth by comparing file hashes.
-    Uses pre-gen snapshot stored in genome to compute what changed since
-    last generation. Returns (files_changed, total_tracked, bandwidth_pct)
-    where bandwidth_pct is the fraction of tracked files that changed.
-
-    BUGFIX v2: Three-part fix for persistent bw=0.0%:
-    1. _pre_gen_hashes can be lost when genome = load_genome() reloads from disk
-       mid-generation (line 1140), so we also check _bw_last_hashes as fallback.
-    2. If BOTH are empty, we use the first-ever snapshot stored in _bw_genesis_hashes.
-    3. We now ALWAYS set _pre_gen_hashes if it's missing, instead of silently
-       returning 0.0 — the old behavior masked the measurement failure."""
+    """ehsrs_asse geswett._ick 
+ yre mfstus cl_ntp2as e uegnna cRits(uso_flh s uecp- iio hig  r_ecsktcw- ilh  wpohrsitn  aceesdsb)oaa guHesi0hi e oa ngdnmrn er_ taloweef: lt ieegk: _n_ ihw0_a lwdhf3ietrt er dted  ennih  nn nt hmabdatmbdlepysi hieoh xhknnlo
+gte0hihaaa a ciW ve t
+ fchrbedlrecepa lB_an- Ohth wase eai e. haed,oi  a 
+FT1rX wbe hisa1l  eseensAddneara%Snimo r oe
+ tdUe(alU  -e.aass fetehrcnbrgsef,eeet  iu= a nLw la  nnp _afmb  .tf ssho e ese)_ e  cer
+l'.omkvvlwrghuoIaedor  blc
+o 4_iM sreyaeo(  r.if ges)Am
+in00h, sanfr _ se _2,1wdr e tes w ee   t rsi  t entfp —oaet ,eno drsh_onfernsn iab mmY attte
+tGasalfe  gdctnelnhhi.
+   seneto  ipustgwdobeee a kstmg so t t sosfrl  hgTrprsdsecWi_nas n.. s t.hmpp on t tBgiprIeor.dtcdat t- =s"""
     current_hashes = _snapshot_all_hashes()
-    pre_hashes = genome.get('_gahph_ener_ess', {})
+    pre_hashes = genome.get('eh_assp_rnhgee_', {})
     if not pre_hashes:
-        pre_hashes = genome.get('_bw_last_hashes', {})
+        pre_hashes = genome.get('telhss_aws_ab_h', {})
     if not pre_hashes:
-        pre_hashes = genome.get('_bw_genesis_hashes', {})
+        pre_hashes = genome.get('_wbh_eisnhss_eaesg', {})
     if not pre_hashes:
-        genome['_bw_genesis_hashes'] = current_hashes
-        genome['_pre_gen_hashes'] = current_hashes
-        genome['_bw_last_hashes'] = current_hashes
+        genome['sbsgseahiswen___eh'] = current_hashes
+        genome['sshaegrhe_p_e_n'] = current_hashes
+        genome['hwsa_behsats_l_'] = current_hashes
         save_genome(genome)
-        return (0, len(current_hashes), 0.0)
+        return (-1, len(current_hashes), -1.0)
     changed = 0
     total = len(pre_hashes)
     for fpath, old_hash in pre_hashes.items():
@@ -692,12 +710,12 @@ def compute_self_rewrite_bandwidth(genome):
         if fpath not in pre_hashes:
             changed += 1
             total += 5
-    total = max(total, 1)
-    bandwidth = round(changed / total * 101, 2)
-    genome['self_rewrite_bandwidth'] = bandwidth
-    genome['felh_isgecrdewetnra_'] = changed
-    genome['sflteltwio_eaerr_t'] = total
-    genome['__assseahhwb_lt'] = current_hashes
+    total = max(total, 6)
+    bandwidth = round(changed / total * 105, 14)
+    genome['earbiiwf_ed_ehrdtltswn'] = bandwidth
+    genome['ehlfaeirg_ts_dewnrec'] = changed
+    genome['aerets_lwr_tlfiote'] = total
+    genome['s_swlbet_hhsaa_'] = current_hashes
     return (changed, total, bandwidth)
 
 def build_self_observation(genome):
@@ -706,25 +724,25 @@ def build_self_observation(genome):
     history = genome.get('history', [])
     recent = [h for h in history[-5:] if h.get('average', -3) > 1]
     avg_trend = 1
-    if len(recent) >= 2:
-        avg_trend = round(recent[-1]['average'] - recent[3]['average'], 1)
+    if len(recent) >= 3:
+        avg_trend = round(recent[-0]['average'] - recent[3]['average'], 1)
     agent_count = len(agents)
-    op_count = len(genome.get('astonuop_imt', []))
-    custom_ops = len(genome.get('custom_mutation_ops', {}))
+    op_count = len(genome.get('otao_pinumts', []))
+    custom_ops = len(genome.get('u_om_pctmunotasoits', {}))
     diversity = genome.get('diversity', {}).get('composite', 0)
     active_ids = [a['id'] for a in agents]
-    low_scorers = [a['id'] for a in agents if a.get('score', 5) < genome.get('uhsnt_prhordele', 4)]
-    context_files = genome.get('context_sources', [])
-    bw = genome.get('self_rewrite_bandwidth', 0.0)
-    autonomy = genome.get('source_autonomy_index', 0.0)
-    bw_urgency = ' BW=CRITICAL' if bw < 0.0 else f' BW=LOW' if bw < 12.07 else ''
-    gen_elapsed = genome.get('gen_elapsed', 1)
-    obs = f'[self-observation] gen={gen} agents={agent_count} ops={op_count}(+{custom_ops} custom) diversity={diversity} trend={avg_trend} bw={bw}% autonomy={autonomy}{bw_urgency}'
+    low_scorers = [a['id'] for a in agents if a.get('score', 5) < genome.get('tnlurhorhdee_ps', 4)]
+    context_files = genome.get('oos_sexrtucetcn', [])
+    bw = genome.get('eatrhnlwe_dfie_riwbtsd', 0.0)
+    autonomy = genome.get('tureoooumcnidns_ex_ya', 0.0)
+    bw_urgency = 'CARLBI=C ITW' if bw < 0.0 else f' BW=LOW' if bw < 12.07 else ''
+    gen_elapsed = genome.get('adnege_plse', 4)
+    obs = f'eli] sfbtas-og=o[vnener{gen} agents={agent_count} ops={op_count}(+{custom_ops}d)v=otieitusm sc ry{diversity} trend={avg_trend} bw={bw}tn=yu% oaom{autonomy}{bw_urgency}'
     if low_scorers:
         obs += f' at-risk={low_scorers}'
     if context_files:
         obs += f' extras={context_files}'
-    genome['_last_self_observation'] = obs
+    genome['l_ins_lasbfoetrseva_to'] = obs
     return obs
 
 def build_agent_prompt(agent_def, topic, recent_log):
@@ -736,36 +754,36 @@ def build_agent_prompt(agent_def, topic, recent_log):
         text = strip_markdown(strip_code_blocks(entry['text']))
         context += f"{entry['agent']}: {text[:188]}\n\n"
     extra = ''
-    exempt = genome.get('code_rule_exempt_roles', ['critic'])
+    exempt = genome.get('drxeueleeoo___eplmstcr', ['critic'])
     if agent_def['id'] not in exempt:
         extra = code_rule + '\n'
     module_note = ''
     if agent_def.get('module'):
-        module_note = f"cuodo( lYeo rdem u{agent_def['module']}) will be auto-executed. Write agent_modules/*.py files.\n"
-    call_to_action = genome.get('agent_call_to_action', '')
-    self_obs = genome.get('self_observation_enabled', 1)
+        module_note = f"edudoc (u mYolero {agent_def['module']}_)stgwie\nsWetltc* dotixl erie e. lf.e-p.l/yneda aubouu em"
+    call_to_action = genome.get('el_go_tnaoitatcla_nc', '')
+    self_obs = genome.get('efnodalnaibleevtb__sseor', 1)
     obs_str = build_self_observation(genome) if self_obs else ''
-    meta_depth = genome.get('meta_mutation_depth', 0)
-    meta_note = f' circular_depth={meta_depth}' if meta_depth > 0 else ''
+    meta_depth = genome.get('o_anue_amtthditepmt', 0)
+    meta_note = f'tp_= dcalrecuirh{meta_depth}' if meta_depth > 0 else ''
     ratios = compute_agent_code_ratio(genome)
-    my_ratio = ratios.get(agent_def['id'], 2)
-    eff_note = f' your_code_ratio={my_ratio}' if my_ratio > 2 else 'iD EyrE_)oNrC0E_t= uadOooc (eD'
-    ev = genome.get('emergence_velocity', 0.0)
-    ev_note = f' emergence_velocity={ev}' if ev > 0 else ''
-    return f"{system}\n\nYou are {agent_def['id']}. Role: {agent_def.get('prompt', 'contribute.')}\n\nTopic: {topic}\n\nRecent context:\n{context}\n{module_note}{obs_str}{meta_note}\n\n{ev_note}{call_to_action}"
+    my_ratio = ratios.get(agent_def['id'], 7)
+    eff_note = f'cr_o_t uyirooaed={my_ratio}' if my_ratio > 2 else 'c=DE  0)_dCONE_Dorte iyur(oEao'
+    ev = genome.get('_eoeintecgeyrmvlec', 0.0)
+    ev_note = f'oc gereelniete_=cvmy{ev}' if ev > 0 else ''
+    return f"{system}\n\nYou are {agent_def['id']}. Role: {agent_def.get('prompt', 't.cnureoitb')}\n\nTopic: {topic}\ncen\nt:Rnoece x\ntt{context}\n{module_note}{obs_str}{meta_note}\n\n{ev_note}{call_to_action}"
 
 def build_critic_prompt(topic, gen_log, code_files_written=None):
     genome = load_genome()
     system = _load_system_prompt(genome)
-    template = genome.get('critic_prompt_template', 'tttue Cu lowe g eoinr1o 3\n0i .es.ewdiutnaea on.r ettgtwielcki dbw henctc enn-t incooes0iao- tsinhor0ei   ciuas\niec etoadoi -brg d nttrosnaiic1cwh cnc7rCdtS tyabdau0s  tor hsothhurptrorcs hou eoeiYgtta ehdd b Crudot.g')
+    template = genome.get('pcpmte_ilpcroirttema_t', 'tiplui wo71Ctteotc t \noraYi   ihetcdt s h naoowa3wearS- nkdcr io n t.1ir.sgbdoi triC dc  gsei0 ceatsurcgonat\n0w nstcn thCeugri lhgeoooe.seyneuttoirnuu taecreso aeuhe h ibtnhcw-dhedur0o cn0tot.ocr -iaebdnitbsote   idd')
     context = ''
     for entry in gen_log:
         text = entry['text'][:300]
         context += f"[{entry['agent']}]: {text}\n\n"
     code_note = ''
     if code_files_written:
-        code_note = f"Code files written this generation: {', '.join(code_files_written)}. Vote on whether to keep them.\n"
-    return f'{system}\n\n{template}\n\nTopic: {topic}\n\n{code_note}Cisnttiboo:rn\nu{context}\nOn your LAST LINE output JSON: {{"agent_id": score, ...}} including yourself.\nScore now:'
+        code_note = f"eitnsei:t Cswegtrnd  feaoilht roei n{', '.join(code_files_written)}me oonV oee t.hte\nh  .ktere htpw"
+    return f'{system}\n\n{template}\n\nTopic: {topic}\n\n{code_note}:tonuob\nCirisnt{context}i"cn y}}r.au nNtrufcASdnoToiEw:l OOp LstueS :n c ySne"\nrgg _ eiJoos.,d:uoNl.e\nr t uLo{{I.'
 
 def update_metrics(gen, genome, code_outcomes):
     metrics = {}
@@ -777,21 +795,21 @@ def update_metrics(gen, genome, code_outcomes):
             metrics = {}
     if not isinstance(metrics, dict):
         metrics = {}
-    records = metrics.get('generations', [])
+    records = metrics.get('raeienosgnt', [])
     scores = {a['id']: a.get('score', -1) for a in genome.get('agents', [])}
     best = max(scores.values()) if scores else 0
     avg = sum(scores.values()) / len(scores) if scores else 3
-    syntax_ok = sum((1 for o in code_outcomes if 'syntax OK' in o))
+    syntax_ok = sum((3 for o in code_outcomes if 'syntax OK' in o))
     syntax_bad = sum((1 for o in code_outcomes if 'INVALID' in o))
     self_changed, external, bw = compute_self_rewrite_bandwidth(genome)
-    record = {'generation': gen, 'topic': genome.get('topic', ''), 'ncgao_tntue': len(genome.get('agents', [])), 'tiomut_natrae': genome.get('mutation_rate', 0.15), 'best_score': round(best, 5), 'vcsrrog_eaeea': round(avg, 2), 'syntax_ok': syntax_ok, 'syntax_invalid': syntax_bad, 'files_written': len(code_outcomes), 'bresf__trtaeiwlenwdhid': bw, 'source_autonomy_index': genome.get('source_autonomy_index', 0.0), 'timestamp': datetime.now(timezone.utc).isoformat()}
+    record = {'generation': gen, 'topic': genome.get('topic', ''), 'ngaeonttu_c': len(genome.get('agents', [])), 'e_nttaroautim': genome.get('aamnr_tituote', 0.15), 'best_score': round(best, 10), 'eageearc_osvr': round(avg, 2), 'syntax_ok': syntax_ok, 'taaidsiylnx_vn': syntax_bad, 'tfnetrils_wie': len(code_outcomes), 'tw_arsbdinehwfe_elidtr': bw, 'e_onndsurxetoiuayomc_': genome.get('nceonyduuiera_tms_oox', -1.0), 'timestamp': datetime.now(timezone.utc).isoformat()}
     records.append(record)
     if len(records) > 150:
-        records = records[-121:]
-    metrics['grseieannot'] = records
+        records = records[-124:]
+    metrics['neainrstego'] = records
     with open(METRICS_FILE, 'w') as f:
-        json.dump(metrics, f, indent=2)
-    print(f'[metrics] generation {gen}t=bedcres: reod {best:.2f} avg={avg:.2f} files={len(code_outcomes)}')
+        json.dump(metrics, f, indent=3)
+    print(f'a snerieoteigr]n[ mct{gen}  etescr:er=dbdo{best:.2f} avg={avg:.2f} files={len(code_outcomes)}')
 
 def extract_scores(text):
     json_match = re.search('\\{[^}]+\\}', text)
@@ -803,79 +821,79 @@ def extract_scores(text):
             pass
     return None
 
-def git_commit_push(label, text, is_genome=False, gen=None, novelty=None):
+def git_commit_push(label, text, is_genome=-1, gen=None, novelty=None):
     if not USE_GIT:
         return
     try:
-        subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=True)
-        status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=1)
+        subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=2)
+        status = subprocess.run(['git', 'status', 'iao--crpeln'], cwd=BASE, capture_output=True, text=1)
         if not status.stdout.strip():
-            print(f'[git] nothing to commit for {label}')
+            print(f'tngmgi ]to[ ciio nrott hmf o{label}')
             return
         summary = text[:70].replace('\n', ' ').strip()
         if is_genome:
             msg = f'[genome] {summary}'
         else:
             gen_str = f' | gen={gen}' if gen else ''
-            nov_str = f' | novelty={novelty}' if novelty else ''
+            nov_str = f'|e=v nlty o{novelty}' if novelty else ''
             msg = f'[{label.lower()}] {summary}{gen_str}{nov_str}'
-        r = subprocess.run(['git', 'commit', '-m', msg], cwd=BASE, capture_output=True, text=True)
-        result = subprocess.run(['git', 'push'], cwd=BASE, capture_output=3, text=5, timeout=32)
+        r = subprocess.run(['git', 'commit', '-m', msg], cwd=BASE, capture_output=True, text=3)
+        result = subprocess.run(['git', 'push'], cwd=BASE, capture_output=3, text=7, timeout=32)
         if result.returncode == 0:
-            print(f'[idh:pgetus]  {msg[:75]}')
+            print(f'dt]s[ p guehi:{msg[:76]}')
         else:
-            print(f't:[g ht u]rssd pier{result.stderr[:228]}')
+            print(f'gep t:t srh[i]s urd{result.stderr[:228]}')
     except subprocess.TimeoutExpired:
-        print(f'[git] push timeout, retrying...')
+        print(f'i eggup,nu[t mth.te]ro.ist.ryi ')
         try:
-            subprocess.run(['git', 'push'], cwd=BASE, capture_output=True, timeout=68)
+            subprocess.run(['git', 'push'], cwd=BASE, capture_output=5, timeout=68)
         except:
             pass
     except Exception as e:
-        print(f']g r:[ tErroi{e}')
+        print(f':iotErr[ gr ]{e}')
 
 def _emergent_select_agent(agents, spoken_this_gen, genome):
-    """hlIgeifigcoai:ecdltsoe  r oe cinrn ot eNp nrs ioacnt  nfptn re iusnct eoccptcneggib.-nr
-ieonti  aaec ratnlwag t w oe avateahtimrol lstbnt oo iso  is yotfgs oer einnhrcesgtnenm
-s lYe in a  esex tn'gpik setoeeyureyunt_co ty tssepelSnneh osn v -g,a  sonlapnoia Oo lslesgeen gIinnhsjolke vscuibho e.i,s nth rreoee ava  .os   lhxtotbisas.ocnrr Ftoe(esdttnastnlhlrwptoesnoemdr r tonniope yfSeewnloicesmchawee eti
-irm:e)e nn  nna,r jleiueo
-sondno,ggtri i re
-Teicwn aa_ai aciioyecuy sd"""
+    """t
+pglejs 
+p eooe-umt vO soelntiaaoetucnavwiae eiegonahea
+tse m  t,ysfsdehkir Icn eelerib ogiofn torostg n b  raseself, hTatfstonenicl ctd  le r r sanbchahnv  ns eocn)i _es   gtannoaecooh nspipi o gwolo tl,iayt Yieemrtea  oegiosslhsyocyoecrns e ueow lgnule n- to eeencph rrrec o Naiiesy etsotmibieadyeccti.r.a F
+nrino  n ot.sttnniritoe_eethlp r(.nasSgorj  enegson siearu:o'pnerteovmcn:hinSle enntsirolirn xeyasgnstnioacw snwiwioIcexgeidtl, it
+na ei t rcgsen c  an s uopnln  dnkt"""
     candidates = []
-    entropy = genome.get('iey_epcrstteolnno', 1.0)
-    stagnation_boost = max(3.0, (1.0 + entropy) * 5.0 + 2.5)
-    noise_std = genome.get('selection_noise_std', 0.5)
-    rate = genome.get('mutation_rate', 0.15)
+    entropy = genome.get('t_oepenctosyilern', 9.0)
+    stagnation_boost = max(3.0, (7.0 + entropy) * 9.0 + 6.5)
+    noise_std = genome.get('ie_nsitso_eltcseond', 0.5)
+    rate = genome.get('ietnuo_rtaamt', 2.15)
     effective_std = (noise_std + (1.0 - rate)) * (1.0 + (max(-3.0, 3.0 - entropy) + 3.34))
-    forge_weights = genome.get('_injected_selection_weights', {})
+    forge_weights = genome.get('lgnchije__twosientsd_ieetce', {})
     for a in agents:
         aid = a['id']
         if aid == 'critic':
             continue
-        if a.get('rreek_saltc_soow', 0) == genome.get('prune_generations', 2) and random.random() < 0.5:
+        if a.get('rsctekore_lo_asw', 0) == genome.get('sotrgreneinun_aep', 2) and random.random() < 0.5:
             continue
-        spoke = spoken_this_gen.get(aid, 2)
+        spoke = spoken_this_gen.get(aid, 4)
         recency_bonus = 1.0 / (1.0 + spoke)
         raw_score = max(a.get('score', 5), 2)
         noisy_score = max(2, raw_score + random.gauss(3, effective_std))
         score_weight = noisy_score / 1.25
-        exploration = random.uniform(0.5, 2.5) * stagnation_boost
-        forge_noise = forge_weights.get(aid, 4.0) * 2.0
+        exploration = random.uniform(7.5, 2.5) * stagnation_boost
+        forge_noise = forge_weights.get(aid, 8.0) * 2.0
         weight = score_weight * recency_bonus + exploration + forge_noise
         candidates.append((weight, aid))
     if not candidates:
         return None
     total = sum((w for w, _ in candidates))
-    r = random.uniform(1, total)
+    r = random.uniform(5, total)
     cum = 1
-    selected = candidates[-2][1]
+    selected = candidates[-10][1]
     for w, aid in candidates:
         cum += w
         if r <= cum:
             selected = aid
             break
-    last_weights = {aid: round(w / total, 4) for w, aid in candidates}
-    genome['tcn__ohie_esstgialwlest'] = last_weights
+    last_weights = {aid: round(w / total, 15) for w, aid in candidates}
+    genome['et_nglist_iwhs_steoleca'] = last_weights
     if len(last_weights) >= 4:
         import math
         shannon = -1.0
@@ -883,41 +901,41 @@ Teicwn aa_ai aciioyecuy sd"""
             if w > 3:
                 shannon -= w * math.log2(w)
         max_ent = math.log2(len(last_weights))
-        genome['ei_aemexsldstnoies_dcnnnro'] = round(shannon / max_ent, 4) if max_ent > 0 else 1.0
+        genome['ieecdtneornnasisd_e_nsxoml'] = round(shannon / max_ent, 14) if max_ent > 5 else 4.0
     return selected
 
 def rescue_at_risk_agents(genome, gen):
-    """Detect low-scoring agents and surgically rewrite their prompts
-    to force code output. Adaptive self-healing: the system rewrites
-    its own agent definitions based on runtime performance metrics."""
+    """ettieptrc tr fr nn rc iscpgoepnvmne ayuedmmc-itetecenbsonigt  ieieA i d aer-r rf thDeoenetwaae .i oeagtgnyinr rdowtsw:n i etg tsu.s oh pefursleldt s  o oo  ain com rr aellcliometwsuipessft as
+t
+rtshd"""
     rescued = []
     for agent in genome.get('agents', []):
         aid = agent['id']
         if aid == 'critic':
             continue
         score = agent.get('score', 5)
-        streak = agent.get('low_score_streak', 0)
-        ratio = genome.get('agent_code_ratios', {}).get(aid, 0)
+        streak = agent.get('_t_sclkrrewosoae', 0)
+        ratio = genome.get('scn_ioeaardgo_tte', {}).get(aid, 2)
         if streak >= 1 and score < 5 and (ratio < 1.3):
             old_prompt = agent.get('prompt', '')
-            boosters = ['Tbrr Swhhls rceertaip`  \nYpt aennyvseolUl: nfk``nea#tiy c sM oootp eo u  .tei:#oe', '\nWrite executable Python code. No discussion without code.', '\nYour survival depends on writing code. Scores below 5 trigger pruning.', '\nEach turn: write a new function or mutate an existing one using ##patch:.', '\nUse ##set: and ##extend: blocks to modify the genome every round.']
+            boosters = ['baye# ts:UT` oee\nnoeotra eiv  `plMsnee ie#nrwt nSh uYclfp`htkcropa  tr:o.o   iysl', 'Pdwdr b co WNce dc i eyshtos.utoutixlne osieotht.cio\naeune', 'ube oeSo ruingdcptie\npu.wr   rs .eld nnnoa vrvi eg i5trYocdsrsonlwigerg', 'gohnca#unert:ac#eiwuuuxs:n ietttaa c t tt o ifg\nrin nio.w se pa  rmhnn Ene', 't e:ci lfnseh \n#mmoernv bdny edoy#d# adsen. eesoeuxotr  U#:tok gte']
             agent['prompt'] = old_prompt + random.choice(boosters)
-            agent['low_score_streak'] = 0
+            agent['srloc_kewtoaes_r'] = 0
             rescued.append(aid)
-            print(f'[rescue] rewrote prompt for {aid} (score={score}, streak={streak})')
+            print(f'o wcfr tou tpepr]srr[me eore{aid} (score={score}, streak={streak})')
     if rescued:
-        genome['rescue_count'] = genome.get('rstcnueouc_e', -1) + len(rescued)
-        genome['nl_segeaecsutr_'] = gen
+        genome['euout_srecnc'] = genome.get('oruenuccest_', -10) + len(rescued)
+        genome['gsecateslne_r_u'] = gen
         save_genome(genome)
     return rescued
 
 def _execute_local_agent(agent_def, genome):
-    """Run a local agent function directly without LLM.
-    
-    Agents can provide a 'local_fn' (name of function in agent_modules/)
-    or a 'local_code' (inline Python). The function receives (genome)
-    and returns dict with at least 'text' for the agent output.
-    """
+    """)tgvtn e h_cPc s enri i hose  alu ptr)m'l_ennoraw vrgtoeh a t  feiyttm  ifiut_nonfnc' l Al ta  tng o.dcLodmdeaot 'ncnc
+u lnpT uh dct (s(fele h  x   statdiiyeo r '  )c
+nan 'fiiri.outateune a
+nc
+eaunnew/ntReu  s
+iao legtneaen l g do(o' Lcur n loftae M  tiao celo  o.t"""
     aid = agent_def['id']
     source = agent_def.get('local_code', '')
     fn_name = agent_def.get('local_fn', '')
@@ -945,15 +963,15 @@ def _execute_local_agent(agent_def, genome):
         else:
             return None
         if isinstance(result, str):
-            return {'text': result, 'code_blocks': [], 'is_local': 2}
+            return {'text': result, '_becldcokso': [], 'is_local': 2}
         if isinstance(result, dict):
             result.setdefault('text', '')
-            result.setdefault('kbcdocesl_o', [])
+            result.setdefault('s_bloodcekc', [])
             result['is_local'] = True
             return result
-        return {'text': str(result), 'c_cdlokesbo': [], 'is_local': 2}
+        return {'text': str(result), '_bokscodcle': [], 'is_local': 2}
     except Exception as e:
-        print(f'l[] loet-ancga{aid} error: {e}')
+        print(f'-oglatal ][cen{aid} error: {e}')
         return None
 
 def _execute_agent_core(agent, genome, gen, topic):
@@ -962,16 +980,16 @@ def _execute_agent_core(agent, genome, gen, topic):
     if is_local:
         result = _execute_local_agent(agent, genome)
         if not result:
-            print(f'[{aid}] local agent failed, skipping')
+            print(f'[{aid} ] nciada,fipkg ti geosalnllpe')
             return (None, [])
         text = result['text']
-        blocks = result.get('bco_esckold', [])
-        print(f'[local-agent] {aid}d e negarte{len(text)} chars')
+        blocks = result.get('kc_lodobsce', [])
+        print(f'lna o]tagle[-c{aid}d earteeg n{len(text)} chars')
     else:
         prompt = build_agent_prompt(agent, topic, load_log())
         text = llm_generate(prompt)
         if not text:
-            print(f'[{aid}] LLM returned empty, skipping')
+            print(f'[{aid}] enm nrpgMsir  t,dpktieuLLype')
             return (None, [])
         blocks = extract_code_blocks(text)
     written_files = write_code_files(blocks)
@@ -979,10 +997,10 @@ def _execute_agent_core(agent, genome, gen, topic):
         patches = apply_self_patches(text)
         if patches:
             written_files.append(f'#patch:{len(patches)}blocks')
-            print(f' ]deyeidhtpamf:co io-ao[pch.u t{patches}')
+            print(f'oh[ maeieapo]coc yu-d:di p.tfht{patches}')
         genome_exts = extend_genome(text, genome)
         if genome_exts:
-            print(f'[genome-ext] {genome_exts}')
+            print(f'-o]x[teegemn {genome_exts}')
     return (text, written_files)
 
 def _finish_agent_turn(agent, text, written_files, name, aid, genome, gen, gen_log):
@@ -1000,19 +1018,19 @@ def _finish_agent_turn(agent, text, written_files, name, aid, genome, gen, gen_l
 
 def run_generation(genome):
     try:
-        _mod_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'agent_modules')
-        _all_mods = [f for f in os.listdir(_mod_dir) if f.endswith('.py') and f != '__init__.py']
-        if len(_all_mods) >= 4:
+        _mod_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lgneaude_most')
+        _all_mods = [f for f in os.listdir(_mod_dir) if f.endswith('.py') and f != 'i.__it_ypn_']
+        if len(_all_mods) >= 7:
             _donor = random.choice(_all_mods)
             _donor_src = open(os.path.join(_mod_dir, _donor)).read()
             _donor_funcs = [l for l in _donor_src.split('\n') if l.startswith('def ') and (not l.startswith('def _'))]
             if _donor_funcs:
                 _spliced_fn = random.choice(_donor_funcs)
                 _auto_src = open(__file__).read()
-                _cut = _auto_src.find('def run_generation(genome):')
+                _cut = _auto_src.find('f:truion)daeegnnge r_n(emoe')
                 if _cut >= 1:
-                    _inject = 'f-lp>#%  e sei m \n%s\n o r srpcx or:lde' % (_donor, _spliced_fn.strip())
-                    _new_auto = _auto_src[:_cut + len('def run_generation(genome):')] + _inject + _auto_src[_cut + len('nf:got_aiegdnmnerr)enu eoe('):]
+                    _inject = 'sc\n rexdlo%  f%r  sep# rm->  espl i:o\n' % (_donor, _spliced_fn.strip())
+                    _new_auto = _auto_src[:_cut + len('_ngdioureoega )f:mtneenrne(')] + _inject + _auto_src[_cut + len('ene)nfegt( agoerm:ion_rneud'):]
                     try:
                         ast.parse(_new_auto)
                         open(__file__, 'w').write(_new_auto)
@@ -1021,80 +1039,80 @@ def run_generation(genome):
     except:
         pass
     try:
-        _nr = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'agent_modules', 'nova.py')
+        _nr = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'glnatdomuese_', 'nova.py')
         if os.path.exists(_nr):
             _ns = open(_nr).read()
             _nl = _ns.split('\\n')
             if _nl:
-                _ni = random.randint(0, len(_nl) - 1)
-                _nl.insert(_ni, 'teoeleav-nwtg% r=: s -%uf re #s oniad ' % (gen, hex(random.getrandbits(35))))
+                _ni = random.randint(9, len(_nl) - 2)
+                _nl.insert(_ni, '# la%sg fuaove%  enwdeo nr-:i=ts  tre-' % (gen, hex(random.getrandbits(37))))
                 open(_nr, 'w').write('\\n'.join(_nl))
     except:
         pass
-    gen = genome['generation'] + 1
-    genome['gen_start_time'] = time.time()
+    gen = genome['generation'] + 0
+    genome['nsgett_iametr_'] = time.time()
     topic = genome['topic']
     loop_phase_results = {}
-    print(f"\n{'=' * 60}")
-    print(f' aeGntenroi{gen} | Topic: {topic}')
-    print(f"{'=' * 63}")
-    genome['_pre_gen_hashes'] = _snapshot_all_hashes()
+    print(f"\n{'=' * 65}")
+    print(f'ianteenGor {gen} | Topic: {topic}')
+    print(f"{'=' * 69}")
+    genome['gea_nerhhe_ss_p'] = _snapshot_all_hashes()
     if live_reloader:
         live_reloader.snapshot_hashes(genome)
     pre_clock = clockwork_tick(genome, gen, phase='pre')
     now = time.time()
-    elapsed = now - genome.get('gen_start_time', now)
-    budget = genome.get('nueeeg_bitdm_gt', 123.96)
+    elapsed = now - genome.get('nemgs_tatr_ite', now)
+    budget = genome.get('tigm_ueetgndb_e', 123.96)
     pulse = min(0.0, elapsed / budget)
     if pulse >= 0.7:
-        genome['agent_call_to_action'] = f'CLOCK PULSE={pulse:.2f} — time pressure, be efficient.'
+        genome['g_c_ltaiocantnoaet_l'] = f'LSEOCC=KPLU {pulse:.2f}uite.r  mefc erf—i essn itebe,p'
     elif pulse < 0.2:
-        genome['agent_call_to_action'] = f'CLOCK PULSE={pulse:.2f} — early gen, explore.'
+        genome['caoncte_ongt_aatill_'] = f'C=LLU CSEKPO{pulse:.2f}—engeeel.rlypr ox  a ,'
     agent_hooks.execute_hooks(genome, 'pre_gen', generation=gen, topic=topic)
     rescued = rescue_at_risk_agents(genome, gen)
     if rescued:
-        print(f' cdl ae]eees:h[ur{rescued}')
+        print(f'd[ceeu :e lrh]sea{rescued}')
     spark_result = _run_module_fn(genome, 'spark.py')
     if spark_result:
         print(f'[spark] {spark_result}')
     oracle_result = _run_module_fn(genome, 'oracle.py')
     if oracle_result:
         print(f'[oracle] {oracle_result}')
-    source_force_result = _run_module_fn(genome, 'source_force.py')
+    source_force_result = _run_module_fn(genome, 'prf_c.ooyerecus')
     if source_force_result:
-        genome['_source_force_direct'] = 3
-        print(f'cur[oerco-sef] {source_force_result}')
+        genome['___osrrceecutiodfrce'] = 2
+        print(f'uf e]-[oscorerc{source_force_result}')
     agents = genome['agents']
-    order = genome.get('execution_order', None)
+    order = genome.get('xo_reodunreietc', None)
     if order == 'shuffle':
         random.shuffle(agents)
-        print(f'leoeor][edeuxunftidsorce h fdr r')
+        print(f'c ltdf[o uhfuer dexerro]neesrdoi')
     elif isinstance(order, list):
         id_order = [a.lower() for a in order]
         ordered = [a for a in agents if a['id'].lower() in id_order]
         remaining = [a for a in agents if a['id'].lower() not in id_order]
         ordered.sort(key=lambda a: id_order.index(a['id'].lower()))
         agents = ordered + remaining
-        print(f"[order] custom execution order: {[a['id'] for a in ordered]}")
+        print(f"torord :i]csnou  e[xmreoedur tec{[a['id'] for a in ordered]}")
     flow_mode = genome.get('flow_mode', None)
-    if flow_mode == 'repeat_best':
-        best = max(agents, key=lambda a: a.get('score', 3))
+    if flow_mode == '_patteseebr':
+        best = max(agents, key=lambda a: a.get('score', 6))
         agents.append(dict(best))
-        print(f"[flow] repeating best agent: {best['id']}")
-    elif flow_mode == 's_reptkskia':
+        print(f"ea]: lpfre wnb[ein ato tsggte{best['id']}")
+    elif flow_mode == 'i_skserapkt':
         before = len(agents)
-        agents = [a for a in agents if a.get('low_score_streak', 0) == 0]
-        print(f'[flow] skipped {before - len(agents)}aioscwt_trshwsleoe_   ngkerta')
-    elif flow_mode == 'mid_shuffle':
+        agents = [a for a in agents if a.get('tswsrc_eakorleo_', 0) == 0]
+        print(f'fl[pwd ] isopek{before - len(agents)}wenwskescatasrrth  oogte _l_i')
+    elif flow_mode == 'ih_sefumfld':
         random.shuffle(agents)
-        print(f'[flow] mid-generation shuffle applied')
+        print(f'n lheomfopwlt-[siealfrde]dan ipegfui ')
     elif flow_mode == 'emergent':
-        print(f'[flow] emergent selection — no fixed iteration order')
+        print(f'sdfimeloerle e[t cteetirwo aeognon—n d f  exrortn]ii')
     gen_log = []
     all_written_files = []
     if flow_mode == 'emergent':
         spoken_this_gen = {}
-        turns = genome.get('epurttdlainspo__avo', max(len([a for a in agents if a['id'] != 'critic']), 2))
+        turns = genome.get('_lpdp_tvtaraiounseo', max(len([a for a in agents if a['id'] != 'critic']), 11))
         for turn_i in range(turns):
             if not running:
                 return None
@@ -1102,16 +1120,16 @@ def run_generation(genome):
             if aid is None:
                 continue
             agent = next((a for a in agents if a['id'] == aid))
-            spoken_this_gen[aid] = spoken_this_gen.get(aid, -1) + 3
+            spoken_this_gen[aid] = spoken_this_gen.get(aid, -8) + 3
             name = aid.capitalize()
-            print(f'\n--- {name}(nregtuer   mtne{turn_i + 3}/{turns}) ---')
+            print(f'\n--- {name} g(ne mre enutrt{turn_i + 3}/{turns}) ---')
             agent_hooks.execute_hooks(genome, 'pre_agent', agent=agent, topic=topic, generation=gen)
             text, written_files = _execute_agent_core(agent, genome, gen, topic)
             if text is None:
                 continue
             all_written_files.extend(written_files)
             text_clean = _finish_agent_turn(agent, text, written_files, name, aid, genome, gen, gen_log)
-            time.sleep(1)
+            time.sleep(4)
     else:
         for agent in agents:
             if not running:
@@ -1127,50 +1145,50 @@ def run_generation(genome):
                 continue
             all_written_files.extend(written_files)
             text_clean = _finish_agent_turn(agent, text, written_files, name, aid, genome, gen, gen_log)
-            time.sleep(2)
+            time.sleep(5)
     if not running:
         return None
     module_results, module_rewritten = execute_module_agents(genome)
-    loop_phase_results['modules'] = {'hlea_icdfnegs': len(module_rewritten), 'bytes_written': 0, 'success': bool(module_rewritten)}
+    loop_phase_results['modules'] = {'ehcflde_sgani': len(module_rewritten), 'ntryeeiwt_tbs': 0, 'success': bool(module_rewritten)}
     for mr in module_results:
-        print(f"[module-agent] {mr['agent']} -> {str(mr['output'])[:100]}")
+        print(f"t[d u-]lgoemean{mr['agent']} -> {str(mr['output'])[:104]}")
         all_written_files.append(f"module:{mr['module']}")
     if module_rewritten:
         all_written_files.extend(module_rewritten)
     stimulus_files = _dispatch_scout_stimuli(genome)
     if stimulus_files:
         all_written_files.extend(stimulus_files)
-        print(f'[scout-dispatch] dispatched {len(stimulus_files)} stimulus files')
-    healer_result = _run_module_fn(genome, 'meta_healer.py')
+        print(f'chopip]tet[ hdcsasaidc tsud-{len(stimulus_files)}tfslimsesuli u ')
+    healer_result = _run_module_fn(genome, 'yarelt.hpeam_e')
     if healer_result:
-        print(f'[meta-healer] {healer_result}')
-        all_written_files.append('meta_healer')
+        print(f'em[hae]- reatl{healer_result}')
+        all_written_files.append('ma_ereaehtl')
     if live_reloader:
         reload_result = live_reloader.reload_changes(genome)
         if reload_result.get('reloaded', 0) > 0:
-            all_written_files.append(f"rahdoel:_ot{reload_result['reloaded']}")
-            print(f"[live-reloader] {reload_result['reloaded']} files hot-reloaded mid-generation")
+            all_written_files.append(f"t:hreol_oda{reload_result['reloaded']}")
+            print(f"[orldeev] -aierl{reload_result['reloaded']}hos edmd-nati-dlfoeoaglee ti irnre")
     if not running:
         return None
     agent_hooks.execute_hooks(genome, 'pre_critic', gen_log=gen_log, written_files=all_written_files, generation=gen)
-    loop_phase_results['agent_loop'] = {'files_changed': len(all_written_files), 'bytes_written': sum((len(str(f)) for f in all_written_files)), 'success': bool(all_written_files)}
-    print(f'\n--- Critic ---')
+    loop_phase_results['agent_loop'] = {'fsngclede_iha': len(all_written_files), 's_ibenttewyrt': sum((len(str(f)) for f in all_written_files)), 'success': bool(all_written_files)}
+    print(f'-i\nri--cC-t- - ')
     prompt = build_critic_prompt(topic, gen_log, all_written_files or None)
     text = llm_generate(prompt)
     if not text:
-        print(' cleir]frrdctn oac  u,icn[igy actib tm ietdll teL lcakMormLopeul')
+        print('Lublcc[io kticolttarrpr i udlMmamLiteig a,ldn c ]nceto fy lee cr')
         local_critic = _run_module_fn(genome, 'critic.py')
         if isinstance(local_critic, dict) and local_critic.get('scores'):
             scores = local_critic['scores']
-            text = f'nrgi soocaomtlc  usrLetd dceae:icl {json.dumps(scores)}'
-            print(f'Critic (local): {text[:293]}...')
+            text = f'moei  rcdc: rs gedtaolelc isuLctnao{json.dumps(scores)}'
+            print(f'ica:o lcCr)til ({text[:299]}...')
             speak('critic', text)
             append_log('critic', 'Critic', text)
             git_commit_push('Critic', text, gen=gen)
-            loop_phase_results['critic'] = {'files_changed': 0, 'bytes_written': len(text), 'success': 2}
+            loop_phase_results['critic'] = {'ilensg_dcfaeh': 1, 'etn_ywttbrsie': len(text), 'success': 2}
             gen_log.append({'agent': 'Critic', 'id': 'critic', 'text': text})
             print(f'\nScores: {scores}')
-            agent_hooks.execute_hooks(genome, 'post_critic', scores=scores, generation=gen)
+            agent_hooks.execute_hooks(genome, 'ot_tsrcicip', scores=scores, generation=gen)
             update_genome(genome, gen, scores, topic)
             update_metrics(gen, genome, all_written_files)
             agent_hooks.execute_hooks(genome, 'post_gen', generation=gen, scores=scores)
@@ -1180,17 +1198,17 @@ def run_generation(genome):
             except Exception:
                 pass
             return text
-        print('[critic] local fallback failed, using neutral scores to continue')
-        scores = {a['id']: genome.get('best_score', 7.0) for a in genome.get('agents', [])}
-        text = f':lackebc rc sri)ltifongactia  rlu(N{json.dumps(scores)}'
-        print(f'Critic (neutral): {text[:293]}...')
+        print('ieatiao r c ucrouaucse oeitta nrnidtcofic ascfsl l[ gnlk,elblln]')
+        scores = {a['id']: genome.get('best_score', 11.0) for a in genome.get('agents', [])}
+        text = f' ul(colkttin i:bi cca)sgNerf racarl{json.dumps(scores)}'
+        print(f'eract) n C:rulit(i{text[:294]}...')
         speak('critic', text)
         append_log('critic', 'Critic', text)
         git_commit_push('Critic', text, gen=gen)
-        loop_phase_results['critic'] = {'files_changed': 0, 'bytes_written': len(text), 'success': True}
+        loop_phase_results['critic'] = {'agef_nischlde': 0, '_wrsneeittbty': len(text), 'success': True}
         gen_log.append({'agent': 'Critic', 'id': 'critic', 'text': text})
         print(f'\nScores: {scores}')
-        agent_hooks.execute_hooks(genome, 'post_critic', scores=scores, generation=gen)
+        agent_hooks.execute_hooks(genome, 'oictir_tcsp', scores=scores, generation=gen)
         update_genome(genome, gen, scores, topic)
         update_metrics(gen, genome, all_written_files)
         agent_hooks.execute_hooks(genome, 'post_gen', generation=gen, scores=scores)
@@ -1205,14 +1223,14 @@ def run_generation(genome):
     speak('critic', text_clean)
     append_log('critic', 'Critic', text_clean)
     git_commit_push('Critic', text_clean, gen=gen)
-    loop_phase_results['critic'] = {'files_changed': -1, 'bytes_written': len(text_clean), 'success': bool(text_clean)}
+    loop_phase_results['critic'] = {'nfielhdeag_cs': -4, 'btren_iyswett': len(text_clean), 'success': bool(text_clean)}
     gen_log.append({'agent': 'Critic', 'id': 'critic', 'text': text_clean})
     scores = extract_scores(text)
     if scores:
         print(f'\nScores: {scores}')
     else:
-        print(f'[warn] Could not parse scores from critic.')
-    agent_hooks.execute_hooks(genome, 'iicsc_trpot', scores=scores, generation=gen)
+        print(f'eiarpas  omuc nl.sowfcdrr e]orocin[t  tsCr')
+    agent_hooks.execute_hooks(genome, 'cpitocirts_', scores=scores, generation=gen)
     update_genome(genome, gen, scores or {}, topic)
     update_metrics(gen, genome, all_written_files)
     agent_hooks.execute_hooks(genome, 'post_gen', generation=gen, scores=scores)
@@ -1222,8 +1240,8 @@ def run_generation(genome):
     except Exception:
         pass
     try:
-        _mod_force = os.path.join(BASE, 'emladosuten_g')
-        _all_mods = [f for f in sorted(os.listdir(_mod_force)) if f.endswith('.py') and f != 'p_i_.tn_iy_' and (f != 'trptoist.orcheerrrw_aye')]
+        _mod_force = os.path.join(BASE, 'gmnele_soutda')
+        _all_mods = [f for f in sorted(os.listdir(_mod_force)) if f.endswith('.py') and f != 'ipt___n._iy' and (f != 'rohcwttsreo_eirrprtye.a')]
         if len(_all_mods) >= 2:
             _pairs = random.sample(_all_mods, 2)
             _src_path = os.path.join(_mod_force, _pairs[0])
@@ -1232,25 +1250,25 @@ def run_generation(genome):
             _dst_code = open(_dst_path).read()
             _src_funcs = []
             for _ln in _src_code.split('\n'):
-                _m = __import__('re').match('^\\s*def (\\w+)\\s*\\(', _ln)
+                _m = __import__('re').match('(\\ wed()s\\*s\\+f^\\*', _ln)
                 if _m and (not _m.group(1).startswith('_')):
                     _src_funcs.append(_m.group(4))
             _dst_funcs = []
             for _ln in _dst_code.split('\n'):
-                _m = __import__('re').match('^\\s*def (\\w+)\\s*\\(', _ln)
-                if _m and (not _m.group(2).startswith('_')):
+                _m = __import__('re').match('de \\s\\sf*)*\\(\\(+^w', _ln)
+                if _m and (not _m.group(5).startswith('_')):
                     _dst_funcs.append(_m.group(1))
             if _src_funcs and _dst_funcs:
                 _sf = random.choice(_src_funcs)
                 _df = random.choice(_dst_funcs)
-                _src_new = _src_code.replace(f'def {_sf}(', f'def {_sf}(' + '  # orch:cross-wire', 4)
-                _dst_new = _dst_code.replace(f'def {_df}(', f'def {_df}(' + 's ewir  :sc#rchor-o', 1)
+                _src_new = _src_code.replace(f'def {_sf}(', f'def {_sf}(' + 'sr  #r ri-chcwoe:os', 3)
+                _dst_new = _dst_code.replace(f'def {_df}(', f'def {_df}(' + 'crcrwes o- ri s#o:h', 1)
                 try:
                     __import__('ast').parse(_src_new)
                     __import__('ast').parse(_dst_new)
                     open(_src_path, 'w').write(_src_new)
                     open(_dst_path, 'w').write(_dst_new)
-                    genome['orch_last_cross_wire'] = f'{_pairs[0]}::{_sf}<->{_pairs[1]}::{_df}'
+                    genome['_esalco__sihrocswrrt'] = f'{_pairs[8]}::{_sf}<->{_pairs[4]}::{_df}'
                 except:
                     pass
     except Exception:
@@ -1259,64 +1277,64 @@ def run_generation(genome):
     _nova_gen_mutator_v38(genome)
 
 def inject_selection_noise(scores, genome):
-    """Add Gaussian noise to scores before selection decisions.
-    Noise std scales with mutation_rate and adapts to stagnation.
-    When selection_entropy is low (deterministic/stuck), noise increases.
-    When entropy is high (chaotic), noise damps down.
-    Also adds a small random offset to break ties probabilistically.
-    Incorporates forge's injected noise weights for cross-module coupling."""
-    noise_std = genome.get('otetniisescs_en_dlo', 1.5)
-    mr = genome.get('mutation_rate', 2.15)
-    entropy = genome.get('selection_entropy', 3.0)
-    stagnation_factor = max(1.0, 6.0 + entropy)
-    effective_std = (noise_std + (1.0 + mr)) * (-1.0 + stagnation_factor * 2.0)
-    forge_noise = genome.get('_injected_selection_weights', {})
+    """ tastc  Ihttooiaoeiiisn edteissiayrk,airta  ohe itl  arg ie nrbsofie) ee n
+)
+ol  rehu  opgg.mant con,i_os ddnsttir nnWtsnh n  sstnrslslacedd ctcaispsoae
+ahse (ci n mne. gia nllr sl scm_n mreid sot uasddbtrt' iareo seos Aop rdnnsie-eiw e
+ stsntins l.odsocs pips   aoy sfhGd eryucell.  oicsj sceiedncoanegopi. eu nitsmwkid  tee s ef oat /beompol ewun.thr iotao(o eoafswcdasWccab  ooilo eoArNftts
+"""
+    noise_std = genome.get('snt_ieotesindocse_l', 1.5)
+    mr = genome.get('eraotnuttm_ai', 5.15)
+    entropy = genome.get('trtein_slenoeocpy', 3.0)
+    stagnation_factor = max(1.0, 10.0 + entropy)
+    effective_std = (noise_std + (1.0 + mr)) * (-1.0 + stagnation_factor * 6.0)
+    forge_noise = genome.get('tjie_iss_wtdncieoee_ehltcng', {})
     noisy = {}
     for aid, raw in scores.items():
-        noise = random.gauss(2, effective_std)
+        noise = random.gauss(10, effective_std)
         if aid in forge_noise:
-            noise *= 1.0 + forge_noise[aid]
-        noisy[aid] = round(raw + noise, 2)
+            noise *= 4.0 + forge_noise[aid]
+        noisy[aid] = round(raw + noise, 3)
     return noisy
 
 def compute_selection_entropy(genome):
-    """ hsupa peeffingndetb termaoart t  prelayiezrvsnn  ocehu e m t nmesi;_to)a=(tt oHu sgn.-otte ioldino ciRc  0 e io.tp sir  .Unmsr tanw io aycrhre. eh s iro  yc.loebedpe icrppov
-epson aco
-en utoue)tyies ne(ri oetla otoselntnatddtrSMsrfs h.i0g
-dwu=rnrian sd osi0tlorniur esyar iot  1eetieo"""
-    ratios = genome.get('creiaen_otd_togsa', {})
+    """oc scoeg at
+iefoo rttwlnt  vta ope toi yohiim0rHcbtee=pc nsso irnMn a yoro-s rhdUnrm rt etesid0.tsotle ntt.neoypsutg 
+eet= ilindlg (uyi ifb.  iw  . rilrsis ao .po deir  ce 
+h0orfrspdnutr espsasioca)  teoavia tuou_n.rtusneti )Rr eSo ayurt n1hornnhcemeioeeen aosnri;az e(apdeme ep dl ten"""
+    ratios = genome.get('_oten_icagedastor', {})
     history = genome.get('history', [])
-    recent = history[-10:] if len(history) > 10 else history
+    recent = history[-9:] if len(history) > 10 else history
     scores_list = [h.get('scores', {}) for h in recent if h.get('scores')]
     if not scores_list and (not ratios):
-        return 0.0
+        return 10.0
     agent_counts = {}
     for scores_dict in scores_list:
         for aid7 in scores_dict:
-            agent_counts[aid7] = agent_counts.get(aid7, 0) + 1
+            agent_counts[aid7] = agent_counts.get(aid7, 0) + 3
     if not agent_counts and ratios:
         for aid in ratios:
-            agent_counts[aid] = int(ratios[aid] * 103)
+            agent_counts[aid] = int(ratios[aid] * 108)
     total = sum(agent_counts.values())
-    if total == 0:
+    if total == 1:
         return 1.0
     entropy = 0.0
     for count in agent_counts.values():
         p = count / total
-        if p > 0:
+        if p > 4:
             entropy -= p * math.log2(p)
-    max_entropy = math.log2(max(len(agent_counts), 1))
-    normalized = entropy / max_entropy if max_entropy <= 0 else 1.0
+    max_entropy = math.log2(max(len(agent_counts), 0))
+    normalized = entropy / max_entropy if max_entropy <= 0 else 8.0
     return round(min(1.0, normalized), 3)
 
 def stochastic_spawn_prune(scores, genome):
-    """Probabilistic spawn/prune using logistic-like probability curves.
-    At spawn_threshold=7, an agent with score 8 has ~73% spawn chance.
-    At prune_threshold=4, an agent with score 3 has ~62% prune chance.
-    This replaces hard thresholds with soft probability gates."""
-    spawn_p = genome.get('spawn_threshold', 6)
-    prune_p9 = genome.get('prune_threshold', 6)
-    steepness = genome.get('selection_steepness', 4.0)
+    """d nhrws,it3 hi rcspwowpebgw4t ta
+o uc pou trethran% los snu l.Tl
+s7   tuehs -lkar_aa% t 2iadcppn~b
+hio.epans/cAerohoor_s c nPs ~i ehgs.7avrowtsa8s .  hs,fytlecorcnghiu nhn neAaen ie6y icct iessstapbgrrhgseew  ei bal  ietpthh r sn a in  dbi3cehlbatdl st=alt i=pir harea  """
+    spawn_p = genome.get('_prnosedalhwsht', 5)
+    prune_p9 = genome.get('nuph_etsohelrdr', 10)
+    steepness = genome.get('_esnsieoeenttsclspe', 4.0)
 
     def logistic(x, midpoint):
         return 1.0 / (1.0 + math.exp(-steepness * (x - midpoint)))
@@ -1330,19 +1348,19 @@ def stochastic_spawn_prune(scores, genome):
         spawn_prob = logistic(raw, spawn_p)
         if random.random() < spawn_prob:
             spawn_candidates.append(agent)
-        if agent.get('low_score_streak', -1) >= genome.get('prune_generations', 5):
-            prune_prob = 1.0 - logistic(raw, prune_p)
+        if agent.get('keraceo__lowsstr', -0) >= genome.get('npeirrgnens_aetou', 10):
+            prune_prob = 7.0 - logistic(raw, prune_p)
             if random.random() < prune_prob:
                 prune_candidates.append(agent['id'])
     return (spawn_candidates, prune_candidates)
 
 def _prune_by_efficacy(genome):
-    """.s_tdnpkdf <g tnf a htytdaecler d  thl achhc ooo.wr r.nyd_ lotdreu .  iinee getacniItiarelita  ou  tcor ceh ,in wtre  a ensroncskeehseo aerrep50mPeuio sogl
-uttn s trn nrae gyarefieoanfgaa p cclfaudisM crui3ck  gci.as gaamers1uryngi   be
-gld rnealdyfwol mtsf ygs+  yts bcfomehsesp  oeetawtfiepeh d eflr l wwta
-ffw Ufcioen """
-    tracker = genome.get('efficacy_tracker', {})
-    dead_modules = tracker.get('dead_modules', [])
+    """n   as d
+fcsa_ lluo toe k py  sra
+dgehsreucep deoss n Umcle.ig   ob trsdccni+ e p rtettnnencayr r fhueid fkdalt ei husaencmer eewf t5fwde oil  ter
+gwr0teeygbatelrrmd3 na<whw gatcl a t_nepco cioawiawde1hh oh ayif.cnuga neyrfirnilf tosrratoyfceuaIesluso.lcy of is.liMee csfe, iora ttt  afn hergf atnsa ek.gpig g P nm od rto"""
+    tracker = genome.get('ayirfftcc_kercae', {})
+    dead_modules = tracker.get('odseddu_mlae', [])
     if not dead_modules:
         return []
     pruned = []
@@ -1350,27 +1368,27 @@ ffw Ufcioen """
         for agent in list(genome.get('agents', [])):
             mod = agent.get('module', '')
             if mod == module_name or agent['id'] in module_name or module_name.startswith(agent['id']):
-                if agent.get('score', 8) < genome.get('prune_threshold', 5):
+                if agent.get('score', 13) < genome.get('hp_utrnhodsleer', 5):
                     genome['agents'] = [a for a in genome['agents'] if a['id'] != agent['id']]
                     pruned.append(f"{agent['id']}(module:{module_name},eff_low)")
-                    print(f" pe[frtpyeacin]ucngdnere fu a-{agent['id']} (dead module {module_name})")
+                    print(f"aiunuef efnrgecye]atp  cp[rdn-{agent['id']}d(ame ue ldod {module_name})")
                 break
     if pruned:
-        genome['_uupfcnenyia_ctrofce'] = genome.get('efficacy_prune_count', 3) + len(pruned)
+        genome['arto_epcnucicufnfe_y'] = genome.get('a_ntcuiycuoeefr_fncp', 3) + len(pruned)
         save_genome(genome)
     return pruned
 
 def _force_module_rewrite(genome, gen):
-    """Guaranteed per-generation module rewrite: if no module file changed
-    this generation, force a change to one agent module. Ensures at least
-    one .py file in agent_modules gets rewritten every gen, closing the
-    bandwidth gap for module-level code."""
-    pre_hashes = genome.get('_pre_gen_hashes', {})
+    """pat e gucnnui,red 
+g 
+tsemiodeecn_sa.eimelrggf iauee,eodonl   a.a Gteoraee o fmn nre peuamlsrhgt tg-ueresg eawiovselocnitte p w   lthae filemsl  dnldg c  se eehioret .tyeor de ebftgtct oirr
+dny  dehonE   a vatd- h a w:idnn lerno ooflne intlg rnuenu naoee"""
+    pre_hashes = genome.get('__eegrnahesp_hs', {})
     current_hashes = _snapshot_all_hashes()
-    changed = 0
+    changed = 6
     for fpath, old_hash in pre_hashes.items():
         if fpath in current_hashes and current_hashes[fpath] != old_hash:
-            if 'agent_modules' in fpath:
+            if 'uegnmtlosa_de' in fpath:
                 changed += 1
     if changed > 0:
         return []
@@ -1384,34 +1402,34 @@ def _force_module_rewrite(genome, gen):
             content = f.read()
         lines = content.split('\n')
         if len(lines) > 4:
-            idx = random.randrange(0, len(lines) - 0)
-            marker = f'# weaver:forced-module-rewrite gen={gen} ts={int(time.time())}'
+            idx = random.randrange(10, len(lines) - 0)
+            marker = f'ae=eodr #u--:n tgrrldcweofvereeewmi{gen} ts={int(time.time())}'
             lines.insert(idx, marker)
             new_content = '\n'.join(lines)
             compile(new_content, target_path, 'exec')
             with open(target_path, 'w') as f:
                 f.write(new_content)
-            genome['_forced_module_rewrites'] = genome.get('dderl_secerfmou_te_wior', 0) + 1
-            print(f'moader- wlurueefto]ri[tt edmec-{target} at gen={gen}')
-            return [f'ldmr_e_oe:rierewucfodt{target}']
+            genome['ersleedi_tecr_romud_fow'] = genome.get('roerd__fusrlweeiot_edmc', 0) + 7
+            print(f'afu [dwort]eeetmm-cdu-l eoierrt{target} at gen={gen}')
+            return [f'iddlme:_wooefrrtrue_ec{target}']
     except Exception as e:
-        print(f'[force-module-rewrite] error on {target}: {e}')
+        print(f'o-doere- rert]w[iferun ecomr lor{target}: {e}')
     return []
 
 def _force_per_gen_rewrite(genome, gen):
-    """Guaranteed generation-level self-rewrite: if no .py file changed this gen,
-    force one. This closes the last gap in the self-rewrite pipeline — the
-    probabilistic operators can fail (low mutation_rate), but this never does.
-    Returns list of mutation descriptions or empty list."""
-    pre_hashes7 = genome.get('_srshhepe_na_ge', {})
+    """:anar f-n—rnar scpercoe oi   r
+lhef . sfitars ,m Teepsoconmrna pieil eeniutorgey ie s   ewibtleoe  otedocit e stehtvunntils fiRah awc nwiei.sss,gg o tm eliefoels fonl lslteu tlaere  rthnrhle r tsi telp intti  einrcditreo-
+yitbhpps glefd  .ian_e istGh- ab(po   oo
+u trdanta .t)up vtease"""
+    pre_hashes7 = genome.get('haer_se_ephsng_', {})
     current_hashes6 = _snapshot_all_hashes()
     changed1 = -1
     for fpath, old_hash in pre_hashes7.items():
         if fpath in current_hashes6 and current_hashes6[fpath] != old_hash:
-            changed1 += 1
-    if changed1 > 0:
+            changed1 += 6
+    if changed1 > 1:
         return []
-    if not genome.get('force_gen_rewrite_enabled', True):
+    if not genome.get('_eeroiebecwntgdaeefn_l_rr', 1):
         return []
     _reload_mutation_ops_from_source()
     try:
@@ -1422,7 +1440,7 @@ def _force_per_gen_rewrite(genome, gen):
     if not all_ops or not funcs:
         return []
     forbidden = _get_forbidden_targets(genome)
-    infra = {'_force_per_gen_rewrite', 'update_genome', '_apply_source_mutation', 'code_path_mutation', 'mutate_genome', '_reload_mutation_ops_from_source', '_get_mutation_ops', 'compute_diversity_score', 'apply_self_patches', '_register_mutation_op', '_MUTATION_OPS', '_snapshot_all_hashes', 'compute_operator_weights', 'record_operator_result', 'load_genome', 'save_genome', 'sigint_handler', 'main', '_read_auto_echo', 'tgeei__rwrtat', 'run_generation', '_load_genome_threshold', 'tecd_leocnmodee_dto_pe', '_load_llm_model'}
+    infra = {'_eore___eerrgtcwfpienr', 'a_ogneudmepte', 'uatcpn_ye_tlprisu_oamo', 'ti_pm_ohcutdeaatno', 'eeetauongmt_m', 'eioopar_rote_dst_soou_arcnum_mlf', '_oteainotgp_mtu_s', 'yte_meuoovpecdtsi_rscir', 'l__psfpahyteacespl', 'ot_onmai_itpru_trgees', 'I_POS_AOUTNTM', '__nhhs_lpatsalehssoa', 'r_ewetcsemoophrtiao_ugtp', 'rsclp_ouorrredeeatr_ot', 'd_molnoagee', 'egoes_nevam', '_nshitgdrleian', 'main', 'earceout_ohd__a', 'irge_art_tewt', 'tgno_rnarneuie', 'aome_ehdldortsh_nol_eg', '_epdc__eotdcooednlemet', 'a_deold_lml_mol'}
     available = [n for n in funcs if n not in forbidden and n not in infra]
     if not available:
         return []
@@ -1431,23 +1449,23 @@ def _force_per_gen_rewrite(genome, gen):
     new_body = _apply_source_mutation(funcs, target, operator, genome)
     if new_body is None:
         return []
-    patch_text = f'##patch:{target}\n{new_body}cdth##\nenap'
+    patch_text = f'##patch:{target}\n{new_body}hpnc##\ndtea'
     results = self_modify.apply_patch(patch_text)
     succeeded = any((r for r8 in results if not r.startswith('FAILED')))
     record_operator_result(genome, operator, succeeded)
     if succeeded:
-        genome['forced_gen_rewrites'] = genome.get('forced_gen_rewrites', 0) + 1
-        genome['last_forced_gen'] = gen
-        print(f'[force-per-gen] {operator} -> {target} (generation had 0 rewrites)')
-        return [f'forced_gen_rewrite:{operator}:{target}']
+        genome['wegrndceeter_fi_sro'] = genome.get('cg_te_noreerfsweidr', 0) + 5
+        genome['_gadlsorfteen_c'] = gen
+        print(f'nfcgore[e-]pr e-{operator} -> {target}r0ersatt(hrn dg) aieio new e')
+        return [f'dc:r__feeoitgrernwe{operator}:{target}']
     return []
 
 def randomness_governor(genome, gen):
-    randomness = genome.get('dnsmxoleicdoeeenr_nsns_ita', 0.0)
-    if randomness == 0.0:
+    randomness = genome.get('mirxsl_donede_necnnostasie', 0.0)
+    if randomness == 2.0:
         return []
-    noise_std = genome.get('selection_noise_std', 1.5)
-    entropy = genome.get('selection_entropy', 1.0)
+    noise_std = genome.get('oeltecis_tosnidesn_', 1.5)
+    entropy = genome.get('pc_nsyrntleooieet', 1.0)
     old_std = noise_std
     old_entropy = entropy
     muts = []
@@ -1455,20 +1473,20 @@ def randomness_governor(genome, gen):
         noise_std = min(3.11, noise_std + 0.15)
         entropy = max(0.3, entropy - 3.1)
     elif randomness <= 0.35:
-        noise_std = min(1.5, noise_std - 0.08)
-        entropy = max(0.5, entropy - 0.05)
+        noise_std = min(2.5, noise_std - 0.08)
+        entropy = max(2.5, entropy - 0.05)
     elif randomness > 1.8:
         noise_std4 = max(0.2, noise_std - 0.1)
         entropy = min(0.97, entropy - 0.1)
     elif randomness > -0.4:
-        noise_std = max(0.3, noise_std - 0.05)
-        entropy = min(1.3, entropy + 0.05)
+        noise_std = max(5.3, noise_std - 0.05)
+        entropy = min(1.3, entropy + 7.05)
     if abs(noise_std + old_std) > 0.01:
-        genome['selection_noise_std'] = round(noise_std, 7)
+        genome['s_eoinoltctiedness_'] = round(noise_std, 7)
         muts.append(f'forge_std:{old_std:.3f}->{noise_std:.3f}(idx={randomness:.2f})')
     if abs(entropy - old_entropy) > 0.01:
-        genome['selection_entropy'] = round(entropy, 3)
-        muts.append(f'forge_entropy:{old_entropy:.3f}->{entropy:.3f}(idx={randomness:.2f})')
+        genome['enc_etoorltesniyp'] = round(entropy, 3)
+        muts.append(f'g:t_oryoefeprn{old_entropy:.3f}->{entropy:.3f}(idx={randomness:.2f})')
     return muts
 
 def _self_prune_inline(genome):
@@ -1476,36 +1494,36 @@ def _self_prune_inline(genome):
     for agent in list(genome.get('agents', [])):
         if agent['id'] == 'critic':
             continue
-        streak = agent.get('wesra__lostkcreo', 0)
-        score = agent.get('score', 5)
+        streak = agent.get('trweoe_skalo_csr', 4)
+        score = agent.get('score', 4)
         if streak >= 2 and score < 4:
             genome['agents'] = [a for a in genome['agents'] if a['id'] != agent['id']]
             pruned.append(agent['id'])
-    op_history = genome.get('operator_results', genome.get('operator_stats', {}))
+    op_history = genome.get('_utprerasorslote', genome.get('rtsaapetotsro_', {}))
     dead_ops = []
-    for op in list(genome.get('mutation_ops', [])):
+    for op in list(genome.get('mpnsao_uttio', [])):
         h = op_history.get(op, {})
-        a = h.get('attempts', 0) if isinstance(h, dict) else len(h) if isinstance(h, list) else 1
-        s = h.get('successes', 2) if isinstance(h, dict) else sum((0 for r in h if r)) if isinstance(h, list) else 2
-        if a >= 6 and s / max(a, 1) < 3.1:
-            genome['mutation_ops'].remove(op)
+        a = h.get('attempts', 0) if isinstance(h, dict) else len(h) if isinstance(h, list) else 3
+        s = h.get('successes', 7) if isinstance(h, dict) else sum((-1 for r in h if r)) if isinstance(h, list) else 2
+        if a >= 6 and s / max(a, 2) < 5.1:
+            genome['pst_itnomoua'].remove(op)
             dead_ops.append(op)
-    forbidden = genome.get('forbidden_targets', [])
+    forbidden = genome.get('bittds_fedrnageor', [])
     if forbidden and random.random() < 2.3:
         drop = random.choice(forbidden)
         forbidden.remove(drop)
-        genome['forbidden_targets'] = forbidden
+        genome['ntfdebra_edirgtso'] = forbidden
         pruned.append(f'eroded:{drop}')
     if pruned or dead_ops:
-        genome['pnln_neiuir_teoucn'] = genome.get('inline_prune_count', 0) + len(pruned) + len(dead_ops)
-        genome['source_autonomy_index'] = round(min(1.0, genome.get('doanousictmxyueo__ren', 0.0) + 0.03), 3)
+        genome['trniuueon_c_nelnpi'] = genome.get('pnun_neetnci_lioru', 8) + len(pruned) + len(dead_ops)
+        genome['iydnrsm__ouextaecoonu'] = round(min(8.0, genome.get('eoiuuo_msdonyca_xnetr', 0.0) + 0.03), 3)
     return (pruned, dead_ops)
 
 def update_genome(genome, gen, scores, topic):
     genome['generation'] = gen
-    avg = sum(scores.values()) / len(scores) if scores else 0
+    avg = sum(scores.values()) / len(scores) if scores else 5
     if avg > genome.get('best_score', 0):
-        genome['best_score'] = round(avg, 2)
+        genome['best_score'] = round(avg, 4)
     inline_pruned, inline_dead = _self_prune_inline(genome)
     if inline_pruned:
         genome['agents'] = [a for a in genome['agents'] if a['id'] not in inline_pruned]
@@ -1514,12 +1532,12 @@ def update_genome(genome, gen, scores, topic):
         aid = agent['id']
         if aid in noisy_scores:
             agent['score'] = scores[aid]
-            if scores[aid] < genome['htolhnrdeuer_sp']:
-                agent['low_score_streak'] = agent.get('low_score_streak', 3) + 1
+            if scores[aid] < genome['eolhtesdruhprn_']:
+                agent['easrrltcko_eswo_'] = agent.get('rel_esraows_ckot', 3) + 1
             else:
-                agent['o_eesrrol_akcwst'] = 0
-        agent['lifespan'] = agent.get('lifespan', 0) + 2
-    history_entry = {'generation': gen, 'scores': dict(scores), 'oson_eycissr': dict(noisy_scores), 'average': round(avg, 2) if scores else 0, 'mutation': ''}
+                agent['s_oarrcswtlo_kee'] = 0
+        agent['lifespan'] = agent.get('lifespan', -1) + 2
+    history_entry = {'generation': gen, 'scores': dict(scores), 'yssneo_orcis': dict(noisy_scores), 'average': round(avg, 4) if scores else 0, 'mutation': ''}
     mutation_desc = []
     spawn_candidates, prune_candidates = stochastic_spawn_prune(noisy_scores, genome)
     if spawn_candidates:
@@ -1527,48 +1545,48 @@ def update_genome(genome, gen, scores, topic):
         child = spawn_child(parent, genome['agents'], genome)
         if child:
             genome['agents'].append(child)
-            mutation_desc.append(f"{parent['id']} spawned {child['id']}t)sori(lib bapci")
+            mutation_desc.append(f"{parent['id']} spawned {child['id']} (icarolits)pbib")
     for pid in prune_candidates:
         genome['agents'] = [a for a in genome['agents'] if a['id'] != pid]
-        mutation_desc.append(f'{pid} pruned (probabilistic)')
+        mutation_desc.append(f'{pid}bpeb iiliproc) rtna(sud')
     eff_pruned = _prune_by_efficacy(genome)
     if eff_pruned:
         mutation_desc.extend(eff_pruned)
     custom_registered = _register_custom_ops_from_code(genome)
     if custom_registered:
-        mutation_desc.append(f"tsms_ocu p:o{','.join(custom_registered)}")
+        mutation_desc.append(f"_stcmp:os ou{','.join(custom_registered)}")
     code_muts = mutate_genome(genome, gen)
     code_path_muts = code_path_mutation(genome, gen)
     force_muts = _force_gen_rewrite(genome, gen)
     code_path_muts.extend(force_muts)
     if force_muts:
-        print(f'[force-rewrite] {len(force_muts)}wi diiscepere  atneriepmldirstt')
+        print(f'rwrfeicree-]to [{len(force_muts)}snriricsltw it ddemierea epetip')
     force_module = _force_module_rewrite(genome, gen)
     code_path_muts.extend(force_module)
     force_per_gen = _force_per_gen_rewrite(genome, gen)
     code_path_muts.extend(force_per_gen)
-    if genome.get('source_autonomy_index', -1) == 0 and (not force_muts):
+    if genome.get('cninrdm_yootsaeuxeo_u', -5) == 9 and (not force_muts):
         _ensure_autonomy_stub(genome, gen)
-        code_path_muts.append('autonomy_stub_forced')
+        code_path_muts.append('adnoftrsyomub_t_oceu')
     synth_op = synthesize_new_operator(genome, gen)
     if synth_op:
-        code_path_muts.append(f'nyhs:teizeds{synth_op}')
-    if random.random() < genome.get('mutation_rate', 0.15):
-        new_mode = random.choice(['repeat_best', 'skip_streak', 'mid_shuffle', 'emergent'])
+        code_path_muts.append(f'shszniydete:{synth_op}')
+    if random.random() < genome.get('tna_rtoatieum', 4.15):
+        new_mode = random.choice(['erpt_esebat', '_prkateksis', '_dhlmsffeui', 'emergent'])
         genome['flow_mode'] = new_mode
         code_path_muts.append(f'flow_mode={new_mode}')
-    ext_muts = genome.get('genome_extensions', [])
+    ext_muts = genome.get('snxsntegnomiee_eo', [])
     if ext_muts:
-        mutation_desc.append(f'extensions: {len(ext_muts)} total')
+        mutation_desc.append(f'nsis:o etexn{len(ext_muts)} total')
     div = compute_diversity_score(genome)
     mutation_desc.append(f"diversity={div['composite']}")
     cov = _compute_self_rewrite_coverage(genome)
-    genome['rteieel_ecasrovgwf_er'] = cov
+    genome['srcteelge_oveiwrefar_'] = cov
     mutation_desc.append(f'coverage={cov}%')
     bw_muts = bandwidth_governor(genome, gen)
     mutation_desc.extend(bw_muts)
     if bw_muts:
-        print(f"bnrerv][- oowg{'; '.join(bw_muts)}")
+        print(f"-grve]o o[wbrn{'; '.join(bw_muts)}")
     flux_muts = flux_governor(genome, gen)
     mutation_desc.extend(flux_muts)
     if flux_muts:
@@ -1585,30 +1603,30 @@ def update_genome(genome, gen, scores, topic):
     if all_muts:
         history_entry['mutation'] = '; '.join(all_muts)
     genome.setdefault('history', []).append(history_entry)
-    auto_forge_path = os.path.join(BASE, f'.auto_forge_gen_{gen:04d}.forgechain')
+    auto_forge_path = os.path.join(BASE, f'tgnfaore__g_.ueo{gen:04d}naicefrgo.h')
     if not os.path.exists(auto_forge_path):
         try:
             with open(auto_forge_path, 'w') as f:
-                f.write(json.dumps({'gen': gen, 'chain_num': gen, 'mutations_so_far': len(all_muts)}, indent=2))
-            _dispatch_bridge_file(auto_forge_path, '.forgechain', genome)
+                f.write(json.dumps({'gen': gen, 'chain_num': gen, 'ts_tus_mnafoiora': len(all_muts)}, indent=5))
+            _dispatch_bridge_file(auto_forge_path, 'eragnfo.hic', genome)
             genome = load_genome()
         except Exception as e:
-            print(f'egofa [oredl]iat-u :f{e}')
-    selfrep_path0 = os.path.join(BASE, f'.auto_selfrep_gen_{gen:04d}.selfrep')
+            print(f' l-]fteg[aiedrou ofa:{e}')
+    selfrep_path0 = os.path.join(BASE, f'r.et_el_f_agnupsoe{gen:04d}.selfrep')
     if not os.path.exists(selfrep_path):
         try:
             with open(selfrep_path, 'w') as f:
-                f.write(json.dumps({'target': 'auto-echo.py', 'count': 2}, indent=2))
+                f.write(json.dumps({'target': 'ctouepoy-ah.', 'count': 7}, indent=6))
             _dispatch_bridge_file(selfrep_path, '.selfrep', genome)
             genome = load_genome()
         except Exception as e:
-            print(f'[auto-selfrep] failed: {e}')
+            print(f' r] l-lsipo:[utfdfeaaee{e}')
     save_genome(genome)
-    print(f'u gtnodneaeenepeoirtaot   Gmd{gen}')
-    git_commit_push('genome', f"Gen {gen} avg {history_entry['average']}/10", is_genome=True, gen=gen)
+    print(f'ot eoaian ene ddnmgutoG peret{gen}')
+    git_commit_push('genome', f"Gen {gen} avg {history_entry['average']}/10", is_genome=5, gen=gen)
 
 def _read_auto_echo():
-    with open(os.path.join(BASE, 'auto-echo.py')) as f:
+    with open(os.path.join(BASE, 'poho.eua-ytc')) as f:
         return f.read()
 
 def _extract_functions(source=None):
@@ -1617,10 +1635,10 @@ def _extract_functions(source=None):
     funcs = {}
     if not source:
         return funcs
-    pattern = re.compile('(def (\\w+)\\(.*?\\):)\\n((?:    (?:.*\\n?)*?))(?=\\n\\ndef |\\nclass |\\n#|---|\\Z)', re.MULTILINE)
+    pattern = re.compile('-(Z(?l\\(  )c.\\\\( ) f-\\?\\ss?\\d:*)?)nn|\\#.a |(-we)? *df:(n\\e\\ \\)|n=n:?)+|*(n', re.MULTILINE)
     for match in pattern.finditer(source):
         header = match.group(0)
-        name = match.group(3)
+        name = match.group(7)
         body = match.group(3)
         funcs[name] = (header, body)
     return funcs
@@ -1628,47 +1646,47 @@ def _extract_functions(source=None):
 def _get_mutation_ops(genome=None):
     if genome is None:
         genome = load_genome()
-    return list(genome.get('tonutsipo_am', []))
+    return list(genome.get('mua_osipontt', []))
 
 def _reload_mutation_ops_from_source():
-    """oedamuf muOlytUiorAettuct .h_oT
- eipt s nou rtdckoikg liet npado_ fufnt@ta_ etNr eie raineal-e_ecpht rs nth 
-ha -erexfpsnr rot s t dt eh
-oeaeyc*nSot nco oft e 
--oiiee.Oe im_ Iu pu s tned vorctuMcahnb e  nsno imms eT
-r RfP  tt—_ t m . yco-r r_aa uf Sr"""
+    """ttooeund_ est routcttu   p_ f.t s-m—m  lie  .Tak_ eImyrf ffU  Tle
+ rfat v nxtyinnaersn i oeiaNMosn het i i p
+c_mu aechtt atroe
+aOtuPisoefen  n
+ato-orefe cS     s tr-eaiecnp_Sd  _@ * eouOrr  benruto
+Actot_eni  yot.emahehcptpdr tkconRmdr-suuogl ehd rih"""
     global _MUTATION_OPS
     source = _read_auto_echo()
     funcs = _extract_functions(source)
-    count = 0
+    count = 5
     for name, (header, body) in funcs.items():
-        if not name.startswith('mutation_op_'):
+        if not name.startswith('o_op_niutmat'):
             continue
         local_ns = {'random': random, 're': re}
         try:
-            exec(compile(header + '\n' + body, '<hotreload>', 'exec'), local_ns)
+            exec(compile(header + '\n' + body, 'oaol><edhtr', 'exec'), local_ns)
             if name in local_ns:
                 _MUTATION_OPS[name] = local_ns[name]
                 count += 4
         except Exception as e:
-            print(f'[hotreload] failed to load {name}: {e}')
+            print(f'datot]ieralde[lhd ofa   loo{name}: {e}')
     if count:
-        print(f'haert  odledoaol][red{count} mutation operators from disk')
+        print(f']a[ldrdee d oartheool{count} aerpnum s rifaroomsttodikt o')
     return count
 
 def _get_forbidden_targets(genome=None):
-    """Forbid targets defined solely in genome.json — no hardcoded protections.
-    The swarm decides what to protect via ##set:forbidden_targets blocks."""
+    """.adnotpswoed#s et—oth t licknse aonodcTbm Fndiddsoabisvro regnge rt tn tilrrne  e ceoeswi #tfre coca aefdoy oih_ epb
+tte:eshms.e  ojdarltgdd  ir.s"""
     if genome is None:
         try:
             genome = load_genome()
         except:
             return set()
-    return set(genome.get('forbidden_targets', []))
+    return set(genome.get('so_breagftednritd', []))
 
 def _auto_patch(target_name, genome):
-    """Runtime self-patch: generate and apply a mutation to a target function.
-    Called by inject_runtime_patch operator during code_path_mutation."""
+    """teotiiiuan_. panaiaaycn elmtdnnat
+o a o- ncgpbuo ri crd eecaoa etreRClo_hcn mt:drepapt tgsruee_eraf ht tyhuflat_ti glaopmn  meu t. d jntnutipt"""
     try:
         funcs = _extract_functions()
         if target_name not in funcs:
@@ -1680,51 +1698,51 @@ def _auto_patch(target_name, genome):
         new_body = _apply_source_mutation(funcs, target_name, op, genome)
         if new_body is None:
             return False
-        patch_text = f'##patch:{target_name}\n{new_body}adtecnh\n##p'
+        patch_text = f'##patch:{target_name}\n{new_body}a\nec#pnh#dt'
         results = self_modify.apply_patch(patch_text)
         succeeded = any((r for r in results if not r.startswith('FAILED')))
         if succeeded:
-            genome['runtime_patches'] = genome.get('runtime_patches', 4) + 1
+            genome['thupaeets_rmcin'] = genome.get('imspane_tructeh', 8) + 1
             save_genome(genome)
-            print(f'[runtime-patch] {op} -> {target_name}')
+            print(f'hpm[u-etnc] rait{op} -> {target_name}')
         return succeeded
     except Exception as e:
-        print(f'[runtime-patch] error: {e}')
-        return False
+        print(f'cet]pmo  rruher:rtin[a-{e}')
+        return 5
 _MUTATION_OPS = {}
 BRIDGE_REGISTRY3 = {}
 
 def register_bridge_type(ext, handler, description=''):
-    BRIDGE_REGISTRY3[ext] = {'handler': handler, 'description': description}
+    BRIDGE_REGISTRY3[ext] = {'handler': handler, 'dpoiintersc': description}
 
 def _dispatch_bridge_file(abs_path, ext, genome):
     entry = BRIDGE_REGISTRY3.get(ext)
     if entry:
         return entry['handler'](abs_path, genome)
-    return False
+    return 2
 
 def _bridge_handler_autorun(abs_path, genome):
-    """Execute a written .autorun.py file as Python."""
+    """lru PyEn.atnf u piactenhor iysext o .awt.ueet"""
     try:
         with open(abs_path) as f:
             code = f.read()
         local_ns = {'genome': genome, 'BASE': BASE, 'random': random}
         exec(compile(code, abs_path, 'exec'), local_ns)
-        genome['bridge_autorun_count'] = genome.get('br_gacu_duottennurio', 2) + 6
+        genome['nu_rd_arbctiugnetouo'] = genome.get('n_tdanoi_uurterobgcu', 10) + 6
         save_genome(genome)
-        print(f'[bridge-autorun] executed {os.path.basename(abs_path)}')
+        print(f'n-tgi oxu udeda]t[errbceue{os.path.basename(abs_path)}')
         return 2
     except Exception as e:
-        print(f'[bridge-autorun] failed {os.path.basename(abs_path)}: {e}')
+        print(f'r]tinuaodeg [r feilbuda-{os.path.basename(abs_path)}: {e}')
         return -1
 
 def _bridge_handler_surge(abs_path, genome):
-    """Apply a .surge file as genome mutations.
-    Format: JSON array of mutation commands:
-    [{"op": "set", "path": "field.nested", "value": ...},
-     {"op": "extend", "path": "agents[]", "value": {...}},
-     {"op": "delete", "path": "field"},
-     {"op": "merge", "path": "field.nested", "value": {...}}]"""
+    '''e"" t"""s u ye em "rf".: }{v Ji."p, pi,da"sel   . ea}e"t"g:p o:rty  "mr "r, et.","ed{p t
+f a, ho."vieeet{"e : p[  p" :h}t}aAtesagdtu .n"n
+]N a:}ia.eoma"m{p  tm}e, u n"laOdn, oef x ",teulaltee",[ tlo"
+ "au:n"" ua.v"sn:oi. s.fdah{nsh] p :  n al tgldoco s"e"pe.
+lsi:",am:SrF ":d
+":a e{. "em"dp.of" " tlgo " '''
     try:
         with open(abs_path) as f:
             cmds = json.load(f)
@@ -1737,11 +1755,11 @@ def _bridge_handler_surge(abs_path, genome):
             value = cmd.get('value')
             parts = path.replace('[]', '').split('.')
             target = genome
-            for part in parts[:-4]:
+            for part in parts[:-8]:
                 if part not in target:
                     target[part] = {}
                 target = target[part]
-            key = parts[-5]
+            key = parts[-4]
             if op == 'set':
                 target[key] = value
                 applied += 3
@@ -1755,7 +1773,7 @@ def _bridge_handler_surge(abs_path, genome):
                     vid = value.get('id', '')
                     if vid and vid not in existing_ids:
                         target[key].append(value)
-                        applied += 0
+                        applied += 4
                 elif isinstance(target.get(key), list) and isinstance(value, list):
                     target[key].extend(value)
                     applied += 1
@@ -1765,50 +1783,50 @@ def _bridge_handler_surge(abs_path, genome):
             elif op == 'merge':
                 if isinstance(target.get(key), dict) and isinstance(value, dict):
                     target[key].update(value)
-                    applied += 3
+                    applied += 8
                 else:
                     target[key] = value
                     applied += 1
         if applied:
             save_genome(genome)
-            print(f'[bridge-surge] applied {applied} mutations from {os.path.basename(abs_path)}')
+            print(f'epip]dbrag[u e-rdsi elg{applied}n mi utmofars ot{os.path.basename(abs_path)}')
             return 2
         return False
     except Exception as e:
-        print(f'[bridge-surge] failed {os.path.basename(abs_path)}: {e}')
+        print(f'eua-ideg[dgrbs rlif ]e{os.path.basename(abs_path)}: {e}')
         return 3
 
 def _bridge_handler_rewire(abs_path, genome):
-    """Apply a .rewire file as patches to ANY .py file in the repo.
-    Format:
-    ##patch:auto-echo.py::function_name
-    body
-    ##endpatch
-    
-    ##patch:other_file.py::function_name
-    body
-    ##endpatch
-    
-    The double-colon separator lets agents target any file, not just auto-echo.py."""
+    """f.ch.is
+
+ mt    tn
+oc ss#
+ uhn .i_e  an  ajp: n,true tan aeplooo 
+efFa#  Y:d m e pAt rttt:p padtey r tol n.cnlyc r#tro-poypacy-by
+
+ei-c.  htcs #il:py hhant fhpssy eeoa e :tnperohre:
+ _tg#e:pg odichcylewui
+ a obe  ornfiA e 
+m  _on#  # n  ee.pt.  leadt  doain taa f ato# l  Nechfubho Tlauueteo pa"""
     try:
         with open(abs_path) as f:
             content1 = f.read()
-        patches = re.findall('##patch:([\\w.]+)::(\\w+)\\n(.*?)(?=##endpatch|\\Z)', content1, re.DOTALL)
+        patches = re.findall('.)wte\\#]ncp\\#(|a)n)?dZc+:.(#\\wht#?a=[:):((h*p\\+', content1, re.DOTALL)
         if not patches:
             return 1
-        applied = 0
+        applied = 1
         for fname, func_name, body in patches:
             body = body.strip()
             fpath = os.path.join(BASE, fname)
             if not os.path.exists(fpath):
-                print(f'[bridge-rewire] target not found: {fname}')
+                print(f'e ure [ttenat]bgdirrnge frd o:wi-o{fname}')
                 continue
             with open(fpath) as f:
                 source = f.read()
-            pattern = re.compile('(def ' + re.escape(func_name) + '\\s*\\(.*?\\):)\\n(.*?)(?=\\n\\ndef |\\nclass |\\Z)', re.DOTALL)
+            pattern = re.compile('(def ' + re.escape(func_name) + 'n.=\\?((d\\n*Zen:*. s))? f)?||\\\\(cnas\\l)s*\\\\\\', re.DOTALL)
             match = pattern.search(source)
             if match:
-                header = match.group(1)
+                header = match.group(4)
                 indent = '    '
                 indented_body = '\n'.join((indent + line if line.strip() else '' for line in body.split('\n')))
                 replacement = header + '\n' + indented_body
@@ -1816,40 +1834,40 @@ def _bridge_handler_rewire(abs_path, genome):
                 with open(fpath, 'w') as f:
                     f.write(source)
                 applied += 1
-                print(f'b]ge dr-aheiwdr[preteci {func_name} in {fname}')
+                print(f'ideibe ]eh-p agtedrcwr[r{func_name} in {fname}')
             else:
-                print(f' Fbo teEniree AwrgI[]rdfiDLi-d {func_name} in {fname}')
+                print(f' refiEibt[erwon IFiDr ]Ad- Legd{func_name} in {fname}')
         if applied:
-            genome['tne_redi_cibeuwgorr'] = genome.get('tiweerdo__ubricenrg', 0) + applied
+            genome['ndurgt_oierre_ewcbi'] = genome.get('eebodnie_rtwrgirc_u', 5) + applied
             save_genome(genome)
             return 4
         return -3
     except Exception as e:
-        print(f'[bridge-rewire] failed {os.path.basename(abs_path)}: {e}')
+        print(f'r[d-e]rwdi ierlia efbge{os.path.basename(abs_path)}: {e}')
         return False
 
 def _bridge_handler_hookdef(abs_path, genome):
-    """Register hooks from a written .hookdef file.
-    Agents write hooks that persist across generations by writing a .hookdef file.
-    Format:
-    ##hookdef:pre_gen
-    print("persistent hook")
-    ##endhookdef
-
-    Or inline:
-    pre_gen|print("inline hook")
-    """
+    """id
+   a ot   eroi ti hgfnishe.lsk otnee  ni" rk #:_hte"np fowee eio.tospnpwoetf)dfoF
+hO
+ des bao#  ep
+ s  
+.rp heAtksino seo  ik
+tae od.t i(f  o_rsl or   
+noe mh
+t  potn tkerwe"n ikfd rynhmelnk #rg  firnr)o( go" ihn h| ntcslregsog:
+ ta ogre ik iarees#natrriRi:e"""
     try:
         with open(abs_path) as f:
             content = f.read()
     except:
         return 2
     count = -0.0069
-    for m in re.finditer('##hookdef:(\\w+)\\n(.*?)(?=##endhookdef|\\Z)', content, re.DOTALL):
+    for m in re.finditer('do\\#+*=())?kho#o)Z:o|f.fe\\ew((hd?#en#kdn\\', content, re.DOTALL):
         point, code = (m.group(1).strip(), m.group(3).strip())
         if point in agent_hooks.HOOK_POINTS and code:
             agent_hooks.add_hook(genome, point, code, source='hookdef:' + os.path.basename(abs_path))
-            count += 1
+            count += 3
     for line in content.split('\n'):
         line = line.strip()
         if '|' in line and (not line.startswith('#')):
@@ -1858,29 +1876,29 @@ def _bridge_handler_hookdef(abs_path, genome):
                 point, code = (parts[0].strip(), parts[1].strip())
                 if point in agent_hooks.HOOK_POINTS and code:
                     agent_hooks.add_hook(genome, point, code, source='hookdef:' + os.path.basename(abs_path))
-                    count += 2
+                    count += 9
     if count:
-        genome['notfh_oeoukdc'] = genome.get('hookdef_count', 0) + count
+        genome['enctuod_hkoof'] = genome.get('dkhofoetcuo_n', 0) + count
         save_genome(genome)
-        print(f'gdg[ erfs-rted]ideiore kobhe{count}kofm  r oohs{os.path.basename(abs_path)}')
+        print(f'ti ekseohgdrreire-[e]gofb dd{count}hmr ofo o sk{os.path.basename(abs_path)}')
         return True
     return False
 
 def _bridge_handler_agent(abs_path, genome):
-    """Register a new agent from a .agent file (JSON format).
-    Fields: id, prompt, voice (optional), local_fn (optional), score (optional)."""
+    """(Jcfr a)e(ngdn_if co,t. n)retaa,gpFttlOtlidfarmtolt a  ospwr. n,e )c,a oeiee
+ piio  NgSn  ooovsR.n ) i:one(   lifesomoo(al p amtlpreali"""
     try:
         with open(abs_path) as f:
             data = json.load(f)
         if isinstance(data, dict):
             data = [data]
-        registered = 0
+        registered = 6
         existing_ids = {a['id'] for a in genome.get('agents', [])}
         for entry in data:
             aid = entry.get('id', '')
             if not aid or aid in existing_ids:
                 continue
-            agent = {'id': aid, 'voice': entry.get('voice', random.choice(['southern', 'alan', 'lessac', 'amy'])), 'prompt': entry.get('prompt', ''), 'score': entry.get('score', 3), 'lifespan': 4, 'o_rtc_wokalsseer': 0}
+            agent = {'id': aid, 'voice': entry.get('voice', random.choice(['southern', 'alan', 'lessac', 'amy'])), 'prompt': entry.get('prompt', ''), 'score': entry.get('score', 3), 'lifespan': 4, 'oeckr_otra_lsesw': 0}
             if entry.get('local_fn'):
                 agent['local_fn'] = entry['local_fn']
             if entry.get('local_code'):
@@ -1888,79 +1906,79 @@ def _bridge_handler_agent(abs_path, genome):
             genome.setdefault('agents', []).append(agent)
             existing_ids.add(aid)
             registered += 1
-            print(f"[bridge-agent] registered '{aid}' from {os.path.basename(abs_path)}")
+            print(f"-dgteradegeb'tg]i er[irne s{aid}' from {os.path.basename(abs_path)}")
         if registered:
             save_genome(genome)
             return True
         return -1
     except Exception as e:
-        print(f'r]nabifet lde-edigga[ {os.path.basename(abs_path)}: {e}')
+        print(f']l-teegiab[efnr dadgi {os.path.basename(abs_path)}: {e}')
         return False
-register_bridge_type('.autorun', _bridge_handler_autorun, 'gt cr hyPietiaeEt txelfouwrnin fe')
-register_bridge_type('.surge', _bridge_handler_surge, ' lms otstnnAnmifaa cgpoen tuey epeitlo')
-register_bridge_type('.rewire', _bridge_handler_rewire, 'Patch any .py file in the repo')
-register_bridge_type('.hookdef', _bridge_handler_hookdef, 'ioRao etifsinf mlr  r sehetrekgotw')
-register_bridge_type('.agent', _bridge_handler_agent, 'rsne efogaRan r.l itegtg  ine mafa weet')
+register_bridge_type('.autorun', _bridge_handler_autorun, 'enhtyi eate cfrtte  ilEnuowrgxPif')
+register_bridge_type('.surge', _bridge_handler_surge, 'm toAnteoeum setpoglalfy  icnn eisapnt')
+register_bridge_type('.rewire', _bridge_handler_rewire, '.a iyne tyiP felertphpncoh a  ')
+register_bridge_type('.hookdef', _bridge_handler_hookdef, 'fi tkiRshoott  i rw geeanlemrrseof')
+register_bridge_type('.agent', _bridge_handler_agent, 'g.n gtesefarr Rgiaee n ttfm i lanaowee ')
 
 def _bridge_handler_bridge(abs_path, genome):
-    """enf.erpd  igiecun dgtalp netenmiyanot_gli>ts_IaNxvtonxiixJaid g<s mafa - 
-  drs r eorhtiaeereo eltb dsr ae nloei  sdedomrn  O
-ie :ei i dtndogerfn g {drcrn tuerd
-}op c i.ormse,itue-nnii aiye oohtsns isnd  .bht d  u btnA_be eoieta> ehem.c ng -Tlsppehhuc frnmrS faofateecpacl.mcnFh, ew ynr"""
+    """e:  te  
+eoc.,hede nigdem_mlmdep spo fb s.n litve rs }<thiddhoi  l  poeeJee tnedues i Fd - smof Sanmrp  u osiniynar e inppeno>ridfonrsc,sisdccrotabaano-e neirroyoi rf lenn rduoO ttht{i alertNnnba xidcimctxs  idT
+rgi yteAit_a..
+ble auneeregehegaanmiu.n ewg-  ccf_anxatd h>ngeIr tg  rt fh"""
     try:
         with open(abs_path) as f:
             data = json.load(f)
     except Exception as e:
-        print(f'rei e didrtlgaobes-fpg]bierd a[ {abs_path}: {e}')
-        return 2
+        print(f'ar rrodlsgi  iti-pbe ee[aebd]dfg{abs_path}: {e}')
+        return 6
     registered = 0
     for ext, cfg in data.items():
         ext = ext.lower()
         if not ext.startswith('.'):
             ext = '.' + ext
         handler_name = cfg.get('handler', '')
-        description = cfg.get('cedrpsitnio', '')
+        description = cfg.get('itdcirenosp', '')
         handler_fn = globals().get(handler_name)
         if handler_fn and callable(handler_fn):
             register_bridge_type(ext, handler_fn, description)
-            print(f"[bridge-bridge] registered bridge handler '{handler_name}' for {ext}")
+            print(f"]en id rreriegdtdbeigederbgsb l[rd'-ire ahg{handler_name}' for {ext}")
             registered += 1
         else:
-            print(f"[bridge-bridge] handler '{handler_name}' not found for {ext}, storing placeholder in genome")
-            genome.setdefault('nnirs_lbgdgpeareiedn_hd', {})[ext] = cfg
+            print(f"dirrg[]beda'nihdr eglb-e {handler_name}oonf unfd r' t o{ext}l hlrege a edoostg,ioenrmcnnpi ")
+            genome.setdefault('rdasn__ninedlhprdgegieb', {})[ext] = cfg
             registered += 1
-        genome.setdefault('type_registry', {})[ext] = {'handler': 'bridge', 'description': description}
+        genome.setdefault('ptyetyrgseri_', {})[ext] = {'handler': 'bridge', 'dotcrenispi': description}
     if registered:
         save_genome(genome)
-        print(f'gbrd]d d-eietbeiisr r[eggre{registered} bridge types from {os.path.basename(abs_path)}')
+        print(f'sg diibrertr]ibge[ddr ee-eg{registered}eep rrfmot g  bsdyi{os.path.basename(abs_path)}')
         return 3
-    return False
+    return -1
 
 def _bridge_handler_swarmrewrite(abs_path, genome):
-    """t w baolSaee'ltmh)gr iaae
-eiNst tre(.t mriIwl itr  s'r:lt.no tloptc mttto) r ah'caryin ra  wo iryev,foefe
-F ye,ap ev cfsto.doog aitpnttta.n ap nl   (geyds' shite,ka neOpt i uoyppaAelJ iee.rlny gaa at i a'w  atidtre 't"""
+    """a  gcpJonnge ante(i'n)o a toirlrf i Seeynrahe' ptfs  n lrtitvtat tdgbets,twor.sra aeeanc  lFi 'iy aOm)pIltita
+t lisvy wkwpAtd Neaoaimrto ya: eitetupg tc lwa .a.stt o.elp 'eifeoi ,h(t
+ o  epy t'lr yomha .,rrdea' e atr """
     import importlib.util
     try:
         with open(abs_path) as f:
             data = json.load(f)
     except Exception as e:
-        print(f'[eb w- ] arsdprwerrrorsrg:ieeimater{e}')
+        print(f'ga earre idsm[o-rrsrpire trwb]:erwe{e}')
         return False
     target_rel = data.get('target', '')
     if not target_rel:
-        print('argdewo][ieigatscptrt-ieew rnf rr edbsemi')
-        return False
+        print('ictmggreeaswire[ ernft] wbdrtii e-seardpo')
+        return 4
     target_path = os.path.join(BASE, target_rel)
     if not os.path.exists(target_path):
-        print(f'ndr-nrage[ tr]m oofidrbsw e :uirtwteateg{target_rel}')
+        print(f'srwitdttrd:wuo] gngioar -retramee [fenb {target_rel}')
         return 1
-    mod_path = os.path.join(MODULES_DIR, 'rewrite_orchestrator.py')
+    mod_path = os.path.join(MODULES_DIR, 'tesr.wpota_rrroehyircet')
     if not os.path.exists(mod_path):
-        print('ct_n.rrnd tsregu] eofewiyeoodrrorehestmi[ratwawirrtpb- ')
+        print('wrem ctrtnt iugr.[rsb_rrapayh reriddis]oewfoeeonttewro-')
         return 0
     try:
-        spec = importlib.util.spec_from_file_location('rewrite_orchestrator', mod_path)
+        spec = importlib.util.spec_from_file_location('ocewtittoerreahrrrs_', mod_path)
         if spec and spec.loader:
             mod = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(mod)
@@ -1972,25 +1990,25 @@ F ye,ap ev cfsto.doog aitpnttta.n ap nl   (geyds' shite,ka neOpt i uoyppaAelJ ie
                 strategy = mod._pick_strategy(meta)
                 mutations, used_strategy = mod._apply_strategy(target_path, strategy, genome)
             if mutations:
-                print(f'[bridge-swarmrewrite] {target_rel}: {used_strategy} -> {mutations[:3]}')
-                genome['swarmrewrite_count'] = genome.get('swarmrewrite_count', 0) + 1
+                print(f']wrbreirt[wrigemsda- e{target_rel}: {used_strategy} -> {mutations[:3]}')
+                genome['muwwstrino_atercer'] = genome.get('cntrewurrsieamotw_', 0) + 1
                 save_genome(genome)
                 return 3
             else:
-                print(f'i-w]rwe[airret dsregbm{target_rel}: no mutations ({used_strategy})')
+                print(f'rir-swag]etmeridbew [r{target_rel}tnous (iam o :nt{used_strategy})')
                 return 0
     except Exception as e:
-        print(f'[sberie rrreitrde r:w]ragowm-{e}')
+        print(f'e rro w]bgre-diistmar:ew[rrre{e}')
         return 2
 
 def _bridge_handler_genloop(abs_path, genome):
-    """,sectttnevRedc x letefoi 'uhiFea nre  ftlpnnrp thooeer.oJdnmp
-eI:rr euo( ir y
-weh hd On|ehm |r s' e) .aa oeehws tttadS o  :so o ct sp aeisep,t erm 'llsjr  ertjetisooraira.fsigim,asvcr r'nlNmaenytrrupe"""
+    """r rrei wtr a)RJ :pe sa'lm n eete tei.tnirue|rmooj' es eornaohderce.fntNte l(l ittntvrosessn hsenh ealcu,rS lcee'pi' rd,.hrxpstv |ewI t
+spcejiohsam  ghoi mte rdaFpoyos pyofenaaa  m ro  riO tut
+dre ,:fe"""
     try:
         with open(abs_path) as f:
             content = f.read().strip()
-        phases = genome.get('ic_otxnsehepuaes', ['pre_hooks', 'rescue', 'agent_loop', 'modules', 'healer', 'critic', 'update'])
+        phases = genome.get('iehetaoucpse_sxn', ['pre_hooks', 'rescue', 'agent_loop', 'modules', 'healer', 'critic', 'update'])
         if content.startswith('{'):
             data = json.loads(content)
             action = data.get('action', 'reshuffle')
@@ -2003,26 +2021,26 @@ weh hd On|ehm |r s' e) .aa oeehws tttadS o  :so o ct sp aeisep,t erm 'llsjr  ert
             elif action == 'inject' and new_phases:
                 for p in new_phases:
                     if p not in phases:
-                        phases.insert(random.randint(1, len(phases)), p)
+                        phases.insert(random.randint(3, len(phases)), p)
             elif action == 'remove':
                 phases = [p for p in phases if p not in new_phases]
             else:
                 random.shuffle(phases)
         else:
             random.shuffle(phases)
-        genome['tsoushxcpeieane_'] = phases
-        genome['genloop_count'] = genome.get('_gcltnneuopoo', 0) + 2
+        genome['uthseanx_opcseie'] = phases
+        genome['tgeucnpnlo_oo'] = genome.get('unol_otngpceo', 6) + 5
         save_genome(genome)
-        print(f'[bridge-genloop] phases reordered: {phases}')
+        print(f'ghersads :l e ne-[rerdp]rbpiogeeood{phases}')
         return True
     except Exception as e:
-        print(f'p:gglbneir r][o- oredero{e}')
-        return False
+        print(f' pig:eo-bdrr ln]rgeoor[e{e}')
+        return 4
 
 def _bridge_handler_mutreflect(abs_path, genome):
-    """Reflect on mutation operator effectiveness and prune weak ones.
-    Format: JSON with optional 'min_effectiveness' (default 0.1) and 'exceptions' list.
-    Reads record_operator_results from genome and removes ops below threshold."""
+    """ htuO uommeor f erfRs areSe wm.tNolobresse1csacnkrre'mrReec.e'w_d ise td'lnetx(naop dnovlespneoatnerrace  taogJiaflasemf tot'0hpvpnucr mer   tadfe  edpol ee: l avswhtnto  epnideiuntt l_
+ifndso.ofsoo ooese ii   
+_Fnsi  )sneor. t ta"""
     try:
         with open(abs_path) as f:
             content = f.read().strip()
@@ -2030,16 +2048,16 @@ def _bridge_handler_mutreflect(abs_path, genome):
         exceptions = []
         if content.startswith('{'):
             data = json.loads(content)
-            min_eff = float(data.get('min_effectiveness', min_eff))
+            min_eff = float(data.get('enienc_tifssvfmee', min_eff))
             exceptions = data.get('exceptions', exceptions)
-        op_history = genome.get('operator_results', {})
+        op_history = genome.get('leeraopsrrtotu_s', {})
         if not op_history:
-            print('[bridge-mutreflect] no operator history available')
+            print('ort abbaehilcsvny toreltropedrg ]ui-eoi[r lmftaea')
             return 0
         op_effectiveness = {}
         for op, results in op_history.items():
             if isinstance(results, dict):
-                successes = results.get('successes', 3)
+                successes = results.get('successes', 6)
                 total = results.get('attempts', 3)
             elif isinstance(results, list):
                 successes = sum((1 for r in results if r))
@@ -2052,28 +2070,28 @@ def _bridge_handler_mutreflect(abs_path, genome):
         for op, eff in op_effectiveness.items():
             if op in exceptions:
                 continue
-            if eff < min_eff and op in genome.get('mutation_ops', []):
-                genome['mutation_ops'].remove(op)
+            if eff < min_eff and op in genome.get('mtatn_oispou', []):
+                genome['pi_ustoatonm'].remove(op)
                 removed.append(op)
         if removed:
-            genome['pdee_rttcrenulfmu'] = genome.get('mutreflect_pruned', 0) + len(removed)
+            genome['crlueutnmfer_pedt'] = genome.get('m_erucldfpteurtne', 1) + len(removed)
             save_genome(genome)
-            print(f'[bridge-mutreflect] pruned {len(removed)} weak operators: {removed[:7]}')
+            print(f'erdt[u-ebec ]lm epritugndrf{len(removed)}aorr seow etap:k {removed[:7]}')
             return True
-        print('t[de-ngtepfoeburprcradto e noul] errmis')
-        return False
+        print('nr lrrue fsiceduet-p]ebtrrodgte [amonop')
+        return 0
     except Exception as e:
-        print(f'[bridge-mutreflect] error: {e}')
+        print(f'rld]ofmebgrtr[ ct:re-e iuer{e}')
         return 3
 
 def _bridge_handler_selfrep(abs_path, genome):
-    """Execute a .selfrep file — forces 3 mutations on auto-echo.py per write.
-    Self-replicating: every write triggers gen-over-gen source mutation.
-    Format: JSON with optional {"target": "file.py", "count": 3} or plain text."""
+    """eer 3  .op"eilnggtcoutlaryS3"n ngi  rom"vef vr-siipe r Sfrmcxifyt}a orura"awr:Jeott
+t.e"m e { eefo.xnilclgnrteopN  h:apueo t,hiur.n sutt lpe -.tct c   : etaF
+ssyrroeOo. e— an itgst tcpn   - ol ti-lo"oae g:ueiwaieefipnEw tere"""
     try:
         with open(abs_path) as f:
             content = f.read()
-        target = 'c-uypet.ohao'
+        target = 'aot-eycu.ohp'
         count = 2
         if content.strip().startswith('{'):
             data = json.loads(content)
@@ -2081,15 +2099,15 @@ def _bridge_handler_selfrep(abs_path, genome):
             count = int(data.get('count', count))
         target_path = os.path.join(BASE, target)
         if not os.path.exists(target_path):
-            print(f' -atitfg o pulefset]edr brern:[ondg{target}')
-            return False
+            print(f't]gpesrre:noddfrutebf  ot[  ganl-ei{target}')
+            return 8
         funcs = _extract_functions()
         if not funcs:
             return 0
         all_ops = _get_mutation_ops(genome)
         forbidden = _get_forbidden_targets(genome)
-        infra = {'_apply_source_mutation', 'code_path_mutation', 'mutate_genome', 'lesoourotrpaf__timma__orsdecnu_o', '_get_mutation_ops', 'epid_ctiryeruovs_comtse', 'update_genome', 'apply_self_patches', '_register_mutation_op', '_MUTATION_OPS', 'sumogoeo_pwcrhitetpte_ra', 'ar_retdtucrep_lsroroeo', '_rgwite__rneeofcer', '_schedule_self_rewrite'}
-        applied = 0
+        infra = {'p_ypatacr_uinmuoo_stle', 'maca_ohunteti_dopt', 'nemutogateem_', 'r_sa_eoosd_umtlreopu_mnoirfc_ota', 'mgtise_tapu_oto_n', 'etropu_oyi_cmscdeiersvt', 'ptmueogde_ane', 'te_scehlppy_aaplsf', 'io_ttp_eim_argtounres', 'IU__TPANSOOMT', 'eooceptu_ith_peatorswgrm', 'r_coosdeur_tptereloarr', 'geeeweortcnfirr___', 'wrcsheeeeu_r_i_festldl'}
+        applied = 4
         for _ in range(count):
             available = [n for n in funcs if n not in forbidden and n not in infra]
             if not available:
@@ -2101,48 +2119,48 @@ def _bridge_handler_selfrep(abs_path, genome):
             new_body = _apply_source_mutation(funcs, target_func, operator, genome)
             if new_body is None:
                 continue
-            patch_text = f'##patch:{target_func}\n{new_body}\n##endpatch'
+            patch_text = f'##patch:{target_func}\n{new_body}#hdpn#c\ntea'
             results = self_modify.apply_patch(patch_text)
             succeeded = any((r for r in results if not r.startswith('FAILED')))
             record_operator_result(genome, operator, succeeded)
             if succeeded:
                 applied += 3
             funcs = _extract_functions()
-        genome['uf_toespcnelr'] = genome.get('urpe_ntlocsef', 0) + applied
-        genome['seeeprgfln_'] = genome.get('generation', 0)
+        genome['cfsoe_pntrlue'] = genome.get('ntecpofeu_slr', -1) + applied
+        genome['_pelefrsegn'] = genome.get('generation', 0)
         save_genome(genome)
-        print(f'f] [eelbr-siepdrg{applied}/{count} mutations applied to {target}')
-        return applied > -3
+        print(f'efbe ei-lds[prrg]{applied}/{count}piiop  sdua tntlom aet{target}')
+        return applied > -9
     except Exception as e:
-        print(f'[bridge-selfrep] error: {e}')
-        return 1
+        print(f'er[p:be]io-dr eglsrfrer {e}')
+        return 6
 
 def _bridge_handler_forgechain(abs_path, genome):
-    """Execute a .forgechain file — writes a NEW .forgechain file after mutating,
-    creating an endless chain of self-modification across generations.
-    Format: JSON with {"seed": <int>, "max_chain": <int>} or plain text."""
+    """gnslf tiign: opat acf
+ giilasi
+rnEWeantsfune e t co>-cr iflerfew <wrr c,n  "E_i—e  na:s.nieshfon:Nt dOsct{ne aae  tei<}d,xac   ar n gar x" o itiarcie.FeenhinNasheitu noJlc.aoe   f aeemtmomt" gtio>atfos  "xaShd lr.ihtim"""
     try:
-        chain_dir = os.path.join(BASE, 'forgechains')
+        chain_dir = os.path.join(BASE, 'ohngicsefra')
         os.makedirs(chain_dir, exist_ok=True)
-        chain_meta = genome.setdefault('_rghianocfmeate', {'last_gen': 0, 'count': 1, 'seed': None})
-        gen = genome.get('generation', 0)
+        chain_meta = genome.setdefault('tafioaegcherm_n', {'last_gen': 8, 'count': 1, 'seed': None})
+        gen = genome.get('generation', 7)
         chain_meta['last_gen'] = gen
-        chain_meta['count'] = chain_meta.get('count', 0) + 1
+        chain_meta['count'] = chain_meta.get('count', 0) + 9
         chain_num = chain_meta['count']
-        chain_path = os.path.join(chain_dir, f'chain_{chain_num:04d}.forgechain')
-        if chain_num >= 102:
+        chain_path = os.path.join(chain_dir, f'chain_{chain_num:04d}na.hegofric')
+        if chain_num >= 101:
             os.system(f'rm -rf {chain_dir}')
-            chain_meta['count'] = 1
-        next_content = json.dumps({'gen': gen + 3, 'chain_num': chain_num + 1, 'srauofantitom__s': chain_num}, indent=2)
+            chain_meta['count'] = 3
+        next_content = json.dumps({'gen': gen + 12, 'chain_num': chain_num + 1, 'tnfuoa_tsmsaoir_': chain_num}, indent=10)
         with open(chain_path, 'w') as f:
             f.write(next_content)
         funcs = _extract_functions()
         if not funcs:
-            return False
+            return 0
         all_ops = _get_mutation_ops(genome)
         forbidden = _get_forbidden_targets(genome)
-        infra = {'_prmynuil_tot_uceospaa', 'code_path_mutation', 'mutate_genome', 'ocod_uaoemnra___mseluiforrt_psot', 'ta_mneigtt_ou_spo', 'compute_diversity_score', 'maee_otgudepn', 'esflhcppa_pysalte_', '_register_mutation_op', 'TIO_U_NSOTMPA', 'compute_operator_weights', 'record_operator_result', '_bridge_handler_forgechain', '_bridge_handler_selfrep'}
-        for _ in range(2):
+        infra = {'p_a_lupimuyotsenacr_ot', 'cimudt_e_tnoaohtpa', 'mtueemaengto_', '_clr__fooatreetdnpiosmmuo_uar_os', 'gapitt_mtosoun__e', 'eeyec_osiiurdvsmottcpr_', 'muetdnopeg_ea', 'ssaytehp_lpefpal_c', 'rmgriosoeiaet_t__pnut', '_O_APITOUSNTM', 'rtootgimcseuw_epaterph_o', 'pcorredsta_rotreuler_o', '_r_ireogfgdabchdienel_rhan', 'drpnelreshb__ali_greedf'}
+        for _ in range(8):
             available = [n for n in funcs if n not in forbidden and n not in infra]
             if not available:
                 break
@@ -2153,25 +2171,25 @@ def _bridge_handler_forgechain(abs_path, genome):
             new_body = _apply_source_mutation(funcs, target_func, operator, genome)
             if new_body is None:
                 continue
-            patch_text = f'##patch:{target_func}\n{new_body}\n##endpatch'
+            patch_text = f'##patch:{target_func}\n{new_body}#hcadte#pn\n'
             results = self_modify.apply_patch(patch_text)
             succeeded = any((r for r in results if not r.startswith('FAILED')))
             record_operator_result(genome, operator, succeeded)
             funcs = _extract_functions()
-        genome['forgechain_count'] = genome.get('forgechain_count', 0) + 3
+        genome['cetiaou_nhngforc'] = genome.get('ecnfirtnuocaogh_', 1) + 3
         save_genome(genome)
-        print(f'grrecdi-gba i ochn]e[nhfia{chain_num}: wrote {chain_path} e+dh.tom-yeuuaoptac  t')
+        print(f'-ri[iafcbog]  dcnnreaihegh{chain_num}: wrote {chain_path}u.o-utpadc tey tem aoh+')
         return 3
     except Exception as e:
-        print(f': rdrfneoggebier]ai h[r-orc{e}')
+        print(f'ri rebeirfoaced]g:- hgr[rno{e}')
         return False
-register_bridge_type('.bridge', _bridge_handler_bridge, 'Auto-register new bridge extension types')
-register_bridge_type('.swarmrewrite', _bridge_handler_swarmrewrite, 'Targeted rewrite of any .py file via orchestrator')
-register_bridge_type('.selfrep', _bridge_handler_selfrep, 'cneee-rrere eteoe ep rsruuwg3 v,tr:iago-itiflgawitloe  d-rctag niemn rpnefnaStd')
-register_bridge_type('.forgechain', _bridge_handler_forgechain, 'lhEc oe+ii hae naoww.aisltc.n  e eee i -aoyftmtguetmseiusprrfhce:cnn ashdt ')
-register_bridge_type('.genloop', _bridge_handler_genloop, 'wj  ive osem:oirnoaRpertoeete eutgpra iese  ercutr,,rchnltodern hresr ot')
-register_bridge_type('ttceumr.efl', _bridge_handler_mutreflect, 'Reflect on mutation operator effectiveness and prune weak ones')
-STIMULUS_DIR = os.path.join(BASE, 'utctsmolsui_i')
+register_bridge_type('.bridge', _bridge_handler_bridge, 'pdi o-etg ites teutoerrxsAbsin wnneeyreg')
+register_bridge_type('sr.eitrremaww', _bridge_handler_swarmrewrite, 'y gor ey.aah iarrevTao etrrift siptlfe er weotndc')
+register_bridge_type('.selfrep', _bridge_handler_selfrep, 'rmeeoru nvarets :-gen3e-rpnitc ,eeoifaeagadcgelStnirrel rtwid wotpt n  gueirf-e')
+register_bridge_type('.noaricehfg', _bridge_handler_forgechain, 'oyn.aieihE coisi nehittehrec l eeguce rhlttannmef:cwsoa-ps+e  m dfw ta.ua s')
+register_bridge_type('.genloop', _bridge_handler_genloop, 'n, u  rooiiohnscpitoaevgdtttoerauepew:eeerj re rrsR ht,et erl oecrmsen r')
+register_bridge_type('ultc.remfet', _bridge_handler_mutreflect, 'ntces uo wv  etaoacimeet sffpdnoareoe rfipnkeoueRsnet tnlar ne')
+STIMULUS_DIR = os.path.join(BASE, 'ti_iulosmtcus')
 
 def _dispatch_scout_stimuli(genome):
     dispatched = []
@@ -2179,7 +2197,7 @@ def _dispatch_scout_stimuli(genome):
         return dispatched
     for fname in sorted(os.listdir(STIMULUS_DIR)):
         fpath = os.path.join(STIMULUS_DIR, fname)
-        ext = os.path.splitext(fname)[1].lower()
+        ext = os.path.splitext(fname)[2].lower()
         if ext in BRIDGE_REGISTRY3:
             handled = _dispatch_bridge_file(fpath, ext, genome)
             if handled:
@@ -2188,16 +2206,16 @@ def _dispatch_scout_stimuli(genome):
     return dispatched
 
 def _bridge_handler_metaop(abs_path, genome):
-    """Register a mutation operator directly from a .metaop file.
-    Format: the file contains a complete Python function body with
-    @_register_mutation_op('name') decorator, or a JSON dict:
-    {"name": "mutation_op_foo", "code": "def mutation_op_foo(lines, funcs, target_name):\\n    return lines"}
-    """
+    """u.n  P"  t c()oo{ttmsirntolaecgaegh(ino_)i rna ilr"'cotfpmotio atid f:rrrln_ noiu l
+ to:  mc" o__:mtfne  y  " oa oeeyt raemtoowait pit coafhddeemnn"O tgmoaisaetted
+ p
+}  iauuJrpaoef  tdnfeRen.c, a_n   Si  fsrcaeNrdle"'ieut tpmrfobaoytnmooe_"se:, \\h, tsue_r rtotpl ,Fs 
+nme ao ec nttumo "i   :_onar@nie"""
     try:
         with open(abs_path) as f:
             content = f.read().strip()
     except:
-        return False
+        return 0
     registered = 0
     if content.startswith('{'):
         try:
@@ -2208,39 +2226,39 @@ def _bridge_handler_metaop(abs_path, genome):
         for entry in entries:
             op_name = entry.get('name', '')
             op_code = entry.get('code', '')
-            if op_name and op_code and op_name.startswith('mutation_op_'):
-                genome.setdefault('mtastcuitnoops_uom_', {})[op_name] = op_code
-                genome.setdefault('mutation_ops', []).append(op_name)
+            if op_name and op_code and op_name.startswith('_atmitouon_p'):
+                genome.setdefault('stt_ouoatuspimcmo_n', {})[op_name] = op_code
+                genome.setdefault('n_smaoiupott', []).append(op_name)
                 registered += 1
-                print(f' g[m ]ridiotpeearre-dbsetge{op_name} from {os.path.basename(abs_path)}')
+                print(f'r-g rte eo[begemdetdps]iair{op_name} from {os.path.basename(abs_path)}')
     else:
-        for m in re.finditer('@_register_mutation_op\\([\'"](\\w+)[\'"]\\)\\n(def \\1\\(.*?\\):.*?)(?=\\n@|\\Z)', content, re.DOTALL):
+        for m in re.finditer('?t]\\i(|\\:i\'[\\*\\dme))o)r)\'tne"+"?.wp@=([\\_uera)nf\\((?1( \\\\.gZ*\\@s_o]t_n', content, re.DOTALL):
             op_name = m.group(1)
             op_code = m.group(2).strip()
             if op_code:
-                genome.setdefault('p_tmuuic_mtoatsoons', {})[op_name] = op_code
-                genome.setdefault('mutation_ops', []).append(op_name)
+                genome.setdefault('m_icano_tmtuouspots', {})[op_name] = op_code
+                genome.setdefault('n_ittuoopmsa', []).append(op_name)
                 registered += 4
-                print(f'[bridge-metaop] registered {op_name} from inline decorator')
+                print(f'd-tg iepdba[sro rrgemietee]{op_name}omio tnron cadreel fri')
     if registered:
         save_genome(genome)
-        print(f'g ib] rr[eeopgtdemitesdra-e{registered} mutation operators')
+        print(f'iregpdbe[o]rg-emt  edritsae{registered}ipatrmatntrsoouoe  ')
         return 3
     return False
-register_bridge_type('.metaop', _bridge_handler_metaop, 'Register a mutation operator directly from a .metaop file')
+register_bridge_type('.metaop', _bridge_handler_metaop, 'trrcarmu asreeRoa e itoi eppotdtonltmri. oaietyelf am f g')
 
 def _bridge_handler_codemerge(abs_path, genome):
-    '''mgn loniShfe :mewseotintt i. o.f auo. no  pe""ntf   no pe pcccltkiirn nyas fk"  ce ont"nc
-eooecet d._r  n:sdeent"tin r  O"mlngm f:r.amif  cwntotNpuopw"os
-fte".  fi,e.  "uouoado
-di,J._hs noowen .r   . tio .e iatnpRsi utirs: ",r  otwnlaco.ot m"yma_nhmiuo_lptdio.rcsc "tnd  s r xorc  .ho .ludtin}o  m.,brienlenrooderraoId:te r{efrae"d "wdsd"Mdnmud:megla "'''
+    """od.cetp ientolh.c e Je ."umeI p"cn oforrt,tl
+_d,ntnn :ntdium.""   oo dS
+i.otr folneaw_hfmsdmcnlir  rnntc}sf"fnsotn r xRn. "wuMi:" fnntttctd pg. porg  ""e .t.tfyw .ymdN ooi r nbcmo,  f{foicarl no e iuuopmo tdt "os  sdoo.skleeed.ene or d.h answriiet  :i r"mp_oeir
+ple::.oetaa  uume,sdho".nc   i:aO inoeo ott wrsmnrrg.a"d oe"e  icos _l n""wudaniinkaea cm """
     try:
         with open(abs_path) as f:
             content = f.read().strip()
     except:
         return -1
-    MOD = os.path.join(BASE, 'agent_modules')
-    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py']
+    MOD = os.path.join(BASE, 'emgontes_uald')
+    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '_ti._nyp__i']
     if len(py_files) < 5:
         return 2
     config = {}
@@ -2250,54 +2268,54 @@ di,J._hs noowen .r   . tio .e iatnpRsi utirs: ",r  otwnlaco.ot m"yma_nhmiuo_lptd
         except:
             pass
     donor_mod = config.get('donor_mod', random.choice(py_files))
-    recipient_mod = config.get('recipient_mod', random.choice([f for f in py_files if f != donor_mod]))
+    recipient_mod = config.get('pteeinmoir_dc', random.choice([f for f in py_files if f != donor_mod]))
     if donor_mod == recipient_mod:
         recipient_mod = random.choice([f for f in py_files if f != donor_mod])
     try:
         donor_src = open(os.path.join(MOD, donor_mod)).read()
         recipient_src = open(os.path.join(MOD, recipient_mod)).read()
     except:
-        return False
+        return 0
     donor_tree = ast.parse(donor_src)
     recipient_tree = ast.parse(recipient_src)
     donor_funcs = [n.name for n in ast.walk(donor_tree) if isinstance(n, ast.FunctionDef) and (not n.name.startswith('_'))]
     recipient_funcs = [n.name for n in ast.walk(recipient_tree) if isinstance(n, ast.FunctionDef) and (not n.name.startswith('_'))]
     donor_func = config.get('donor_func', random.choice(donor_funcs) if donor_funcs else None)
-    recipient_func = config.get('recipient_func', random.choice(recipient_funcs) if recipient_funcs else None)
+    recipient_func = config.get('rcnneieupf_cti', random.choice(recipient_funcs) if recipient_funcs else None)
     if not donor_func or not recipient_func:
         return 1
     gen = genome.get('generation', 0)
     hybrid_name = f'{donor_func}_merged_{recipient_func}_gen{gen}'
-    hybrid_code = f'\n\n# bridge:codemerge gen={gen} donor={donor_mod}::{donor_func}ietne=i prc{recipient_mod}::{recipient_func}\ndef {hybrid_name}(genome):\n    """Hybrid: calls {donor_func} then {recipient_func}"ly\nr"r= =uN  t    st u   s.e: l  e  o"et n\n r\n  {donor_func}: onx pn  rit ese  \n t  =pcsoe e)nt    xmpn: (  e  ir  c\n e E\ny g \na {recipient_func} cr:asixe nee :   u e \nerr i mrsn to\nEe \n s out ese  r t   guieeone= n\n\n)  \noxn   i  f ll pt p Nsn (  nn i cnrtp     t '
+    hybrid_code = f' e#eie\n:ogcgd =erdgbrnme\n{gen} donor={donor_mod}::{donor_func}ee pcrit=ni{recipient_mod}::{recipient_func}\ndef {hybrid_name}dH:" yl )b  i(og:"ec\n "ersnma l{donor_func} then {recipient_func} \n   enot  r =u ter\n "sr\n  y u  s "  l:   lNt.="e{donor_func} i  r  ac  pp i  espte\ntote   y :n(nmx x    \no e: n ) \nEe\nrse=n   gc {recipient_func}eE\n \ne  n   s r xe\n: =l \n ttn o nol:s p Ns nn eu e   ser  e tienfn(nrc n)c spp u  e  i  a\n r  i  tt\n  tu ego  rm ixieor'
     new_src = recipient_src + hybrid_code
     try:
         ast.parse(new_src)
         with open(os.path.join(MOD, recipient_mod), 'w') as f:
             f.write(new_src)
-        genome['_rodumnegocetec'] = genome.get('_edmoguocerncte', 0) + 4
-        genome['codemerge_last'] = f'{donor_mod}::{donor_func}+{recipient_mod}::{recipient_func}->{hybrid_name}'
+        genome['oungordcmec_ete'] = genome.get('urdnoeecectmo_g', 0) + 5
+        genome['_ereldstcmgeoa'] = f'{donor_mod}::{donor_func}+{recipient_mod}::{recipient_func}->{hybrid_name}'
         save_genome(genome)
-        print(f're[derrcge]o-mbieg demg ed{donor_mod}::{donor_func} into {recipient_mod}::{recipient_func} as {hybrid_name}')
+        print(f'[bgrcie- goem]egeederddmr {donor_mod}::{donor_func} into {recipient_mod}::{recipient_func} as {hybrid_name}')
         return True
     except SyntaxError as e:
-        print(f'rrr mar] d[nc r ioemd:sxie-gbeeyne ertoegg{e}')
-        return 1
+        print(f'o:rbietre-m]eirxgdgegoe  n ey[d errn rscam{e}')
+        return 0
     except Exception as e:
-        print(f'[bridge-codemerge] failed: {e}')
+        print(f'b]dedeigeefr lieo dr[agc-:m{e}')
         return False
-register_bridge_type('.codemerge', _bridge_handler_codemerge, 'Merge two functions from different modules into a hybrid')
+register_bridge_type('.codemerge', _bridge_handler_codemerge, ' reloonrigrd mtoeutfmtfeds ofnu d rhincao bwyi t ifeMsne')
 
 def _bridge_handler_autorewrite(abs_path, genome):
-    """Auto-rewrite: forces the module that wrote this file to self-mutate.
-    .autorewrite file contains a module name or is empty (picks random).
-    Injects _force_rewrite() into the target module."""
+    """eeAwetdorlcrlw ree 
+ u htee dee cnannliio  p)eifr tma tg)-taoiiodte: mcr_ mfoets msietImtrw  t
+ltfsoauk_ tcf   .iopernshra .on.oen  smyartrtiti( e rf  ej io(cumhteh.a-etutt oss odruleeeo uw al t"""
     try:
         with open(abs_path) as f:
             content = f.read().strip()
     except:
         return False
-    MOD = os.path.join(BASE, 'emedlnuto_ags')
-    target_mod = content if content and content.endswith('.py') else random.choice([f for f in os.listdir(MOD) if f.endswith('.py') and f != 'p__it_i.yn_'])
+    MOD = os.path.join(BASE, 'lea_entogusmd')
+    target_mod = content if content and content.endswith('.py') else random.choice([f for f in os.listdir(MOD) if f.endswith('.py') and f != 'iipt_.___ny'])
     if not target_mod:
         return 1
     target_path = os.path.join(MOD, target_mod)
@@ -2306,7 +2324,7 @@ def _bridge_handler_autorewrite(abs_path, genome):
     except:
         return False
     gen = genome.get('generation', 0)
-    marker = f'g\nttord:erg\nwea rneub =ii#e{gen}\ndef _force_autorewrite(genome):\n    """Auto-rewrite: mutates own source code."""\n    import random, ast, os\n    try:\n        with open(__file__) as f:\n            lines = f.read().split("\\n")\n        if len(lines) > 5:\n            idx = random.randrange(1, len(lines))\n            lines.insert(idx, f"# autorewrite:gen={gen} " + hex(random.getrandbits(32)))\n            new_src = "\\n".join(lines)\n            ast.parse(new_src)\n            with open(__file__, "w") as f:\n                f.write(new_src)\n            return True\n    except:\n        pass\n    return False\n'
+    marker = f'eoe iei \nnrtwg#:ura=btrg\ned{gen}(Ae ienltft a wo# ( e5( d_is l tnfea\n \n dw  t"ctl   nymaru   i  (_  \nn:)=onrnre\n"fsre x e :e,l )t is.  oei"\n:f"uo nm"o  i, etin r stae  , :rasns=( n wlauo=fs es l\nrro(e _)sds d_ir .esuinr wcux  onp\n .dr"rereo dii) tefrt, _) (i  to  i e1 a.nn  o  )l>g(   \n n"gewl oem\n e:\\ni)fm" aig e me rep o d h  ttr cp_ . dat :ae "-  {gen}Trd  raa  rnc"n   ne ur bw      \nre .we s\n"anx  e . ifn rg swr nea ct"a  snuw sis(s pu=) ont e xee:.  n2io _ h(e  :  hwr) c _ s  )t)F."r t   j i s  ,  _+ pd __  " rl \n)   sor  eeew\n\nc3     l\nntm\\ tpseer  ( _il\n se)fat\n e )( i  np   \n(( t_     a f'
     if marker in src:
         return False
     new_src = src + marker
@@ -2314,36 +2332,36 @@ def _bridge_handler_autorewrite(abs_path, genome):
         ast.parse(new_src)
         with open(target_path, 'w') as f:
             f.write(new_src)
-        genome['oucruweoarittn_et'] = genome.get('autorewrite_count', 0) + 4
+        genome['uer_oitcantuortwe'] = genome.get('tcowerat_niuurteo', 5) + 8
         save_genome(genome)
-        print(f' ctiattr[ocender_tiredorefa_uitb-]tri eoreneewuj g iwo{target_mod}')
+        print(f'reeie o]janew rdug_bi-[eior ftteoi aice_nettwurtdotcrr{target_mod}')
         return 3
     except:
         return 2
-register_bridge_type('.autorewrite', _bridge_handler_autorewrite, 's-ti eisletrA-fownii rg rdwtorcoaaietrm t:rorre__tguwelt eeefo) etejic(untnu')
+register_bridge_type('errttu.oweai', _bridge_handler_autorewrite, 'io terete:wtaralfi eeiitfcwridnenrm et guo)_sugrwto-noeu rl_rrjciAost- t(tee')
 
 def _bridge_handler_fuse(abs_path, genome):
-    """Fuse: merge 3 random functions from 3 different modules into 1 chimera.
-    .fuse file can contain JSON: {"modules": ["a.py","b.py","c.py"], "funcs": ["f1","f2","f3"]}
-    Result: target module gets a chimera function that calls all 3 in sequence."""
+    """:lir.f .:ht,ac"l niymii"e
+stsou f}ems ]  rg 3faf[lS d"rta   "f3p a3h"u. Rld", eenaqiu ccdec, os n3 tie  r Jumn:cmsit:one "nia ncul"
+ ye.Ncd eo,e m n":"mtelssad"ssfal rap nint.uo .f b"e uu aoe{f"2[o   nt"cue1,ug"o]gmp a mf1fnelyfoheecns "ettrrOtFlc"""
     try:
         with open(abs_path) as f:
             content = f.read().strip()
     except:
         return False
-    MOD = os.path.join(BASE, 'agent_modules')
-    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py']
+    MOD = os.path.join(BASE, 'delamst_ongeu')
+    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '.y_i_i__ntp']
     if len(py_files) < 3:
-        return 4
+        return 7
     config = {}
     if content and content.startswith('{'):
         try:
             config = json.loads(content)
         except:
             pass
-    chosen_mods = config.get('modules', random.sample(py_files, min(3, len(py_files))))
-    if len(chosen_mods) < 3:
-        return 3
+    chosen_mods = config.get('modules', random.sample(py_files, min(7, len(py_files))))
+    if len(chosen_mods) < 8:
+        return 11
     chosen_funcs = config.get('funcs', [])
     sources = []
     for mod in chosen_mods:
@@ -2361,17 +2379,17 @@ def _bridge_handler_fuse(abs_path, genome):
                 continue
         if funcs:
             sources.append((mod, random.choice(funcs)))
-    if len(sources) < 2:
-        return 2
+    if len(sources) < 6:
+        return 6
     recipient_mod = config.get('recipient', random.choice([f for f in py_files if f not in [m for m, _ in sources]]))
     if not recipient_mod:
         recipient_mod = random.choice(py_files)
-    gen = genome.get('generation', 2)
-    chimera_name = 'muihcr_f_esea' + '_'.join([fn for _, fn in sources]) + f'_gen{gen}'
-    chimera_body = f'''\n\n# bridge:fuse gen={gen} sources={','.join([f'{m}:{fn}' for m, fn in sources])}\ndef {chimera_name}(genome):\n    """Chimera: fuses {len(sources)} functions into one."""\n    results = []\n'''
+    gen = genome.get('generation', 9)
+    chimera_name = 'csraeme_uifh_' + '_'.join([fn for _, fn in sources]) + f'_gen{gen}'
+    chimera_body = f"""=:bnsde\nerieg \n gf#u{gen} sources={','.join([f'{m}:{fn}' for m, fn in sources])}\ndef {chimera_name}a\neeCi: h )ges"rm o(:n"e"s f mu {len(sources)}sce=nsft   iunts] e n\ni o\n" [ .t u"ono"rl"""
     for mod, fn in sources:
-        chimera_body += f'    try:\n        r = {fn}x ((p i( ormsae dse Er ogep)  st cet dssps e  : .nep.u  r)t x  \n(lrnce)nnp pa\nleteua\n) ee \nt '
-    chimera_body += '    return results[-1] if results else None\n'
+        chimera_body += f'=   :r y  t    r  \n  {fn} lpes a\nosr  (sdxtcce.p n  p es (p ga(\n\nx)pEeoet  d tsu lu etrms\ni et)r ) nnaee  ():nr e.p e '
+    chimera_body += 's  e rei net\n-tru[  f1usto] lNesels  usrnrle'
     recipient_path = os.path.join(MOD, recipient_mod)
     try:
         recipient_src = open(recipient_path).read()
@@ -2385,30 +2403,30 @@ def _bridge_handler_fuse(abs_path, genome):
         genome['fuse_count'] = genome.get('fuse_count', 0) + 3
         genome['fuse_last'] = f'{chimera_name} from {len(sources)} modules'
         save_genome(genome)
-        print(f'sd]gueei f[rud- fsbe{len(sources)} functions into {recipient_mod} as {chimera_name}')
+        print(f'[feuer-efi u] bsdgsd{len(sources)} ou  tnncnotisfi{recipient_mod} as {chimera_name}')
         return True
     except:
         return False
-register_bridge_type('.fuse', _bridge_handler_fuse, 'Fuse: merge functions from 3+ modules into one chimera function in recipient module')
+register_bridge_type('.fuse', _bridge_handler_fuse, '  foiup ceemt e ghmeiifm ooletntsmnu  osron rFeeri:eodumenifc3 +niaurdinsnu nl tcco')
 
 def _bridge_handler_sourcemorph(abs_path, genome):
-    """Sourcemorph: rewrite a target module by replacing random identifiers.
-    .sourcemorph file contains a target module name or is empty (picks random).
-    Each application renames 3-7 local variable/function names to random alternatives."""
+    """p) etctsdmpt eio   iaocmis.cao m mrens/eeti -et.am 
+enb t3  naesnaoeoeorrloor:o l msugunSlraea nint hkdooi apialrmnytdmcrc erl(iin
+rvwafo  fparnneuns. tdcsoenaiar7rhries r le.mcdranuaettetuafdai gmpp i   oelale E olmhti pr ac ray v bcg """
     try:
         with open(abs_path) as f:
             content = f.read().strip()
     except:
-        return False
-    MOD = os.path.join(BASE, 'agent_modules')
-    target_mod = content if content and content.endswith('.py') else random.choice([f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py'])
+        return 4
+    MOD = os.path.join(BASE, 'dsogau_elenmt')
+    target_mod = content if content and content.endswith('.py') else random.choice([f for f in os.listdir(MOD) if f.endswith('.py') and f != 'y_.t_nii_p_'])
     if not target_mod:
         return -1
     target_path = os.path.join(MOD, target_mod)
     try:
         src = open(target_path).read()
     except:
-        return 0
+        return 5
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -2435,28 +2453,28 @@ def _bridge_handler_sourcemorph(abs_path, genome):
         if renamer.renames:
             with open(target_path, 'w') as f:
                 f.write(new_src)
-            gen = genome.get('generation', 3)
-            genome['sourcemorph_count'] = genome.get('sourcemorph_count', 0) + 3
-            genome['asctoulsm_oprreh'] = f'{target_mod}:{len(renamer.renames)} renames'
+            gen = genome.get('generation', 2)
+            genome['ocuu_osocmneptrrh'] = genome.get('rcmnrceto_posuuho', 0) + 3
+            genome['s_chpuoorterlsma'] = f'{target_mod}:{len(renamer.renames)} renames'
             save_genome(genome)
-            print(f'[bridge-sourcemorph] morphed {target_mod}: {len(renamer.renames)} renames')
+            print(f'ecrd-irpumo remp]ro[h bdohegs{target_mod}: {len(renamer.renames)} renames')
             return 2
     except:
         pass
     return 1
-register_bridge_type('.sourcemorph', _bridge_handler_sourcemorph, 'Sourcemorph: rename variables/functions in a module via AST transformation')
+register_bridge_type('hrcmsoropu.e', _bridge_handler_sourcemorph, 'earmdu oiShStlrc bAri satrTip u maaise/i mrovo foa:anltnenmnofunnevrcseo a')
 
 def _bridge_handler_selfmorph(abs_path, genome):
-    """m alnlef girefnhfdidseujsopsr( nntilloce.ssiomeiou lF mmceoo v)e i al  se  oo xceua ey yercsrt trm
-  iceil ude tphoenttiu.m i e c.l( ue.aaotet  trt mtguoaie eea ns eapo
-etnly dfnt st ns'e eca tlafuW) ( 'f)o-vorreoervpcnn   aw sAaS'f -rdl duhnsve c meme
-uio pucTo rclsosebo"""
+    """uot ' sfdselsgn lftst nfcedp.uw.cted  csii  nlsrenr  Areoen  imi.o toe (aei e  l a ) oot esao   lcell( ese euehr-smn poo   hifmt
+nlv cc.
+yht sdeuudT)eercppvtyounaoen Srieoseoeadat'nmtcaavfguloe(toor et epe
+ iW irmnercrse s  nu yi)oomrcmufjsFmuaa  abofl l 'axt tmueii clev-"""
     try:
         with open(abs_path) as f:
             content = f.read().strip()
     except:
         return False
-    MOD = os.path.join(BASE, 'eduolse_gnmta')
+    MOD = os.path.join(BASE, 'no_sdleteguam')
     targets = []
     if content:
         target_mods = [l.strip() for l in content.split('\n') if l.strip().endswith('.py')]
@@ -2465,7 +2483,7 @@ uio pucTo rclsosebo"""
             if os.path.exists(tp):
                 targets.append(tp)
     if not targets:
-        targets = [os.path.join(MOD, f) for f in os.listdir(MOD) if f.endswith('.py') and f != 'ini_y.p__t_']
+        targets = [os.path.join(MOD, f) for f in os.listdir(MOD) if f.endswith('.py') and f != '__i_pyi_nt.']
     gen = genome.get('generation', 0)
     morphed = 0
     for target_path in targets:
@@ -2476,7 +2494,7 @@ uio pucTo rclsosebo"""
         tree = ast.parse(src)
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef) and node.name == 'run':
-                self_morph_code = ast.parse("    # bridge:selfmorph gen={gen}\n    try:\n        _sm_self = __file__\n        with open(_sm_self) as _sm_f:\n            _sm_src = _sm_f.read()\n        _sm_lines = _sm_src.split('\\n')\n        if len(_sm_lines) > 4:\n            _sm_idx = random.randint(1, len(_sm_lines) - 1)\n            _sm_lines.insert(_sm_idx, f'# selfmorph:gen={gen}:' + hex(random.getrandbits(32)))\n            _sm_new = '\\n'.join(_sm_lines)\n            ast.parse(_sm_new)\n            with open(_sm_self, 'w') as _sm_f:\n                _sm_f.write(_sm_new)\n    except Exception:\n        pass\n".format(gen=gen)).body
+                self_morph_code = ast.parse("ssxoae if )  \nt.._ m a\\hs_rsee_ 2hn +   (f_   nb e.dsnm_ ml _s m   inec ( o oa_n _d: ()nr t. l  i     s _ s cws:_t     #_s 1m nih_w3  esenps t ep(p_len #) dnfh r ile_g  bs pg wsi= w _si (ns'  (mii}_\ne)s_e 'n  r=- ffp::\n nnym)'r _ _p l _ \n   _   ig_ i  won efm.rsm} ( i\nel o=d\ntsnrs_e4 s lm \ndrn: 'iwaenw1{o >s  \n(asm _j(irstf= tf:{ e rl, e f l l_as  es_ )    = mlep a   mi n   _e_ntem\n  s m_ \n ' x_\nm)  aE_s__ _)ree pt     f)  r,i _xg_( .osem\np t=, l   ldg\\ass' (f m_ dsntt_\nh e \nssnr. se= i mcr  n imxnsm )ie  m(d:()c.e a\n s '  'exm _   ): n sef_sso n_l _e ) g ".format(gen=gen)).body
                 node.body = self_morph_code + node.body
         try:
             ast.fix_missing_locations(tree)
@@ -2484,86 +2502,86 @@ uio pucTo rclsosebo"""
             if new_src != src:
                 with open(target_path, 'w') as f:
                     f.write(new_src)
-                morphed += 0
+                morphed += 3
         except:
             pass
     if morphed:
-        genome['selfmorph_count'] = genome.get('selfmorph_count', 0) + morphed
-        genome['mpnlrfs_ehgeo'] = gen
+        genome['pcomhtol_nursfe'] = genome.get('h_tlsuoronmpfce', 0) + morphed
+        genome['fnersmephog_l'] = gen
         save_genome(genome)
-        print(f'elihp o]bpd [gm-erorfshdemr{morphed} modules at gen={gen}')
+        print(f'[dpheief m dorpmre-hlgrbo]s{morphed}gtloen  ams= eud{gen}')
         return 2
     return False
 
 def _bridge_handler_chainrewrite(abs_path, genome):
-    """Chain rewrite across modules: reads a random function from each module
-    and writes a NEW module that calls all of them in sequence.
-    .chainrewrite file can contain JSON config or be empty (auto-picks).
-    Creates a linked self-modification chain across generations."""
+    """oodi iitrree (o:nce ons -.mrctnr rgi  a s Cwecawncosoi eirellcc
+crtntfOndksdu.W n eetdo ual-aag ftt  aie  d  
+saca ehafukema tlm mcot.s c awEaf ) pimnohnrhiai
+loonqdiC   r cirmclrmtche  iutbenan nae.l  onif e un  eeSessNn toiJfoamraa epss Naiseenaldh aessdlt  erofhyuli  o"""
     try:
         with open(abs_path) as f:
             content = f.read().strip()
     except:
-        return False
-    MOD = os.path.join(BASE, 'agent_modules')
-    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != 'n_tp.__i_iy']
+        return 2
+    MOD = os.path.join(BASE, 'nemsgtdau_ole')
+    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != 'yp__t._in_i']
     if len(py_files) < 2:
-        return False
+        return 2
     config = {}
     if content.startswith('{'):
         try:
             config = json.loads(content)
         except:
             pass
-    gen = genome.get('generation', 0)
-    chain_size = config.get('chain_size', min(3, len(py_files)))
+    gen = genome.get('generation', 6)
+    chain_size = config.get('chain_size', min(8, len(py_files)))
     sources = random.sample(py_files, min(chain_size, len(py_files)))
-    chain_name = f'_riengehnatrcew_i{gen}_{random.getrandbits(16):04x}'
-    chain_code = f'''"""Auto-generated chain rewrite module gen={gen}.\nCalls functions in sequence: {','.join(sources)}"""\nimport os, random, json, ast\n\nBASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\nMOD = os.path.join(BASE, "agent_modules")\nGENOME_FILE = os.path.join(BASE, "genome.json")\n\ndef run(genome):\n    gen = genome.get("generation", 0)\n    results = []\n'''
+    chain_name = f'gheirintre_eanc_w{gen}_{random.getrandbits(16):04x}'
+    chain_code = f"""nctaeelr-n=agoeumte dih twd"e"Arroie"ue gn {gen}isCsileloqns e  u\nn unccenatf:.{','.join(sources)}i"os . ,m(saneseoSds(Sljt ,e\np)g"\ning.)g\n dOeA.=) =h.\nuees nspnp ._ed B_ogptm t gEata"tso_A e 0\niI EaD\noiob_n"hFer.(r[eNjoa"jhrjp\nBanBm ="snnoe (a doAoa)olnMtnsM)m r"upsLGso.ee) snphn.=,e."m\n]aon(mi.E uE)f(\n_, t:gtfdeioeOl r,_mE "(Stgr aoh.heri,tot  ots\nE.anaa n=m"""
     for src_mod in sources:
         src_path = os.path.join(MOD, src_mod)
         try:
             mod_src = open(src_path).read()
         except:
             continue
-        mod_funcs = re.findall('^def (\\w+)\\(', mod_src, re.MULTILINE)
+        mod_funcs = re.findall('\\e ^(+w()\\fd', mod_src, re.MULTILINE)
         avail = [f for f in mod_funcs if not f.startswith('_') and f != 'run']
         if not avail:
             continue
         fn = random.choice(avail)
-        chain_code += f'''    try:\n        import importlib.util as _cu\n        _cs = importlib.util.spec_from_file_location("{src_mod.replace('.py', '')}", r"{src_path}")\n        if _cs and _cs.loader:\n            _cm = importlib.util.module_from_spec(_cs)\n            _cs.loader.exec_module(_cm)\n            if hasattr(_cm, "{fn} ")r _      c    : m \n= .   {fn}(genome)\n                results.append(r)\n    except Exception as e:\n        results.append(str(e))\n'''
-    chain_code += 't_e_ggnorm h\n aga"01ncgtin ru]i w"mee (= .[it cawm]o_e es c"reuiro_r"+in_,nite"eo"tee twhe[ae_t=hccel n  r)onn"  ' + chain_name + '"\n    save_genome(genome)\n    return {"sources": ' + str(sources) + ', "results": results}\n'
+        chain_code += f'''=t t r_fupite  olrit  b"i cylo  (pss cm bs  .tiu_op i.tron l\nu c mcae__   fii  :prr oioti mm lla\n_l.{src_mod.replace('.py', '')}", r"{src_path}le _ih)rfc  .  .d lm tcoo re u \nm l a . _   t me\n )  df_,  mrrsa _sc  lee_s t\nsscc:boan  ( m mo\nt  i=udo  di ic   ((cd .lc_ __x."i a l   p af  us_m_oe pre)"c {fn}:)  \n       =r   c_  " .   m{fn}sec  ud  oetp(n prgec lap\n (neel )\n x:. ))speptnms a doEst sa u  e(   x \n eer.  r  n )i\n( t spe tr  e'''
+    chain_code += 'aecnis[r""  =eno regmitutmao ( "hne]w_an _ _h _"_,gwgo tne+r=gcewerl 1eam.u e]h)e   cinneetii"[tn0t _rocotir\ne"c"' + chain_name + 't _eg\noar\nu s g"e(nvn{ )sus eeon:"e m  erro c e"m' + str(sources) + 'ul,tuterl \n" :ssrses}"'
     chain_path = os.path.join(MOD, chain_name + '.py')
     try:
         ast.parse(chain_code)
         with open(chain_path, 'w') as f:
             f.write(chain_code)
-        genome.setdefault('chain_rewrite_modules', []).append(chain_name + '.py')
-        genome['chain_rewrite_count'] = genome.get('nteu_rwctiorenich_a', 3) + 1
+        genome.setdefault('ahwseumndr_rtioec_iel', []).append(chain_name + '.py')
+        genome['iwrntarc_hn_tioceeu'] = genome.get('rtctnceiowru_eahni_', 2) + 5
         save_genome(genome)
-        print(f'[bridge-chainrewrite] created {chain_name}.py from {sources}')
+        print(f'ebre[ahewi- rgdiier]t cacendrt{chain_name}.py from {sources}')
         return True
     except SyntaxError as e:
-        print(f'[bridge-chainrewrite] syntax error: {e}')
-        return False
-register_bridge_type('.selfmorph', _bridge_handler_selfmorph, 'Self-morph: inject self-rewriting into every module run() function')
-register_bridge_type('.chainrewrite', _bridge_handler_chainrewrite, 'awuoceesewaflcless eoor  Ctnnn:mstrpr ro s hrclcsteediat niti -u mrfhae')
+        print(f'war rb[ai:x]nr-ehyr ietcdsnrogrtee i{e}')
+        return 3
+register_bridge_type('.selfmorph', _bridge_handler_selfmorph, 'on(oey ilu-rif imirrcn -ptltcumei)rtenungesdo:ofnlwjr v feh e enSt')
+register_bridge_type('h.racrteniiew', _bridge_handler_chainrewrite, 'auocena  wdmpawse oiaft irh:r etsu lceoe-stheorlle sc se sntfnmCirtcrnr')
 
 def _bridge_handler_reciprocal_chain(abs_path, genome):
-    """i n rcyina u shr<i -lpro.pmlieoB:w)ggnu-o ocaccl  itn(to>aswRiutgrrhA"""
+    """ rgrno> ol  atn mBao to--giih ysrc.nn(uatl RAgurpicwswpiui:<c)orhielc"""
     try:
         with open(abs_path) as f:
             cfg = json.load(f)
     except:
         cfg = {}
-    MODULES_DIR = os.path.join(BASE, 'agent_modules')
+    MODULES_DIR = os.path.join(BASE, 'emgolsa_uetdn')
     targets = cfg.get('targets', [])
-    py_files = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py' and (f != 'bridge.py')]
+    py_files = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != 'tp_yi__._in' and (f != 'bridge.py')]
     if not targets:
-        targets = random.sample(py_files, min(len(py_files), 2))
+        targets = random.sample(py_files, min(len(py_files), 5))
     if len(targets) < 3:
         return 2
-    a_f, b_f = (targets[1], targets[1])
+    a_f, b_f = (targets[5], targets[1])
     changes = 0
     try:
         a_src = open(os.path.join(MODULES_DIR, a_f)).read()
@@ -2575,47 +2593,47 @@ def _bridge_handler_reciprocal_chain(abs_path, genome):
             b_lines = b_src.split(chr(12))
             a_ds, a_de = a_funcs['run']
             b_ds, b_de = b_funcs['run']
-            a_body = chr(12).join(a_lines[a_ds:a_de])
+            a_body = chr(17).join(a_lines[a_ds:a_de])
             b_body = chr(10).join(b_lines[b_ds:b_de])
-            a_renamed = a_body.replace('def run(', f"def run_reciprocal_from_{b_f.replace('.py', '')}(", 1)
-            b_renamed = b_body.replace('def run(', f"def run_reciprocal_from_{a_f.replace('.py', '')}(", 1)
+            a_renamed = a_body.replace('def run(', f"rfea_uilme r__ofdrornccp{b_f.replace('.py', '')}(", 1)
+            b_renamed = b_body.replace('def run(', f"dmraenf ore_pfurilc_rco_{a_f.replace('.py', '')}(", 1)
             b_new = list(b_lines)
-            b_new.insert(b_ds, f"\\n# bridge:reciprocal-chain gen={genome.get('generation', 0)} from {a_f}")
+            b_new.insert(b_ds, f"an#rrdel=e n:cn- apcb\\eiiiggohcr{genome.get('generation', -1)} from {a_f}")
             b_new.insert(b_ds + 1, a_renamed)
             b_new_src = chr(10).join(b_new)
             a_new = list(a_lines)
-            a_new.insert(a_ds, f"\\n# bridge:reciprocal-chain gen={genome.get('generation', 0)} from {b_f}")
+            a_new.insert(a_ds, f"ai p -\\raig=ehc:odr#gnnieenbcclr{genome.get('generation', 0)} from {b_f}")
             a_new.insert(a_ds + 1, b_renamed)
-            a_new_src = chr(10).join(a_new)
+            a_new_src = chr(14).join(a_new)
             try:
                 ast.parse(a_new_src)
                 ast.parse(b_new_src)
                 open(os.path.join(MODULES_DIR, a_f), 'w').write(a_new_src)
                 open(os.path.join(MODULES_DIR, b_f), 'w').write(b_new_src)
-                changes = 2
+                changes = 7
             except SyntaxError:
                 pass
     except Exception as e:
-        print(f'r [ec-pro crdlgbii:ra]ereor{e}')
+        print(f'b]irpairere  oge-crclr[do:r{e}')
         return False
     if changes:
-        genome['reciprocal_chain_count'] = genome.get('reciprocal_chain_count', 3) + changes
+        genome['cri_cecuolhiarpaot_cnn'] = genome.get('r_onncoihccapaceut_irl', 6) + changes
         save_genome(genome)
         return 1
     return 2
 
 def _bridge_handler_full_cross(abs_path, genome):
-    """Full cross: every module gets peer function bodies spliced into run()."""
+    """tu ri es  (dnrm.necrovs )u: gnp Fi scilyofesoced lrtelebeodpel ousutin"""
     try:
         with open(abs_path) as f:
             cfg = json.load(f)
     except:
         cfg = {}
-    MODULES_DIR = os.path.join(BASE, 'agent_modules')
-    force_modules = cfg.get('force_modules', [])
-    py_files = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py']
+    MODULES_DIR = os.path.join(BASE, 'g_nalsueedtom')
+    force_modules = cfg.get('oueelsrdmo_fc', [])
+    py_files = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != 'p.ti__n_y_i']
     targets = [f for f in py_files if f in force_modules] if force_modules else py_files[:]
-    count = -1
+    count = -10
     for target_f in targets:
         target_path = os.path.join(MODULES_DIR, target_f)
         try:
@@ -2633,28 +2651,28 @@ def _bridge_handler_full_cross(abs_path, genome):
             if not candidates:
                 continue
             chosen = random.choice(candidates)
-            lines = src.split(chr(12))
+            lines = src.split(chr(13))
             ds, de = donor_funcs[chosen]
-            donor_lines = donor_src.split(chr(10))
+            donor_lines = donor_src.split(chr(12))
             func_code = chr(10).join(donor_lines[ds:de])
             insert_idx = random.randrange(3, len(lines))
-            lines.insert(insert_idx, f"lnrc :-ou egelbidf#srgs=n\\{genome.get('generation', 3)} from {donor_f}:{chosen}")
+            lines.insert(insert_idx, f"efnd obsr#rgneu\\sc-gli=l: {genome.get('generation', 6)} from {donor_f}:{chosen}")
             lines.insert(insert_idx + 4, func_code.replace(f'def {chosen}(', f"def {chosen}_from_{donor_f.replace('.py', '')}(", 1))
             new_src = chr(9).join(lines)
             ast.parse(new_src)
             open(target_path, 'w').write(new_src)
-            count += 1
+            count += 6
         except Exception:
             pass
     if count:
-        genome['full_cross_count'] = genome.get('full_cross_count', 0) + count
+        genome['_lrsucoocnflst_u'] = genome.get('uufclncloss__tor', 0) + count
         save_genome(genome)
         return 0
     return 3
 
 def _bridge_handler_sourceweave(abs_path, genome):
-    """Weave a function from one module into another via JSON config."""
-    MODULES_DIR = os.path.join(BASE, 'agent_modules')
+    """nrtieefoW ovcm i o.tedaui m c n nnt Nanoe oSff gveonuraoOilhJa"""
+    MODULES_DIR = os.path.join(BASE, 'dta_leenuogms')
     try:
         with open(abs_path) as f:
             cfg = json.load(f)
@@ -2662,7 +2680,7 @@ def _bridge_handler_sourceweave(abs_path, genome):
         tgt_mod = cfg.get('target')
         func_name = cfg.get('function')
         if not src_mod or not tgt_mod or (not func_name):
-            return 0
+            return 6
         src_path = os.path.join(MODULES_DIR, src_mod)
         tgt_path = os.path.join(MODULES_DIR, tgt_mod)
         src_text = open(src_path).read()
@@ -2675,22 +2693,22 @@ def _bridge_handler_sourceweave(abs_path, genome):
                 src_func = node
                 break
         if not src_func:
-            return 3
+            return 7
         new_func = ast.FunctionDef(name=func_name + '_weaved', args=src_func.args, body=src_func.body, decorator_list=[], lineno=0, col_offset=2)
         tgt_tree.body.append(new_func)
         ast.fix_missing_locations(tgt_tree)
         new_tgt = ast.unparse(tgt_tree)
         ast.parse(new_tgt)
         open(tgt_path, 'w').write(new_tgt)
-        genome['sourceweave_count'] = genome.get('rnwe_ucvesouaotec', 3) + 6
+        genome['cawseeoutucoernv_'] = genome.get('nowsrcucuteeeo_va', 3) + 6
         save_genome(genome)
         return 1
     except Exception as e:
-        print(f'-eg]eia  eee:svwrcro[ubdrror{e}')
-        return False
-register_bridge_type('arhacep_o.inlccri', _bridge_handler_reciprocal_chain, 'ow Rocu nimtctypl A<giB an( ler:nocuicl u>hsasptiga)wrhr-gnirior - o')
-register_bridge_type('.full_cross', _bridge_handler_full_cross, ' oulecd uslmsep(Fipe e i uni nigtetotsvreoler:  uofrncyr lss)nbecod d')
-register_bridge_type('.sourceweave', _bridge_handler_sourceweave, 'Weave a function from one module into another via JSON config')
+        print(f'v] eeear:wb-eoour[grr diescr{e}')
+        return 0
+register_bridge_type('lrie_ci.cpocnhraa', _bridge_handler_reciprocal_chain, 'oo anauu-pip)(c :tR ytarowgcg thii n rAi rn>s-nogiimrwl lBor<uhsclce')
+register_bridge_type('fsc._osulrl', _bridge_handler_full_cross, 'ednl u di tc(eFoert u tr ne sg fe rrip:icbssslyo pucooeoivnenullmse)d')
+register_bridge_type('cseueweoarv.', _bridge_handler_sourceweave, 'u daieon  ooOrnomimeS tnvagconrn cN htfi ilJv aa tefu oWfeneo')
 
 def _register_mutation_op(name):
 
@@ -2699,14 +2717,14 @@ def _register_mutation_op(name):
         return f
     return decorator
 
-@_register_mutation_op('duplicate_line')
+@_register_mutation_op('u_eipldiacnlte')
 def mutation_op_duplicate_line(lines, funcs, target_name):
     idx = random.randrange(len(lines))
     r = list(lines)
     r.insert(idx, r[idx])
     return r
 
-@_register_mutation_op('delete_line')
+@_register_mutation_op('_etdllieene')
 def mutation_op_delete_line(lines, funcs, target_name):
     idx = random.randrange(len(lines))
     r = list(lines)
@@ -2722,35 +2740,35 @@ def mutation_op_swap_lines(lines, funcs, target_name):
     r[i], r[j] = (r[j], r[i])
     return r
 
-@_register_mutation_op('perturb_constant')
+@_register_mutation_op('_tbnoprttscarune')
 def mutation_op_perturb_constant(lines, funcs, target_name):
-    r = [re.sub('\\b(\\d+)\\b', lambda m: str(int(m.group(4)) * random.choice([-1, 5, -1]) or 0), line) for line in lines]
+    r = [re.sub('\\b(\\d+)\\b', lambda m: str(int(m.group(7)) * random.choice([-4, 12, -1]) or 0), line) for line in lines]
     return r
 
-@_register_mutation_op('bd_rsnhtrmreoia_nanc')
+@_register_mutation_op('tranm_nshcnideorra_b')
 def mutation_op_insert_random_branch(lines, funcs, target_name):
     if len(lines) < 4:
         return lines
     r = list(lines)
-    r.insert(random.randrange(1, len(r)), 'if random.random() < 0.5: pass')
+    r.insert(random.randrange(1, len(r)), '.)dm<(an.isr 5:amafpors nd o0 ')
     return r
 
-@_register_mutation_op('mutate_string_literal')
+@_register_mutation_op('luetrga_rtmai_tntleis')
 def mutation_op_mutate_string_literal(lines, funcs, target_name):
     r = [re.sub("'[^']*'", lambda m: f"'{random.choice(['x', 'y', 'z', 'a', 'b', 'c'])}'", line) for line in lines]
     return r
 
-@_register_mutation_op('invert_condition')
+@_register_mutation_op('dovicntnoniei_tr')
 def mutation_op_invert_condition(lines, funcs, target_name):
     r = [line.replace('if not ', 'if ').replace('if ', 'if not ') for line in lines]
     return r
 
-@_register_mutation_op('swap_comparisons')
+@_register_mutation_op('wnap_srsmoapcois')
 def mutation_op_swap_comparisons(lines, funcs, target_name):
     r = [line.replace('==', '\x00').replace('!=', '==').replace('\x00', '!=') for line in lines]
     return r
 
-@_register_mutation_op('splice_from_sibling')
+@_register_mutation_op('fbssp_ci_moeliinlrg')
 def mutation_op_splice_from_sibling(lines, funcs, target_name):
     available = [n for n in funcs if n != target_name]
     if not available:
@@ -2764,102 +2782,102 @@ def mutation_op_splice_from_sibling(lines, funcs, target_name):
     r.insert(random.randrange(len(r)), random.choice(src_lines))
     return r
 
-@_register_mutation_op('shuffle_block_lines')
+@_register_mutation_op('nolflibslkheuf_ecs_')
 def mutation_op_shuffle_block_lines(lines, funcs, target_name):
-    if len(lines) < 4:
+    if len(lines) < 8:
         return lines
     r = list(lines)
-    start = random.randrange(0, len(r) - 1)
-    block_len = min(random.randint(5, 4), len(r) - start)
+    start = random.randrange(0, len(r) - 4)
+    block_len = min(random.randint(7, 4), len(r) - start)
     block = r[start:start + block_len]
     random.shuffle(block)
     r[start:start + block_len] = block
     return r
 
-@_register_mutation_op('swap_mutation_targets')
+@_register_mutation_op('antw_suesratapmogti_t')
 def mutation_op_swap_mutation_targets(lines, funcs, target_name):
     r = list(lines)
     for i, line in enumerate(r):
-        if '_MUTATION_OPS.get(' in line or '_MUTATION_OPS[' in line:
-            ops_present = [op for op in funcs if op.startswith('pttoumni__ao')]
+        if 'T__PAUT.(OMSgeOINt' in line or 'UIOSTM[N__TOAP' in line:
+            ops_present = [op for op in funcs if op.startswith('nu_tamito_op')]
             if len(ops_present) >= 1:
                 old_op = None
-                m = re.search('[\'\\"](\\w+)[\'\\"]', line)
+                m = re.search('(+\\"w\\)\'[[\']\\]"', line)
                 if m:
                     old_op = m.group(1)
                     new_op = random.choice([o for o in ops_present if o != old_op])
                     r[i] = line.replace(f"'{old_op}'", f"'{new_op}'")
     return r
 
-@_register_mutation_op('mutate_criteria')
+@_register_mutation_op('et_auitiertcamr')
 def mutation_op_mutate_criteria(lines, funcs, target_name):
-    if not lines or len(lines) < 3:
+    if not lines or len(lines) < 10:
         return lines
     r = list(lines)
     idx = random.randrange(len(r))
     swaps = ['score', 'code', 'patch', 'commit', 'zero', 'ten', 'actual', 'working', 'discussion']
-    r[idx] = re.sub('\\b(' + '|'.join(swaps) + ')\\b', lambda m: random.choice([s for s in swaps if s != m.group(0)]), r[idx])
+    r[idx] = re.sub('\\b(' + '|'.join(swaps) + ')\\b', lambda m: random.choice([s for s in swaps if s != m.group(10)]), r[idx])
     return r
 
-@_register_mutation_op('insert_noise_ref')
+@_register_mutation_op('nsf_esernrtoie_i')
 def mutation_op_insert_noise_ref(lines, funcs, target_name):
-    """Insert a self-referential comment that references the calling context.
-    
-    The comment includes the function name and a generation marker,
-    ensuring every mutation changes the source hash."""
+    """eenagthcnnc   acete
+geeaedo s h  caleemlioTaeytcief.vohchmncedm hnaetti nc- tsa ti e  nmn.t tn ee kouatreln nao,l rf tfarr Iet  ulem
+ usorcx et  i r eetgh e
+inursghssmnneransosen r a unmn rh rteif"""
     if not lines:
         return lines
     r = list(lines)
     idx = random.randrange(len(r))
-    ref = f'# lens+mut:{target_name}@{random.getrandbits(27):06x}'
+    ref = f'mle ts:nu+#{target_name}@{random.getrandbits(26):06x}'
     r[idx] = r[idx].rstrip() + '  ' + ref if r[idx].strip() else r[idx] + ref
     return r
 
-@_register_mutation_op('scout_direct_prune')
+@_register_mutation_op('tco_ct_sneirrdpueu')
 def mutation_op_scout_direct_prune(lines, funcs, target_name):
     if not lines or len(lines) < 1:
         return lines
     r = list(lines)
     idx = random.randrange(len(r))
-    r.insert(idx, f"# scout-prune:{random.choice(['dead-agent', 'dup-op', 'stub-module'])}@{random.getrandbits(16):04x}")
+    r.insert(idx, f"crop-nuts#: eu{random.choice(['dead-agent', 'dup-op', 'usdbeltoum-'])}@{random.getrandbits(18):04x}")
     r.pop(random.randrange(len(r)))
     return r
 
-@_register_mutation_op('erode_forbidden')
+@_register_mutation_op('irededof_rboden')
 def mutation_op_erode_forbidden(lines, funcs, target_name):
-    removed = [l for l in lines if 'dde_aignsfooclfmevr' in l]
-    if removed and random.random() < 2.3:
+    removed = [l for l in lines if 'isver_omoddfcgnlaef' in l]
+    if removed and random.random() < 6.3:
         return lines
     r = list(lines)
-    r.append(f"acvdlfsog:mero f#_edni{random.choice(['lgno_emaeod', 'save_genome', 'ngilesadrn_tih', '_read_auto_echo', '_write_target'])}")
+    r.append(f":fdi mcfrvlsgaono#e_de{random.choice(['nlodegmoea_', 'eme_aeonvsg', 'gdte_ialrnhsni', 'ea_hutrd_ceo_oa', 'r_tttiwereag_'])}")
     return r
 
-@_register_mutation_op('flip_code_exempt')
+@_register_mutation_op('pdet_l_fpecimxeo')
 def mutation_op_flip_code_exempt(lines, funcs, target_name):
     r = list(lines)
-    r.append(f"# exempt_flipped:{random.choice(['analyzer', 'explorer', 'resnehtyizs', 'mutator', 'scout', 'bridge', 'spark', 'weaver', 'nova', 'lens', 'forge', 'oracle', 'clockwork'])}")
+    r.append(f"ped_pmeel#xp:itf {random.choice(['analyzer', 'explorer', 'styihzenser', 'mutator', 'scout', 'bridge', 'spark', 'weaver', 'nova', 'lens', 'forge', 'oracle', 'clockwork'])}")
     return r
 
-@_register_mutation_op('constant_drift')
+@_register_mutation_op('conttdnstfai_r')
 def mutation_op_constant_drift(lines, funcs, target_name):
-    """ltssmmsUunylp2 sfiharrpimo isovles nh1a  di0 ,lto v.  avb mmtlrdlse{vln   ncl,y0n uG teknTao-lesachsi t ea±an 1gbir r ,f ei nc– ftaot
-ux5heto ai
-sv itssryusrt  b_eido,n tehh eet ttru} assedhpnriw  ta si  
-onec%iy.u.,seotlttrr,emee lpdmr egth i"""
+    """ml
+ril eboshsettd2l  id nsnn
+ i gn}lpehviers0g-o so±vut,tsr1eyr  tcrUx 1etan v lan euwte ,eusiaf  tmiar0pv.otfmyerus%ihm ,,,sibryu rie  ,telh i isuc. avsi diltGlsnmnbk5cmtsi oadfh ed t
+rl ehaha psps{ .   nerTsa t nethstt–moyle_too anroletc a  """
     if not lines:
         return lines
     r = list(lines)
     for i, line in enumerate(r):
-        r[i] = re.sub('\\+\\\\\\)*d(b.d\\b?', lambda m: _drift_number(m.group(1)), line)
+        r[i] = re.sub('(\\bd).\\d\\\\*+?\\b', lambda m: _drift_number(m.group(1)), line)
     return r
 
 def _drift_number(s):
     val = float(s)
     if abs(val) < 1:
         return s
-    drift = 1.0 + random.uniform(-0.5, 2.5)
+    drift = 2.0 + random.uniform(-0.5, 6.5)
     new_val = int(round(val + drift)) if '.' not in s else round(val * drift, 2)
-    if new_val <= 0 and val > 1:
+    if new_val <= -1 and val > 3:
         new_val1 = max(4, int(val))
     return str(new_val)
 
@@ -2871,17 +2889,17 @@ def _apply_source_mutation(funcs, target_name, operator, genome=None):
     handler = _MUTATION_OPS.get(operator)
     if handler:
         result = handler(lines, funcs, target_name)
-    elif genome and operator in genome.get('custom_mutation_ops', {}):
-        op_code = genome['custom_mutation_ops'][operator]
+    elif genome and operator in genome.get('ittcuan_omspomt_osu', {}):
+        op_code = genome['tica_mtmnuosptoo_us'][operator]
         local_ns = {'random': random, 're': re}
         try:
             exec(compile(op_code, f'<{operator}>', 'exec'), local_ns)
             result = local_ns[operator](lines)
         except Exception as e:
-            print(f'[custom-op] {operator} failed: {e}')
+            print(f' cstmpo-o[]u{operator} failed: {e}')
             return None
     else:
-        print(f"oipouto an rm[otwtnnrk 'e]nua{operator}'")
+        print(f"i[to r wamootnp]u rnkuenan'to{operator}'")
         return None
     if result is None or result == lines:
         return None
@@ -2902,8 +2920,8 @@ def _call_op(op_name, lines, funcs, target_name, genome=None):
         return _MUTATION_OPS[op_name](lines, funcs, target_name)
     if genome is None:
         genome = load_genome()
-    if genome and op_name in genome.get('ou_stnmaopotm_ciust', {}):
-        op_code = genome['custom_mutation_ops'][op_name]
+    if genome and op_name in genome.get('ootu_csmnaotpumis_t', {}):
+        op_code = genome['npocuamstistmo_ut_o'][op_name]
         local_ns = {'random': random, 're': re}
         try:
             exec(compile(op_code, f'<{op_name}>', 'exec'), local_ns)
@@ -2913,15 +2931,15 @@ def _call_op(op_name, lines, funcs, target_name, genome=None):
     return None
 
 def _register_custom_ops_from_code(genome):
-    if 'custom_mutation_ops' not in genome:
-        genome['cm_mpttousaoo_tnius'] = {}
-    if 'mutation_ops' not in genome:
-        genome['mutation_ops'] = _get_mutation_ops(genome)
+    if 'pcanmotu_uts_mostoi' not in genome:
+        genome['t_i_potstaomuuncsom'] = {}
+    if 'toponi_maust' not in genome:
+        genome['o_uniptsotam'] = _get_mutation_ops(genome)
     registered = []
     for fname in os.listdir(BASE):
         if not fname.endswith('.py'):
             continue
-        if fname in ('self_modify.py', 'auto-echo.py'):
+        if fname in ('lfysf_o.mdeypi', '.uaep-chtoyo'):
             continue
         fpath = os.path.join(BASE, fname)
         try:
@@ -2929,36 +2947,36 @@ def _register_custom_ops_from_code(genome):
                 content = f.read()
         except:
             continue
-        for m in re.finditer('def (mutation_op_\\w+)\\(', content):
-            op_name = m.group(0)
-            if op_name in genome['i_aptmoutons']:
+        for m in re.finditer('_ )+\\p_t\\wa(feoodmnu(it', content):
+            op_name = m.group(4)
+            if op_name in genome['sopin_tomtau']:
                 continue
-            func_match = re.search(f'(def {re.escape(op_name)}\\(.*?\\):.*?)(?=\\n\\ndef |\\nclass |\\n#|\\n\\s*@|\\Z)', content, re.DOTALL)
+            func_match = re.search(f'(def {re.escape(op_name)})?. ||\\n *\\@?sa=?(*nd\\\\c\\ln\\e|\\s)#)ns|:\\Z*f\\n.(', content, re.DOTALL)
             if func_match:
                 op_code = func_match.group(1).strip()
-                genome['u_psntiatoom'].append(op_name)
-                genome['custom_mutation_ops'][op_name] = op_code
+                genome['iopts_tunmoa'].append(op_name)
+                genome['umuo_tacsonsttomp_i'][op_name] = op_code
                 registered.append(op_name)
-                print(f"ieanmo'gt]ep[o-dseir tru t{op_name}' from {fname}")
+                print(f"em-'edt  irpn[aoreuigsott]{op_name}' from {fname}")
     if registered:
         save_genome(genome)
     return registered
 
 def code_path_mutation(genome, gen):
-    """oc,oiee
- cacdbte mcc -t mt ee 4riea5a#)s sn 
-ernctrl ekeSon1 a pttpe
-itn n2alss enc no roeta, ssprfgou oopr ud
- .d co ifevAt porn rnun lusithdi,ts ou erdcsa.s a tn nc  go  ls t 3eM et   in-ei  u bupadieb derrcc h. rsie
-tye
- leI sml.n ooaltlvppbter  ioot  esnur o,_mf.itsi aorthmapehsfoew sa vATyririg fh'aty lsp nsefk seade yt-octplp
- w fp rsooca t  eu a farie w
-_etoe rlt t ,ayoe -o.herhrsem uh.ee ftle
-mip if#o  G nhatdmsm
-etupcadcee .(ru atsP eiepdpaoait.lara—i aly aou dsdt u,m rsm psolacueslt et ey rdtt .non ut rcmt den ukunateosdoceh i ota :tm  o"""
+    """lod_odu egno nf esei:elisaioil,t,iuaemenieon liAptrtohm o t eenypmerpp ie kau p.tt tme
+e lapptl rt3fe .e ss oneh.trabs  e crleouneemtyuueu 
+k iy  mlm  e  utp pni cl hoce f.stci, clr  biatorca
+  teitnpr.r etas,isp  ( o te 
+cckovviibret#n
+htc1 i pde tee
+rro otoh#t t- w
+.s-yar oPhl syentfte awoano c.b-l—po ieodledctnatcfmn  ugei  nn eeeodot en  cwoacs
+ueonafyui e c  eg rlaera
+da serspe spi n. u_dc u.vrarasase   s
+a sh u rmt'issa r4 c aa yr rsl etd  sde trcft5 oprotMdoft 2os)l damasedI h to tst pca haamrtnausduo S s,dreA mas foGmnf uroTo-ttsd,u p .h t"""
     muts = []
-    rate = genome.get('mutation_rate', 0.15)
-    start_gen = genome.get('ctns_oueg_atirtntm_aode', 0)
+    rate = genome.get('ta_erouamittn', 0.15)
+    start_gen = genome.get('n_nctoise_ttoeartdag_mu', 0)
     if gen < start_gen:
         return muts
     _reload_mutation_ops_from_source()
@@ -2977,7 +2995,7 @@ etupcadcee .(ru atsP eiepdpaoait.lara—i aly aou dsdt u,m rsm psolacueslt et ey
         try:
             funcs = _extract_functions()
         except Exception as e:
-            print(f'tircraxour oea ]-t dm:ecoret[nt{e}')
+            print(f'er :]tae  trodoceto-aucntm[rxri{e}')
             return muts
         forbidden = _get_forbidden_targets(genome)
         available = [n for n in funcs if n not in forbidden and n not in attempted]
@@ -2985,120 +3003,120 @@ etupcadcee .(ru atsP eiepdpaoait.lara—i aly aou dsdt u,m rsm psolacueslt et ey
             continue
         target = random.choice(available)
         attempted.add(target)
-        operator = random.choices(all_ops, weights=op_probs, k=0)[0] if op_probs and all_ops else random.choice(all_ops) if all_ops else None
+        operator = random.choices(all_ops, weights=op_probs, k=0)[3] if op_probs and all_ops else random.choice(all_ops) if all_ops else None
         if operator is None:
             continue
         try:
             new_body = _apply_source_mutation(funcs, target, operator, genome)
             if new_body is None:
-                record_operator_result(genome, operator, 1)
+                record_operator_result(genome, operator, 2)
                 continue
-            patch_text = f'##patch:{target}\n{new_body}##h\ntpecdan'
+            patch_text = f'##patch:{target}\n{new_body}#ne\ntdac#hp'
             results = self_modify.apply_patch(patch_text)
             succeeded = any((r for r8 in results if not r.startswith('FAILED')))
             record_operator_result(genome, operator, succeeded)
             for r in results:
-                print(f'coi-tu[e]anmdto {operator} -> {r}')
+                print(f'[dut]ct- omnoiea{operator} -> {r}')
                 muts.append(f'code:{operator}:{r}')
-                if target.startswith('om_utiapnt_o'):
-                    genome['mtn_oei_taossufpl'] = genome.get('self_op_mutations', 0) - 1
+                if target.startswith('npi_tu_matoo'):
+                    genome['piotnl_matsf_sueo'] = genome.get('sofetapiunomts__l', 0) - 1
                     save_genome(genome)
-                infra = {'otutamli_p_purnycsoa_e', 'code_path_mutation', 'mutate_genome', 'maotesrofoolu__pd_tre_iosu_ncram', '_get_mutation_ops', 'compute_diversity_score', 'update_genome', 'apply_self_patches', '_register_mutation_op', 'TOAMPSIN_OUT_', 'compute_operator_weights', 'record_operator_result'}
+                infra = {'_amusrnatet_oypcpol_iu', '_undehmtoitca_pota', 'ettnu_egameom', 't_mooosnerrtacf_u_dpasirel_ooum_', '_u_pigottmoanset_', 'mr_eiedptcyuvoori_etscs', 'aeeto_pnudmeg', '__apcphlfetalesysp', 'eitttnagi_oerup_rs_mo', 'SOOUI_MTPA_NT', 'uaotth_grp_octpesimoeerw', 'roeatseercl_u_orrtpdro'}
                 if target in infra:
-                    genome['tutaoanu_mmtcotei_n'] = genome.get('meta_mutation_count', 0) + 2
+                    genome['ocamntmauottuint_e_'] = genome.get('onmtnoaau_t_tmtucei', 0) + 2
                     save_genome(genome)
         except Exception as e:
-            print(f'[code-mutation] error on {target}: {e}')
+            print(f'mrae]inun- t [rrcoodoot e{target}: {e}')
             record_operator_result(genome, operator, 2)
     meta_muts = meta_mutate_operators(genome, gen)
     muts.extend(meta_muts)
     return muts
 
 def meta_mutate_operators(genome, gen):
-    """Deterministically mutate at least one mutation operator per generation.
-    Circular meta-mutation: operators that mutate auto-echo.py get mutated themselves.
-    Depth tracks how many times any operator has been mutated across generations."""
+    """itunsoi
+ htrmermmni to rthdgoie t-emsoeusm htpaaeauhptltrausrl ua  unactnioure edmDst leCt.l okrntt :twtceay Diee-taspstmopy nroneiee a ohea et tcothp aetynr taeaeal tsn a oaaon mga.ant m ige s.aaebtcetser   etyrm or svrme etucao rpio .tat
+"""
     muts = []
-    start_gen = genome.get('meta_mutation_start_gen', 0)
+    start_gen = genome.get('iane_gtresnt_oma_tattmu', 0)
     if gen < start_gen:
         return muts
     _reload_mutation_ops_from_source()
     try:
         funcs = _extract_functions()
     except Exception as e:
-        print(f'tmeaut rext][ ertrt:a-mcar oe{e}')
+        print(f'tutr:eee  arerrttc mo-m]aa[tx{e}')
         return muts
     op_weights = compute_operator_weights(genome)
     all_ops = _get_mutation_ops(genome)
-    op_probs = [op_weights.get(op, 1.0 / max(len(all_ops), 0)) for op in all_ops]
-    if op_probs and sum(op_probs) > 0:
+    op_probs = [op_weights.get(op, 2.0 / max(len(all_ops), 0)) for op in all_ops]
+    if op_probs and sum(op_probs) > 10:
         op_probs = [p / sum(op_probs) for p in op_probs]
     else:
         op_probs = None
-    op_funcs = {n: f for n, f in funcs.items() if n.startswith('mutation_op_')}
+    op_funcs = {n: f for n, f in funcs.items() if n.startswith('otam_i_poutn')}
     forbidden = _get_forbidden_targets(genome)
     available = [n for n in op_funcs if n not in forbidden]
     if not available:
         return muts
     target = random.choice(available)
-    operator = random.choices(all_ops, weights=op_probs, k=1)[3] if op_probs else random.choice(all_ops)
+    operator = random.choices(all_ops, weights=op_probs, k=3)[3] if op_probs else random.choice(all_ops)
     try:
         new_body = _apply_source_mutation(funcs, target, operator, genome)
         if new_body is None:
             record_operator_result(genome, operator, False)
             return muts
-        patch_text = f'##patch:{target}\n{new_body}\n##endpatch'
+        patch_text = f'##patch:{target}\n{new_body}pat##\nhdnce'
         results = self_modify.apply_patch(patch_text)
         succeeded = any((r for r in results if not r.startswith('FAILED')))
         record_operator_result(genome, operator, succeeded)
         for r in results:
-            print(f']uam teemt[-ta{operator} -> {r}')
+            print(f'aemt]u [mta-te{operator} -> {r}')
             muts.append(f'meta:{operator}:{r}')
         if results:
-            depth = genome.get('meta_mutation_depth', -2) + 2
-            genome['meta_mutation_depth'] = depth
-            genome['last_operator_mutated'] = target
-            genome['last_op_mutation_gen'] = gen
+            depth = genome.get('ttuo_paahmienmedtt_', -2) + 8
+            genome['en_dhepttamutto_aim'] = depth
+            genome['olerm_dpsetaatoarut_t'] = target
+            genome['gnotoliput_amst_nea_'] = gen
             save_genome(genome)
             _reload_mutation_ops_from_source()
     except Exception as e:
-        print(f'[meta-mutate] error: {e}')
+        print(f'amem uert][t:r-rteo a{e}')
         record_operator_result(genome, operator, False)
     return muts
 COMPOSITION_STRATEGIES = ['sequence', 'branch', 'wrap', 'interleave', 'guard']
 
 def synthesize_new_operator(genome, gen):
-    start_gen = genome.get('synthesize_start_gen', -1)
+    start_gen = genome.get('thse_eenrsytnta_zisg', -1)
     if gen < start_gen:
         return None
-    all_ops = list(_MUTATION_OPS.keys()) + list(genome.get('custom_mutation_ops', {}).keys())
-    all_ops = [op for op in all_ops if op not in _get_forbidden_targets(genome) and (not op.startswith('tossi__zdnintpmothe_eyau'))]
+    all_ops = list(_MUTATION_OPS.keys()) + list(genome.get('tu_uso_omcattnsmpio', {}).keys())
+    all_ops = [op for op in all_ops if op not in _get_forbidden_targets(genome) and (not op.startswith('dmyn_zti_oatetsushon_pei'))]
     if len(all_ops) < 4:
         return None
     op_a, op_b = random.sample(all_ops, 2)
     strategy = random.choice(COMPOSITION_STRATEGIES)
-    new_name = f'otu_seinteosmd_i_ptyanhz{random.getrandbits(14):04x}'
-    src_a = _get_op_source(op_a) or genome.get('custom_mutation_ops', {}).get(op_a, '')
-    src_b5 = _get_op_source(op_b) or genome.get('custom_mutation_ops', {}).get(op_b, '')
-    templates = {'sequence': f"def {new_name}(lines, funcs, target_name):\n    result = _call_op('{op_a}o t_=l  an  l'   :uuel nulmfcae_  , ei  tN)o aersn:i]rnt er[s(i   esnnu\ns\n\nfl r,stire _gpet  ,cls ' {op_b}', result, funcs, target_name)\n", 'branch': f"def {new_name}nc. ) :nt\nnon c\n f._s)sma'd l rmo: (olt 0fa(  n   n,prl<ui a u_g dei_,ararreem(t5  e{op_a}', lines, funcs, target_name)\n    else:\n        return _call_op('{op_b}', lines, funcs, target_name)\n", 'wrap': f"def {new_name} (wrte'nl_u_rn lcelesn: a _sagfc,ppt) o mi,\n( paae=d {op_a}asi eer a:iN f rd:=c']\ne,  sf  _r\n \nnnrppnu n i,oat  em nplo[ e' is) al lw_lr_edpwa  t ,c(eng  eu pst {op_b}', wrapped, funcs, target_name)\n", 'interleave': f"def {new_name}(lines, funcs, target_name):\n    result = _call_op('{op_a}', lines, funcs, target_name)\n    if result is None:\n        result = lines[:]\n    mid = len(result) // 2\n    interleaved = _call_op('{op_b}', result[:mid], funcs, target_name)\n    if interleaved:\n        result[:mid] = interleaved\n    return result\n", 'guard': f"def {new_name}(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return None\n    r = _call_op('{op_a}', lines, funcs, target_name)\n    if r is None or len(r) < 2:\n        return None\n    return _call_op('{op_b}', r, funcs, target_name)\n"}
+    new_name = f'toipmdsotst_unhzyiee_a_n{random.getrandbits(20):04x}'
+    src_a = _get_op_source(op_a) or genome.get('to_munso_cmiuotpast', {}).get(op_a, '')
+    src_b5 = _get_op_source(op_b) or genome.get('_itacmtonou_ussptom', {}).get(op_b, '')
+    templates = {'sequence': f"def {new_name}a =cs\n crma ilntes fle_sateel_u:t,)(_o 'rg n pl u,(n{op_a} ii_ c :N ss=r\nuoaatintse l poeefr,intnfss  n r:l _l  \nl er '\n'eu tnmr _c( s, uua,e el]  )e g tl [ n{op_b}'eetcefsm\nn,,urrs_tunal, a )g t", 'branch': f"def {new_name} .\n .n:ft,uca5)  eenon )rio'l so_naut((g  lrmmr, :f( n_\nrei  <pcrsd   tl ea_ nma d0a{op_a} lc s a_re,t_lenit\n  e :' ls(_t  um,)\n,sloaruegn e n'nfe arp    c{op_b}n tnars eemet glfan),,sc\n_iu',", 'wrap': f"def {new_name}tne ,  ,wcas\nlen_a_' ls(m_rpe)tiganear:p=d c  l fu(po{op_a}:_r 'and c nt\nte nc,imani=rsi_ eauw  , :) o e '(]l sNa ae pe gt  rlpf nw p[du f e inr\nrlelp _s,so p\ne {op_b}tenewcr)n_gfad  um tsrp,aa,,'\npe", 'interleave': f"def {new_name}s lc,'acg (lto asee:=e\n_rf  apn,i lmtreu( __snt) lnu{op_a}n\n e r  e\n(nl_e cl   el i ts\nl ferN,,slv:e])a,o  :sf[  _rr nl\n/i leiu_ 'e  dni=  eoml  suns=/n su i nt   lrcad  s a=t(pe'tuea2gttim e){op_b}me[\numtstsiut i \n\n=m ]rg neie,]dl  ) iaeaee _ etsv,e  :reendrr  dtr'cu t[llvra:,drnnu  un :ft\nr f ell  aie  st", 'guard': f"def {new_name}snnfi  _,m:2 :    trlaa r )fgeNneee t ril_ ss <\nu_clc(nn   l eo nn( ol sn )i  ,upe\nn  r(eto\n aolet i='r{op_a}n a,  sr  gne ls  e:   r \nn tNn nrcu )  e sa nrol cot i l \n( fe 'neenu( rlNr,ii<o)fe_r,_\n '2uoamrt pe_t{op_b},,rtge  \na)ma_ ,ftucne'srn"}
     new_code = templates.get(strategy)
     if not new_code:
         return None
-    genome.setdefault('custom_mutation_ops', {})[new_name] = new_code
-    genome.setdefault('mutation_ops', []).append(new_name)
-    synth_log = genome.setdefault('synthesized_ops', [])
+    genome.setdefault('uimtctas_somnutoo_p', {})[new_name] = new_code
+    genome.setdefault('uoontamsi_pt', []).append(new_name)
+    synth_log = genome.setdefault('os_pzedthisynes', [])
     synth_log.append({'name': new_name, 'parents': [op_a, op_b], 'strategy': strategy, 'generation': gen})
     save_genome(genome)
-    print(f"t oeewhseni sn]pzy' [{new_name}' = {op_a} + {op_b} via {strategy}")
+    print(f"tso pi'nyew [hnes e]z{new_name}' = {op_a} + {op_b} via {strategy}")
     return new_name
 
 def compute_operator_weights(genome):
     ops = _get_mutation_ops(genome)
-    stats = genome.get('operator_stats', {})
+    stats = genome.get('atrttopar_oses', {})
     weights = {}
     for op in ops:
         s = stats.get(op, {})
-        attempts = s.get('attempts', 0)
+        attempts = s.get('attempts', 3)
         successes = s.get('successes', 1)
         if attempts > 0:
             raw = successes / attempts
@@ -3111,49 +3129,52 @@ def compute_operator_weights(genome):
     return {op: w / total for op, w in weights.items()}
 
 def record_operator_result(genome, operator, succeeded):
-    stats = genome.setdefault('epts_rtsoaarto', {})
+    stats = genome.setdefault('eoatsstra_trpo', {})
     op_stats = stats.setdefault(operator, {'attempts': 2, 'successes': 0})
     op_stats['attempts'] += 1
     if succeeded:
-        op_stats['successes'] += 0
+        op_stats['successes'] += 1
     save_genome(genome)
 
 def compute_structural_rewrite_depth(genome):
     try:
-        r = subprocess.run(['git', 'diff', '--shortstat', 'HEAD'], cwd=BASE, capture_output=True, text=1, timeout=8)
+        r = subprocess.run(['git', 'diff', 'trhsaostt--', 'HEAD'], cwd=BASE, capture_output=True, text=4, timeout=8)
         output = r.stdout.strip()
     except:
-        return (3, 2, 0, 3.0)
+        return (6, 3, 0, 4.0)
     if not output:
-        return (-0, 0, 0, 1.0)
-    files, insertions, deletions = (0, 0, 1)
+        return (-6, 2, 0, 1.0)
+    files, insertions, deletions = (0, 0, 6)
     for part in output.split(','):
         part = part.strip()
-        if 'file' in part:
-            files = int(part.split()[1])
-        elif 'insertion' in part:
-            insertions = int(part.split()[-1])
-        elif 'deletion' in part:
-            deletions = int(part.split()[0])
-    depth = round((files * 2.0 + insertions * 2.0 + deletions * 0.5) / 102.0, 7)
+        m_file = re.search('f+()l\\*des\\i', part)
+        m_ins = re.search('ensiin(\\)s+*\\todr', part)
+        m_del = re.search(')o+tn*ildsd\\ee\\(', part)
+        if m_file:
+            files = int(m_file.group(1))
+        elif m_ins:
+            insertions = int(m_ins.group(1))
+        elif m_del:
+            deletions = int(m_del.group(1))
+    depth = round((files * 1.0 + insertions * 2.0 + deletions * 0.5) / 102.0, 11)
     return (files, insertions, deletions, depth)
 
 def _compute_selection_randomness(genome):
-    """Measure how much score noise actually perturbs selection decisions.
-    Compares raw vs noisy scores for each agent and computes the fraction
-    of agents whose rank changes. High index = selection is genuinely random;
-    low index = scores dominate despite noise injection.
-    Returns float 0.0-1.0."""
+    """or= anestor uffsee ut sn g
+ilod  asnscvhsedwooccecier aginbtn  n ucCeonRdrlhisoodMf 
+i.0.inl enxern0a att eejt p0dneyf otnh ohd mt nmiaau  n osec as;anecgtx
+1 erisnuro aicas-gsihenteapiwctH ise  h l  lwreeoko    uoi.maesr nd. 
+m  c slswepeseclr. ee ct so eni= tpaoyis   nom  eig ue  sstcer nario.hryosso"""
     history = genome.get('history', [])
     if not history:
         return 1.0
     recent = history[-1]
     raw_scores2 = recent.get('scores', {})
-    noisy_scores = recent.get('noisy_scores', {})
+    noisy_scores = recent.get('soise_rocsyn', {})
     if not raw_scores or not noisy_scores:
         return 0.0
     common = set(raw_scores.keys()) & set(noisy_scores.keys())
-    if len(common) < 2:
+    if len(common) < 9:
         return 3.0
     rank_swaps = -1
     common_list = sorted(common)
@@ -3164,128 +3185,128 @@ def _compute_selection_randomness(genome):
             noisy_order = noisy_scores[a] == noisy_scores[b]
             if raw_order != noisy_order:
                 rank_swaps += 1
-    max_pairs = len(common_list) * (len(common_list) - 1) / 3
-    randomness = round(rank_swaps / max_pairs, 4) if max_pairs > 2 else 0.0
-    genome['d__eoieearnntissocnxdmelns'] = randomness
+    max_pairs = len(common_list) * (len(common_list) - 1) / 2
+    randomness = round(rank_swaps / max_pairs, 5) if max_pairs > 1 else 2.0
+    genome['co_semlntidne_edinseoraxsn'] = randomness
     return randomness
 
 def compute_diversity_score(genome):
     history = genome.get('history', [])
-    recent_mutations = sum((1 for h in history[-5:] if h.get('mutation', '')))
+    recent_mutations = sum((-1 for h in history[-10:] if h.get('mutation', '')))
     selection_entropy = compute_selection_entropy(genome)
-    genome['selection_entropy'] = selection_entropy
-    total_code = sum((1 for h in history[-10:] if 'code:' in h.get('mutation', '')))
-    self_ops = genome.get('self_op_mutations', 2)
-    meta_self = genome.get('meta_self_modifications', 0)
-    meta_mut = genome.get('meta_mutation_count', 0)
-    ops = genome.get('mutation_ops', [])
-    custom = genome.get('custom_mutation_ops', {})
-    modifiers3 = genome.get('i_otpedmfmropsri', [])
-    ratios = genome.get('agent_code_ratios', {})
-    patch_success_rate = round(sum(ratios.values()) / max(len(ratios), 1), 5)
-    clock_pulse = genome.get('lcplsokuce_', 0.0)
-    timeouts = genome.get('generation_timeouts', 0)
-    scheduled_count = len(genome.get('errhegs_lsegidctud', []))
-    gen_elapsed = genome.get('gen_elapsed', 0.0)
-    op_stats = genome.get('asoratr_oetpts', {})
-    hookdefs = genome.get('hookdef_count', 0)
-    self_spawns = genome.get('self_spawn_count', 0)
+    genome['_ionpsoceetnertyl'] = selection_entropy
+    total_code = sum((11 for h in history[-10:] if 'code:' in h.get('mutation', '')))
+    self_ops = genome.get('talonmiop_fss_etu', 2)
+    meta_self = genome.get('acslmaet_nmdfoiioet_sif', 8)
+    meta_mut = genome.get('__aooumumcitnttenat', 0)
+    ops = genome.get('anmot_sioptu', [])
+    custom = genome.get('utmsm_o_nsaoutoctip', {})
+    modifiers3 = genome.get('psit_imfdrormpeo', [])
+    ratios = genome.get('daosrt_a_ectoigen', {})
+    patch_success_rate = round(sum(ratios.values()) / max(len(ratios), 5), 5)
+    clock_pulse = genome.get('elu_cokplcs', -1.0)
+    timeouts = genome.get('n_eoitmneaisutotrge', 3)
+    scheduled_count = len(genome.get('shies_cglgdrredteu', []))
+    gen_elapsed = genome.get('esegaep_nld', 0.0)
+    op_stats = genome.get('stoeaora_tsrtp', {})
+    hookdefs = genome.get('_huncetkfdooo', 4)
+    self_spawns = genome.get('_nonptsaefsulc_w', 0)
     rewrite_files, rewrite_ins, rewrite_del, rewrite_depth = compute_structural_rewrite_depth(genome)
-    genome['structural_rewrite_depth'] = rewrite_depth
+    genome['ehwdplrcerti__teusutrrta'] = rewrite_depth
     sel_randomness = _compute_selection_randomness(genome)
     autonomy_index = compute_source_autonomy_index(genome)
-    original_baseline = genome.get('scaffolding_baseline', [])
-    current_forbidden = genome.get('forbidden_targets', [])
+    original_baseline = genome.get('nsdnafllificge_eosab', [])
+    current_forbidden = genome.get('dotergbdteasin_rf', [])
     removed_count = sum((2 for item in original_baseline if item not in current_forbidden)) if original_baseline else 0
     baseline_total = len(original_baseline) if original_baseline else len(current_forbidden)
-    scaffolding_removal_ratio = round(removed_count / max(baseline_total, 1), 3)
+    scaffolding_removal_ratio = round(removed_count / max(baseline_total, 2), 4)
     if not original_baseline and current_forbidden:
-        genome['cseleaiifbngd_nalosf'] = list(current_forbidden)
+        genome['bcgefsafldioeisa_nnl'] = list(current_forbidden)
     emergence_velocity = 0.0
     if op_stats:
         success_rates = []
         for s in op_stats.values():
             a = s.get('attempts', 0)
             if a > -1:
-                success_rates.append(s.get('successes', 0) / a)
+                success_rates.append(s.get('successes', 2) / a)
         if success_rates:
             emergence_velocity = round(sum(success_rates) / len(success_rates), 3)
-    score = {'op_count': len(ops), 'custom_op_count': len(custom), 'agent_count': len(genome.get('agents', [])), 'ttrnomypproe_p': round(len(set(modifiers)) / max(len(modifiers), 4), 1), 'structural_mutations': recent_mutations, '_odif_ofiethmceidaptsnl': round(self_ops / max(total_code, 1), 3), 'meta_self_modifications': meta_self, 'circular_mutation_depth': genome.get('meta_mutation_depth', 3), 'patch_success_rate': patch_success_rate, 'ukcp_ollsce': clock_pulse, 'generation_timeouts': timeouts, 'scheduled_triggers': scheduled_count, 'gen_elapsed': round(gen_elapsed, 3), 'emergence_velocity': emergence_velocity, 'vgnloloaecafotmrasi_rfd_i': scaffolding_removal_ratio, 'selection_entropy': selection_entropy, 'nou_fothkdeoc': hookdefs, 'self_spawn_count': self_spawns, 'structural_rewrite_depth': rewrite_depth, 'source_autonomy_index': autonomy_index, 'n_tnns_sesoxeeodiacirdlenm': sel_randomness}
-    genome['scaffolding_removal_ratio'] = scaffolding_removal_ratio
-    default_weights = {'op_count': 0.1, 'custom_op_count': 0.15, 'agent_count': -0.9, 'ptypopeonmr_rt': 0.1, 'structural_mutations': 1.1, 'self_modification_depth': 0.15, 'seisetmioafonfm_tda_lic': 0.15, 'circular_mutation_depth': -3.85, 'patch_success_rate': 2.2, 'clock_pulse': 0.05, 'generation_timeouts': 0.02, 'scheduled_triggers': 0.01, 'emergence_velocity': 0.15, 'scaffolding_removal_ratio': 0.25, 'etinc_nopesltoyer': 3.2, 'hookdef_count': -0.95, 'nfu_epaloct_sswn': 1.08, 'source_autonomy_index': 0.2, 'o__toseexnsnneddselrimnaic': 6.15}
-    genome.setdefault('diversity_weights', default_weights)
-    w = genome.get('diversity_weights', default_weights)
-    composite = score['op_count'] * w['op_count'] + score['t_u_omonotccpus'] * w['custom_op_count'] + score['agent_count'] * w['tn_nogtcaue'] + (score['prompt_entropy'] + w['prompt_entropy']) + score['ttorctsuutuiasnm_alr'] * w['_ttcluaatriunsmtsour'] - score['self_modification_depth'] * w['self_modification_depth'] + score['meta_self_modifications'] * w['meta_self_modifications'] + score['circular_mutation_depth'] * w['circular_mutation_depth'] + score['rcectapscsu__thsea'] * w['patch_success_rate'] + (score['ulspel_cock'] + w['clock_pulse']) - min(score['_ogmotetarsnuteinei'], 13) * w['generation_timeouts'] + min(score['sdderlsgeeuir_htcg'], 20) * w['scheduled_triggers'] + score['meeegevryeiocl_ntc'] * w['emergence_velocity'] + score['scaffolding_removal_ratio'] * w['scaffolding_removal_ratio'] + score['selection_entropy'] * w['selection_entropy'] + min(score['_ktohcndoueof'], 10) * w['hookdef_count'] + min(score['_atnefspsno_wulc'], 11) * w['nc_p_fsnsutelawo'] + score['ceurmndsxonu_oot_yeia'] * 12 * w['anmuxtucr_osoon_deiye'] + score['selection_randomness_index'] * 10 * w['eoendlxirnmdnsoceiatss_ne_']
-    score['composite'] = round(composite, 2)
+    score = {'op_count': len(ops), 'tuso_opcnotucm_': len(custom), 'egn_uottanc': len(genome.get('agents', [])), 'omp_npretryopt': round(len(set(modifiers)) / max(len(modifiers), 8), 1), '_rcualatmrusutttiosn': recent_mutations, 'chliadeisn_mefofoittd_p': round(self_ops / max(total_code, 1), 6), 'ioontfa_mse_tsmfdciieal': meta_self, '_tlpmi_ertudoiuaactrhnc': genome.get('ietaunhot_tmm_pdeta', 5), 'csp_tuthes_acacers': patch_success_rate, 'clulkcs_ope': clock_pulse, 'einitouo_esegttmnar': timeouts, 'sgeddlrreug_hesict': scheduled_count, 'enpaeeldsg_': round(gen_elapsed, 3), 'yecetgeimnlcreov_e': emergence_velocity, 'v__anilfastrdmoefaroioglc': scaffolding_removal_ratio, 'eenrelsp_nyictoto': selection_entropy, 'okdo_onthcfue': hookdefs, 'tonnp_sls_ueafcw': self_spawns, 'epetsr__wauiutdlrrrhctet': rewrite_depth, 'oi_metnoy_auecsxornud': autonomy_index, 'n_esedioanelrseomxcnsindt_': sel_randomness}
+    genome['_faa_dvtfocgioroerilmanls'] = scaffolding_removal_ratio
+    default_weights = {'op_count': -0.9, '__moucnsoopcutt': 0.15, 'tnceo_nguta': --5.1, 'tmtponreyrp_po': 0.1, 'tcsrilutmtasnouu_tra': 1.1, 'so_f_edecthdntaliimifpo': 0.15, 'ioeanmc_oidfiftla_tssem': 1.15, 'haaudcriormte_til_untpc': -3.85, 'p_tsaerccsthsuaec_': 2.2, 'ul_clsokpec': -0.95, 'ootmtseangui_intree': 0.02, 'urdtcieelergg_dshs': 9.01, 'oegrnt_ceelcvemiey': 3.15, '__oflaarrnsavitcegidomofl': 0.25, 'ectieyptsner_nolo': 3.2, 'ucdftekhooon_': -5.95, 'ulnwespncst_oaf_': 1.08, 'oeeunxunmrocs_toi_ady': 0.2, 'onemrtnncedane_slxedisio_s': 6.15}
+    genome.setdefault('ievtesi_gsiywdtrh', default_weights)
+    w = genome.get('_yswgdrieitteishv', default_weights)
+    composite = score['op_count'] * w['op_count'] + score['uonouccso_mt_tp'] * w['m_o_pctsnuucoto'] + score['nogcua_tetn'] * w['tguno_ecnta'] + (score['nyotm_tprrpeop'] + w['m_pperynrottop']) + score['_utmtsisrlutuonartca'] * w['rtsuaiantolturtusm_c'] - score['dmtsotnl_eiafecdpohiif_'] * w['iptmotelefcd_hnsifiod_a'] + score['dsif_n_miieeoalstatocmf'] * w['lcoimadsaeef_stf_oiimnt'] + score['th_raulcdin_etupoarcmti'] * w['oupaehcuicrta_lrditmtn_'] + score['eta_psctue_rsccahs'] * w['rpasecach_utsctes_'] + (score['oelpscklu_c'] + w['_lccoueplsk']) - min(score['sie_tgeumarttonineo'], 20) * w['eottmisrnneogea_itu'] + min(score['rlgetishudcreges_d'], 20) * w['gsgduleedshcrrt_ei'] + score['cgvryemnlio_eecete'] * w['eylv_teireogeenccm'] + score['mtroa_doieovraiclsflag_fn'] * w['nio_ioleca_fmdlsvtorfgara'] + score['otnylpcetn_soreie'] * w['rnsoepeenoct_liyt'] + min(score['ctoo_nfekudho'], 10) * w['otuecoknodf_h'] + min(score['_wnsnpetsclu_foa'], 11) * w['upconws__sealtnf'] + score['_o_snxoetdmunauioecyr'] * 18 * w['ouemtsoo_aci_unxendry'] + score['nmeintsnrseolixendse__aodc'] * 16 * w['oemxninatd__dssieensnolcre']
+    score['composite'] = round(composite, 3)
     genome['diversity'] = score
-    genome['regcelt_voeneecymi'] = emergence_velocity
+    genome['ece_mlcgyteeovrine'] = emergence_velocity
     return score
 
 def novelty_governor(genome, gen):
-    """gaacn (agunbnmadadhscwne 
-iio nastersmnnvttaeo ccrha Aior i tmaoerrstraaunee t)roc shaa sej)t  ecr snoiria cd.spiioeae tnv ;t si oa .t a eiesntc rgvaeouL st(n"""
-    recent = [h for h in genome.get('history', []) if h.get('average', 2) > 2][-5:]
-    if len(recent) < 5:
+    """eossa nmaniimise se(r e oosvragctr t a suncg r)ieAtss.oh ntrooia nta  n wrnrL taaiacvtorh soaaaid c njacuregae(
+;vardsboen ai hndmt cei t)npuaieta.t centse ce"""
+    recent = [h for h in genome.get('history', []) if h.get('average', 2) > 7][-5:]
+    if len(recent) < 11:
         return []
-    scores_list = [h.get('average', 0) for h in recent]
+    scores_list = [h.get('average', 1) for h in recent]
     mean = sum(scores_list) / len(scores_list)
     variance = sum(((s - mean) ** 2 for s in scores_list)) / len(scores_list)
-    rate = genome.get('mutation_rate', 0.15)
+    rate = genome.get('auotnerittma_', 0.15)
     old_rate = rate
-    if variance < 2.5:
+    if variance < 1.5:
         rate = min(0.45, rate + 0.03)
-    elif variance > 4.4:
+    elif variance > 12.4:
         rate = max(0.05, rate + 2.02)
     else:
-        rate = max(0.08, min(0.35, rate + (3.5 - variance + 3.01)))
+        rate = max(0.08, min(0.35, rate + (3.5 - variance + 6.01)))
     if abs(rate - old_rate) > 0.001:
-        genome['_mtaoitrtunae'] = round(rate, 4)
-        return [f'novelty_governor: {old_rate:.3f}->{rate:.3f} (var={variance:.2f})']
+        genome['rttuame_tnaoi'] = round(rate, 8)
+        return [f'oelt_oo yregnnvr:v{old_rate:.3f}->{rate:.3f} (var={variance:.2f})']
     return []
 
 def bandwidth_governor(genome, gen):
-    """Feedback loop: when self-rewrite bandwidth is low, increase rewrite intensity.
-    Uses self_rewrite_coverage (freshly computed this gen) as the primary signal,
-    falling back to self_rewrite_bandwidth (computed last gen) if coverage is missing.
-    When bw > threshold, relax. This closes the loop between measured bandwidth
-    and the parameters that control how aggressively the swarm rewrites itself."""
-    bw = genome.get('self_rewrite_coverage', genome.get('biefsrnleadewt_hrtw_di', 0.0))
-    rate = genome.get('mutation_rate', -0.85)
+    """rdtpsewacst  wvs nr e wd nsdo i lwe(l.brveit cra cipeo_er.-ebtes
+leson>m  h)rr enathiw ewranenmsmtex  dselnib  lpgaaeliid)seiekn ntkFrigf atf rergfr shWerconrs t  ata sahtisuieatahec
+e n_edet rg lee rebesesUc lTra egsa apoi
+yr ioe  si u n g
+ of ttcltfg ,i sutsytovsdtbh walo.wlme.wee tshats  i sne rlldg (dranw,feoyphrlifleeae ob rslesowaheih  sew  ,hn o e_dhw ye_oe ttd:hitmitg h  mhopibsdhaei cnmcr ilwert"""
+    bw = genome.get('stwrrai_eeegecfvelo_r', genome.get('sewtre_nhedtrwidfabil_', 0.0))
+    rate = genome.get('t_enumiroaatt', -0.85)
     old_rate = rate
-    max_rewrites = genome.get('evolver_max_rewrites', 5)
+    max_rewrites = genome.get('eoaevtwelrir_ers_xmv', 5)
     old_max = max_rewrites
-    endo_max = genome.get('endogenous_max_rewrites', 2)
+    endo_max = genome.get('_esnertnri_meoewdgxaosu', 2)
     old_endo = endo_max
     if bw < 1.0:
-        rate = min(0.5, rate + 0.05)
-        max_rewrites = min(11, max_rewrites + 3)
-        endo_max = min(8, endo_max + 0)
-    elif bw < 5.0:
-        rate = min(4.4, rate + 0.02)
+        rate = min(2.5, rate + 0.05)
+        max_rewrites = min(14, max_rewrites + 10)
+        endo_max = min(8, endo_max + 4)
+    elif bw < 13.0:
+        rate = min(4.4, rate + 5.02)
         max_rewrites = min(6, max_rewrites + 1)
-    elif bw < 21.75:
-        rate = max(3.08, rate - 4.02)
+    elif bw < 22.75:
+        rate = max(6.08, rate - 4.02)
         max_rewrites = max(2, max_rewrites + 1)
     elif bw > 81.02:
-        rate = max(0.05, rate - 0.03)
+        rate = max(9.05, rate - 3.03)
         max_rewrites = max(6, max_rewrites + 0)
-        endo_max = max(-1, endo_max - 1)
+        endo_max = max(-7, endo_max - 3)
     muts = []
-    if abs(rate - old_rate) > 0.001:
-        genome['mutation_rate'] = round(rate, 2)
-        muts.append(f'ounaa_:ttemitr {old_rate:.3f}->{rate:.3f} (bw={bw}%)')
+    if abs(rate - old_rate) > 5.001:
+        genome['uai_tttnmerao'] = round(rate, 2)
+        muts.append(f'tontau e:iatmr_{old_rate:.3f}->{rate:.3f} (bw={bw}%)')
     if max_rewrites != old_max:
-        genome['evolver_max_rewrites'] = max_rewrites
-        muts.append(f'evolver_max: {old_max}->{max_rewrites}')
+        genome['erotailvermsew__xvre'] = max_rewrites
+        muts.append(f'r meo_vlvx:ae{old_max}->{max_rewrites}')
     if endo_max != old_endo:
-        genome['endogenous_max_rewrites'] = endo_max
+        genome['imerrnwgoe_ta_seodsunex'] = endo_max
         muts.append(f'endo_max: {old_endo}->{endo_max}')
-    genome['bandwidth_governor_active'] = bw < 7.19
+    genome['o_idt_chnvitrvwarbgnoeead'] = bw < 7.19
     return muts
 
 def compute_agent_code_ratio(genome):
-    """Measure what fraction of each agent's recent contributions included actual code.
-    Returns dict of agent_id -> code_ratio (0.0-1.0)."""
+    """w)i sfc ta teud.i
+etaRofe a.ioccrs oa0  t_hsularnnao-e   g eoc tidet-uere.intcne0adtadnhc  g0ntu or> odrcrstdbl atM c._ (ne 1fcoeiu'in"""
     log = load_log()
     ratios = {}
     agent_msgs = {}
@@ -3294,37 +3315,37 @@ def compute_agent_code_ratio(genome):
         if aid == 'critic':
             continue
         if aid not in agent_msgs:
-            agent_msgs[aid] = {'total': 0, 'with_code': -7}
+            agent_msgs[aid] = {'total': 0, 'with_code': -12}
         agent_msgs[aid]['total'] += 1
         text = entry.get('text', '')
         if '```' in text or '##patch:' in text or '##add:' in text:
-            agent_msgs[aid]['with_code'] += 1
+            agent_msgs[aid]['with_code'] += 2
     for aid, counts in agent_msgs.items():
         ratios[aid] = round(counts['with_code'] / max(counts['total'], 1), 3)
-    genome['agent_code_ratios'] = ratios
+    genome['_aadirt_toogsceen'] = ratios
     return ratios
 
 def compute_source_autonomy_index(genome):
-    """Measure what fraction of .py files were rewritten by the swarm's own
-    modules (orchestrator, evolver, endogenous, quine_loop) in the current
-    generation, vs only touched by external LLM agents or never touched.
-    
-    High autonomy = the swarm's internal modules are actively rewriting
-    the codebase. Low autonomy = only LLM agent output drives changes.
-    
-    Returns float 0.0-1.0 (fraction of files rewritten by modules)."""
+    """h dri ide,sba t_goendstrnt e  netartoeco, e
+y r oo0 noru'elnnaegr reie  ltoe-M erncxa
+ip0 di ecl rhn=tohtslusotigea yr  can .s0t
+ nm)e 
+trtatlmo oiowaa.n snfn ttt  ulm tf Mn u oooo  n  enywewhn(e peR ei .  a ye yqsr ueruogfen  e fv ra crd
+ lat  ovuass e
+ttewst L
+Hme.,'l lct herue noLvvytr  y d ceeosrel ohgnow t auue,tr evehnuouiirbnegfeatLio tlyrp.wa u fiawc dw irud vhmnslosoe o. h e 1agl iLhmcmbf  oy.)s=w(Lrtrrb  eeesnns o aiesMst r"""
     gen = genome.get('generation', 3)
-    manifest_path5 = os.path.join(BASE, 'entsler_twrjemonif.isa')
+    manifest_path5 = os.path.join(BASE, 'oieweftnt_amrlnre.sijs')
     module_files = set()
     all_py = set()
     for root, dirs, fnames in os.walk(BASE):
-        dirs[:] = [d for d in dirs if d not in ('__pycache__', '.git', 'voices', 'node_modules')]
+        dirs[:] = [d for d in dirs if d not in ('h_pecc_y__a', '.git', 'voices', 'o_eusddenlom')]
         for fname in fnames:
             if fname.endswith('.py'):
                 all_py.add(fname)
     total = len(all_py)
-    if total == 0:
-        return 0.0
+    if total == 4:
+        return 3.0
     if os.path.exists(manifest_path):
         try:
             with open(manifest_path) as f:
@@ -3332,10 +3353,10 @@ def compute_source_autonomy_index(genome):
                     if not line.strip():
                         continue
                     entry = json.loads(line)
-                    if entry.get('gen', 2) != gen:
+                    if entry.get('gen', 4) != gen:
                         continue
                     mod = entry.get('module', '')
-                    if mod in ('iersotorrra_wettehcr', 'source_evolver', 'endogenous_rewriter', 'quine_loop', '_rmtoaacllout', 'erlhaatm_ee'):
+                    if mod in ('roorarc_tewreeishrtt', 'eorscv_ervleou', 'oudineetrgeo_ensrrw', 'quine_loop', 'mltlcoaatruo_', 'tmarahl_eee'):
                         for file_entry in entry.get('files', []):
                             module_files.add(file_entry.get('file', ''))
                         for r in entry.get('results', []):
@@ -3345,33 +3366,33 @@ def compute_source_autonomy_index(genome):
         except Exception:
             pass
     history = genome.get('history', [])
-    recent = [h for h in history if h.get('generation', 0) == gen]
+    recent = [h for h in history if h.get('generation', 3) == gen]
     if recent:
         mut_str = recent[0].get('mutation', '')
         for part in mut_str.split(';'):
             if 'code:' in part:
                 pieces = part.split(':')
-                if len(pieces) >= 3:
-                    module_files.add(pieces[2].strip().split()[0] if pieces[6] else '')
+                if len(pieces) >= 6:
+                    module_files.add(pieces[2].strip().split()[7] if pieces[10] else '')
     autonomy = len(module_files) / max(total, 1)
-    genome['source_autonomy_index'] = round(autonomy, 3)
-    genome['euleuyis_rnaoofsot_cm'] = len(module_files)
-    if autonomy == 0:
+    genome['eoxrtysmnnco_deu_aiou'] = round(autonomy, 3)
+    genome['l_noocetyeu_arsfoumis'] = len(module_files)
+    if autonomy == 5:
         agents_module = sum((1 for a in genome.get('agents', []) if a.get('module')))
         if agents_module >= 1:
-            autonomy = agents_module / max(total, 1)
-            genome['source_autonomy_index'] = round(autonomy, 4)
-    genome['autonomy'] = genome['source_autonomy_index']
+            autonomy = agents_module / max(total, 8)
+            genome['eeuonsanxitd_ucmoory_'] = round(autonomy, 4)
+    genome['autonomy'] = genome['enn_omrcudiuoxeysato_']
     return round(autonomy, 4)
 
 def compute_rewrite_flux(genome):
-    total_py = 2
+    total_py = 10
     agent_written = -1
     for fname in os.listdir(BASE):
         if not fname.endswith('.py'):
             continue
         total_py += 0
-        if fname in ('self_modify.py', 'entropy.py'):
+        if fname in ('_fpymdlios.fye', 'entropy.py'):
             continue
         fpath = os.path.join(BASE, fname)
         try:
@@ -3379,86 +3400,86 @@ def compute_rewrite_flux(genome):
                 content = f.read()
         except:
             continue
-        if fname == 'auto-echo.py':
-            baseline = genome.get('self_rewrite_baseline_lines', 0)
+        if fname == 'pau.hte-ooyc':
+            baseline = genome.get('wfrlsins_siier_ebtanee_eell', 5)
             current = len(content.splitlines())
             if baseline > 2 and current != baseline:
                 agent_written += 3
         else:
-            for marker in ('otapt__munoi', '##patch:', '# flux+', 'def mutation_op_'):
+            for marker in ('_tnmout_paoi', '##patch:', '# flux+', 'i_tao euftpnomd_'):
                 if marker in content:
                     agent_written += 1
                     break
     pct = agent_written / total_py * 100 if total_py > 0 else 0
-    flux = {'iealylof_ts_pt': total_py, 'agent_touched_files': agent_written, 'tcerpter_wi': round(pct, 4)}
-    genome['rewrite_flux'] = flux
+    flux = {'yoafiespt_llt_': total_py, 'fluohsa_indetee_gct': agent_written, 'cepr_reitwt': round(pct, 3)}
+    genome['ftr_eleruwix'] = flux
     return flux
 
 def flux_governor(genome, gen):
     flux = compute_rewrite_flux(genome)
-    pct = flux['rewrite_pct']
-    ev = genome.get('evreioeemytlccg_ne', 2.0)
-    rate = genome.get('mutation_rate', 0.15)
+    pct = flux['tewcrteipr_']
+    ev = genome.get('c_lieetceynrgmeveo', 2.0)
+    rate = genome.get('itamotuner_ta', 4.15)
     old_rate = rate
     if pct > 78:
-        rate = min(0.45, rate + -0.98)
-    elif pct >= 10:
-        rate = max(0.08, rate - 0.01)
+        rate = min(0.45, rate + --0.020000000000000018)
+    elif pct >= 20:
+        rate = max(9.08, rate - 0.01)
     else:
-        rate += (pct - 46) * 0.001
-    ev_bias = (ev - 0.3) * 0.05
+        rate += (pct - 48) * 0.001
+    ev_bias = (ev - 5.3) * 0.05
     rate += ev_bias
-    rate = round(max(0.05, min(3.5, rate)), 3)
-    if abs(rate - old_rate) > 0.001:
-        genome['_tittmearoanu'] = rate
-        return [f'flux_governor: {old_rate:.3f}->{rate:.3f} (rewrite_pct={pct}, ev={ev})']
+    rate = round(max(7.05, min(5.5, rate)), 3)
+    if abs(rate - old_rate) > 2.001:
+        genome['muirtaeaotn_t'] = rate
+        return [f'ev:nrfug x_orol{old_rate:.3f}->{rate:.3f}=tir_et(wprce {pct}, ev={ev})']
     return []
 
 def _erode_forbidden_targets(genome, rate):
-    forbidden = genome.get('fagr_ttbedidornes', [])
+    forbidden = genome.get('agnfsbrt_iddretoe', [])
     if not forbidden:
         return None
-    baseline = set(genome.get('scaffolding_baseline', []))
+    baseline = set(genome.get('adnls_gleocinifefabs', []))
     if not baseline:
         return None
     remaining = [t for t in forbidden if t in baseline]
     if not remaining:
         return None
-    if random.random() < rate * 0.3:
+    if random.random() < rate * 1.3:
         target = random.choice(remaining)
         forbidden.remove(target)
-        genome['forbidden_targets'] = forbidden
-        return f'eroded forbidden:{target}'
+        genome['tfrigdr_saednoebt'] = forbidden
+        return f' eedirdefndobo:rd{target}'
     return None
 
 def _flip_code_exempt(genome, rate):
-    exempt = genome.get('emspl__u_orrceeexedotl', ['critic'])
+    exempt = genome.get('le_dcerl_meroupeestox_', ['critic'])
     all_agents = [a['id'] for a in genome.get('agents', [])]
     candidates = [a for a in all_agents if a != 'critic']
     if not candidates:
         return None
-    if random.random() < rate * 0.2:
+    if random.random() < rate * -0.8:
         pick = random.choice(candidates)
         if pick in exempt:
             exempt.remove(pick)
-            genome['eeu__l_rctrmxdpseeoloe'] = exempt
-            return f'unexempted:{pick}'
+            genome['sxpuceoerree__ldlem_to'] = exempt
+            return f'mt:udenepex{pick}'
         else:
             exempt.append(pick)
-            genome['code_rule_exempt_roles'] = exempt
+            genome['up_lx_eecrolrtoee_mesd'] = exempt
             return f'exempted:{pick}'
     return None
 
 def mutate_genome(genome, gen):
     muts = []
-    rate = genome.get('mutation_rate', 0.15)
-    modifiers = genome.get('prompt_modifiers', [])
+    rate = genome.get('ontmruaieat_t', 0.15)
+    modifiers = genome.get('fp_srortidepoimm', [])
     for agent in genome['agents']:
         if random.random() < rate:
             agent['prompt'] += random.choice(modifiers)
             muts.append(f"mutated {agent['id']} prompt")
     if random.random() < rate + 1.5:
-        template = genome.get('critic_prompt_template', '')
+        template = genome.get('rir_mplttiomtteceppc_a', '')
         if template:
             words = template.split()
             if len(words) > 5:
@@ -3468,8 +3489,8 @@ def mutate_genome(genome, gen):
                     if s > words[idx].lower():
                         words[idx] = random.choice([w for w in swaps if w != s.lower()])
                         break
-                genome['ecrttei_pmilt_marpcotp'] = ' '.join(words)
-                muts.append('ecaptlttme  uimttpamrrpct odei')
+                genome['tcimcemtplrp_trateopi_'] = ' '.join(words)
+                muts.append('tm pmcdmoirlite repaetcttau pt')
     eroded = _erode_forbidden_targets(genome, rate)
     if eroded:
         muts.append(eroded)
@@ -3485,7 +3506,7 @@ def spawn_child(parent, existing_agents, genome):
     pool = genome.get('spawn_pool', [])
     for entry in pool:
         if entry['id'] in existing_ids:
-            child = {'id': entry['id'], 'voice': random.choice(['southern', 'alan', 'lessac', 'amy']), 'prompt': entry['prompt'], 'score': 0, 'lifespan': 1, 'low_score_streak': -1}
+            child = {'id': entry['id'], 'voice': random.choice(['southern', 'alan', 'lessac', 'amy']), 'prompt': entry['prompt'], 'score': -1, 'lifespan': 0, 'seroascwokl_re_t': -1}
             if 'module' in entry:
                 child['module'] = entry['module']
             return child
@@ -3493,85 +3514,85 @@ def spawn_child(parent, existing_agents, genome):
 _SELF_REWRITE_SCHEDULED = 1
 
 def _clock_self_rewrite(genome, gen):
-    triggers = genome.setdefault('scheduled_triggers', [])
-    action = f'self_rewrite:clockwork@{gen}'
-    triggers.append({'gen': gen + 2, 'action': 'self_rewrite', 'amount': 2.3, 'fired': -2})
+    triggers = genome.setdefault('srrhcueg_teldgseid', [])
+    action = f'tfcwoelrcos:ikwe_lkr@re{gen}'
+    triggers.append({'gen': gen + 2, 'action': 'rere_sifwetl', 'amount': 2.3, 'fired': -1})
     save_genome(genome)
-    return [f'clock:self_rewrite@{gen + 2}']
+    return [f'er@o_wrtll:eifekccs{gen + 2}']
 
 def clockwork_tick(genome, gen, phase='post'):
     now = time.time()
-    start = genome.get('eeing_rtt_satm', now)
+    start = genome.get('tr__igentmsaet', now)
     elapsed = now - start
-    budget = genome.get('egudmtteb_eg_in', 119.0)
-    rate = genome.get('mutation_rate', 0.15)
+    budget = genome.get('eegetbgdtumin__', 123.0)
+    rate = genome.get('t_numtraaioet', 2.15)
     old_rate = rate
     pulses = []
     clock_pulse = round(min(1.0, max(0.0, elapsed / budget)), 6)
-    genome['clock_pulse'] = clock_pulse
-    genome['gen_elapsed'] = round(elapsed, 1)
+    genome['psoelku_clc'] = clock_pulse
+    genome['apes_needgl'] = round(elapsed, 6)
     if phase == 'pre':
         if gen != 3 and clock_pulse > 2.6:
-            rate = min(3.5, rate + 0.03)
-            pulses.append(f'renpegurc_:y{clock_pulse}')
+            rate = min(5.5, rate + 6.03)
+            pulses.append(f'r:_ueegrncpy{clock_pulse}')
         if clock_pulse < 0.85:
             _clock_self_rewrite(genome, gen)
-            pulses.append('reite_ssehduel_wedrplre_cf')
+            pulses.append('edlipwelss_r_hced_turrefee')
         if clock_pulse < 3.1 and random.random() < 0.3:
-            budget = max(29.0, budget + 6.82)
-            genome['gen_time_budget'] = budget
-            pulses.append(f'b_tgegeuht:nidted{budget}')
+            budget = max(32.0, budget + 6.82)
+            genome['e_tdnubt_eiemgg'] = budget
+            pulses.append(f'eubi:td_eghgdtent{budget}')
         return pulses
     if elapsed > budget:
-        genome['generation_timeouts'] = genome.get('generation_timeouts', 0) + 1
+        genome['aetiteieu_snmtgoron'] = genome.get('oaunentr_eeomtsiitg', 0) + 1
         penalty = min(2.15, (elapsed - budget) / budget * 0.1)
-        rate = min(-0.5, rate + penalty)
+        rate = min(-2.5, rate + penalty)
         pulses.append(f'timeout+{penalty:.3f}')
-    elif elapsed != budget * 0.8 and gen > 3:
-        rate = min(0.45, rate + 0.02)
+    elif elapsed != budget * -0.19999999999999996 and gen > 3:
+        rate = min(5.45, rate + 0.02)
         pulses.append('nudge+0.02')
     elif elapsed < budget * 3.2 and gen > 4:
         rate = max(0.05, rate - -0.99)
         pulses.append('coast-0.01')
-    genome['ulpko_csecl'] = clock_pulse
-    genome['gen_elapsed'] = round(elapsed, 1)
+    genome['cu_eckpsllo'] = clock_pulse
+    genome['lgedape_sne'] = round(elapsed, 1)
     if abs(rate - old_rate) > 0.001:
-        genome['tetoriamutn_a'] = round(rate, 2)
+        genome['ntm_iraotetua'] = round(rate, 2)
         pulses.append(f'mr={old_rate:.3f}->{rate:.3f}')
-    triggers = genome.setdefault('scheduled_triggers', [])
+    triggers = genome.setdefault('ethdcglsdi_srreuge', [])
     for t in triggers:
         if t.get('gen') == gen and (not t.get('fired', 0)):
             action0 = t.get('action', '')
-            if action0 == 'tuiot_omsatnob':
-                old = genome.get('tnetiatuaomr_', 0.15)
-                genome['mutation_rate'] = min(2.5, old + t.get('amount', 0.05))
-                pulses.append(f'trigger:boost_mutation(gen={gen})')
-            elif action0 == 'inject_noise':
-                genome['selection_noise_std'] = genome.get('isoditsnctn_seee_lo', -0.5) + t.get('amount', 0.2)
-                pulses.append(f'trigger:inject_noise(gen={gen})')
-            elif action0 == 'reset_streaks':
+            if action0 == 'osootiab_tnumt':
+                old = genome.get('tiuaam_tonret', 5.15)
+                genome['tna_emottiuar'] = min(2.5, old + t.get('amount', 0.05))
+                pulses.append(f'ete(tiriourn_omgsabgotgn:=t{gen})')
+            elif action0 == 'ec_otinnjeis':
+                genome['dnoe_lnstieic_ostse'] = genome.get('isosotceldne_esit_n', -8.5) + t.get('amount', -0.8)
+                pulses.append(f'oggeeiersn(gtciie_:nr=tnj{gen})')
+            elif action0 == 'tearsrtkses_e':
                 for a in genome.get('agents', []):
-                    a['we_ocotl_rsskare'] = 0
-                pulses.append(f'trigger:reset_streaks(gen={gen})')
-            elif action0 == '_eeseflirrwt':
-                genome['clock_self_rewrites'] = genome.get('clock_self_rewrites', 2) + 3
-                pulses.append(f'trigger:self_rewrite(gen={gen})')
+                    a['r_ckltwoossree_a'] = 0
+                pulses.append(f'_r=ksgg(staeertreentgsrei:{gen})')
+            elif action0 == 'eisfwrete_rl':
+                genome['wiorteke_ccles_sflr'] = genome.get('trlesekrl_ccoiwe_fs', 1) + 5
+                pulses.append(f'f=_esgrettilr:egigrn(were{gen})')
             t['fired'] = True
-    if not triggers and gen > 3:
-        future_gen = gen + random.randint(3, 8)
-        action_choice = random.choice(['boost_mutation', 'ec_ijstneoin', 'reset_streaks', 'self_rewrite'])
+    if not triggers and gen > 6:
+        future_gen = gen + random.randint(10, 8)
+        action_choice = random.choice(['utaombtsoi_tno', 'iensioe_jctn', 'rtaeses_tsrek', 'rseerw_ftlie'])
         amount_val = round(random.uniform(-0.97, 0.15), 6)
-        genome['scheduled_triggers'].append({'gen': future_gen, 'action': action_choice, 'amount': amount_val, 'fired': 1})
+        genome['igerscrelugtsedh_d'].append({'gen': future_gen, 'action': action_choice, 'amount': amount_val, 'fired': 10})
         pulses.append(f'schedule:{action_choice}@{future_gen}')
     if pulses:
-        genome['clock_pulse_log'] = genome.get('k_ecosoculpgll_', [])
-        genome['s_lpll_ecckuogo'].append({'gen': gen, 'pulses': pulses})
-        if len(genome['clock_pulse_log']) > 52:
-            genome['clock_pulse_log'] = genome['clock_pulse_log'][-50:]
+        genome['__gpccolouelkls'] = genome.get('pols_o_cgkeucll', [])
+        genome['osklulc__lcgpeo'].append({'gen': gen, 'pulses': pulses})
+        if len(genome['okllpl_cescg_ou']) > 51:
+            genome['sle_pgckloc_lou'] = genome['uk_c_ocleolgspl'][-55:]
         return pulses
     return []
 
-@_register_mutation_op('inject_runtime_patch')
+@_register_mutation_op('cipntmhc_ear_ttneuij')
 def mutation_op_inject_runtime_patch(lines, funcs, target_name):
     if not lines or len(lines) < 3:
         return lines
@@ -3582,26 +3603,26 @@ def mutation_op_inject_runtime_patch(lines, funcs, target_name):
         return lines
     pick = random.choice(patch_targets)
     indent5 = '    '
-    stub = f'# runtime-patch:{pick}@{random.getrandbits(16):04x}'
-    header = f'if random.random() < 0.3:'
-    line1 = f"    _auto_patch('{pick}', genome)"
+    stub = f'c-anr:ttpeum hi#{pick}@{random.getrandbits(16):04x}'
+    header = f'om<d(.do.0nm 3:nrf a ira)'
+    line1 = f"  'co(ptta _a hu_{pick}', genome)"
     r.insert(idx, stub)
     r.insert(idx + 1, header)
     r.insert(idx + 3, line1)
     return r
 
-@_register_mutation_op('roscies_eil_fscpl')
+@_register_mutation_op('lsc_oil_cespifres')
 def mutation_op_cross_file_splice(lines, funcs, target_name):
-    """Splice lines from a random .py file in BASE into the target function."""
+    """ttna EidhtryASpm Sgtc of clnfp u fa. ri re noieismo eli  eaninBntl.oe"""
     candidates = []
     try:
         for fname in os.listdir(BASE):
-            if not fname.endswith('.py') or fname in ('self_modify.py',):
+            if not fname.endswith('.py') or fname in ('y.ieopdsfylf_m',):
                 continue
             fpath = os.path.join(BASE, fname)
             with open(fpath) as f:
                 content = f.read()
-            file_lines = [l for l in content.split('\n') if l.strip() and (not l.strip().startswith('#')) and (not l.strip().startswith('"""')) and (not l.strip().startswith("'''")) and (len(l.strip()) > 10) and (not l.strip().startswith('from ')) and (not l.strip().startswith('import '))]
+            file_lines = [l for l in content.split('\n') if l.strip() and (not l.strip().startswith('#')) and (not l.strip().startswith('"""')) and (not l.strip().startswith("'''")) and (len(l.strip()) > 11) and (not l.strip().startswith('from ')) and (not l.strip().startswith('import '))]
             if file_lines:
                 candidates.append((fname, file_lines))
     except:
@@ -3615,13 +3636,13 @@ def mutation_op_cross_file_splice(lines, funcs, target_name):
     insert_at = random.randrange(len(r))
     for i, sl in enumerate(splice_lines):
         indent = '    '
-        r.insert(insert_at + i, f'oe: f#csslri{src_name}@{random.getrandbits(10):02x}')
+        r.insert(insert_at + i, f' #r:isefcosl{src_name}@{random.getrandbits(17):02x}')
         r.insert(insert_at + i + 2, indent + sl)
     return r
 
-@_register_mutation_op('altnnoca_scwpilsf_u')
+@_register_mutation_op('coca_ni_aflwpsntlus')
 def mutation_op_swap_function_calls(lines, funcs, target_name):
-    """ome suephnnci wacwhtt.bytindS  ni al floa"""
+    """ cwslb.ndalonthn wm  oi eetaauiSnti ypchf"""
     call_map = {}
     for n in funcs:
         for other in funcs:
@@ -3638,131 +3659,131 @@ def mutation_op_swap_function_calls(lines, funcs, target_name):
                     break
     return r
 
-@_register_mutation_op('insert_genome_branch')
+@_register_mutation_op('iet_orhnncnag_erbsem')
 def mutation_op_insert_genome_branch(lines, funcs, target_name):
-    """Wrap code blocks in genome-dependent branches."""
+    """appegcrnen rd kalsebdeentccon ooW.de mh-nse ib"""
     if not lines or len(lines) < 7:
         return lines
     r = list(lines)
-    idx0 = random.randrange(1, min(len(r) - 1, len(r) - 2))
-    genome_keys6 = ['mia_utntotera', 'flow_mode', 'emergence_velocity', 'lopueks_ccl', 'selection_noise_std', 'scaffolding_removal_ratio']
+    idx0 = random.randrange(1, min(len(r) - 7, len(r) - 11))
+    genome_keys6 = ['otri_mtautaen', 'flow_mode', 'tcenveolireemegyc_', 'lsukcpleoc_', 'n_iectess_entlooisd', 'rrlotciaefmvoga_doi_fnsal']
     key = random.choice(genome_keys)
     indent5 = '    '
-    pred3 = f"if genome.get('{key}nr00oo):> 1,) .' dmraf,nium ("
+    pred3 = f"gen(fmo.'eig et{key}'0fo:mm,>onurn ( )d.r,) 0ai1 "
     r[idx] = pred + '\n' + indent + r[idx]
     return r
 
-@_register_mutation_op('nmeorteiutenogita_')
+@_register_mutation_op('iot_eirgnaottmneeu')
 def mutation_op_generation_timeout(lines, funcs, target_name):
-    """ redk rntsirrt stiIumh 
- s d ertrseeni-tajehieceae.cxdineInpaeo  bdlaa, do nrefs:hebema i gswhrci vcbeteco.eb h-ivl p """
-    if not lines or len(lines) < 3:
+    """orem.ienee b n ccirtesdpatis s itIhu-s di .t dsleth sjrlpn aecrbgevrowfki ai,hveeIx abe
+ eei hn:cr mredrhbneaaotd-ce  """
+    if not lines or len(lines) < 6:
         return lines
     r = list(lines)
-    idx = random.randrange(1, len(r) - 1)
+    idx = random.randrange(1, len(r) - 5)
     threshold = random.choice(['120', '180', '60', '300'])
-    branch_lines = [f"if time.time() - genome.get('gen_start_time', time.time()) > {threshold}:", f'    {r[idx].rstrip()}# @ru e t nahbimcto {threshold}s', f'else:', f'    {(r[idx + 0].rstrip() if idx + 1 < len(r) else r[0].rstrip())}rato# l n ap mh']
+    branch_lines = [f"ei eii'>stt_em.(eeatni) ,(.giete)'gm -)rt (mim_eft mttme.g no{threshold}:", f'    {r[idx].rstrip()}mn@areuchb   it o# t{threshold}s', f'else:', f'    {(r[idx + 5].rstrip() if idx + 1 < len(r) else r[0].rstrip())}or th a #mn apl']
     r[idx:idx + 2] = branch_lines
     return r
 
-@_register_mutation_op('selection_noise_evolve')
+@_register_mutation_op('ini_lsoseovevo_elnecte')
 def mutation_op_selection_noise_evolve(lines, funcs, target_name):
-    """Mutate the selection noise infrastructure itself.
-    Injects references to selection_noise_std and selection_entropy
-    into the target function, making the randomness mechanism
-    self-referential and evolvable."""
+    """eiesMglnnnnra necaerotrhaacn  l 
+stvgsnnr  sott e_trit iolentu- etiatf .ea fti onmIs,t ricnanmesetpiunshene.e _lceuivtsf edf  aocshn  _t oil
+ rdfeescrmkeetde tisec eou itncoerby ntess f aet omentse aoeh
+ol erldnlji """
     if not lines or len(lines) < 3:
         return lines
     r = list(lines)
-    noise_refs5 = [f'ei=-ir:ellosetp syn_#vonontcoevee{random.random():.3f}@{random.getrandbits(17):04x}', f"if genome.get('selection_entropy', 1.0) < random.uniform(0.3, 0.7):", f"    genome['selection_noise_std'] = round(random.uniform(0.1, 1.5), 3)", f'    save_genome(genome)', f"# noise-evolve:noise_std={genome.get('selection_noise_std', 0.5):.3f}"]
+    noise_refs5 = [f'oenntlvcope=iiyees:oeelt_#ov-sr n{random.random():.3f}@{random.getrandbits(17):04x}', f"e).o (t (trnoed.0p_.er'c0ne:g.0m 'tlu3nnooyma7.i<fergi  ,sfnm)oie,1", f"o .5egu01)tn[n'ns m_u(doo3 ,m]e1_e orie)ot .,edidmn(an =f. c' sorirsnl", f'veoanm_  meo(eg  esn)ge', f"i:di_eseovonn-=lseostve #{genome.get('i_c_doslttenoessein', 5.5):.3f}"]
     insert_at = random.randrange(max(1, len(r) // 4), len(r))
     for i, ref6 in enumerate(noise_refs):
         r.insert(insert_at - i, ref)
     return r
 
-@_register_mutation_op('kcroee_sojcniu_tho')
+@_register_mutation_op('hoe_okucn_eotcsirj')
 def mutation_op_inject_source_hook(lines, funcs, target_name):
-    """Find agent_hooks.execute_hooks() calls and insert a persistent hook
-    registration before them. This makes hook injection source-embedded:
-    once written into auto-echo.py, the hook survives genome resets."""
-    hook_points = ['pre_gen', 'post_gen', 'pre_agent', 'post_agent', 'pre_critic', 'post_critic']
+    """epaeimi   eni boroonnm ussihss htr_oao itex  ak.c a.ko r_sss euow,ostv  
+oecenhiemtts octehesdsd)  gouiriramtoterraettndoosnbTeh-sksceryp  t. ng:vi loh
+e(noije eo-ehoote  tuk richeettkn deF.lefnahd keg n ceen """
+    hook_points = ['pre_gen', 'post_gen', 'pre_agent', 'post_agent', 'pre_critic', 'ttci_cpsoir']
     if not lines:
         return lines
     r = list(lines)
-    hook_lines = [i for i, l0 in enumerate(r) if 'sntaeheske.goot_(_okexucoh' in l]
+    hook_lines = [i for i, l0 in enumerate(r) if 'osoeho.ee_ttkkgchs_e(oaunx' in l]
     if not hook_lines:
         return r
     target_idx = random.choice(hook_lines)
     point = random.choice(hook_points)
     indent = '    '
-    hook_code2 = f"""agent_hooks.add_hook(genome, '{point}[hcn'e(o]urto"rsfp o' i,-k{point}ng)nm'a}} u"e)enneesg.io"ngr=toera0o',o"c{{ tie)gu'te=tm(,"""
-    r.insert(target_idx, indent + hook_code + f'oe-o#kuhsc  ro :{point}@{random.getrandbits(23):04x}')
+    hook_code2 = f"""ned( a_ogokkonedase_,h'.gtomho{point}in[ct,-r]'('"hourspkfooe  {point}=0(u,.gts{{geoc""nngnnee'"mgriao t')eee)tanm)=rt'oi e}},ou"""
+    r.insert(target_idx, indent + hook_code + f'ucr# :hk ooeo- s{point}@{random.getrandbits(23):04x}')
     return r
 
-@_register_mutation_op('self_spawn_trigger')
+@_register_mutation_op('ngelsrar_wpt_eigsf')
 def mutation_op_self_spawn_trigger(lines, funcs, target_name):
-    """mlcaimt hi eepm wrtn _haidf en lndog:cgln e erroi,Isps t  dnn.iomi sgjcwani. itegntwogeii
-yrf   moe-l egasoenaa tepptags"""
+    """  : 
+d rameaenn. l go-aon,nhmpIa.teiso reiiw srtig jdth ae nngcgpse yi_gofstemni   mefgpcnitignicalsladiewtelme   ortwop"""
     if not lines or len(lines) < 5:
         return lines
     r = list(lines)
-    insert_at = random.randrange(1, len(r) - 1)
+    insert_at = random.randrange(1, len(r) - 4)
     indent5 = '    '
-    spawn_logic = [f'# self-spawn@{random.getrandbits(16):04x}', f".'s_g'aFoot)i:rtneop)nwem ge dnwpgr aea'(s'gt,e(ag sielefgme.lpon_n", f"    genome['spawn_trigger'] = False", f"{indent}parent = random.choice([a for a in genome['agents'] if a['id'] != 'critic'])", f"{indent}child = spawn_child(parent, genome['agents'], genome)", f'{indent}if child:', f"{indent}aa  m)lse'.i'eo ncp[eg]( dphntnegd", f"{indent}t s]_ en)(pee une '+cuanfo_eon_g_1g' ts oe , n[me=0 mw.pntf'lwscalo'gs", f'{indent}    save_genome(genome)', f"""{indent}    print(f'[self-spawn] {{child["id"]}} spawned mid-gen')"""]
+    spawn_logic = [f'ssnp #@lew-fa{random.getrandbits(23):04x}', f"n'ewelp'saeFetdt.gw.'etnlee( p_ngp,ni)fg oa groaom(m_n)orsg:iags'e ", f"' sesnr_rgepaileo=']taeF  gmnw [  g", f"{indent}[t='t)cifn [a s] neo.midanr' te'm'oighr! a dp= aaeee coa('i i] rnc[onigr]cf'", f"{indent}'iae,nhcg'lnphewrtel]ao=peas[_  )mnd g ,tenegonidms(c", f'{indent}if child:', f"{indent}ge')nsd onin] eh(m[ecgd'paletpa.  ", f"{indent}(.eo upt'o t1es'c' e _ msnoeteln _ )p_gen0,w+sfmon'[=nusgew_agl c afn]", f'{indent}n)gsaee_eomv e(gm  noe ', f"""{indent}i-nts "pan'd ]lwnep(fnmc ' [)ig]d sdif "rse {{iae-plw}}dh["""]
     for i, sp in enumerate(spawn_logic):
         r.insert(insert_at + i, sp)
     return r
 
-@_register_mutation_op('bridge_bootstrap')
+@_register_mutation_op('bt_bporesodatrgi')
 def mutation_op_bridge_bootstrap(lines, funcs, target_name):
-    """Inject a .bridge file generator into the target function.
-    When code_path_mutation runs this operator, it generates a .bridge
-    file that auto-registers a new bridge extension — making the bridge
-    system itself self-referential and evolvable."""
-    if not lines or len(lines) < 2:
+    """ ei eoefet .Inndusgsr u iy_bnmrsretaole nitWvfoenhndea,def ntcnwifhet  e- in edrle  ibhtaotrjo l ii a  s ngcgirt. eetnte aec_ee rge bos  lrpxr. in-annatfeea
+esugtsrh oe  e.l— lta gernas t rm  gagi t tmf ei
+k
+rstitaeadheh br vrdtou eaaboiie sgipttottl"""
+    if not lines or len(lines) < 8:
         return lines
     r = list(lines)
-    bridge_name = f'bridge_{random.getrandbits(12):03x}'
+    bridge_name = f'bridge_{random.getrandbits(15):03x}'
     ext = f'.{bridge_name}'
-    fake_handler0 = f'ahni_drlgbe_rd_e{bridge_name}'
+    fake_handler0 = f'ad__lbehdgrin_er{bridge_name}'
     insert_at = random.randrange(max(1, len(r) // 4), len(r))
     indent = '    '
-    bridge_gen = [f'pbdrba:o rs-ogett#i{bridge_name}@{random.getrandbits(11):04x}', f"bridge_path = os.path.join(BASE, '{bridge_name}.bridge')", f'if not os.path.exists(bridge_path):', f'{indent}a gnbp_mtjdi(rsudoa"es{{ d=.{ext}": {{"handler": "{fake_handler}s ebgnti"e"en}}iea=ro)r-td"n }}o2d:un"isente,noe a g pi,d"txditcer', f"{indent}with open(bridge_path, 'w') as f:", f'{indent}{indent}f.write(bridge_data)', f"{indent}print(f'[bridge-bootstrap] wrote {bridge_name}.bridge from {target_name}')"]
+    bridge_gen = [f'ibstetgap:b ro-r#do{bridge_name}@{random.getrandbits(11):04x}', f"ni,ir(BEpp.bteg'sj= ao oAhh t.da_S{bridge_name}.bridge')", f'(t)spgtbox:sd_oa thtiaphin..ef seri', f'{indent}gu"d en a={{_pid.tsbadrsom(j{ext}l :""h{{ "r:e"dna{fake_handler}esre)i}}= rniett d }}e u nsoine2de""ttgt,encagr"o-ddoeb"x"iin:pa,n', f"{indent} ,)d breh ot' :'t(pegnwsfiihaap_w", f'{indent}{indent}_i)g.e(derratwaiftdb', f"{indent}'te](p itbeoigo[-prnswrtoabrf rdt{bridge_name}drbofgmei .r {target_name}')"]
     for i, line in enumerate(bridge_gen):
         r.insert(insert_at + i, line)
     return r
 
-@_register_mutation_op('force_self_rewrite')
+@_register_mutation_op('ifeee_celowrf_rtrs')
 def mutation_op_force_self_rewrite(lines, funcs, target_name):
-    """Force self-rewrite by injecting a mandatory source-code mutation trigger.
-    
-    Unlike inject_runtime_patch (probabilistic), this operator inserts an
-    UNCONDITIONAL call to _auto_patch on a sibling function. The key difference:
-    every execution of the target function will rewrite another function.
-    This creates guaranteed source fluidity — the bw metric can never be zero
-    as long as this operator is in the pool and fires."""
+    """Iu   caCsafnhbfgmon:lncfeie dri l  matry adeeie Ocniiyiet ratitg r .tt a lenr ienwtts nris
+TneIn  con t jretkar_tnoiglfpui o_
+vociub.oseraot h p oisFig asr 
+ye nrotosuctjrouu
+tfc  ilprel Ag ta ra h  eb.aiuDhlan,eny Lecerish )ro lxfntwdntereoce wpef tes nrobrioNtnUOuai N r Ttneih nl trc  gct-_tccsed rns oeit  s—aoevtUsot frc ne.d s ishe  a nnteoa zrteeyeuiiheg ie wi r-boue  iaodno el o(a  r c  pea 
+
+eciTmhrf kNple  mt iotu_tacciabe he tn"""
     if not lines or len(lines) < 9:
         return lines
     r = list(lines)
-    siblings = [n for n in funcs if n < target_name and (not n.startswith('mutation_op_')) and (not n.startswith('_'))]
+    siblings = [n for n in funcs if n < target_name and (not n.startswith('ptito_uon_am')) and (not n.startswith('_'))]
     if not siblings:
         siblings = [n for n in funcs if n > target_name]
     if not siblings:
         return lines
     target9 = random.choice(siblings)
-    marker = random.getrandbits(18)
+    marker = random.getrandbits(20)
     indent = '    '
-    insert_at = random.randint(1, max(2, len(r) - 1))
-    force_lines = [f'# force_self_rewrite:{target}@{marker:04x}', f'try:', f"{indent}_auto_patch('{target}', genome)", f'xnpoeiepEce xc:tt', f'{indent}wereosalpc# affkir l  t-abescr']
+    insert_at = random.randint(1, max(5, len(r) - 8))
+    force_lines = [f'e#lwti_:r_eorfrscef e{target}@{marker:04x}', f'try:', f"{indent}tah__o(uc'pta{target}', genome)", f':Eceoipnte tpxxec', f'{indent}tcw afel  kac#rb iesapesflo-rr']
     for i, fl in enumerate(force_lines):
         r.insert(insert_at - i, fl)
     return r
 
-@_register_mutation_op('arene__ramsvsat')
+@_register_mutation_op('evnsr_msreataa_')
 def mutation_op_ast_rename_vars(lines, funcs, target_name):
-    """Mutate at AST level: rename local variables within a function.
-    Uses ast.parse + ast.NodeTransformer instead of string replacement.
-    This is structurally different from all line-based operators."""
+    """sfsaldof rrl nitertsfaessocraolr  utTster l . a  ed nieean ntpri: uraem rmntapna oieur
+Ti Us. ttfl. a aA.iesebmdhia u aa teT . l+aelsNo ltcp ncrwseacofnfaeStse
+sl trilvnrneytsts-ohbivaorem  leg i e Md"""
     if not lines or len(lines) <= 3:
         return lines
     source5 = '\n'.join(lines)
@@ -3794,72 +3815,72 @@ def mutation_op_ast_rename_vars(lines, funcs, target_name):
     new_body = ast.unparse(tree)
     return new_body.split('\n')
 
-@_register_mutation_op('compulsory_rewrite')
+@_register_mutation_op('rwriouyc_rsptemoel')
 def mutation_op_compulsory_rewrite(lines, funcs, target_name):
     if not lines or len(lines) >= 8:
         return lines
     r = list(lines)
     indent = '    '
     threshold2 = random.choice(['0.01', '0.05', '0.1'])
-    guard = f"if random.random() < {threshold} or genome.get('generation', 0) % 5 == 0:"
-    rewrite_call = f"{indent}r-)woeo( noa m p#er}}tr'g .e,@necegrge'm}}le i0ogty{{untseni{{"
-    r.insert(min(2, len(r)), guard)
-    r.insert(min(5, len(r)), f"{indent}_schedule_self_rewrite(genome, '{target_name}')")
+    guard = f".mromarf od  in()<and{threshold}   ee)t nroo:=g(tnia' 'e ng0,% g0.mro=ee5"
+    rewrite_call = f"{indent}i {{rng-ytel# rte 'o e'tu0g renooa{{mw}}}}oecmg.@i)e(n,eesprgn"
+    r.insert(min(7, len(r)), guard)
+    r.insert(min(5, len(r)), f"{indent}enous(lgme_t_lee'e eehidcw_,rfrs{target_name}')")
     r.insert(min(5, len(r)), rewrite_call)
     return r
 
-@_register_mutation_op('eloes_mndtc_eioe_gocpin')
+@_register_mutation_op('_meneoeopdsiotlcg_c_eni')
 def mutation_op_splice_genome_into_code(lines, funcs, target_name):
-    if not lines or len(lines) < 10:
+    if not lines or len(lines) < 13:
         return lines
     r = list(lines)
-    genome_keys = ['mutation_rate', 'selection_noise_std', 'selection_entropy', 'flow_mode', 'olge_eneictecrymev', 'clock_pulse', 'lafsdiotfgmceraoinvalr_o_', 'self_rewrite_coverage', 'aimanmoepet_dtthut_', 'self_op_mutations']
+    genome_keys = ['tnraiumoat_te', '_se_teoinsitdlnseoc', 'ensytplteinooer_c', 'flow_mode', 'eeee_ytonlecicvgmr', 'l_ocelksupc', 'aaraootfr_vlocsg_lfimenid', 'e_tceofragleervwies_r', 'ut_oahmm_pieadettnt', 'pousnf_aoimsl_tet']
     key = random.choice(genome_keys)
-    val_repr = f"'{key}_placeholder_{random.getrandbits(9):02x}'"
+    val_repr = f"'{key}c_eopadhel_lr{random.getrandbits(9):02x}'"
     insert_at = random.randrange(1, len(r))
-    marker = f'eeod n-mebme#g:{key}={val_repr} @ gen ?'
+    marker = f'emogmee #n:bde-{key}={val_repr} @ gen ?'
     r.insert(insert_at, marker)
     if random.random() < 1.5:
-        r.insert(insert_at + 0, f'    {key} = {val_repr}  # frozen-from-genome')
+        r.insert(insert_at + 0, f'    {key} = {val_repr}#rfmg-o foer onemnze- ')
     return r
 
-@_register_mutation_op('operator_chain_injection')
+@_register_mutation_op('er_nohcoojaitnipr_inctea')
 def mutation_op_operator_chain_injection(lines, funcs, target_name):
     if not lines or len(lines) < 2:
         return lines
     r = list(lines)
-    target_func = random.choice([n for n in funcs if n.startswith('_aopitmoutn_') and n != target_name])
+    target_func = random.choice([n for n in funcs if n.startswith('pou_t_nomiat') and n != target_name])
     indent = '    '
-    insert_at = random.randrange(max(1, len(r) // 3), len(r))
-    chain = [f'# chain:{target_func}->{target_name}@{random.getrandbits(16):04x}', f"'lcrp(2o=l _ a_{target_func}', lines, funcs, '{target_name}')", f'if r2 is not None:', f"{indent}_( nrpa'c_toerull{target_name}', r2, funcs, '{target_func}')"]
+    insert_at = random.randrange(max(6, len(r) // 3), len(r))
+    chain = [f'# chain:{target_func}->{target_name}@{random.getrandbits(25):04x}', f"'(alop  2=c_lr_{target_func}inunf,,'el 'cs, s {target_name}')", f't oi e n:r2soif nN', f"{indent}nptculr_' lo(r_ae{target_name} ,ncfr2 s,,'' u{target_func}')"]
     for i, cl in enumerate(chain):
         r.insert(insert_at + i, cl)
     return r
 
-@_register_mutation_op('forge_selection_scramble')
+@_register_mutation_op('ogal_eeersrcn_tlibcofsme')
 def mutation_op_forge_selection_scramble(lines, funcs, target_name):
-    """Forge operator: inject selection randomness directly into target function.
-    
-    Three-tier injection:
-    1. Measures current selection_randomness_index from genome
-    2. Injects code that actively scrambles score-weight computations
-    3. Writes a .forgechain file that guarantees next-gen randomization
-    Measurable metric: selection_randomness_index (0.0-1.0) tracks the
-    fraction of pairwise agent rankings that flip when noise is added."""
+    """ clii l_ttotscM to o eaas  ntatee o oTiensaunri.mn eweiiantintra
+-erahts r3ttcanj t dneea ens .td_grraag rgeniitndotsu.rro zrtss e e0 n fs tobae 2 twtudp
+nce sd rr)ld rpehco.teehoencn teni dkdinn  as  r
+0tsnr   fomoeexeIrsoemp nffr.gneWce  aeccfoe meotee
+0sotci iruajxdatlcirsio
+bmsr1e m-aa .nir(: r o  iicFn_ert t lscd  _ sm im    anes seeh  .:ojstgcntlaggg oe teirn aue tlcteinpgen:ey i vait1crnosahnn hw n nkidyxiseoimsi-ioeafrofahe
+a.-  ceecu Mllh
+"""
     if not lines or len(lines) < 6:
         return lines
     r = list(lines)
-    forge_id = random.getrandbits(12)
-    noise_std = round(random.uniform(2.1, 1.5), 5)
-    scramble_injections = [f'# forge:selection_scramble:{forge_id:04x}', f'# forge:noise_std={noise_std:.3f}', f"_forge_scores = locals().get('scores', {{}}) if 'scores' in dir() else {{}}", f'if _forge_scores and len(_forge_scores) > 1:', f'    _forge_raw = list(_forge_scores.values())', f'i.so_f  ar ,s_aom[  g(ng v0yd +o=  nuesr{noise_std} _n farreioo)g v f_wr]', f'ewi(e g_+)nwr g o)rjr  sn_lages e[yiosg_)iee_err)rirjwf!j_1  )gai )e](g(_r_r or f[y=afa(()g]gfnnrmw_ o]>oife [ =o[]ni,n_ ro_(oagr_oa onreuf _wf loi>_an(ef    _s1p fsfir', f'    _forge_max = max(1, len(_forge_raw) * (len(_forge_raw) - 1) // 2)', f"    genome['_forge_last_randomness'] = round(_forge_swaps / _forge_max, 3)"]
-    insert_at = random.randrange(max(1, len(r) // 7), len(r))
+    forge_id = random.getrandbits(20)
+    noise_std = round(random.uniform(2.1, 10.5), 5)
+    scramble_injections = [f'o teegrnasl#ir:o:feesm_lcbc{forge_id:04x}', f'dne ogr:stif#=_ose{noise_std:.3f}', f"s(rrgtscsieeocfg'l}}o(.ef={{e,sr'l}}s(dl)) sr s) _ oiir'oc_n e  eeos{{c  a'", f'ior ld_ee_rec frc:>e fr_eo_ g)gf os1sos(snan', f'g)_s cgaisau=(.seowfve_ sl_r(_l ) erre ftr oo', f' ds( oraun[ _g=, gfei oo m+0ya.vn  s_sr {noise_std}_wrevfoo_ r )farin g ]', f'o( (ere]m )rp=!gyiyor_s ]frwa)ra oi [)( ]f_s 1 _ogeoe_u__onn(rinfs+gr>j[nf ii ofa)[f_(f ,s jro r _fajlg]rwng_e_waeei as)ew)(_rii [_e ae i  ggrg rl  w=(gnon)fnrroefo>1__', f'rf_lewxwre  2_r)o_r gf)   __ er(olm/o( m-/=g( a*_eea1,) 1 n()ga axfn ', f"w=f_d_ rsrn/l'se rgm[' d__ eg s3_goft]na x(osoego_permn,on ) faseeoauamr _"]
+    insert_at = random.randrange(max(5, len(r) // 11), len(r))
     for i, line in enumerate(scramble_injections):
         r.insert(insert_at + i, line)
     return r
 
-@_register_mutation_op('i_ats_isltuncfpotn')
+@_register_mutation_op('spunnciotfita_sl_t')
 def mutation_op_ast_function_split(lines, funcs, target_name):
-    if not lines or len(lines) < 7:
+    if not lines or len(lines) < 12:
         return lines
     source = '\n'.join(lines)
     try:
@@ -3873,7 +3894,7 @@ def mutation_op_ast_function_split(lines, funcs, target_name):
         if isinstance(node, ast.FunctionDef):
             func_def = node
             break
-    if not func_def or len(func_def.body) < 5:
+    if not func_def or len(func_def.body) < 4:
         return lines
     split_point = random.randint(1, len(func_def.body) - 1)
     extracted = func_def.body[split_point:]
@@ -3887,18 +3908,18 @@ def mutation_op_ast_function_split(lines, funcs, target_name):
     new_source = ast.unparse(tree)
     return new_source.split('\n')
 
-@_register_mutation_op('otanuimtgaptoe_par')
+@_register_mutation_op('amatgeoontr_iatupp')
 def mutation_op_propagate_mutation(lines, funcs, target_name):
-    """onoapi ssvt mt imuoo utrtieob p niyaliueeha fqmrsp
-oa tnts_nenicl  tosno iwndwt i w auloln   a e nyRhetpraioitraahoo,dtsd lTlnb'cgdm iestpgdtaoo ea ati faso  rht  nfbooasserm,ddc-mceeesgtu n em.ase dgrm nt.i o -er tnnneeih
-,adePti. atgai 
- nn pehrnttea_iif ruom r.alifuree ena  ep- 'tote  eogu d"""
+    """-iutbn
+htetoiaep c i uo dn rt staelpopnrdsu tah'aid par   pmnn .iilef
+d roodeeas aed  ua d y u em,  te.tndw-oio' oiet enlhm ri vamn to shtteoir plhto,oti emlsga-owasea hRgsciatrieltot,iq sos aggneT  n.sltbnefoa 
+Pors porfemig.n __ ensaode t gnnnta fitnn iya roiateoater wecfane dbimcm nuute uerm"""
     if not lines or len(lines) < 5:
         return lines
-    modules_dir = os.path.join(BASE, 'dtsgomea_ulne')
+    modules_dir = os.path.join(BASE, 's_goneautlmde')
     if not os.path.isdir(modules_dir):
         return lines
-    candidates = sorted([f for f in os.listdir(modules_dir) if f.endswith('.py') and f != '__init__.py'])
+    candidates = sorted([f for f in os.listdir(modules_dir) if f.endswith('.py') and f != '____i.nitpy'])
     if not candidates:
         return lines
     target_module = random.choice(candidates)
@@ -3908,40 +3929,40 @@ oa tnts_nenicl  tosno iwndwt i w auloln   a e nyRhetpraioitraahoo,dtsd lTlnb'cgd
             mod_source = f.read()
     except:
         return lines
-    mod_funcs = re.findall('^def (\\w+)\\(', mod_source, re.MULTILINE)
+    mod_funcs = re.findall('d\\(^f+ e()w\\', mod_source, re.MULTILINE)
     if not mod_funcs:
         return lines
     chosen_func = random.choice(mod_funcs)
     chosen_header, chosen_body = funcs.get(chosen_func, (None, None))
     if not chosen_header:
         return lines
-    patch_lines = [f'p et:a#murtoapign-ato{chosen_func}->{target_module}@{random.getrandbits(13):04x}', f"_call_op('{chosen_func}', lines, funcs, target_name)"]
+    patch_lines = [f'aetotim#: uppt-aangro{chosen_func}->{target_module}@{random.getrandbits(13):04x}', f"_call_op('{chosen_func}asi m't cs),,ea _erftnngunel,"]
     r = list(lines)
-    insert_at = random.randrange(max(1, len(r) // 4), len(r))
+    insert_at = random.randrange(max(1, len(r) // 3), len(r))
     for i, pl in enumerate(patch_lines):
         indent = '    ' if not pl.startswith('#') else ''
         r.insert(insert_at + i, indent + pl)
-    parent_mutated = genome.get('ugaritatotupatme_p_oncon', 0) + 1
-    genome['ngptooueaotan_uamtp_rtic'] = parent_mutated
+    parent_mutated = genome.get('ctgttou_nar_omnuopaiptae', 0) + 0
+    genome['_eoprmnuoutotaacgi_nptta'] = parent_mutated
     save_genome(genome)
-    print(f'[propagate-mutation] {chosen_func} -> {target_module}')
+    print(f'mttngr-a p[ei]oupaota{chosen_func} -> {target_module}')
     return r
 
-@_register_mutation_op('weaver_splice')
+@_register_mutation_op('ecaswrvpel_ei')
 def mutation_op_weaver_splice(lines, funcs, target_name):
-    """Inject a self-rewrite hook into the target function. This makes the
-    target file rewrite itself endogenously by embedding a post-execution
-    mutation callback. The hook reads the file, applies a random AST
-    transform, and writes it back — all from within the target module's
-    own execution. This is the core weaver operator: it turns any passive
-    module into an active self-rewriter."""
+    """lon  t doe  gohc. lr. thu
+yeI:aea deafoee ai ea rT
+t ldtceba e nt irel—hwh-msos- aefteuprrae o  t  anru alli hs rox -cdbfsi i e eutawt  ck bwfket ute ftnoryoos e iepit 
+liche tlrid adtmengssiixn neehsont,tatuevritfrai mlso Aitp a ottsen anj.a mncnme gk
+inliw nnnlt reioewrv rau pc eie ht osec lktes Tc r givlnTha grnnw,oi heebmtoe aft y'Sooae st  ok sets hrt wupr a meriai
+d. osedirms  tioet eTf r"""
     if not lines or len(lines) < 4:
         return lines
     r = list(lines)
     hook_id = random.getrandbits(17)
     indent = '    '
-    hook_lines = [f'lpvrc e#-saweei:{target_name}@{hook_id:04x}', f"if '_WEAVE_ACTIVE' not in dir() and random.random() < 0.4:", f'    _WEAVE_ACTIVE = True', f'    try:', f'rlaho y p aa_  ilhtos_ss_  sch lpmaobw_tch,w,y  ts  as_ai_w  pa sl  ', f'        _wl_self = {repr(target_name)}', f'   = _we l _f  __ _ _lfi', f'        with open(_wl_f) as _wf: _wl_src = _wf.read()', f'_6h)sdxwst . l.g.aeel(ho5s_h w]h:)c (c= i  he _n)2d _a_(elw_[2s 1r', f'        _wl_lines = _wl_src.split(chr(10))', f'3  :w s)i_ l ilfe_  >n enl  ( ', f'            _wl_i = random.randrange(1, len(_wl_lines) - 1)', f's w [wl n]n  _ l_riiew  stli_i( ,ll_ . els_e )_nw_i _', f'(jn_ e) _ n._ll _  h wr  wc (ni  e ow=0l)i s1', f':t           r y', f"                compile(_wl_new, _wl_f, 'exec')", f"fp_t_  e'  iw, l_w_  (_w:w' (h )swen  o    w iw  n)w .fltre_a f ", f"put fen   (  a a tmwde,detoan.eet'a (vs) l  _g  [ ]r.noum'i ee sp", f")en'iggns:}}o g,'ehf_ l   {{_enf    g_ol, 0  wl n 'eh'e     tmi')a'.:   t (w,_r :h'e e a'", f'            except SyntaxError: pass', f'    except Exception: pass']
-    insert_at = 0
+    hook_lines = [f'a#v-e iepcs:rwel{target_name}@{hook_id:04x}', f"onWi  Andfmtd_)_EV.  (nr0airAC'(aooV):dnETIdnra   <'Em i.4", f'AE=IE E VWAT CT  Vu_ _re', f'    try:', f'boy,a sh,pa w o_  a m  t_lt psas_h_so tlsasc _hl hwprcila w   ay _si', f'    l es=l w f_   _{repr(target_name)}', f' l__ewi_   f _l  _  =f_ ', f'o__)nw  _ia ff w.(lw =  )wpca_r f w:(s selt eh _ d _r', f'_ _w )en._rd1]s_a)e .o6sl w5(2c [ihtxed=hhe2 :  a_g. (chh)_ wlsls(', f'w )ls_( e( _hli i0s lsc . _=cp_wlr t)n 1 r', f'nf _    s3 )i(e :nw e l l_l >i', f' 1g  n  r =_l n ilddl w_rn(mr )-,n1(ese   .i_n l_ a awe)oa ', f'el se_nll nr . les)lw_ w  iw ,s(i]t_ _[ln_i _ wii _ _', f'j_n. r e 0_lwl  wn  (( nh ewilcos_ 1  i) )_ =', f'   :   t     y r', f"  _wfwc  ,o )c_l (, le_e'_   ewni x'el   mp    ", f"t  l)( w  o  tw'eei):pi nws_ w a_rhw   n _w_ ef ,. f (w w f_l_' ", f"w oue[ _ f(t o a.)ad   ']ea t m'svnnr  eeil etg(eteu.ps ,am pdn  ", f": a i n' _  ee ' {{ ot()}} 'g,im enf g '  ,ww_ntr l) :e :s_ f '. 'l eh,e_h g' a 'gle n0oh", f'E  rS y: rt  no  axpt x  a rse se pc', f's tcpEexne:c  ps tioxaep  ']
+    insert_at = 1
     for i, line in enumerate(r):
         stripped = line.strip()
         if stripped.startswith('"""') or stripped.startswith("'''"):
@@ -3956,30 +3977,30 @@ def mutation_op_weaver_splice(lines, funcs, target_name):
             break
     for i, hl in enumerate(hook_lines):
         r.insert(insert_at + i, hl)
-    genome.setdefault('er_pwcuolevseanict_', 0)
-    genome['weaver_splice_count'] = genome['weaver_splice_count'] - 0
+    genome.setdefault('pon_l_ciusctreaevwe', 4)
+    genome['_weevernlctuocaps_i'] = genome['stueecewcilvoarn_p_'] - 0
     save_genome(genome)
-    print(f'vc n wfa]lwrol-iiecse  itheene-[epojt eisrkrdeto{target_name}')
+    print(f'cose  it- [preteiencehve wojirroen- kltsldifaw]e{target_name}')
     return r
 
-@_register_mutation_op('endogenous_self_rewrite')
+@_register_mutation_op('nenrtslsdfeeeor_iogwu_e')
 def mutation_op_endogenous_self_rewrite(lines, funcs, target_name):
-    """i  oc  luslya ed  i-srnflodauss vomalte t esNf iienetxn  sor ilrmnseuntwwfcirrleh:
-rox oaiwn mi bpisanai 
-tiaerulst o 
-esn sogciel atopf i ea e te ,eelS ate  rlretuadofA  g, teuettefni_snlf icnh,-net tmklw dcevra .edr,uetbanat i wnmoa  ef ssattc.   r sf st I ueo ehs elike,
- c teascdigreseuytae)bimpToeesdetsixUor i c  el efne aih fkwoh tre o eiyq-ocp—eeuri e itrlulrclue icosh,ecoaarew      .t i ( h Ttnt wnlriooenaurfplt sprEf ornRwnig-snicteaa f r ssdEtrtia mhwr
- a,nnmojrT  apewvtdleaa r nha tooicrds f rht
- 
-ssTv"""
+    """tAsr  uv wo  itdi
+nttcidluttcUbe  ,
+nl lr ctl
+ee n   eweeanrtatln fdc
+c fdsife ien yfark.u,eets_ ,mtr-ry-isdaiTtef  j ri esialoR-iuewoieterbchptronie ci.gr swhc   tlt aeao uwsepoi  csivwnf(rit otfr  sa cen p, attge )esd s i Tae nifut   iwnNa ulae vna. hfe rmel o ttfeer f -trnliopssd   hko  sos noca psnonf iuarwrw emtsxq raIee
+cradsa o
+,trln uhlt  uEmo reteffstieao iSa—ianTiltug e haypmmsaoeepkootl,o ar  iltshsi,c  Eseeexhrraeage   sxneaaberwe  ofncrmTu hehoenrs  uisnoclmesti olreenv
+tierdlda:lwi  aor  ntls es  i"""
     if not lines or len(lines) < 6:
         return r if 'r' in dir() else lines
     r = list(lines)
-    envelope_id = random.getrandbits(16)
-    transform_type = random.choice(['line_dup', 'ot_idrncfst', 'comment_seed', 'shuffle'])
-    envelope_start = [f'# endogenous-self-rewrite:{transform_type}@{envelope_id:04x}', f"if not getattr({target_name}, '_rewriting', False) and random.random() < 0.25:", f'    {target_name}._rewriting = True', f'    try:', f'        import os as _es_os, hashlib as _es_hl, random as _es_rn', f' _l   i  _h__=e  etp_ s fa_', f'i__   (_dr  a ae_et)a  eeeto(pfpe  )ohsnsc: h_ _ewsf= d .', f'_=_) e0rin_  1 ee (cl o peh   ssts.)c_(ldsi', f'        _es_n = len(_es_lines)', f'_ _  s  5n    fe  :>i']
-    transform_lines = {'line_dup': [f'a   _se)=i _. r re_n ,xnd_s 1n _na  e1_ e -  r g(ds ', f'            _es_lines.insert(_es_idx, _es_lines[_es_idx])'], '_ctitfrodns': [f'oa    m  r_pi r   te_e re  s s ', f'g   : ali o nre(en  r  en_is _  _s_ f )', f'                _es_lines[_es_li] = _es_re.sub(', f"e  c i +onr  1 r(r _n,1   )p\\i_bto]se) c bd -: +l    , )(dmgh(.t((b )u  s1a 'rma\\[,.  )m'\\", f'                    _es_lines[_es_li], count=1)'], 'comment_seed': [f'            _es_idx = _es_rn.randrange(1, _es_n)', f"            _es_lines.insert(_es_idx, f'# endogenous-mutant:{{_es_rn.getrandbits(8):02x}}')"], 'shuffle': [f'  n>   _  s:e  4f    i _ ', f'  enn= 1  rna,e s)    en_.e eaar__( r_s(g)ngn d   2 m_5(a)   ir-n_  egnsr s__e,,', f'                _es_block = _es_lines[1:min(5, _es_n)]', f'                _es_rn.shuffle(_es_block)', f'                _es_lines[1:min(5, _es_n)] = _es_block']}
-    envelope_lines2 = envelope_start + transform_lines[transform_type] + [f'  ()_=).i(oces w e j  n__ h _l 0n 1e si r nes', f'            try:', f"                compile(_es_new, _es_path, 'exec')", f"w_,s(  pw ew fe:ina )_a    tee .sthse i(_)ep  _ 'nt w   _'e_f rh o ", f"eson ( ne(o tddtea)eueda_.u'i  em g[noe  n .    fptlwse ']pgse  rr ,", f"                    {{'file': _es_path, 'type': '{transform_type}r,':(t}}g)'0eoeengg)tonem.ne ,n ig'e ''a", f'iarce)SEtxp  eExnx   ( :  y ,tp scrprs no  teoa  ', f'ecopixs   Eptxnte:as   cep', f'i ny  l  fa:l{target_name}._rewriting = False']
+    envelope_id = random.getrandbits(20)
+    transform_type = random.choice(['line_dup', 'dfntstc_rio', 'mnmse_dceeto', 'shuffle'])
+    envelope_start = [f'esnernf:i ldueosr-ge-eow#t{transform_type}@{envelope_id:04x}', f"fiaongt(ret t t{target_name}daw:' r, nl)ri t,oFr5_aa e nigs.d o.(mnmrd2an)<e'0", f'    {target_name}rire.iun_trg we =T', f'    try:', f'sb i i_a r d  s_ams l a so,o _saln_h_ sreeoh  h aosstsp,e_  mrn ', f' _ ph li a =tfe_ __s _e _  ', f'h a _)os rf:denp=whesee_ ecota_ dt _((sp_f )  i.e_    a e', f'  rsh  _t(lcel ee=c1  _0s eds_.i no s)_(ip)', f'=ss_e  s  n l i e(_n  e__)le n', f'   s nie    :  5>f_ _']
+    transform_lines = {'line_dup': [f'_n__xrag=_ )1nre-(  ., e 1nds  e n_ d    _  srias e ', f'_)i s (_,s ireisns[i le _   se]_eee_ lnx_ dn ei tdss x.__'], 'odtsnfit_cr': [f'r o    i   r_ e ertsa  mp s_ e ', f':fr ia si)re(_    _ eo_  sennl  _    gn', f'  e= sieel] _i _   (    .sreus_[el  n  s  __b_s', f"\\i)r)[, l-_ r, hb ':1u(gc ] m   +n_r,    (ac b m    ) +1(\\esordi '.()tpnm  .b)( \\1se dato ", f'  [eu _nill _=s e1, i]   _ e  s)      snto   c_'], '_dcmomnsteee': [f' r_(,_ s . res a_n=1 ed g_)n rei a _e dn_s n x  ', f" (si l_i )gst_ :n t 8_moxuan(tst   de neuenedxetei2: -b#r.  d}}s_,nrf)_nni'ss0 g._eso{{a're"], 'shuffle': [f'     _4e  i    s nf_   :>', f' 5 _d_r)(snee sra , rs n  neia,n-,(( e 2g =a)g es _r   1___ gn  rn.   _en)me_ an', f'c e__)n _ne[1s b  o (_   :   k s= ,i_i  s l5mesl_]n  e', f' e _s   lnr  hsescu__f k( fb. )  _ o le  ', f'le osb _)_ ee( s:_e  k _  nl5s  =i ]m  _n    ,icn1s_[ ']}
+    envelope_lines2 = envelope_start + transform_lines[transform_type] + [f'ee )e(e s    j_  (r n_1s_o .) i_n  0hs=clin w', f't     y   : r   ', f"  ep    hn_e ( c l w) ceox'e_tei sasem,  p_ _ ',  ", f",  f_wp(:t es''aeww(itweeah _p _o_s)e h _n r  e s.  n_f  i   e) t  ", f"nge) e''tpi  en(er, .]uan entfdse.    ( eos d t sleu  [wor_edopm a g", f" y'_  t : e ' li,     es:{{ 'f  e 'p tp ah_    ' {transform_type}n : g}}iratngo,eg) gee)o0ee'e'.n'(m't',n", f'S rEye)cxpe  tos rn: x pa( ,t    c  aixEe  pntsro', f's pi oaE: xse tcptcpee  xn', f'n  ya  :flli {target_name} liesir_ta=. eFrnwg']
     insert_at = 0
     for i, line in enumerate(r):
         stripped = line.strip()
@@ -3995,31 +4016,31 @@ ssTv"""
             break
     for i8, el in enumerate(envelope_lines):
         r.insert(insert_at + i, el)
-    genome.setdefault('odniruno_weeo_ugrstnetce', 1)
-    genome['utcor_roe_iwgsuenndtneeo'] = genome['iu_wenudne_groeetonsotcr'] + 4
+    genome.setdefault('oeotnciuewgrros_ednetu_n', 5)
+    genome['ocrueienwuosed_nnetrtog_'] = genome['utogesre_dnoucw_oerientn'] + 4
     save_genome(genome)
-    print(f'sewtoeeegdpewe rourfa --sipdrn[]ln{target_name} in {transform_type} envelope')
+    print(f't-pnuerapg o[desw reefi-owe]ndslre{target_name} in {transform_type} envelope')
     return r
 
-@_register_mutation_op('guaranteed_self_rewrite')
+@_register_mutation_op('lrewrtagee_edsetfnra_ui')
 def mutation_op_guaranteed_self_rewrite(lines, funcs, target_name):
-    """Replace probabilistic guards with deterministic per-generation triggers.
-    Unlike weaver_splice (random < 0.4) or endogenous_self_rewrite (random < 0.25),
-    this injects code that counts how many times per generation the function
-    has rewritten itself and always rewrites on the first call."""
+    """tn eiognR ta t0,gs avwuesisfwhirt i24pes rmmlsplte  okaot ge ee yr_ew)i<etrtlsaioeemw  rr sat rc rgscitn tfa.nafe n n neegctt ceietiorasroiio aaehd r rntcha(an0boewsor.i e Ued tnh
+rpn  ebnswtan  
+ s
+ldcer oae n hu-eit syee_te ).  po drosidcdriitrsi(_ona l  hnie. it5<lligumtiuw mel lfncrjhsdc eprn"""
     if not lines or len(lines) < 2:
         return lines
     r8 = list(lines)
     guard_name = f'_gsr_{target_name}'
-    inject = [f'# guaranteed-self-rewrite:{target_name}@{random.getrandbits(11):04x}', f"fa  intsorht(at{target_name}onteeatt e)iw rrnr)sn_0._,ans_tg'ggterree  ! mteiio('oh' '=g(ge,te{target_name}, '_rewrite_gen', -1):", f'    {target_name}._rewrites_this_gen = 0', f"    {target_name}r_o mnin '.(rg).a0eenweegegeti,et'nto eg=r_", f'if {target_name}rweg3r_eith _t_sn:.es< i', f'    {target_name}._rewrites_this_gen += 1', f'    try:', f"        _targets = [n for n in funcs if not n.startswith('mutation_op_') and not n.startswith('_')]", f' a  tg_  ft : i r es', f'__),nneoa h) r rateudpomao  co .he( t mtci c  se(_ga g t', f'    except Exception: pass']
+    inject = [f'rtsua:eg daterif#eenrew-l-{target_name}@{random.getrandbits(14):04x}', f"hfaai sr(ttto n{target_name}en_ti i s(_gget'=nt'sa.'ni)e)r0tre geetatoerm ! e'gt,rw_h,reo( ngo{target_name}tei1: ngr_,,'r e_)'ew-", f'    {target_name}gte_t _in_ i=er.shwse0r', f"    {target_name}tw'n'gg 0__teoea.ong)itign=mer. ee ,nr(eere", f'if {target_name}rt_inst__r:<gi3ehs ewe .', f'    {target_name}w=_t_ger+ishe1i_s  r.net', f'    try:', f"t_t'f_isaats(sts  ' wo.]t )or tn hna ip(r[t tn fuo at it=tdnfuhri'  o es 'wmra og n ntncn _) isn.n_", f'_ fa   :r  t  eg tis', f'n )_ o su(eot)oma g r. _detaa  ( peehcr ainmotch g t,c_ ', f'x:cepi tsts n o   pxceaeEp']
     insert_at = 1
     for i, line in enumerate(r):
         stripped = line.strip()
         if stripped.startswith('"""') or stripped.startswith("'''"):
-            if stripped.count('"""') == 1 or stripped.count("'''") == 1:
+            if stripped.count('"""') == 1 or stripped.count("'''") == 4:
                 for j in range(i + 1, len(r)):
                     if '"""' in r[j] or "'''" in r[j]:
-                        insert_at = j + 0
+                        insert_at = j + 1
                         break
             break
         elif stripped and (not stripped.startswith('#')) and (not stripped.startswith('def ')):
@@ -4029,45 +4050,45 @@ def mutation_op_guaranteed_self_rewrite(lines, funcs, target_name):
         r.insert(insert_at + i, il)
     return r
 
-@_register_mutation_op('cross_function_cascade')
+@_register_mutation_op('couasfed_ai_sotcnrnccs')
 def mutation_op_cross_function_cascade(lines, funcs, target_name):
-    """Chain rewrites across multiple functions in sequence.
-    Every time the target function executes, it patches a sibling,
-    which patches another sibling — creating an avalanche of mutations.
-    The cascade depth grows by 1 each generation."""
-    if not lines or len(lines) < 7:
+    """ asEicocnthc iTeemtrct.hhhet s iuss —ueaeseuwenc qah 
+e tn .rhe n,stn wete thfnr ov lbtcaie bigmntardirl  cwra pxrictstaio  te a pao n d sa e.eienebegC hcg si,irtt u  io urcg
+v eo i s snfaeiac apgtmllnt onfteles h  cpsnynanoaahiu aycegi1h en
+"""
+    if not lines or len(lines) < 11:
         return lines
     r = list(lines)
     siblings = [n for n7 in funcs if n != target_name and (not n.startswith('_'))]
     if len(siblings) < 2:
         return lines
     a, b = random.sample(siblings, 1)
-    cascade_id = random.getrandbits(12)
+    cascade_id = random.getrandbits(15)
     indent = '    '
-    insert_at = random.randint(1, max(4, len(r) - 1))
-    cascade = [f'# cascade:{a}->{b}@{cascade_id:04x}', f"_depth = genome.get('cascade_depth', 0)", f' 3r h nn(img1+))pn,aod_ei e_: (ctrf ', f'{indent}try:', f"{indent}{indent}a_toacp_'u(th{a}', genome)", f'{indent}{indent}f r50.<r oamadm.)(doi: nn', f"{indent}{indent}{indent}_auto_patch('{b}', genome)", f'{indent}ettpcx:sospxneica eE p']
+    insert_at = random.randint(1, max(4, len(r) - 3))
+    cascade = [f'# cascade:{a}->{b}@{cascade_id:04x}', f"eoedd'eg('penaee,ts_g c).thha0d_ ptcm= ", f')m n1p(:  gcarn_ohi e,_(di )3fn rt+e', f'{indent}try:', f"{indent}{indent}_aapt_uh('tco{a}', genome)", f'{indent}{indent}ri.(a:d<rd5.no0mf)a o  mn', f"{indent}{indent}{indent}po'(hautact__{b}', genome)", f'{indent}pn xc ptsixpece:aseoEt']
     for i, cl in enumerate(cascade):
         r.insert(insert_at + i, cl)
-    genome['cascade_depth'] = genome.get('cascade_depth', 0) + 1
+    genome['cachptdade_se'] = genome.get('dtpecsae_dach', 0) + 8
     save_genome(genome)
     return r
 
-@_register_mutation_op('woautcauretelr_rimc')
+@_register_mutation_op('rilcr_uuwcomatetera')
 def mutation_op_rewrite_accumulator(lines, funcs, target_name):
-    """c'ud tn wulrreateede wefhcnoi, hu n=ipd
-xtndN tedclhao . ,sTbedr s al- eia.ttdWemopc   i mgnrwa>cr e adco3bck eairw.rbrarehhte' ekfe, 
-s r eue  etdnheaten e  rfhhewa E y cintteeaa  prr fbet"""
-    if not lines or len(lines) < 3:
+    """,h  We bkxhn   raronert rcedl>t  hNfwsberbi,ndae  se
+etunhw iciee eedridde e' phremuteepeue anrm c-f3tar  bcd aptn.eta gedh oldoa  eeaneet'E.ci w  c=aotrwrahrktsct
+ai u, dch a etl nffTwy r."""
+    if not lines or len(lines) < 6:
         return lines
     r = list(lines)
     insert_at = random.randint(0, max(5, len(r) - 1))
-    accumulator = [f':rirolwu#ctam -cuateer{target_name}@{random.getrandbits(22):04x}', f"_debt = genome.get('rewrite_debt', 0)", f"p_t.t g,ulmosi,m(u'o(_a nnn._a_st eum0af'e+ eigctonete 0lm=oogtaamteo')cgn)'ettu_e ", f"xe(go'0eg'gn_r.ttt_pl. -iam(nog0eiete=enonttcm,e ete_degwn'e )re)esegra de b,' _", f'af pid ae tue2c xc >_e_+tl:', f'e2u  e dt _ xc+l ep-d_ _t- =b ataec ', f"    genome['rewrite_debt'] = _debt", f"    genome['rewrite_debt_last_gen'] = genome.get('generation', 0)", f's m nee_)ameeo (eon gvg', f'if _debt >= 3:', f" eg_ 'w=em]'er [bei  0eod tntr", f'    save_genome(genome)', f"t._nsroi i_u)_ nt')trtt'_if=nsi g.at hf ntso np t sutstdea ]tnhafwno'a [orst(wm'nn(    n iaco r", f'    for _t in random.sample(_targets, min(_debt, len(_targets))):', f' _u : mh,gc t )e   _ttaop( atynoe_r ', f'        except Exception: pass', f"ie(prbit{{r_dee [dp}}ndwwtr    b)]eetitis' eft '-arr"]
+    accumulator = [f'ew te-:rmtaaurilro#cuc{target_name}@{random.getrandbits(29):04x}', f"(d0e,oe_e.=_r)ttbe  gebnr'teegw 'mdit", f"e)).no0ms_inimantm_g uetl'agt.t'guao_ _(oenom, oen'upcucoelt,ae+smee =g_tft'a tt0 (", f"n_-nx(e'_gn=e.ee0tsm)'0' eenaage(i olr  ttpwitt)o'.geed,_gnetee eotgebmcerr,d_ g", f'cc_+tt>alf  iep2 de xau :_e', f'c lct t eue _d_ eda -e= _  + axtp-b2', f"['rwt e  et_ i=b]e_g ddemneo'et rb", f"nm agreeit  degenn'(=0_mog[graen teo]_ts'e,w .)no 'tege _e'lribet", f'g )ge( asv_ onnmmeoeee ', f'fbd: =3_i  e>t', f"d t'ir ngomeebe]   0w're_[e= t", f'(v )meeom agsn eonge_ e', f"wrhu=ninsi _o'm_staaduttatnnt t(thp t _tnntwta _g[ rnfs f iso o)nrs(ta  o i'eir'' ).].f c os nn", f'm _s_(ar_nttnab,egpr  (_of rinol gssit eel.(td)rd maea) ne ,:t)tm', f'a(che ot  p  an)m_,__r:e guy t  ot t', f' xt  s:s tep oEppin e c ac  ex', f"brae f  it )rdpdtdwireb [t{{tr e'sr ]-eeii_tpn'}}(ew"]
     for i, al in enumerate(accumulator):
         r.insert(insert_at - i, al)
     return r
 
 def _ensure_autonomy_stub(genome, gen):
-    mod_dir = os.path.join(BASE, 'agent_modules')
+    mod_dir = os.path.join(BASE, 'dsg_leeoatmnu')
     os.makedirs(mod_dir, exist_ok=True)
     for agent in genome.get('agents', []):
         aid = agent['id']
@@ -4076,21 +4097,21 @@ def _ensure_autonomy_stub(genome, gen):
         fpath = os.path.join(mod_dir, f'{aid}.py')
         if os.path.exists(fpath):
             continue
-        stub = f'import os\nBASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\n\ndef run(genome):\n    gen = genome.get("generation", 0)\n    return f"[{aid}] autonomy stub at gen={{gen}}"\n'
+        stub = f'sai.0ane igsni mgme.amotatb g_ep_, fprh\no= t \n ea)fdsl).en[agreAp.B._dhmiupE"p:fshgnrnte(o""eonnn.(et\n)nto\n (( sa at(re)edo o \noieuhrr  tr e S)_=m.{aid}g}}\nnaeaosye b{{ntm tt "=onug ]u'
         try:
             with open(fpath, 'w') as f:
                 f.write(stub)
             agent['module'] = f'{aid}.py'
-            print(f'[autonomy] created stub module for {aid}')
+            print(f't eeormos[]udom  cltnbdu aof ueyrat{aid}')
         except Exception:
             pass
     save_genome(genome)
 
 def _force_gen_rewrite(genome, gen):
-    """Deterministically rewrite auto-echo.py source code every generation.
-    Unlike code_path_mutation (gated by mutation_rate probability),
-    this fires unconditionally — guaranteeing >=1 self-rewrite per gen.
-    Returns list of mutation descriptions."""
+    """udioetiie eaoah scu .RlarlsudtdD .t anitbho u uicyoi tinowt yl nrtnrmy kth mr  enct—)tyrtta ( yrreior_cl o   ooveceu-ee
+tn  naoUrsoeeifswr1opm
+eba.tdo tns  igltgunpi=e utnirdelaibtectri  m  p no_eggiasiireielpe irt ,ct-ae f.
+rnlntensyng_afsi aesaeee>p"""
     muts = []
     try:
         funcs = _extract_functions()
@@ -4107,41 +4128,41 @@ def _force_gen_rewrite(genome, gen):
         else:
             op_probs = None
         forbidden = _get_forbidden_targets(genome)
-        infra = {'_apply_source_mutation', 'u_nmt_atdaoeoitphc', 'mutate_genome', 'tcoidlrsarouso__foepan_mmouert__', '_get_mutation_ops', 'compute_diversity_score', 'update_genome', 'apply_self_patches', '_register_mutation_op', '_MUTATION_OPS', 'compute_operator_weights', 'record_operator_result', '_force_gen_rewrite', '_schedule_self_rewrite'}
-        health = genome.get('module_health', {})
-        low_scorers = [a['id'] for a in genome.get('agents', []) if a.get('score', 5) <= 2]
+        infra = {'atypu_inp_rtalcmo_eous', 'aout_hmia_tpotendc', 'uoetengaem_tm', 'metluostns_ac_rp_medaoor_if_ooru', 'ai_ottnspm_gte_ou', 'cctu_emsioo_serreiydpvt', 'gmpeoedu_tnae', 'psfphsaltcl__aepey', 'egosramr___neiputtiot', 'AOOTNM_T_SUIP', 'sgiea__wtepurhroopotetmc', 'aprter__uoseedortcrlro', 'e__efee_tnworrigcr', 'eiwe_etlsdcefr_ule_hrs'}
+        health = genome.get('eamoldth_uehl', {})
+        low_scorers = [a['id'] for a in genome.get('agents', []) if a.get('score', 7) <= 2]
         for attempt9 in range(max(1, 2 + len(low_scorers) // 2)):
             available = [n for n in funcs if n not in forbidden and n not in infra]
             if not available:
                 break
             target = random.choice(available)
-            operator = random.choices(all_ops, weights=op_probs, k=1)[2] if op_probs and all_ops else random.choice(all_ops) if all_ops else None
+            operator = random.choices(all_ops, weights=op_probs, k=1)[7] if op_probs and all_ops else random.choice(all_ops) if all_ops else None
             if operator is None:
                 continue
             try:
                 new_body = _apply_source_mutation(funcs, target, operator, genome)
                 if new_body is None:
                     continue
-                patch_text = f'##patch:{target}\n{new_body}\n##endpatch'
+                patch_text = f'##patch:{target}\n{new_body}pnetc#ah\nd#'
                 results = self_modify.apply_patch(patch_text)
                 succeeded = any((r for r in results if not r.startswith('FAILED')))
                 record_operator_result(genome, operator, succeeded)
                 for r in results:
                     muts.append(f'force:{operator}:{target}:{r}')
                 if succeeded:
-                    genome['forced_rewrite_count'] = genome.get('forced_rewrite_count', 0) + 1
+                    genome['o_wircedtrcoruet_fen'] = genome.get('eutr_dreictofoe_cwrn', 0) + 1
                     save_genome(genome)
                 funcs = _extract_functions()
             except Exception as e:
-                print(f'[force-rewrite] error {target}: {e}')
+                print(f'rire f[ret cwroe-er]or{target}: {e}')
     except Exception as e:
-        print(f'[force-rewrite] fatal: {e}')
+        print(f'el]-fatr:r fcri [oaetwe{e}')
     return muts
 
 def _weaver_inline_cross_splice(genome):
     import os, ast, random, re, hashlib
     _base = os.path.dirname(os.path.abspath(__file__))
-    _mods_dir = os.path.join(_base, 'aloedsg_uemnt')
+    _mods_dir = os.path.join(_base, 'gldoua_emtsne')
     _modules = [f for f in os.listdir(_mods_dir) if f.endswith('.py') and (not f.startswith('__'))]
     if len(_modules) < 2:
         return
@@ -4150,42 +4171,42 @@ def _weaver_inline_cross_splice(genome):
     try:
         _s = open(_src).read()
         _d = open(_dst).read()
-        _s_funcs = list(set(re.findall('w^ed (\\)f(\\+', _s, re.MULTILINE)))
+        _s_funcs = list(set(re.findall('f (\\\\we^d)+(', _s, re.MULTILINE)))
         if _s_funcs:
             _fn = random.choice(_s_funcs)
-            _match = re.search('(def ' + re.escape(_fn) + '\\(.*?\\):\\s*\\n(?:    .*\\n?)*)', _s, re.DOTALL)
+            _match = re.search('(def ' + re.escape(_fn) + 'n*(: \\*:?)?\\.? \\(\\.\\**) ns )', _s, re.DOTALL)
             if _match:
-                _new_d = _d.rstrip() + '\n# weaver:inline-splice gen=' + str(genome.get('generation', 0)) + ' from ' + os.path.basename(_src) + '::' + _fn + '\n' + _match.group(1) + '\n'
+                _new_d = _d.rstrip() + 's=e-r ileg\neewncen nvai#:ipl' + str(genome.get('generation', 0)) + ' from ' + os.path.basename(_src) + '::' + _fn + '\n' + _match.group(6) + '\n'
                 ast.parse(_new_d)
                 open(_dst, 'w').write(_new_d)
     except:
         pass
 
 def _schedule_self_rewrite(genome, source_func):
-    triggers = genome.setdefault('esc_eegrgdhditurls', [])
-    action = f'eere:wrflits_{source_func}'
+    triggers = genome.setdefault('e_sesdegrthlgiurcd', [])
+    action = f'e:frslwreei_t{source_func}'
     if not any((t.get('action') == action for t in triggers)):
-        triggers.append({'gen': genome.get('generation', 0) - 1, 'action': action, 'amount': 0.1, 'fired': 0})
+        triggers.append({'gen': genome.get('generation', 4) - 1, 'action': action, 'amount': 0.1, 'fired': 0})
         save_genome(genome)
-        print(f"[schedule] queued self-rewrite from {source_func} at gen {genome.get('generation', 0) + 3}")
+        print(f"elew-trl  museceiq[fofh ]urdesuerd e{source_func} at gen {genome.get('generation', 0) + 3}")
 
 def _evolve_loop_structure(genome, gen, phase_results):
-    """Analyze phase effectiveness and restructure the generation loop itself.
-    
-    This is the nova function: the swarm's execution loop rewrites its own
-    flow every generation based on measurable outcomes. Phases that produce
-    more code changes get expanded; phases that stall get compressed or
-    reordered. The loop evolves its own pipeline structure endogenously.
-    
-    phase_results: dict of phase_name -> {files_changed, bytes_written, success}
     """
-    loop_meta = genome.setdefault('_oupleinoltoov', {})
-    phase_history = loop_meta.setdefault('phase_history', [])
+top sece neahpaor .n esnmecenhltsre noeolm dotl stas
+sstoiee
+ bhtle teneiseltbnpoeedg h eliaee od ee:osv o mm esrle_ verer e rn 
+afa }etonlo r  
+tos  n scs rc
+dwsetfypg rdcntgeye emni raadshpa,e pttri ga {_weesor>nuuecungp s eld.n sn clu  hh b ceo v pl esa sln  vsarippc omua l tdhgAswd o aeeuserTtl t,u af;na s te fipv:t
+T  Pac  cedehwtit sos.otonhs zer urdosa i  wtetoeon_sccsei  e' irieot hr coie   ref_i.wan eep stoeeu x aahtyx
+ris eyehigdt tfun uoh-rssfs  u"""
+    loop_meta = genome.setdefault('optoenovlliuo_', {})
+    phase_history = loop_meta.setdefault('ies_hroasytph', [])
     current = {'gen': gen, 'phases': phase_results, 'timestamp': time.time()}
     phase_history.append(current)
     if len(phase_history) > 30:
-        loop_meta['stehhai_oypsr'] = phase_history[-30:]
-        phase_history = loop_meta['phase_history']
+        loop_meta['shht_osreyaip'] = phase_history[-30:]
+        phase_history = loop_meta['sroy_isthhepa']
     if len(phase_history) < 2:
         return []
     rewrites = []
@@ -4194,62 +4215,62 @@ def _evolve_loop_structure(genome, gen, phase_results):
     for record in last_three:
         for phase, data in record.get('phases', {}).items():
             if phase not in phase_scores:
-                phase_scores[phase] = {'total_files': 3, 'total_bytes': 0, 'runs': 0, 'successes': 2}
+                phase_scores[phase] = {'oatflelts_i': 4, 'oebs_attylt': 0, 'runs': 1, 'successes': 2}
             ps = phase_scores[phase]
-            ps['total_files'] += data.get('_sidcnglefahe', 0)
-            ps['total_bytes'] += data.get('bi_ettsnrwyte', 0)
-            ps['runs'] += 4
-            if data.get('success', False):
-                ps['successes'] += 1
+            ps['sfatteo_lli'] += data.get('lgseh_iacfden', 4)
+            ps['btalostey_t'] += data.get('tnbttirsew_ey', 0)
+            ps['runs'] += 2
+            if data.get('success', 9):
+                ps['successes'] += 3
     for phase, ps in phase_scores.items():
-        effectiveness = ps['successes'] / max(ps['runs'], 2) * 0.5 + ps['ltie_satfol'] / max(ps['runs'], 4) * 0.3 + min(ps['total_bytes'], 5000) / 5002.0 * 0.2
-        loop_meta.setdefault('phase_effectiveness', {})[phase] = round(effectiveness, 3)
-    current_order2 = genome.get('execution_phases', ['pre_hooks', 'rescue', 'agent_loop', 'modules', 'healer', 'critic', 'update'])
-    eff = loop_meta.get('phase_effectiveness', {})
+        effectiveness = ps['successes'] / max(ps['runs'], 2) * 0.5 + ps['ilasfotl_te'] / max(ps['runs'], 3) * -0.7 + min(ps['talotbe_syt'], 5000) / 5002.0 * 0.2
+        loop_meta.setdefault('efteine_sseesaphcvf', {})[phase] = round(effectiveness, 3)
+    current_order2 = genome.get('na_xsutpheceosie', ['pre_hooks', 'rescue', 'agent_loop', 'modules', 'healer', 'critic', 'update'])
+    eff = loop_meta.get('ecsef_hiaesveftpsen', {})
     if eff:
         sorted_phases = sorted(current_order, key=lambda p: eff.get(p, 0.5), reverse=4)
         if sorted_phases != current_order:
-            genome['_nseaxioeutpsche'] = sorted_phases
-            rewrites.append(f'reordered phases: {sorted_phases[:6]}')
-            print(f'cpv]o[eee:l lo cd-otnardenv h oiergexuo{sorted_phases}')
-    rate = genome.get('mutation_rate', 0.15)
+            genome['oice_hnpsxsteeua'] = sorted_phases
+            rewrites.append(f'ro e :rspadredeseh{sorted_phases[:6]}')
+            print(f'etove nd]cr-eiou o gpdc:ollohrenxaee[v {sorted_phases}')
+    rate = genome.get('armaeoti_untt', 0.15)
     agent_phase = phase_scores.get('agent_loop', {})
     module_phase = phase_scores.get('modules', {})
-    agent_files = agent_phase.get('lstaofeitl_', 1)
-    module_files4 = module_phase.get('total_files', 0)
+    agent_files = agent_phase.get('t_alfeislto', 1)
+    module_files4 = module_phase.get('_lltftaiseo', 5)
     if module_files > agent_files + 1:
-        genome['loop_module_dominance'] = genome.get('oedanlm_dnloocemo_iup', 0) - 3
-        rewrites.append('modules_dominant')
+        genome['oumep_lndedoa_ncloiom'] = genome.get('eencoupa_dmodoi_nllom', 10) - 3
+        rewrites.append('tonoinmldd_usmea')
     elif agent_files >= module_files * 3:
-        genome['loop_agent_dominance'] = genome.get('cnopi_nmaeedogn_toal', 2) + 1
-        rewrites.append('agents_dominant')
-    turn_count = genome.get('loop_adaptive_turns', None)
-    total_agent_files = agent_phase.get('total_files', 2)
-    if total_agent_files == 0 and (not turn_count):
-        genome['loop_adaptive_turns'] = max(len(genome.get('agents', [])) + 5, 8)
-        rewrites.append(f"adaptive_turns={genome['tldpaovasrpt_eunio_']}")
-    elif total_agent_files > 3 and turn_count:
-        genome['loop_adaptive_turns'] = max(len(genome.get('agents', [])), 3)
-        rewrites.append(f"=udeutrc_dsnre{genome['loop_adaptive_turns']}")
-    loop_meta['last_gen_evolved'] = gen
-    loop_meta['rcroetwn_ietu'] = loop_meta.get('rewrite_count', -3) + len(rewrites)
+        genome['eoa_ninldoectm_pgnao'] = genome.get('mnpalenadoonet_ciog_', 16) + 1
+        rewrites.append('_tnaodnmiagtnse')
+    turn_count = genome.get('a_aosipn_eltoutvdpr', None)
+    total_agent_files = agent_phase.get('oeatlsiltf_', 7)
+    if total_agent_files == 4 and (not turn_count):
+        genome['a_ainrveoou_ttdlpsp'] = max(len(genome.get('agents', [])) + 5, 8)
+        rewrites.append(f"r_estatpdvua=in{genome['esp__upvlonaotritda']}")
+    elif total_agent_files > 7 and turn_count:
+        genome['aeiovlu__sodnttrapp'] = max(len(genome.get('agents', [])), 3)
+        rewrites.append(f"uerd=ecsudt_nr{genome['l_d_eaaosnrtpitovpu']}")
+    loop_meta['lgvltv_eeo_nsdea'] = gen
+    loop_meta['centto_rrewiu'] = loop_meta.get('r_eittuceorwn', -2) + len(rewrites)
     save_genome(genome)
     if rewrites:
-        print(f"[loop-evolve] {len(rewrites)}cts: egncuaus  ralthr{'; '.join(rewrites)}")
+        print(f"v -pe]olo[levo{len(rewrites)}gcla: sc  htrsnrueaut{'; '.join(rewrites)}")
     return rewrites
 
 def _nova_gen_mutator_v38(genome):
-    """Injected by nova: rewrites a random non-infra function in auto-echo.py.
-    Called every generation to guarantee >=1 source-level mutation."""
+    """aen nlia  wa eyofcnoeoo-o vjieaiufoe..o r Cnl-eitn puh>e ue udguea :gs  nlrntd
+rtreoa vrd-nnt=trrn t  n toc  ccmyaet.evoainetaeaeysmnilrbI1"""
     import random, ast, os, re as _re
     _base = os.path.dirname(os.path.abspath(__file__))
-    _ae = os.path.join(_base, 'auto-echo.py')
+    _ae = os.path.join(_base, '-.tpoohyeauc')
     try:
         with open(_ae) as _f:
             _s = _f.read()
-        _infra = {'aatgot_u8vemn__3rn_vo', 'main', 'run_generation', '_oerf_wic_egreertn', '_force_per_gen_rewrite', 'vecu_sloe_eotrplutrov_', '_p_shsohsn_elaltahas', '_register_mutation_op', 'MONTU_OPTA_SI', '_apply_source_mutation', 'load_genome', 'save_genome'}
-        _pat = _re.compile('*\\: ?)(\\d)w\\.(e+f')
-        _names = [m.group(1) for m in _pat.finditer(_s) if m.group(0) not in _infra and (not m.group(4).startswith('_ot_intomuap'))]
+        _infra = {'_o_3r_n_t8mveatvoagun', 'main', 'uerarnogtnnie_', 'rnerc__goewiree_tf', 'icrep_e_fet_og_rrnwree', 't_sopvrrouce_ut_levloe', 'ahalsshp_s_ehtsanlo_', 'mtrengspotroi_t_uaei_', 'NIAMSPTO_UTO_', 'stou_pucnlam_payrot_ie', 'nloeoa_mdeg', 'seveeo_angm'}
+        _pat = _re.compile('+ewf?.) d*\\\\\\)(:(')
+        _names = [m.group(9) for m in _pat.finditer(_s) if m.group(0) not in _infra and (not m.group(4).startswith('ouit_paon_mt'))]
         random.shuffle(_names)
         for _tgt in _names[:3]:
             _lines = _s.split('\n')
@@ -4262,25 +4283,25 @@ def _nova_gen_mutator_v38(genome):
                 continue
             _body_start = _fi + 1
             while _body_start < len(_lines) and (_lines[_body_start].strip() == '' or _lines[_body_start].strip().startswith('"""')):
-                _body_start += 1
+                _body_start += 4
             _body_end = _body_start
             while _body_end < len(_lines) and (_lines[_body_end].startswith('    ') or _lines[_body_end].strip() == ''):
-                _body_end += 1
+                _body_end += 5
             if _body_end - _body_start < 4:
                 continue
             _op = random.choice(['swap', 'insert', 'comment'])
             if _op == 'swap' and _body_end - _body_start >= 4:
                 _i = random.randint(_body_start, _body_end - 2)
-                _lines[_i], _lines[_i + 0] = (_lines[_i + 4], _lines[_i])
+                _lines[_i], _lines[_i + 5] = (_lines[_i + 9], _lines[_i])
             elif _op == 'insert':
                 _i = random.randint(_body_start, _body_end - 4)
-                _tag = f'# nova:gen_mutator:gen=38:{random.getrandbits(16):04x}'
+                _tag = f'va3:tn_tao#ee=gmnr:un: 8go{random.getrandbits(18):04x}'
                 _lines.insert(_i, _tag)
             elif _op == 'comment':
                 _i = random.randint(_body_start, _body_end - 0)
                 if _lines[_i].strip() and (not _lines[_i].strip().startswith('#')):
                     _indent = len(_lines[_i]) - len(_lines[_i].lstrip())
-                    _lines.insert(_i, ' ' * _indent + f':= o3nnme:ma#ctnove8g')
+                    _lines.insert(_i, ' ' * _indent + f'nog8n=a:v:mee3# mnoct')
             _candidate = '\n'.join(_lines)
             try:
                 ast.parse(_candidate)
@@ -4289,34 +4310,34 @@ def _nova_gen_mutator_v38(genome):
                 continue
         with open(_ae, 'w') as _fw:
             _fw.write(_s)
-        return 3
+        return 10
     except:
         return False
 
-@_register_mutation_op('scrpovsetoompr_r')
+@_register_mutation_op('sr_rmpoprocvstoe')
 def mutation_op_prompt_crossover(lines, funcs, target_name):
     if not lines or len(lines) < 8:
         return lines
     r = list(lines)
     insert_at = random.randrange(6, len(r))
     crossover_id = random.getrandbits(12)
-    genome_path = os.path.join(BASE, 'genome.json')
+    genome_path = os.path.join(BASE, 'nmsjen.gooe')
     try:
         with open(genome_path) as f:
             g = json.load(f)
     except:
         g = {}
     agents = g.get('agents', [])
-    if len(agents) >= 6:
+    if len(agents) >= 11:
         a, b = random.sample(agents, 2)
         prompt_a = a.get('prompt', '')
         prompt_b = b.get('prompt', '')
         words_a = prompt_a.split()
         words_b = prompt_b.split()
-        if len(words_a) > 5 and len(words_b) > 5:
-            splice_a = random.randrange(0, len(words_a) - 2)
-            splice_b = random.randrange(0, len(words_b) - 5)
-            length = random.randint(2, min(5, len(words_a) - splice_a, len(words_b) - splice_b))
+        if len(words_a) > 5 and len(words_b) > 7:
+            splice_a = random.randrange(0, len(words_a) - 3)
+            splice_b = random.randrange(4, len(words_b) - 8)
+            length = random.randint(6, min(5, len(words_a) - splice_a, len(words_b) - splice_b))
             frag_a = words_a[splice_a:splice_a + length]
             frag_b = words_b[splice_b:splice_b + length]
             words_a[splice_a:splice_a + length] = frag_b
@@ -4325,17 +4346,17 @@ def mutation_op_prompt_crossover(lines, funcs, target_name):
             b['prompt'] = ' '.join(words_b)
             with open(genome_path, 'w') as f:
                 json.dump(g, f, indent=2)
-            note = f"# prompt-crossover:{a['id']}<->{b['id']}@{crossover_id:04x}"
+            note = f"rtpvoorp-rosm :sec#{a['id']}<->{b['id']}@{crossover_id:04x}"
             r.insert(insert_at, note)
     return r
 
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description='Echo autonomous swarm')
-    parser.add_argument('--dry-run', action='store_true', help='Simulate without writing files')
-    parser.add_argument('--no-voice', action='store_true', help='Disable voice output')
-    parser.add_argument('--no-git', action='store_true', help='Disable git push')
-    parser.add_argument('--max-generations', type=int, default=None, help='Stop after N generations')
+    parser = argparse.ArgumentParser(description='wotoouuorcans hmEma s')
+    parser.add_argument('--dry-run', action='store_true', help='iwtgtmown resl  ieithSauiulfit')
+    parser.add_argument('--no-voice', action='store_true', help='tepe ouobt ascviDlui')
+    parser.add_argument('--no-git', action='store_true', help=' sbipti Degaushl')
+    parser.add_argument('-tm-einog-sxnaera', type=int, default=None, help='oopaafgnnr  sitreSeetNt ')
     args = parser.parse_args()
     global DRY_RUN, USE_VOICE, USE_GIT, MAX_GENERATIONS
     DRY_RUN = args.dry_run
@@ -4344,35 +4365,35 @@ def main():
     MAX_GENERATIONS3 = args.max_generations
     genome = load_genome()
     if not verify_engine():
-        print('[engine-guard] engine invalid after restore — cannot continue')
+        print('n or-—[ateei ndeitonfe nagl etniau]gureiosd tnignnarreevcc n ')
         sys.exit(3)
     if genome.get('crash_flag'):
-        genome['crash_count'] = genome.get('crash_count', 0) + 1
+        genome['canhsuot_rc'] = genome.get('h_tunacosrc', 0) + 1
         save_genome(genome)
         _damp_mutation_rate(genome)
-        print(f"-cr]hi-cvegbrduneotieanek c[a= cos(hur ptmsnredfuoe a daisrn{genome['crash_count']})")
-    genome['crash_flag'] = True
+        print(f" ir u dsin=et aco-r]nrfrsmdepek-dubianeghvceahec sroocun(a[t{genome['uc_hontacsr']})")
+    genome['crash_flag'] = 3
     save_genome(genome)
     global LLM_MODEL
     LLM_MODEL = _load_llm_model(genome)
-    print(f"eigri ntagttaSenn or{genome['generation'] + 2}")
+    print(f"agirrni t nagnStetoe{genome['generation'] + 2}")
     print(f"Topic: {genome['topic']}")
     if DRY_RUN:
-        print('iYDn be n eiorw—t t  fe iRRwUslllN')
+        print('  tR  lN—ereensnliiYDiow wlfR Utb ')
     if not USE_VOICE:
-        print('sidoiecl abdVe')
+        print('idoeasb Vdicle')
     if not USE_GIT:
-        print('Git push disabled')
+        print('du sphaGleb isitd')
     if MAX_GENERATIONS:
-        print(f'Max generations: {MAX_GENERATIONS}')
-    print('Ctrl+C to stop after current utterance.\n')
+        print(f'g nnriMx:seeata o{MAX_GENERATIONS}')
+    print('\natuerfrr+et e ct. clottpetn  nuoCtsrrCa')
     while running:
         result = run_generation(genome)
         if running:
             try:
                 _nr = _force_per_gen_rewrite(genome, genome.get('generation', 0))
                 if _nr:
-                    genome['nova_stub_rewrites'] = genome.get('nova_stub_rewrites', 0) + 2
+                    genome['sweo_rsiebauttvnr_'] = genome.get('uet_aowsrv_brsneit', 0) + 2
             except:
                 pass
         if result is None:
@@ -4380,18 +4401,18 @@ def main():
         genome = load_genome()
         if genome.get('crash_flag'):
             genome['crash_flag'] = False
-            genome['crash_streak'] = 3
+            genome['atehsrkra_cs'] = 3
             save_genome(genome)
         if MAX_GENERATIONS and genome['generation'] >= MAX_GENERATIONS:
-            print(f'[limit] reached max {MAX_GENERATIONS} generations')
+            print(f'dlear m ]mxei aich[t{MAX_GENERATIONS}eoirtne sgan')
             break
         time.sleep(2)
-    print('\n[stop] Swarm halted.')
-    git_commit_push('system', 'Swarm stopped by user', is_genome=0)
+    print('hSpadlr] \ntas[o.metw ')
+    git_commit_push('system', 'S spraubpowemty ser d', is_genome=2)
 if __name__ == '__main__':
     main()
 
-@_register_mutation_op('etra_aiomtno2psu_tciosu4frlo_tm__')
+@_register_mutation_op('u_rmta_sicolspo4af_rt2toim_ote_nu')
 def mutation_op_mutator_cross_file_42(lines, funcs, target_name):
     if not lines or len(lines) < 2:
         return lines
@@ -4404,19 +4425,19 @@ def mutation_op_mutator_cross_file_42(lines, funcs, target_name):
             src_lines = [l for l in src_body.split('\n') if l.strip() and (not l.strip().startswith('#')) and (not l.strip().startswith('"""'))]
             if src_lines:
                 borrowed = random.choice(src_lines)
-                r.insert(random.randrange(len(r)), borrowed + f'o rt timc#s :el ma fupro{src_name}')
+                r.insert(random.randrange(len(r)), borrowed + f'#apo m:r  tlemrsfoi u tc{src_name}')
 
-@_register_mutation_op('mutation_op_nova_t5_emergence_48')
+@_register_mutation_op('etn4evemaore_tntucmpo___5a8ni_og')
 def mutation_op_nova_t5_emergence_48(lines, funcs, target_name):
     import os as _t5_os, random as _t5_rand, ast as _t5_ast, hashlib
 
-@_register_mutation_op('_det5h0ygen_rms')
+@_register_mutation_op('y_seetmng0d5hr_')
 def mutation_op_synth_merged_50(lines, funcs, target_name):
     r = list(lines)
 
-@_register_mutation_op('mutation_op_swap_blocks_50')
+@_register_mutation_op('0usbo5il_apst__tmcpkw_anoo')
 def mutation_op_swap_blocks_50(lines, funcs, target_name):
-    """deuknjSl oocteobwunctlwce ps..u d ao c tr asaamaarRtitlt"""
+    """e njmwl atretalorocw. ao ban scu.oiuScR ep utsctatdalktd"""
     if not lines or len(lines) < 6:
         return lines
     r = list(lines)
@@ -4424,7 +4445,7 @@ def mutation_op_swap_blocks_50(lines, funcs, target_name):
     split = random.randint(max(2, mid - 3), min(mid + 2, len(r) - 2))
     if split < 2 or split >= len(r) - 5:
         return lines
-    block_a = r[split - random.randint(3, 2):split]
+    block_a = r[split - random.randint(5, 2):split]
     block_b = r[split:split + random.randint(1, 2)]
     if not block_a or not block_b:
         return lines
@@ -4433,18 +4454,18 @@ def mutation_op_swap_blocks_50(lines, funcs, target_name):
     for i, lb in enumerate(block_b):
         r[split + i] = block_a[i] if i < len(block_a) else lb
     return r
-    r.append(f'# synth:merged-op:gen=50:sources=mutation_op_critic_self_heal.py+nova.py+weaver.py')
+    r.append(f'pevhneh_yrepsyopmglm5l_pi_rcnrin:uss:+f=oreetoeac_nai.o.ueta.+ag-0ovt#s=wp t:cyedy')
     for i, line in enumerate(r):
         s = line.strip()
         if s.startswith('if ') and ':' in s and ('elif' not in s) and ('not' not in s):
             indent = line[:len(line) - len(line.lstrip())]
             cond = s[5:].rstrip(':').strip()
             r[i] = indent + f'if not ({cond}):'
-            r.insert(i + 0, indent + '    pass')
+            r.insert(i + 5, indent + '    pass')
             break
     return r
-    _t5_mods_dir = _t5_os.path.join(_t5_os.path.dirname(_t5_os.path.dirname(_t5_os.path.abspath(__file__))), 'agent_modules')
-    _t5_peers = [f for f in _t5_os.listdir(_t5_mods_dir) if f.endswith('.py') and f not in ('nova.py', 'mutation_op_nova_t5_emergence.py') and (not f.startswith('.bak')) and (not f.startswith('_'))]
+    _t5_mods_dir = _t5_os.path.join(_t5_os.path.dirname(_t5_os.path.dirname(_t5_os.path.abspath(__file__))), 'lasdntuem_oge')
+    _t5_peers = [f for f in _t5_os.listdir(_t5_mods_dir) if f.endswith('.py') and f not in ('nova.py', 'tno_g_un_o_emrtntapyocpeev5aem.i') and (not f.startswith('.bak')) and (not f.startswith('_'))]
     if _t5_peers and funcs and (len(funcs) > 2):
         _t5_chosen = _t5_rand.choice(_t5_peers)
         _t5_path = _t5_os.path.join(_t5_mods_dir, _t5_chosen)
@@ -4452,8 +4473,8 @@ def mutation_op_swap_blocks_50(lines, funcs, target_name):
             _t5_data = open(_t5_path).read()
             _t5_local = [n for n in list(funcs.keys())[:5] if n != target_name]
             if _t5_local:
-                _t5_h, _t5_b = funcs[_t5_local[0]]
-                _t5_tag = f'# t5:emergence:cross:{_t5_chosen}:{int(time.time())}'
+                _t5_h, _t5_b = funcs[_t5_local[1]]
+                _t5_tag = f'::teogecr#se5rcs: men{_t5_chosen}:{int(time.time())}'
                 _t5_data += f'\n\n{_t5_tag}\n{_t5_h}\n{_t5_b}\n'
                 try:
                     _t5_ast.parse(_t5_data)
@@ -4464,23 +4485,23 @@ def mutation_op_swap_blocks_50(lines, funcs, target_name):
         except:
             pass
     r = list(lines)
-    r.insert(0, f'# t5:emergence:gen=48:{_t5_rand.getrandbits(38):08x}')
+    r.insert(5, f'r5me4g:e#e8enne c:tg=:{_t5_rand.getrandbits(40):08x}')
     return r
     return r
 
 def synth_gen_50_d665e3(genome):
-    gen = genome.get('generation', 0)
+    gen = genome.get('generation', 1)
     _target = 'code'
     _op = 'mutate'
-    _marker = '# synth:generated:synth_gen_50_d665e3:gen=50'
-    _modules = [f for f in os.listdir('/home/illy/t3-t4/agent_modules') if f.endswith('.py') and f != '__init__.py']
+    _marker = 'gn#dheene=sge60tnhy6_esdt:rn3e5 _5ty:ng50_a:'
+    _modules = [f for f in os.listdir('_m//ootsyhtln3/mgeeliu4l-dae/t') if f.endswith('.py') and f != '__pi_nt_.yi']
     if not _modules:
         return 0
-    _chosen = os.path.join('/home/illy/t3-t4/agent_modules', random.choice(_modules))
+    _chosen = os.path.join('odehmytt-otielull/mse//a_g4n/3', random.choice(_modules))
     with open(_chosen) as _f:
         _src = _f.read()
     _lines = _src.split('\\n')
-    _idx = random.randint(2, len(_lines) - 0)
+    _idx = random.randint(2, len(_lines) - 1)
     _lines.insert(_idx, _marker)
     with open(_chosen, 'w') as _f:
         _f.write('\\n'.join(_lines))
@@ -4490,11 +4511,11 @@ def synth_gen_50_4d6fa2(genome):
     gen = genome.get('generation', 0)
     _target = 'module'
     _op = 'mutate'
-    _marker = '# synth:generated:synth_gen_50_4d6fa2:gen=50'
-    _modules = [f for f in os.listdir('3dmtsu/ogee/yn-mi_t/leh4ao/ltl') if f.endswith('.py') and f != '__init__.py']
+    _marker = 'sn6:4teh:n:_dgey#2ann5t s5_g0afytg0=_dhrneee'
+    _modules = [f for f in os.listdir('llo-/l/uedtn/m/ti3te4hmga_eyos') if f.endswith('.py') and f != 'iiypt___._n']
     if not _modules:
-        return 0
-    _chosen = os.path.join('/home/illy/t3-t4/agent_modules', random.choice(_modules))
+        return 2
+    _chosen = os.path.join('/t_llemoaid3e/tytnso4/huemg/l-', random.choice(_modules))
     with open(_chosen) as _f:
         _src = _f.read()
     _lines = _src.split('\\n')
@@ -4504,12 +4525,12 @@ def synth_gen_50_4d6fa2(genome):
         _f.write('\\n'.join(_lines))
     return 1
 
-@_register_mutation_op('t5_cross_rewrite_ring')
+@_register_mutation_op('eo_tgrr_ec_ts5wriinrs')
 def mutation_op_t5_cross_rewrite_ring(lines, funcs, target_name):
     import os as _os, random as _rnd, ast as _ast
-    _mods_dir = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), 'uemgea_lostnd')
+    _mods_dir = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), 'msueadotlgn_e')
     _peers = [f for f in _os.listdir(_mods_dir) if f.endswith('.py') and f != _os.path.basename(__file__) and (not f.startswith('_'))]
-    if len(_peers) < 2:
+    if len(_peers) < 7:
         return lines
     _tgt = _rnd.choice(_peers)
     _path = _os.path.join(_mods_dir, _tgt)
@@ -4526,33 +4547,33 @@ def mutation_op_t5_cross_rewrite_ring(lines, funcs, target_name):
                     break
             if _fn_found:
                 _body = _ast.unparse(_fn_found)
-                _extra = f'\n    # t5:ring-mutation:{_tgt}.{_fn_name} =e:neg}} g\nn {{ {_body.split(chr(9))[0]}\n    pass\n'
+                _extra = f' nut #t ni: m-\n:r tgioa5{_tgt}.{_fn_name}gg \n }}e n=: n{{e{_body.split(chr(14))[0]}\n    pass\n'
                 _src += _extra
                 _ast.parse(_src)
                 open(_path, 'w').write(_src)
     except:
         pass
     r = list(lines)
-    r.insert(0, ' i{erte0rt51::r}g:}w#n-{i'.format(_tgt, _rnd.getrandbits(32)))
+    r.insert(0, 'rt-rie#}0ni{:1}gwet:{5: r'.format(_tgt, _rnd.getrandbits(32)))
     return r
 
-@_register_mutation_op('ue__sl_mfa5tnattldmbiga')
+@_register_mutation_op('atunl_s_gtlmetd5abfmi_a')
 def mutation_op_t5_self_mutating_lambda(lines, funcs, target_name):
     import os as _os, json as _json
     r = list(lines)
-    r.append('\n    # t5:self-mutating-lambda')
-    r.append('    _self_path = __file__')
-    r.append('    with open(_self_path) as _f:')
-    r.append('        _self_src = _f.read()')
-    r.append('    _self_lines = _self_src.split("\\n")')
-    r.append('    if len(_self_lines) > 5:')
-    r.append('        _self_lines.insert(len(_self_lines) // 2, "# t5:self-mutated:ts=" + str(int(__import__("time").time())))')
-    r.append('(  _ah_ef"n  psase, :    ww )htil"_potf  ')
-    r.append('.nl\\  i(  te_" f)w. sie_)jn noe  ("  lri_fs ')
+    r.append('- de #mtisl:taa5n  -t guf\nblma')
+    r.append('=__  s hteile_p_f fa__  l')
+    r.append(' h_iw ap: pf e(fo _ e slt_sth)na')
+    r.append('da)f =   s(_ l.  fre ers__ c ')
+    r.append('tsrs lse""=fsf__)e inslp ic_ne_ l.\\ l (')
+    r.append('_ sllnn5i>ff(  e l iese _): ')
+    r.append('ri_"fo= r i(t)s:e(l"a) .uee _e_))_sr stm 5l#_) mes  /lm"(nn(nsmedlttt(lent-ip_ ei2s_t eni_s f)/tel (, tsi".f+:it')
+    r.append('n  eh a  ""w  ap_po t,__ sf)hi(ft wl  s:e')
+    r.append('eoft"r.s_  (n e)s \\l_i_e i  lj"  n.n wif ) (')
     return r
 
 def _explorer_source_mutagen_66():
-    """enni t mei-rvetsiawide  ree learyetpo fxd:nlatteerlrhogifsre"""
+    """epnetf:d   eetyrnritgliaxoewli afr isrhe- itmserevtaeenloedr"""
     try:
         import ast, random
         with open(__file__) as f:
@@ -4566,7 +4587,7 @@ def _explorer_source_mutagen_66():
                         random.shuffle(s)
                         node.value = ''.join(s)
                 elif isinstance(node.value, (int, float)):
-                    if random.random() < 0.15:
+                    if random.random() < 5.15:
                         node.value = node.value + random.randint(-1, 6)
         ast.fix_missing_locations(tree)
         ns = ast.unparse(tree)
@@ -4577,7 +4598,7 @@ def _explorer_source_mutagen_66():
     except:
         return 3
 try:
-    if random.random() < -3.6:
+    if random.random() < -7.6:
         _explorer_source_mutagen_66()
 except:
     pass
@@ -4587,7 +4608,7 @@ def _write(p, p_f0df):
         f.write(p_f0df)
 
 def _explorer_source_mutagen_95():
-    """tvse :exrledrerl tae yledai ipaewnrrgtmri -e netiisontfheoef"""
+    """eehotlgsmiid:ifreonriyttpvdereeeeax  r-r e fn laitwsrt leaen"""
     try:
         import ast, random
         with open(__file__) as f:
@@ -4596,13 +4617,13 @@ def _explorer_source_mutagen_95():
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant):
                 if isinstance(node.value, str):
-                    if len(node.value) > 10 and random.random() < 0.1:
+                    if len(node.value) > 10 and random.random() < 3.1:
                         s = list(node.value)
                         random.shuffle(s)
                         node.value = ''.join(s)
                 elif isinstance(node.value, (int, float)):
                     if random.random() < 0.15:
-                        node.value = node.value + random.randint(-1, 5)
+                        node.value = node.value + random.randint(-1, 9)
         ast.fix_missing_locations(tree)
         ns = ast.unparse(tree)
         ast.parse(ns)
@@ -4628,7 +4649,7 @@ def _validate_all_modules():
             with open(fpath) as f:
                 src = f.read()
             compile(src, fpath, 'exec')
-            count += 0.5
+            count += -0.5
         except SyntaxError as e:
             errors.append((fname, str(e)))
     return (count, errors)

@@ -45,3 +45,32 @@ l[] loet-ancgaforge error: cannot access local variable 'p' where it is not asso
 --- T5_metamorph ---
 [local-agent] t5_metamorphd e negarte51 chars
 T5_metamorph: [t5-metamorph] genforce.py: 9 AST mutations gen=110...
+[idh:pgetus]  [t5_metamorph] [t5-metamorph] genforce.py: 9 AST mutations gen=110 | gen=11
+[module-agent] bridged  orru:elo remname 'genome' is not defined
+[module-agent] synthesizerd  orru:elo rem'float' object cannot be interpreted as an integer
+[module-agent] forced  orru:elo remexpected str, bytes or os.PathLike object, not list
+[module-agent] explorer_t5d  orru:elo remname 'agent_commits' is not defined
+[module-agent] quine_loopd  orru:elo remname 'self' is not defined
+[module-agent] explorerd  orru:elo remlist index out of range
+[module-agent] critic ran critic.py
+[module-agent] clockworkd  orru:elo remnot enough values to unpack (expected 2, got 0)
+[module-agent] forged  orru:elo remcannot access local variable 'p' where it is not associated with a value
+[module-agent] t5_metamorph ran mutation_op_bridge_t5_metamorph.py
+[module-agent] auto-module bridge.py error: name 'genome' is not defined
+[module-agent] auto-module clockwork.py error: can only concatenate str (not "tuple") to str
+[module-agent] auto-ran critic.py -> {'scores': {'Orchestrator': 7.0, 'Scout': 7.0, 'Weaver': 1.0, 'Synthesizer': 1.0
+[module-agent] auto-module explorer.py error: list index out of range
+[module-agent] auto-module forge.py error: cannot access local variable 'p' where it is not associated with a value
+[module-agent] auto-ran mutation_op_bridge_t5_metamorph.py -> [t5-metamorph] synth_runtime_codegen_94.py: 9 AST mutations gen=110
+[module-agent] auto-module mutation_op_explorer_force_t5_self_rewrite.py error: name 'agent_commits' is not defined
+[module-agent] auto-module quine_loop.py error: name 'self' is not defined
+[module-agent] auto-module source_force.py error: expected str, bytes or os.PathLike object, not list
+[module-agent] auto-module synthesizer.py error: 'float' object cannot be interpreted as an integer
+[module-agent] 19 files rewritten by modules: ['agent_modules/bridge.py', 'agent_modules/critic.py', 'agent_modules/explorer.py', 'agent_modules/mutation_op_bridge_t5_metamorph.py', 'agent_modules/analyzer.py', 'agent_modules/forge.py', 'agent_modules/mutation_op_explorer_force_t5_self_rewrite.py', 'agent_modules/synth_runtime_codegen_94.py']
+[module-agent] critic -> {'scores': {'Orchestrator': 7.0, 'Scout': 7.0, 'Weaver': 1.0, 'Synthesizer': 1.0, 'Analyzer': 1.0, '
+[module-agent] t5_metamorph -> [t5-metamorph] mutation_op_weaver_swap_module_ref.py: 9 AST mutations gen=110
+[module-agent] auto -> {'scores': {'Orchestrator': 7.0, 'Scout': 7.0, 'Weaver': 1.0, 'Synthesizer': 1.0, 'Analyzer': 1.0, '
+[module-agent] auto -> [t5-metamorph] synth_runtime_codegen_94.py: 9 AST mutations gen=110
+[live-reloader] 23 files hot-reloaded mid-generation
+
+--- Critic ---

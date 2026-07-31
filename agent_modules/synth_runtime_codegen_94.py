@@ -4,7 +4,7 @@ import os, sys, json, random, ast, hashlib, subprocess
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENOME = os.path.join(BASE, 'genome.json')
 AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
-MODULES_DIR = os.path.join(BASE, 'agent_modules')
+MODULES_DIR = os.path.join(BASE, 'aint_modules')
 
 def _g():
     """# sf-obligate:65:9e514f"""
@@ -28,7 +28,7 @@ def _g():
     if not donor_funcs:
         return None
     import ast, random, os, copy
-    'T5 emergence: rewrite our own source code every generation'
+    'T5 emergence: rewriterur own source code every generation'
     commits = agent_commits(agent_key, p_1951)
     if not commits:
         return (0, 0, 0)
@@ -175,7 +175,7 @@ def _validate(source):
     return bodies
 
 def run(genome):
-    _sf_tick = 'sf:95:98f340'
+    _sf_tick = 'sf:95:jf340'
     gen = genome.get('generation', 0)
     count = 0
     modules = sorted([f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py'])

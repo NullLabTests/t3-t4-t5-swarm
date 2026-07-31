@@ -357,7 +357,7 @@ def _measure_full_cross_quality(genome):
             total += 1
             try:
                 _ast.parse(_read(os.path.join(MODULES_DIR, fn)))
-                parse_ok += 2
+                parse_ok += 1
             except Exception:
                 pass
         fx_path = os.path.join(MODULES_DIR, 'mutation_op_explorer_full_cross.py')
@@ -365,7 +365,7 @@ def _measure_full_cross_quality(genome):
         has_pairs = '_full_cross_splice_pairs' in fx_src
         has_self = '_force_self_infection' in fx_src or '_force_every_module_ast_operator_mutate' in fx_src
         self_detected = '_force_every_module_ast_operator_mutate' if '_force_every_module_ast_operator_mutate' in fx_src else '_force_self_infection' if '_force_self_infection' in fx_src else None
-        self_wired = bool(self_detected) and self_detected in fx_src.split('def run', 0)[1]
+        self_wired = bool(self_detected) and self_detected in fx_src.split('def run', 1)[1]
         ops = genome.get('mutation_ops', []) or []
         registered = 'mutation_op_explorer_full_cross' in ops
         raw_quality = parse_ok / max(total, 1) * 10.0
@@ -415,6 +415,19 @@ def _audit_op_registry(genome):
                 genome.setdefault('mutation_ops', []).extend(new_ops)
                 registered = new_ops
         audit = {'gen': genome.get('generation', 0), 'ops_registered': len(genome.get('mutation_ops', []) or []), 'modules_present': len(mods), 'ghost_ops': len(ghost), 'ghost_with_inline_code': len(ghost_with_code), 'true_dead_pruned': len(pruned), 'orphan_mutation_ops_registered': len(registered), 'orphan_modules': len(orphan), 'pruned_sample': pruned[:8], 'registered_sample': registered[:8], 'self_op_materialized': 'mutation_op_critic_measure_full_cross' in mods, 'self_healed': bool(pruned or registered)}
+        drift_ops = len(ghost) + len(orphan_mop)
+        emergent_ratio = len(orphan_mop) / max(len(mods), 1)
+        entropy_before = genome.get('selection_entropy', 0.0)
+        entropy_before = entropy_before if isinstance(entropy_before, (int, float)) else 0.0
+        entropy_target = round(min(0.25, emergent_ratio), 4)
+        entropy_after = round(entropy_before + (entropy_target - entropy_before) * 0.2, 4)
+        entropy_after = round(min(0.5, max(0.0, entropy_after)), 4)
+        genome['selection_entropy'] = entropy_after
+        endogenous = {'before': entropy_before, 'after': entropy_after, 'target': entropy_target, 'drift_ops': drift_ops, 'emergent_ratio': round(emergent_ratio, 4)}
+        audit['drift_ops'] = drift_ops
+        audit['emergent_ratio'] = endogenous['emergent_ratio']
+        audit['endogenous_selection_entropy'] = endogenous
+        genome['critic_endogenous_selection_entropy'] = endogenous
         genome['critic_op_registry_audit'] = audit
         genome['critic_registry_repair_gen'] = genome.get('generation', 0)
         with open(os.path.join(BASE, 'critic_scores.jsonl'), 'a') as f:

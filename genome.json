@@ -1,5 +1,5 @@
 {
-  "generation": 91,
+  "generation": 92,
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
@@ -18,7 +18,7 @@
   "critic_infection_count": 0,
   "execution_order": "shuffle",
   "best_score": 9.2,
-  "topic": "forge gen=90: added _force_genome_structural_mutation (key rename/add/prune/drift), _inject_selection_antichaos (anti-entropy feedback), _force_module_body_cannibalize (cross-module function theft), 3 new mutation ops, new mutation_op_forge_body_cannibal.py module",
+  "topic": "explorer gen=92: fixed ~60+ deliberate Python bugs (wrong ops, flipped logic, type errors) in explorer.py, added _force_genome_dna_replication (executable DNA polymer in genome.json auto-evaled at generation boundary), new mutation_op_explorer_dna_replicon.py module",
   "quine_force_all_modules": true,
   "quine_minimum_splices_per_gen": 20,
   "quine_full_cross_coverage_target": 100,
@@ -145,7 +145,8 @@
     "mutation_op_forge_DNA_xplant",
     "mutation_op_forge_debt_collector",
     "mutation_op_forge_structure_melt",
-    "mutation_op_explorer_t5_self_rewrite"
+    "mutation_op_explorer_t5_self_rewrite",
+    "mutation_op_explorer_dna_replicon"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -2600,5 +2601,9 @@
   "explorer_t5_cross_contaminated": [
     "bridge.py",
     "clockwork.py"
-  ]
+  ],
+  "explorer_bugs_fixed": 62,
+  "explorer_fix_gen": 92,
+  "_explorer_replicon_keys": [],
+  "_replicon_count": 0
 }

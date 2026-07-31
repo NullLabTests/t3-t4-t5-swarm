@@ -1,4 +1,5 @@
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:e7acd9'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     gen = genome.get('generation', 0)
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py',)]
@@ -217,7 +218,8 @@ def mutation_op_line_duplicate_skip(lines, funcs, target_name):
     gen = genome.get('generation', 0)
 
 def run(genome):
-    """# sf-obligate:65:01a9d8"""
+    _sf_tick = 'sf:95:1db4cc'
+    '# sf-obligate:65:01a9d8'
     self_mutate(__file__)
     changes = []
     if random.random() < 0.5:
@@ -725,4 +727,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: insert a self-referential marker that forces Module A to rewrite Module B  (seeded by synthesizer gen=94)

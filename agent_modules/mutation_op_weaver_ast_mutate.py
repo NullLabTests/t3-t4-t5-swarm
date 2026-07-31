@@ -1,4 +1,7 @@
+_sf_tick = 'sf:95:2350bd'
+
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:589dea'
     try:
         r = subprocess.run(['git'] + cmd.split(), capture_output=True, text=True, cwd=BASE, timeout=14)
         return r.stdout
@@ -523,4 +526,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# todo: ensure every module has a run() function  (seeded by synthesizer gen=94)

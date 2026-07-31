@@ -1,4 +1,5 @@
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:5443c2'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
@@ -331,7 +332,8 @@ def _register_mutation_ops(genome):
             custom[name] = code
 
 def run(genome):
-    """# sf-obligate:65:c50b72"""
+    _sf_tick = 'sf:95:c2dc54'
+    '# sf-obligate:65:c50b72'
 
     def mutation_op_mirror_struct_rewrite_63(lines, funcs, target_name):
         import re
@@ -894,4 +896,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# todo: ensure every module has a run() function  (seeded by synthesizer gen=94)

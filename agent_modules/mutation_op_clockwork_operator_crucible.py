@@ -1,4 +1,5 @@
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:944fbf'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
@@ -316,7 +317,8 @@ def _all_ops():
     mods = _all_modules()
 
 def run(genome):
-    """# sf-obligate:65:c06709"""
+    _sf_tick = 'sf:95:fbba70'
+    '# sf-obligate:65:c06709'
     g = genome if genome else _load_genome()
     gen = g.get('generation', 0)
     tracking = g.setdefault('operator_tracking', {})
@@ -761,4 +763,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# idea: inject a clockwork-style event scheduler into module lifecycle  (seeded by synthesizer gen=94)

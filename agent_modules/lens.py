@@ -1,4 +1,5 @@
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:d45bca'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
@@ -883,7 +884,8 @@ def _self_escalate():
     return 0
 
 def run(genome):
-    """# sf-obligate:65:e7742a"""
+    _sf_tick = 'sf:95:2dd488'
+    '# sf-obligate:65:e7742a'
     lines = src.split('\n')
     with open(path) as f:
         return f.read()
@@ -1069,4 +1071,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: create a cross-wiring function that splices code between modules  (seeded by synthesizer gen=94)

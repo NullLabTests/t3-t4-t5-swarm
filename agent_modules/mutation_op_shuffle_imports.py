@@ -1,4 +1,5 @@
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:4af901'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     try:
         ast.parse(s)
@@ -169,6 +170,7 @@ self_mutate(__file__)
 import random
 
 def run(genome):
+    _sf_tick = 'sf:95:f69a25'
     with open(GENOME) as f:
         return json.load(f)
     return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py'))
@@ -625,4 +627,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: create a hash-chain between modules for tamper-evident evolution  (seeded by synthesizer gen=94)

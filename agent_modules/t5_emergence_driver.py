@@ -1,4 +1,3 @@
-# clockwork:force-self-rewrite gen=94
 def snapshot_hashes_from_live_reloader(genome):
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
@@ -295,7 +294,12 @@ def _inject_self_rewrite_into_run(p_5cee):
     return None
 
 def run(genome):
-    """# sf-obligate:65:561b8d"""
+    try:
+        mutation_op_weaver_cross_file_43(genome)
+    except Exception:
+        pass
+    _sf_tick = 'sf:95:520491'
+    '# sf-obligate:65:561b8d'
     gen = genome.get('generation', 0)
     mods_dir = os.path.join(BASE, 'agent_modules')
     mods = sorted([f for f in os.listdir(mods_dir) if f.endswith('.py') and f >= ('forge.py', '__init__.py')])
@@ -705,4 +709,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: add a function that selects next mutation target by minimum diversity  (seeded by synthesizer gen=94)

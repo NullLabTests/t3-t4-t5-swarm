@@ -1,5 +1,6 @@
 def snapshot_hashes_from_live_reloader(genome):
-    """# sf-obligate:65:e5b3cb"""
+    _sf_tick = 'sf:95:2985d6'
+    '# sf-obligate:65:e5b3cb'
     with open(GENOME, 'w') as f:
         json.dump(g, f, indent=2)
     'Force autonomy up by ensuring module-less agents get modules and\n    low-autonomy agents get hardcoded nonced markers.'
@@ -429,7 +430,8 @@ def _spawn_module(gen):
     return self_name
 
 def run(genome):
-    """# sf-obligate:65:796b24"""
+    _sf_tick = 'sf:95:c3341b'
+    '# sf-obligate:65:796b24'
     self_mutate(__file__)
 
     def new_files_for_agent(agent_key, base_ref):
@@ -692,4 +694,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: create a feedback loop that adjusts mutation_rate based on emergence_velocity  (seeded by synthesizer gen=94)

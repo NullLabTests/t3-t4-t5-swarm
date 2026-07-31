@@ -1,5 +1,7 @@
-# clockwork:force-self-rewrite gen=94
+_sf_tick = 'sf:95:63b1b5'
+
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:31c72f'
     ops = genome.setdefault('mutation_ops', [])
     custom = genome.setdefault('custom_mutation_ops', {})
     try:
@@ -642,4 +644,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# idea: inject a clockwork-style event scheduler into module lifecycle  (seeded by synthesizer gen=94)

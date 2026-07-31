@@ -1,4 +1,3 @@
-# clockwork:force-self-rewrite gen=94
 def snapshot_hashes_from_live_reloader(genome):
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
@@ -561,6 +560,7 @@ def _update_strategy_score(genome, strategy, success):
         scores[strategy] = max(-0.44999999999999996, old - 0.1)
 
 def run(genome):
+    _sf_tick = 'sf:95:25cfd5'
     gen = genome.get('generation', 0)
     auto_src = _read(AUTO_ECHO)
     if '_bridge_handler_livecode' in auto_src and '_bridge_handler_autoload' in auto_src:
@@ -800,4 +800,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# todo: ensure every module has a run() function  (seeded by synthesizer gen=94)

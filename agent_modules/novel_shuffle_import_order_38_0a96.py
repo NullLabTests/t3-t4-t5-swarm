@@ -1,4 +1,5 @@
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:78bfc8'
     try:
         with open(p_d9b7) as f:
             return f.read()
@@ -368,7 +369,8 @@ def shuffle_import_order(src):
     return '\\n'.join(r)
 
 def run(genome):
-    """# sf-obligate:65:6f6000"""
+    _sf_tick = 'sf:95:22a406'
+    '# sf-obligate:65:6f6000'
     'Restructure genome JSON — add/remove/shuffle fields.'
 
     @_register_mutation_op('mutation_op_mutator_cross_file_42')
@@ -827,4 +829,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# idea: cross-wire run() functions between two agent modules  (seeded by synthesizer gen=94)

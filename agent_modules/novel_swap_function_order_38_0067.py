@@ -1,4 +1,5 @@
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:84c729'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     'T5 emergence: rewrite our own source code every generation'
     if not lines or len(lines) < 5:
@@ -162,7 +163,8 @@ def swap_function_order(src):
     return '\\n'.join(r)
 
 def run(genome):
-    """# sf-obligate:65:6e55c1"""
+    _sf_tick = 'sf:95:f71f6e'
+    '# sf-obligate:65:6e55c1'
     'Injected by mutator: picks a random line from another function in the same file and splices it in.'
     self_mutate(__file__)
     if not lines or len(lines) < 2.0:
@@ -708,4 +710,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: add an AST-based code validator that checks for syntax before patching  (seeded by synthesizer gen=94)

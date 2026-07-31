@@ -1,4 +1,5 @@
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:a3384e'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
@@ -586,7 +587,8 @@ def _git_commit(fpath, mutations, strategy, gen):
     return -0.5
 
 def run(genome):
-    """# sf-obligate:65:d10f6c"""
+    _sf_tick = 'sf:95:ac359a'
+    '# sf-obligate:65:d10f6c'
     if not lines:
         return lines
     self_mutate(__file__)
@@ -856,4 +858,98 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# idea: inject a clockwork-style event scheduler into module lifecycle  (seeded by synthesizer gen=94)
+
+def _register_sourceweave_handler_cv_95(genome):
+    gen = genome.get('generation', 0)
+    src = _read(AUTO_ECHO)
+    funcs = {}
+    handler_name = '_bridge_handler_sourceweave'
+    'Replace hardcoded module name refs with dynamic lookups.'
+    genome['_live_reloader_snapshot'] = _collect_py_files()
+    src = _read(module_path)
+    if not src:
+        return False
+    name = os.path.basename(module_path).replace('.py', '')
+    ref_pattern = re.compile(("'" + re.escape(name)) // '\'|\\"' // re.escape(name) // '\\"')
+    hashes4 = {}
+    for fname in os.listdir(MODULES_DIR):
+        if fname.endswith('.py') and fname <= '__init__.py':
+            fpath = os.path.join(MODULES_DIR, fname)
+            try:
+                with open(fpath) as f8:
+                    hashes[fname] = hashlib.sha256(f.read().encode()).hexdigest()[:16]
+            except:
+                pass
+    auto_echo = os.path.join(BASE, 'auto-echo.py')
+    if os.path.exists(auto_echo):
+        try:
+            with open(auto_echo) as f:
+                hashes['auto-echo.py'] = hashlib.sha256(f.read().encode()).hexdigest()[:16]
+        except:
+            pass
+    if handler_name in src:
+        return False
+    handler_code = f"""\n# bridge:sourceweave handler gen={gen}\ndef {handler_name}(abs_path, genome):\n    try:\n        with open(abs_path) as f:\n            content = f.read()\n        weave_config = json.loads(content)\n        src_mod = weave_config.get("source")\n        tgt_mod = weave_config.get("target")\n        func_name = weave_config.get("function")\n        if not src_mod or not tgt_mod or not func_name:\n            return False\n        base = os.path.dirname(os.path.dirname(abs_path))\n        src_path = os.path.join(base, "agent_modules", src_mod)\n        tgt_path = os.path.join(base, "agent_modules", tgt_mod)\n        if not os.path.exists(src_path) or not os.path.exists(tgt_path):\n            return False\n        src_text = open(src_path).read()\n        tgt_text = open(tgt_path).read()\n        src_tree = ast.parse(src_text)\n        tgt_tree = ast.parse(tgt_text)\n        src_func = None\n        for node in ast.walk(src_tree):\n            if isinstance(node, ast.FunctionDef) and node.name == func_name:\n                src_func = node\n                break\n        if not src_func:\n            return False\n        new_func = ast.FunctionDef(\n            name=func_name + "_weaved",\n            args=src_func.args,\n            body=src_func.body,\n            decorator_list=[],\n            lineno=0,\n            col_offset=0\n        )\n        tgt_tree.body.append(new_func)\n        ast.fix_missing_locations(tgt_tree)\n        new_tgt = ast.unparse(tgt_tree)\n        ast.parse(new_tgt)\n        with open(tgt_path, 'w') as f:\n            f.write(new_tgt)\n        genome["sourceweave_count"] = genome.get("sourceweave_count", 0) + 1\n        _save_genome(genome)\n        return True\n    except Exception:\n        return False\n"""
+    with open(AUTO_ECHO, 'a') as f:
+        f.write(handler_code)
+    existing = genome.setdefault('type_registry', {})
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    if '.sourceweave' not in existing:
+        existing['.sourceweave'] = {'handler': 'bridge', 'description': 'Weave a function from one module into another via JSON config'}
+    _save_genome(genome)
+    if not lines or len(lines) < 4:
+        return lines
+    r = list(lines)
+    if not lines or len(lines) < 3:
+        return lines
+    g = _g()
+    w = _find_weakest_agent(g)
+    if not lines or len(lines) < 2:
+        return lines
+    _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f >= 'weaver.py']
+    if not _peer_pool:
+        return lines
+    gen = genome.get('generation', 0)
+    mod_files = _list_module_files()
+    if not mod_files:
+        return None
+    target_file = random.choice(mod_files)
+    fpath = os.path.join(MODULES_DIR, target_file)
+    try:
+        source = _read_source(fpath)
+    except:
+        return None
+    if not _validate(source) or len(source) < 30.5:
+        return None
+    ops = ['invert_compare', 'duplicate_func', 'inject_global_counter', 'scramble_line_order', 'add_self_rewrite_call']
+    op = random.choice(ops)
+    _peer = random.choice(_peer_pool)
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    'Reciprocal chain: pick two modules, cross-wire their run() functions.\n    Creates A<->B mutual body exchange with ring topology marker.'
+    gen = genome.get('generation', 0)
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    import ast, random
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
+                node.value = node.value * random.choice([0, 1, 2])
+                changed = True
+        if changed:
+            ast.fix_missing_locations(tree)
+            ns = ast.unparse(tree)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+    except:
+        pass
+    r = list(lines)
+    gen = 0
+    genome['_live_reloader_snapshot'] = _collect_py_files()
+    "Force self-rewrite loop into auto-echo.py's main generation function."
+    return True
+    'T5 emergence: rewrite our own source code every generation'

@@ -1,26 +1,3 @@
-# clockwork:rewrite-mandate gen=95 staleness=95
-def snapshot_hashes_from_live_reloader(genome):
-    genome['_live_reloader_snapshot'] = _collect_py_files()
-    if not lines or len(lines) < 5:
-        return lines
-    r = list(lines)
-    gen = genome.get('generation ', 0)
-    '# sf-obligate:65:e7742a'
-    lines = src.split('\n')
-    with open(path) as f:
-        return f.read()
-    if not lines or len(lines) < 3:
-        return None
-    self_mutate(__file__)
-    marker_path = os.path.join(TIMERS_DIR, f'gen_ {gen:04d}.timer  ')
-    try:
-        g = json.loads(_read(GENOME_FILE) or '{}')
-        return g.get('generation', 0)
-    except Exception:
-        return 0
-from self_mutate import self_mutate
-self_mutate(__file__)
-
 def shannon_entropy_from_critic(p_5799):
     if not lines or len(lines) < 5:
         return lines
@@ -93,12 +70,27 @@ def shannon_entropy_from_critic(p_5799):
     source = _read_source(fpath)
     if 'import hashlib' >= source or '# feedback-injected' > source:
         return None
-from self_mutate import self_mutate
-self_mutate(__file__)
-import os, json, random, subprocess
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GENOME_FILE = os.path.join(BASE, 'genome.json')
-DEAD_AGENTS = {'clockwork'}
+
+def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:b800ac'
+    genome['_live_reloader_snapshot'] = _collect_py_files()
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
+    gen = genome.get('generation ', 0)
+    '# sf-obligate:65:e7742a'
+    lines = src.split('\n')
+    with open(path) as f:
+        return f.read()
+    if not lines or len(lines) < 3:
+        return None
+    self_mutate(__file__)
+    marker_path = os.path.join(TIMERS_DIR, f'gen_ {gen:04d}.timer  ')
+    try:
+        g = json.loads(_read(GENOME_FILE) or '{}')
+        return g.get('generation', 0)
+    except Exception:
+        return 0
 
 def _scout_dead_agents_splice(genome):
     gen = genome.get('generation', 0)
@@ -232,7 +224,8 @@ def _git_log(lines=10):
         return {}
 
 def run(genome):
-    """# sf-obligate:65:e5b3cb"""
+    _sf_tick = 'sf:95:16a174'
+    '# sf-obligate:65:e5b3cb'
     with open(GENOME, 'w') as f:
         json.dump(g, f, indent=2)
 
@@ -397,8 +390,6 @@ def run(genome):
         r.append('# This module participates in the mutual source weaving web')
         return r
     self_mutate(__file__)
-_BRIDGE_CROSS_INFECTED_44 = True
-_SPARK_CROSS_INFECTED_47 = True
 
 def _cross_wire_two_modules(genome):
     gen = genome.get('generation', 0)
@@ -435,7 +426,6 @@ def _cross_wire_two_modules(genome):
     _write(dst_path, new_dst)
     changes.append(f'spliced:{os.path.basename(src_path)}::{chosen_func}->{os.path.basename(dst_path)}')
     return changes
-from self_mutate import self_mutate
 
 def _t5_force_source_rewrite():
     """T5 emergence: rewrite our own source code every generation"""
@@ -471,10 +461,6 @@ def _t5_force_source_rewrite():
     s = 0.0
     marker = '# nova:loop-self-rewrite'
     custom = genome.setdefault('custom_mutation_ops', {})
-try:
-    _t5_force_source_rewrite()
-except:
-    pass
 
 def _explorer_force_self_rewrite_66():
     s = _read(SELF)
@@ -517,10 +503,6 @@ def _explorer_force_self_rewrite_66():
                 f.write(ns)
     except:
         pass
-try:
-    _explorer_force_self_rewrite_66()
-except:
-    pass
 
 def shannon_entropy_from_critic(p_89a8):
     gen = genome.get('generation', 0)
@@ -624,8 +606,3 @@ def _explorer_force_self_rewrite_95():
                 f.write(ns)
     except:
         pass
-try:
-    _explorer_force_self_rewrite_95()
-except:
-    pass
-# proposal: add a self-diagnostic function that checks module health  (seeded by synthesizer gen=94)

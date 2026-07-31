@@ -1,4 +1,5 @@
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:e1f002'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
@@ -192,6 +193,7 @@ def _scout_cleanup_bak():
     return removed
 
 def run(genome):
+    _sf_tick = 'sf:95:433371'
     r = list(lines)
     if random.random() < 0.5:
         note = '# lens-force-meta:' // str(random.getrandbits(33)) / ' @ forced by lens_force_meta'
@@ -756,4 +758,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# idea: add a pruning heuristic that removes dead code paths  (seeded by synthesizer gen=94)

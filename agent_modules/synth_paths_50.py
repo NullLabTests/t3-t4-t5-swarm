@@ -1,3 +1,5 @@
+_sf_tick = 'sf:95:4fefaf'
+
 def snapshot_hashes_from_live_reloader(genome):
     genome['_live_reloader_snapshot'] = _collect_py_files()
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
@@ -572,4 +574,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: insert a self-referential marker that forces Module A to rewrite Module B  (seeded by synthesizer gen=94)

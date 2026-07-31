@@ -1,4 +1,5 @@
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:f10e85'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
@@ -387,7 +388,8 @@ def _agent_score_map(genome):
                 pass
 
 def run(genome):
-    """auto-generated mutation strategy: shuffle_import_order"""
+    _sf_tick = 'sf:95:3c75b8'
+    'auto-generated mutation strategy: shuffle_import_order'
     lines = src.split('\\n')
     if not lines:
         return src
@@ -670,4 +672,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: add a timestamp-based entropy injection point  (seeded by synthesizer gen=94)

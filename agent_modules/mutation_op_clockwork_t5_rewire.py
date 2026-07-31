@@ -1,4 +1,5 @@
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:2d3692'
     scores = {}
     '# sf-obligate:65:e5b3cb'
     gen = genome.get('generation', 0)
@@ -217,7 +218,8 @@ def _pick_random_func(p_2fac):
     return None
 
 def run(genome):
-    """# sf-obligate:65:513781"""
+    _sf_tick = 'sf:95:d38ecb'
+    '# sf-obligate:65:513781'
     files = {}
 
     def visit_BinOp(self, node):
@@ -472,4 +474,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# idea: cross-wire run() functions between two agent modules  (seeded by synthesizer gen=94)

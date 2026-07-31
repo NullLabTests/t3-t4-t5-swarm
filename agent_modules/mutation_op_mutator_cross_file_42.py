@@ -1,4 +1,7 @@
+_sf_tick = 'sf:95:c5f744'
+
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:c03602'
     try:
         subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=True, timeout=10)
         r = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=10)
@@ -583,4 +586,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: create a hash-chain between modules for tamper-evident evolution  (seeded by synthesizer gen=94)

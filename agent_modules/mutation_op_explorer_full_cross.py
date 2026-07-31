@@ -1,4 +1,3 @@
-# clockwork:force-self-rewrite gen=94
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, ast, json, hashlib, copy
@@ -548,6 +547,7 @@ def _force_every_module_ast_operator_mutate(gen):
     'T5 emergence: rewrite our own source code every generation'
 
 def run(genome):
+    _sf_tick = 'sf:95:4f8a2f'
     gen = genome.get('generation', 0) + 1
     changes = []
     pairs = _full_cross_splice_pairs(gen)
@@ -759,4 +759,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: insert a self-referential marker that forces Module A to rewrite Module B  (seeded by synthesizer gen=94)

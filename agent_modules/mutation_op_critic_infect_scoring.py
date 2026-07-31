@@ -1,5 +1,5 @@
-# clockwork:force-self-rewrite gen=94
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:2ee6ca'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
@@ -111,7 +111,8 @@ def infect_module(p_2de0, gen):
     return False
 
 def run(genome):
-    """# sf-obligate:65:e16b41"""
+    _sf_tick = 'sf:95:6f1a84'
+    '# sf-obligate:65:e16b41'
     s = _read(SELF)
     if not s:
         return False
@@ -722,4 +723,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# idea: add a pruning heuristic that removes dead code paths  (seeded by synthesizer gen=94)

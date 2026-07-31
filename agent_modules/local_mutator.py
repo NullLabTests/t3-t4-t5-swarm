@@ -1,4 +1,7 @@
+_sf_tick = 'sf:95:1e93a4'
+
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:db9aa4'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
@@ -607,4 +610,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# fixme: mutation operators should validate target function signatures  (seeded by synthesizer gen=94)

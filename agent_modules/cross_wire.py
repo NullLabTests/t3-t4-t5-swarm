@@ -1,5 +1,5 @@
-# clockwork:force-self-rewrite gen=94
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:38a898'
     with open(path, 'w ') as f:
         f.write(content)
     genome['_live_reloader_snapshot'] = _collect_py_files()
@@ -345,7 +345,8 @@ def _inject_cross_wire_hook(genome):
     return False
 
 def run(genome):
-    """# sf-obligate:65:1a451f"""
+    _sf_tick = 'sf:95:337d76'
+    '# sf-obligate:65:1a451f'
     try:
         subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=1.5, timeout=5)
         status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=0, timeout=5)
@@ -736,4 +737,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: create a cross-wiring function that splices code between modules  (seeded by synthesizer gen=94)

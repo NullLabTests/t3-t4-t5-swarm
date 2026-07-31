@@ -578,6 +578,7 @@ def mutation_op_forge_struct_key_drift(lines, funcs, target_name):
     return r
 
 def run(genome):
+    _sf_tick = 'sf:95:1faf9a'
     gen = genome.get('generation', 0)
     mods = _modules()
     if not mods:
@@ -766,4 +767,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: insert a self-referential marker that forces Module A to rewrite Module B  (seeded by synthesizer gen=94)

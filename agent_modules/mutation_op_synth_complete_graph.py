@@ -1,4 +1,3 @@
-# clockwork:force-self-rewrite gen=94
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, ast, hashlib
@@ -291,6 +290,7 @@ def _extract_functions_from(source):
     r = list(lines)
 
 def run(genome):
+    _sf_tick = 'sf:95:214b8a'
     gen = genome.get('generation', 0)
     mods = _list_modules()
     mods = [m for m in mods if m != 'mutation_op_synth_complete_graph.py']
@@ -467,4 +467,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# idea: add a pruning heuristic that removes dead code paths  (seeded by synthesizer gen=94)

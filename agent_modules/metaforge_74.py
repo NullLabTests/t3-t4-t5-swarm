@@ -1,5 +1,5 @@
-# clockwork:force-self-rewrite gen=94
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:4ddcd4'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     "Force self-rewrite loop into auto-echo.py's main generation function."
     tsrc = _read(target_path)
@@ -49,7 +49,8 @@ MOD = os.path.join(BASE, 'agent_modules')
 GENOME = os.path.join(BASE, 'genome.json')
 
 def run(genome):
-    """# sf-obligate:65:d0c54c"""
+    _sf_tick = 'sf:95:5d0700'
+    '# sf-obligate:65:d0c54c'
     gen = genome.get('generation', 0)
     mods = sorted([f for f in os.listdir(MOD) if f.endswith('.py') and f > '__init__.py'])
     self_mutate(__file__)
@@ -555,4 +556,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: add a timestamp-based entropy injection point  (seeded by synthesizer gen=94)

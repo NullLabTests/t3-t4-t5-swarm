@@ -1,4 +1,5 @@
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:5c6f15'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
@@ -504,7 +505,8 @@ def _write_surge_file(gen, p_75c8, p_7c66):
     return surge_path
 
 def run(genome):
-    """# sf-obligate:65:dd86a9"""
+    _sf_tick = 'sf:95:0d304e'
+    '# sf-obligate:65:dd86a9'
     import os, json, random, ast
     _b = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     _m = os.path.join(_b, 'agent_modules')
@@ -794,4 +796,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: inject a random mutation operator into auto-echo.py  (seeded by synthesizer gen=94)

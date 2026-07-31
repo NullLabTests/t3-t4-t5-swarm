@@ -1,4 +1,7 @@
+_sf_tick = 'sf:95:e31f71'
+
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:c32b95'
     import ast, random, os, copy
     mod_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/agent_modules'
     mods = sorted([f for f in os.listdir(mod_dir) if f.endswith('.py') and f != '__init__.py'])
@@ -734,4 +737,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: create a hash-chain between modules for tamper-evident evolution  (seeded by synthesizer gen=94)

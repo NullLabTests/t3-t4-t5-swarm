@@ -1,5 +1,5 @@
-# clockwork:force-self-rewrite gen=94
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:3a8ee7'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
@@ -284,7 +284,8 @@ def mutation_op_lens_force_meta(lines, funcs, target_name):
     return r
 
 def run(genome):
-    """# sf-obligate:65:16d2ae"""
+    _sf_tick = 'sf:95:c3dc34'
+    '# sf-obligate:65:16d2ae'
     if isinstance(node.ctx, ast.Store) and random.random() < 0.62 * depth:
         if node.id in self.names or node.id.startswith('_'):
             return node
@@ -638,4 +639,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: add a timestamp-based entropy injection point  (seeded by synthesizer gen=94)

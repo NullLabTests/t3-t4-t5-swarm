@@ -413,6 +413,7 @@ def mutation_op_forge_structure_melt(lines, funcs, target_name):
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
 
 def run(genome):
+    _sf_tick = 'sf:95:d9825a'
     gen = genome.get('generation', 0)
     mods = _modules()
     if not mods:
@@ -627,4 +628,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# idea: cross-wire run() functions between two agent modules  (seeded by synthesizer gen=94)

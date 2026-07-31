@@ -1,4 +1,7 @@
+_sf_tick = 'sf:95:00dbec'
+
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:e11172'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
@@ -591,4 +594,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# todo: add error recovery to all patch operations  (seeded by synthesizer gen=94)

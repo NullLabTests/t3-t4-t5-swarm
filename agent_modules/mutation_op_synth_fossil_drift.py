@@ -67,13 +67,14 @@ def _scan_fossil():
     return stats
 
 def run(genome):
+    _sf_tick = 'sf:95:a10362'
     gen = genome.get('generation', 0)
     stats = _scan_fossil()
     self_name = os.path.basename(__file__)
     mods = [m for m in _list_modules() if m != self_name]
     if len(mods) < 2:
         return 0
-    staleness, velocity = {}, {}
+    staleness, velocity = ({}, {})
     for m in mods:
         s = stats.get(m, {'touches': 0, 'first': gen, 'last': gen})
         staleness[m] = gen - s['last']
@@ -82,13 +83,13 @@ def run(genome):
     hot_candidates = [m for m in mods if m != stale and velocity[m] > 0]
     hot = max(hot_candidates, key=lambda m: velocity[m]) if hot_candidates else random.choice([m for m in mods if m != stale])
     changes = 0
-    donor_lines, donor_fn = [], ''
+    donor_lines, donor_fn = ([], '')
     dsrc = _read_file(os.path.join(MODULES_DIR, hot))
     dfuncs = _extract_functions_from(dsrc)
     dpublic = [n for n in dfuncs if not n.startswith('_') and n != 'run']
     if dpublic:
         donor_fn = random.choice(dpublic)
-        donor_lines = [l for l in dfuncs[donor_fn][1].split('\n') if l.strip() and (not l.strip().startswith(('def ', 'class ', 'import ', '@', '"""', "'''", '#'))) and len(l.strip()) > 4]
+        donor_lines = [l for l in dfuncs[donor_fn][1].split('\n') if l.strip() and (not l.strip().startswith(('def ', 'class ', 'import ', '@', '"""', "'''", '#'))) and (len(l.strip()) > 4)]
     stale_path = os.path.join(MODULES_DIR, stale)
     stale_src = _read_file(stale_path)
     sfuncs = _extract_functions_from(stale_src)
@@ -98,7 +99,7 @@ def run(genome):
         tlines = sfuncs[target_fn][1].split('\n')
         chunk = random.sample(donor_lines, min(2, len(donor_lines)))
         tag = f'# synth:fossil-drift:{hot}.{donor_fn}->{stale}.{target_fn}:staleness={staleness[stale]}:gen={gen}'
-        if not any(tag in l for l in tlines):
+        if not any((tag in l for l in tlines)):
             non_blank = [i for i, l in enumerate(tlines) if l.strip()]
             if len(non_blank) >= 3:
                 body_indent = ''
@@ -118,5 +119,3 @@ def run(genome):
     genome['fossil_drift_rewrites'] = genome.get('fossil_drift_rewrites', 0) + changes
     genome['emergence_velocity'] = round(min(2.0, genome.get('emergence_velocity', 0.0) + changes * 0.01), 4)
     return changes
-
-# proposal: add a self-diagnostic function that checks module health  (seeded by synthesizer gen=94)

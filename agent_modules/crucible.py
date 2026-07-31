@@ -1,5 +1,5 @@
-# clockwork:force-self-rewrite gen=94
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:1c207f'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
@@ -137,7 +137,8 @@ self_mutate(__file__)
 '# self-mutated gen=0'
 
 def run(genome):
-    """# sf-obligate:65:9e514f"""
+    _sf_tick = 'sf:95:819d24'
+    '# sf-obligate:65:9e514f'
     s = _read(SELF)
     if not s:
         return False
@@ -732,4 +733,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# todo: add error recovery to all patch operations  (seeded by synthesizer gen=94)

@@ -1,5 +1,6 @@
 def snapshot_hashes_from_live_reloader(genome):
-    """# sf-obligate:65:d0c54c"""
+    _sf_tick = 'sf:95:0787fb'
+    '# sf-obligate:65:d0c54c'
     gen = genome.get('generation', 0)
     mods = sorted([f for f in os.listdir(MOD) if f.endswith('.py') and f > '__init__.py'])
     self_mutate(__file__)
@@ -301,6 +302,7 @@ def _cross_wire_module():
         return None
 
 def run(genome):
+    _sf_tick = 'sf:95:d54598'
     seed_tracker = {}
     if os.path.exists(SEED_TRACK_PATH):
         try:
@@ -732,4 +734,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: add a function that rewrites genome.json structure  (seeded by synthesizer gen=94)

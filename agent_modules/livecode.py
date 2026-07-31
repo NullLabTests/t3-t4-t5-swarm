@@ -1,4 +1,5 @@
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:98f441'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
@@ -841,7 +842,8 @@ def _genome_structure_mutate(genome, gen):
             genome['prompt_modifiers'] = prompt_mods
 
 def run(genome):
-    """# sf-obligate:65:1cc167"""
+    _sf_tick = 'sf:95:f8cd1c'
+    '# sf-obligate:65:1cc167'
     s = _read(SELF)
     if not s:
         return False
@@ -1080,4 +1082,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: create a feedback loop that adjusts mutation_rate based on emergence_velocity  (seeded by synthesizer gen=94)

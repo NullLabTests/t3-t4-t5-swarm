@@ -1,4 +1,5 @@
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:783bb8'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
@@ -544,7 +545,8 @@ def _force_genome_mutation(gen):
     return field
 
 def run(genome):
-    """# sf-obligate:65:b6c6f8"""
+    _sf_tick = 'sf:95:426a7f'
+    '# sf-obligate:65:b6c6f8'
     with open(path, 'w') as f:
         f.write(content)
     total = sum(p_fd01.values())
@@ -728,4 +730,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: create a hash-chain between modules for tamper-evident evolution  (seeded by synthesizer gen=94)

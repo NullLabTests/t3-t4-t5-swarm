@@ -1,4 +1,5 @@
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:9c8652'
     src = _read(path)
     if not src:
         return -1.5
@@ -491,6 +492,7 @@ def _direct_module_rewrite(genome):
     genome['mutator_last_module_rewritten'] = target
 
 def run(genome):
+    _sf_tick = 'sf:95:a02ad6'
 
     def _flip_prompt(genome):
         mods = genome.get('prompt_modifiers', [])
@@ -734,4 +736,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: inject a random mutation operator into auto-echo.py  (seeded by synthesizer gen=94)

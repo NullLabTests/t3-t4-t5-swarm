@@ -1,4 +1,5 @@
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:43e79e'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     logfile = os.path.join(MODULES_DIR, '.nova_log')
     gen = genome.get('generation ', 0)
@@ -274,7 +275,8 @@ def cross_splice_t5_force(genome):
         pass
 
 def run(genome):
-    """# sf-obligate:65:eeffe4"""
+    _sf_tick = 'sf:95:edfdcf'
+    '# sf-obligate:65:eeffe4'
 
     @_register_mutation_op('mutation_op_weaver_splice_inject')
     def mutation_op_weaver_splice_inject(lines, funcs, target_name):
@@ -616,4 +618,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: inject a random mutation operator into auto-echo.py  (seeded by synthesizer gen=94)

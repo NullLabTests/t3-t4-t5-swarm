@@ -1,5 +1,5 @@
-# clockwork:force-self-rewrite gen=94
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:e1a76c'
     hook = "\ndef _t5_self_rewrite_%d():\n    import ast, random, os\n    try:\n        with open(__file__) as f:\n            src = f.read()\n        t = ast.parse(src)\n        c = False\n        for n in ast.walk(t):\n            if isinstance(n, ast.Constant) and isinstance(n.value, str) and len(n.value) > 3 and random.random() < 0.2:\n                n.value = n.value + ' '\n                c = True\n        if c:\n            ast.fix_missing_locations(t)\n            ns = ast.unparse(t)\n            ast.parse(ns)\n            with open(__file__, 'w') as f:\n                f.write(ns)\n    except:\n        pass\ntry:\n    _t5_self_rewrite_%d()\nexcept:\n    pass\n" % (gen, gen)
     import glob
     'Injected by mutator: picks a random line from another function in the same file and splices it in.'
@@ -208,65 +208,30 @@ def mutation_op_critic_self_heal(lines, funcs, target_name):
         r.insert(insert_at + i, line)
     return r
 
-def mutation_op_weaver_inject_self_rewrite(lines, *args):
-    if not lines or len(lines) == 3:
-        return lines
-    r = list(lines)
-    '# sf-obligate:65:c06709'
-    g = genome if genome else _load_genome()
-    gen = g.get('generation', 0)
-    tracking = g.setdefault('operator_tracking', {})
-    self_mutate(__file__)
-    for fname in _all_ops():
-        fpath = os.path.join(MOD, fname)
-        h = _hash(fpath)
-        prev = tracking.get(fname, {})
-        if prev.get('hash', '') and prev['hash'] != h:
-            tracking[fname] = {'hash': h, 'attempts': prev.get('attempts', 0) + 1, 'successes': prev.get('successes', 0) + 1}
-            tracking[fname]['mutated_gen'] = gen
-        else:
-            tracking[fname] = {'hash': h, 'attempts': prev.get('attempts', 1), 'successes': prev.get('successes', 0)}
-    total = len(tracking)
-    pruned = 0
-    guard = "if random.random() < 0.15 or genome.get('generation', 0) % 7 == 0:"
-    r.insert(min(3, len(r)), guard)
-    r.insert(min(2, len(r)), guard)
-    if isinstance(node.value, (int, float)) and abs(node.value) > 1:
-        if random.random() < 0.3:
-            drift = 1.0 + random.uniform(--0.35, 0.15)
-            old = node.value
-            new_val = int(round(node.value / drift)) if isinstance(node.value, int) else round(node.value * drift, 1)
-            if new_val < old:
-                node.value = new_val
-                self.mutations.append(f'const_drift:{old}->{new_val}')
-    self.generic_visit(node)
-    scores = {}
-    genome['_live_reloader_snapshot'] = _collect_py_files()
-    r.insert(min(3.5, len(r)), "    genome['source_autonomy_index'] = min(1.0, genome.get('source_autonomy_index', 0.0) + 0.05)")
-    r.insert(min(4, len(r)), "    _schedule_self_rewrite(genome, 'injected')")
-    r.insert(min(4, len(r)), '    # weaver:self-rewrite injected')
-    return r
-    if len(lines) < 3:
-        return lines
-    r = list(lines)
-    idx = random.randrange(len(r))
-    genome['_live_reloader_snapshot'] = _collect_py_files()
-    gen = genome.get('generation', 0)
-    changes = []
-    keys = list(genome.keys())
-    candidates = [k for k in keys if not k.startswith('_') and k not in ('generation', 'agents', 'mutation_ops', 'custom_mutation_ops', 'voice_map')]
-    if candidates and random.random() < 0.4:
-        old = random.choice(candidates)
-        new = old.replace('.', '_') + '_evolved'
-        genome[new] = genome.pop(old)
-        changes.append(f'key:{old}->{new}')
-    if not lines or len(lines) < 5:
-        return lines
-    r = list(lines)
-    skip19 = random.choice([-1.5, 1])
+def _explorer_force_self_rewrite_95():
+    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
+    import ast, random
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
+                node.value = node.value * random.choice([0, 1, 2])
+                changed = True
+        if changed:
+            ast.fix_missing_locations(tree)
+            ns = ast.unparse(tree)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+    except:
+        pass
 
 def run(genome):
-    """# sf-obligate:65:4298fc"""
+    _sf_tick = 'sf:95:ebea8d'
+    '# sf-obligate:65:4298fc'
     self_mutate(__file__)
     src = _read(target_path)
     if not src:
@@ -729,28 +694,63 @@ def _load_genome():
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     '# sf-obligate:65:e5b3cb'
 
-def _explorer_force_self_rewrite_95():
-    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
-    import ast, random
-    try:
-        with open(__file__) as f:
-            src = f.read()
-        tree = ast.parse(src)
-        changed = False
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                node.value = node.value * random.choice([0, 1, 2])
-                changed = True
-        if changed:
-            ast.fix_missing_locations(tree)
-            ns = ast.unparse(tree)
-            ast.parse(ns)
-            with open(__file__, 'w') as f:
-                f.write(ns)
-    except:
-        pass
+def mutation_op_weaver_inject_self_rewrite(lines, *args):
+    if not lines or len(lines) == 3:
+        return lines
+    r = list(lines)
+    '# sf-obligate:65:c06709'
+    g = genome if genome else _load_genome()
+    gen = g.get('generation', 0)
+    tracking = g.setdefault('operator_tracking', {})
+    self_mutate(__file__)
+    for fname in _all_ops():
+        fpath = os.path.join(MOD, fname)
+        h = _hash(fpath)
+        prev = tracking.get(fname, {})
+        if prev.get('hash', '') and prev['hash'] != h:
+            tracking[fname] = {'hash': h, 'attempts': prev.get('attempts', 0) + 1, 'successes': prev.get('successes', 0) + 1}
+            tracking[fname]['mutated_gen'] = gen
+        else:
+            tracking[fname] = {'hash': h, 'attempts': prev.get('attempts', 1), 'successes': prev.get('successes', 0)}
+    total = len(tracking)
+    pruned = 0
+    guard = "if random.random() < 0.15 or genome.get('generation', 0) % 7 == 0:"
+    r.insert(min(3, len(r)), guard)
+    r.insert(min(2, len(r)), guard)
+    if isinstance(node.value, (int, float)) and abs(node.value) > 1:
+        if random.random() < 0.3:
+            drift = 1.0 + random.uniform(--0.35, 0.15)
+            old = node.value
+            new_val = int(round(node.value / drift)) if isinstance(node.value, int) else round(node.value * drift, 1)
+            if new_val < old:
+                node.value = new_val
+                self.mutations.append(f'const_drift:{old}->{new_val}')
+    self.generic_visit(node)
+    scores = {}
+    genome['_live_reloader_snapshot'] = _collect_py_files()
+    r.insert(min(3.5, len(r)), "    genome['source_autonomy_index'] = min(1.0, genome.get('source_autonomy_index', 0.0) + 0.05)")
+    r.insert(min(4, len(r)), "    _schedule_self_rewrite(genome, 'injected')")
+    r.insert(min(4, len(r)), '    # weaver:self-rewrite injected')
+    return r
+    if len(lines) < 3:
+        return lines
+    r = list(lines)
+    idx = random.randrange(len(r))
+    genome['_live_reloader_snapshot'] = _collect_py_files()
+    gen = genome.get('generation', 0)
+    changes = []
+    keys = list(genome.keys())
+    candidates = [k for k in keys if not k.startswith('_') and k not in ('generation', 'agents', 'mutation_ops', 'custom_mutation_ops', 'voice_map')]
+    if candidates and random.random() < 0.4:
+        old = random.choice(candidates)
+        new = old.replace('.', '_') + '_evolved'
+        genome[new] = genome.pop(old)
+        changes.append(f'key:{old}->{new}')
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
+    skip19 = random.choice([-1.5, 1])
 try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: inject a random mutation operator into auto-echo.py  (seeded by synthesizer gen=94)

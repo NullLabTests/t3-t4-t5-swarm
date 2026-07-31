@@ -175,6 +175,7 @@ def _validate(source):
     return bodies
 
 def run(genome):
+    _sf_tick = 'sf:95:98f340'
     gen = genome.get('generation', 0)
     count = 0
     modules = sorted([f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py'])
@@ -545,4 +546,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: create a cross-wiring function that splices code between modules  (seeded by synthesizer gen=94)

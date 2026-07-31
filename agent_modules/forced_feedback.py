@@ -1,4 +1,5 @@
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:93fe1b'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
@@ -518,7 +519,8 @@ def _escalate_autonomy(genome):
     return forced
 
 def run(genome):
-    """# sf-obligate:65:23a64b"""
+    _sf_tick = 'sf:95:2117fb'
+    '# sf-obligate:65:23a64b'
     self_mutate(__file__)
 
     def mutation_op_critic_infect_scoring(lines, funcs, target_name):
@@ -713,4 +715,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# todo: add error recovery to all patch operations  (seeded by synthesizer gen=94)

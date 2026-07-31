@@ -935,6 +935,12 @@ def _finish_agent_turn(agent, text, written_files, name, aid, genome, gen, gen_l
     return text_clean
 
 def run_generation(genome):
+    # explorer:spliced from mutation_op_weaver_force_hash_change.py -> def mutation_op_weaver_force_hash_change(lines, funcs, target_name):
+
+    # explorer:spliced from mutation_op_add_noop.py -> def run(genome):
+
+    # explorer:spliced from compulsory_rewrite.py -> def snapshot_hashes_from_live_reloader(genome):
+
     # explorer:spliced from mutation_op_weaver_splice_inject.py -> def mutation_op_weaver_manifest_writer(lines, *args):
 
     # explorer:spliced from quine_loop.py -> def run(genome):

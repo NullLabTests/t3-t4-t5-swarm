@@ -80,3 +80,6 @@
 {"gen": 94, "target": "mutation_op_bridge_t5_metamorph.py->bridge.py", "op": "function_crossover", "ts": 1785461907.7156503}
 {"gen": 95, "kind": "rewrite_stalest", "detail": "analyzer.py", "ts": 1785462001.7998903}
 {"gen": 95, "kind": "crossover", "detail": "mutation_op_weaver_swap_across_modules.py->rewrite_orchestrator.py", "ts": 1785462001.8916621}
+{"gen": 95, "kind": "rewrite_stalest", "detail": "analyzer.py", "ts": 1785463010.1016665}
+{"gen": 95, "kind": "resurrect_dead", "detail": "t5_emergence_driver.py:mutation_op_weaver_cross_file_43", "ts": 1785463013.1262193}
+{"gen": 95, "kind": "crossover", "detail": "local_mutator.py->source_evolver.py", "ts": 1785463013.2012641}

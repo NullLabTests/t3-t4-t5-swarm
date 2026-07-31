@@ -1,5 +1,5 @@
-# clockwork:force-self-rewrite gen=94
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:b88b9e'
     gen = genome.get('generation ', 0)
     triggers = genome.get('scheduled_triggers', [])
     fired = []
@@ -344,7 +344,8 @@ def _validate_all_modules():
     return (count, errors)
 
 def run(genome):
-    """# sf-obligate:65:f57cd1"""
+    _sf_tick = 'sf:95:a4863a'
+    '# sf-obligate:65:f57cd1'
     changes = []
     self_mutate(__file__)
     if random.random() < 0.5:
@@ -769,4 +770,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# idea: cross-wire run() functions between two agent modules  (seeded by synthesizer gen=94)

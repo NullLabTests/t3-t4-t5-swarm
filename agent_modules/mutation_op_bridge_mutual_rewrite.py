@@ -1,4 +1,7 @@
+_sf_tick = 'sf:95:48e492'
+
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:ca4099'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
@@ -617,4 +620,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: insert a self-referential marker that forces Module A to rewrite Module B  (seeded by synthesizer gen=94)

@@ -1,4 +1,5 @@
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:a15e81'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
@@ -527,7 +528,8 @@ def _self_rewrite(gen):
     return f'self-rewrite:{fn}'
 
 def run(genome):
-    """# sf-obligate:65:78808f"""
+    _sf_tick = 'sf:95:0d4cf1'
+    '# sf-obligate:65:78808f'
     self_mutate(__file__)
     files = {}
     for root, dirs, fnames in os.walk(BASE):
@@ -849,8 +851,6 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: create a feedback loop that adjusts mutation_rate based on emergence_velocity  (seeded by synthesizer gen=94)
-
 
 @_register_mutation_op('mutation_op_bridge_sourceweave')
 def mutation_op_bridge_sourceweave_cv_95(lines, funcs, target_name):

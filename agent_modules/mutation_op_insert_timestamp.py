@@ -1,4 +1,7 @@
+_sf_tick = 'sf:95:4aad0d'
+
 def snapshot_hashes_from_live_reloader(genome):
+    _sf_tick = 'sf:95:c26222'
     try:
         with open(GENOME) as f:
             return json.load(f)
@@ -665,4 +668,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: insert a self-referential marker that forces Module A to rewrite Module B  (seeded by synthesizer gen=94)

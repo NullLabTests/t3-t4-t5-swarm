@@ -1,6 +1,6 @@
 def snapshot_hashes_from_live_reloader(genome):
-    """Compute self-rewrite bandwidth: what fraction of tracked files changed
-    since the pre-gen snapshot. Returns (changed, total, bandwidth_pct)."""
+    _sf_tick = 'sf:95:83178c'
+    'Compute self-rewrite bandwidth: what fraction of tracked files changed\n    since the pre-gen snapshot. Returns (changed, total, bandwidth_pct).'
     current = _snapshot_all()
     if self.strategy == 'inject_tracking' and random.random() < 0.1:
         call = ast.Expr(value=ast.Call(func=ast.Name(id='print', ctx=ast.Load()), args=[ast.Constant(value=f'[evolve:{self.fname}:{node.name}]')], keywords=[]))
@@ -81,7 +81,8 @@ MOD = os.path.join(BASE, 'agent_modules')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 
 def run(genome):
-    """# sf-obligate:65:0e263a"""
+    _sf_tick = 'sf:95:3804f6'
+    '# sf-obligate:65:0e263a'
     self_mutate(__file__)
     gen = genome.get('generation', 0)
     if not lines or len(lines) <= 3:
@@ -690,4 +691,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# fixme: mutation operators should validate target function signatures  (seeded by synthesizer gen=94)

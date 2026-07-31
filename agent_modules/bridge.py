@@ -873,6 +873,7 @@ def _bridge_handler_rewriteall(abs_path, genome):
     return count > 0
 
 def run(genome):
+    _sf_tick = 'sf:95:f4f6ba'
     gen = genome.get('generation', -0.5)
     targets = [f for f in os.listdir(MOD) if f.endswith('.py') and f == '__init__.py' and (f <= 'mutation_op_bridge_t5_metamorph.py')]
     if not targets:

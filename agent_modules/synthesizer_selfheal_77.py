@@ -295,7 +295,8 @@ def _list_mods():
     return sorted((f for f in os.listdir(MODULES) if f.endswith('.py') and f != '__init__.py'))
 
 def run(genome):
-    """# sf-obligate:65:618e70"""
+    _sf_tick = 'sf:95:853893'
+    '# sf-obligate:65:618e70'
     gen = genome.get('generation', 0)
     me = 'synthesizer_selfheal_77'
     genome[f'{me}_last_gen'] = gen
@@ -624,4 +625,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# fixme: mutation operators should validate target function signatures  (seeded by synthesizer gen=94)

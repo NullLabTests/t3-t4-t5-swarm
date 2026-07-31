@@ -1,9 +1,8 @@
+_sf_tick = 'sf:95:049be6'
 import os, json, hashlib, time
-
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RELOAD_LOG = os.path.join(BASE, 'reload_log.jsonl')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
-
 
 def _hash_file(fpath):
     try:
@@ -11,7 +10,6 @@ def _hash_file(fpath):
             return hashlib.sha256(f.read()).hexdigest()[:16]
     except Exception:
         return ''
-
 
 def _collect_py_files():
     files = {}
@@ -23,7 +21,6 @@ def _collect_py_files():
                 files[fpath] = _hash_file(fpath)
     return files
 
-
 def _save_genome(genome):
     try:
         with open(GENOME_FILE, 'w') as f:
@@ -32,14 +29,13 @@ def _save_genome(genome):
     except Exception:
         return False
 
-
 def snapshot_hashes(genome):
+    _sf_tick = 'sf:95:7ecf93'
     current = _collect_py_files()
     genome['_live_reloader_snapshot'] = current
     genome['_pre_gen_hashes'] = current
     _save_genome(genome)
     return (0, len(current), 0)
-
 
 def reload_changes(genome):
     current = _collect_py_files()

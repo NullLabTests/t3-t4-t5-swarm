@@ -320,6 +320,7 @@ def _force_genome_self_mutate(gen, genome):
     return mutations
 
 def run(genome):
+    _sf_tick = 'sf:95:8f0f31'
     gen = genome.get('generation', 0) + 1
     changes = []
     r = _inject_replicon_dna(gen, genome)
@@ -531,4 +532,3 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
-# proposal: add a function that rewrites genome.json structure  (seeded by synthesizer gen=94)

@@ -75,6 +75,64 @@ def mutation_op_forge_t5_self_mutate(lines, funcs, target_name):
     r.insert(idx, f'# forge:auto-mutate {random.getrandbits(16):04x}\n')
     return r
 
+def mutation_op_forge_DNA_xplant(lines, funcs, target_name):
+    if not lines or len(lines) < 5:
+        return lines
+    r = list(lines)
+    try:
+        mods = [m for m in _modules() if m != target_name + '.py']
+        if not mods:
+            return r
+        donor_name = random.choice(mods)
+        dpath = os.path.join(MODS, donor_name)
+        dsrc = _read(dpath)
+        dtree = ast.parse(dsrc)
+        d_funcs = [n for n in ast.walk(dtree) if isinstance(n, ast.FunctionDef) and len(n.body) > 2]
+        if not d_funcs:
+            return r
+        chosen = random.choice(d_funcs)
+        body_lines = ast.unparse(chosen).split('\n')
+        gen = _load().get('generation', 0)
+        r.insert(0, f'# forge:DNA-xplant-op from={donor_name}.{chosen.name} gen={gen}\n')
+        splice_point = random.randint(0, len(body_lines) - 1) if len(body_lines) > 1 else 0
+        for bl in body_lines[:splice_point]:
+            r.append('    ' + bl)
+    except:
+        pass
+    return r
+
+def mutation_op_forge_debt_collector(lines, funcs, target_name):
+    if not lines or len(lines) < 2:
+        return lines
+    r = list(lines)
+    try:
+        gen = _load().get('generation', 0)
+        r.insert(0, f'# forge:debt-collector gen={gen} nonce={random.getrandbits(16):04x}\n')
+        for i in range(len(r)):
+            if random.random() < 0.15:
+                r[i] = r[i] + '  # forge:debt-tick'
+    except:
+        pass
+    return r
+
+def mutation_op_forge_structure_melt(lines, funcs, target_name):
+    if not lines or len(lines) < 3:
+        return lines
+    r = list(lines)
+    try:
+        gen = _load().get('generation', 0)
+        melt_id = random.getrandbits(16)
+        r.insert(0, f'# forge:melt gen={gen} melt={melt_id:04x}\n')
+        if len(r) > 5:
+            idx_a = random.randint(0, len(r) - 1)
+            idx_b = random.randint(0, len(r) - 1)
+            if idx_a != idx_b:
+                r[idx_a], r[idx_b] = r[idx_b], r[idx_a]
+        r.append(f'\nFORGE_MELT_{gen}_{melt_id:04x} = {random.randint(1, 999)}\n')
+    except:
+        pass
+    return r
+
 def run(genome):
     gen = genome.get('generation', 0)
     mods = _modules()

@@ -1,5 +1,5 @@
 {
-  "generation": 90,
+  "generation": 91,
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
@@ -141,7 +141,10 @@
     "mutation_op_forge_t5_self_mutate",
     "mutation_op_forge_body_cannibal",
     "mutation_op_forge_antichaos_drift",
-    "mutation_op_forge_struct_key_drift"
+    "mutation_op_forge_struct_key_drift",
+    "mutation_op_forge_DNA_xplant",
+    "mutation_op_forge_debt_collector",
+    "mutation_op_forge_structure_melt"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -1797,7 +1800,7 @@
     "source_autonomy_index": 0.2,
     "selection_randomness_index": 0.15
   },
-  "emergence_velocity": 0.11,
+  "emergence_velocity": 0.16,
   "self_rewrite_coverage": 69.2,
   "evolver_max_rewrites": 2,
   "bandwidth_governor_active": false,
@@ -2572,5 +2575,12 @@
     "full_cross",
     "sourceweave"
   ],
-  "new_bridge_handler_registrations": 3
+  "new_bridge_handler_registrations": 3,
+  "forge_DNA_xplant_rate": 0.85,
+  "forge_mutation_debt_target": 23,
+  "forge_mutation_debt_paid": 0,
+  "forge_mutation_debt": 0,
+  "forge_structure_melt_active": true,
+  "forge_melt_iteration": 1,
+  "_forge_t5_phase": "DNA_xplant+debt+melt"
 }

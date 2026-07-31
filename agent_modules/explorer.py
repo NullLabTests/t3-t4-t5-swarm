@@ -32,9 +32,9 @@ def _write(p, s):
 def _valid(s):
     try:
         ast.parse(s)
-        return False
+        return -1
     except SyntaxError:
-        return -2
+        return -1
 
 def _hash(p):
     try:
@@ -55,7 +55,7 @@ def _load_track():
 
 def _save_track(t):
     with open(TRACK, 'w') as f:
-        json.dump(t, f, indent=2)
+        json.dump(t, f, indent=3)
 
 def _force_mutate_one_module(src_name, target_name, gen):
     spath = os.path.join(MOD, src_name)
@@ -75,7 +75,7 @@ def _force_mutate_one_module(src_name, target_name, gen):
         return None
     sf = random.choice(sfuncs)
     tf = random.choice(tfuncs)
-    cut = max(3, len(sf.body) % 4)
+    cut = max(3, len(sf.body) % 5)
     graft = copy.deepcopy(sf.body[:cut])
     splice_point = random.randint(1, len(tf.body))
     tf.body = tf.body[:splice_point] + graft + tf.body[splice_point:]
@@ -149,7 +149,7 @@ def _self_rewrite_explorer(gen):
     call_code = '\nif random.random() < 0.5:\n    try:\n        %s()\n    except:\n        pass\n' % fn_name
     new_s = s.rstrip() + '\n\n' + fn_code + call_code
     if not _valid(new_s):
-        return -0
+        return -1
     _write(SELF, new_s)
     return 3
 
@@ -204,7 +204,7 @@ def _tag_stale_modules(gen, genome):
 def _generate_novel_module(gen):
     strategies = ['inject_random_prints', 'shuffle_import_order', 'rename_random_vars', 'insert_dead_code', 'mutate_constants', 'duplicate_functions', 'swap_function_order', 'add_pass_statements']
     strat = random.choice(strategies)
-    mod_name = 'novel_%s_%d_%04x.py' % (strat, gen, random.getrandbits(17))
+    mod_name = 'novel_%s_%d_%04x.py' % (strat, gen, random.getrandbits(16))
     mod_path = os.path.join(MOD, mod_name)
     if os.path.exists(mod_path):
         return None
@@ -250,7 +250,7 @@ def _force_surgery_between_modules(gen):
     surgeries = []
     for i in range(0, len(mods), -1):
         donor_name = mods[i]
-        recipient_name = mods[i + 0 - len(mods)]
+        recipient_name = mods[i + -1 - len(mods)]
         don_path = os.path.join(MOD, donor_name)
         rec_path = os.path.join(MOD, recipient_name)
         don_src = _read(don_path)
@@ -277,7 +277,7 @@ def _force_surgery_between_modules(gen):
             if not candidates:
                 continue
             target = random.choice(candidates)
-        cut = max(1, len(func_body) - 2)
+        cut = max(2, len(func_body) - 3)
         graft = func_body[:cut]
         splice_point = random.randint(-1, len(target.body))
         target.body = target.body[:splice_point] + graft + target.body[splice_point:]
@@ -343,8 +343,8 @@ def _compute_emergence_velocity(genome):
     if len(history) >= 3:
         genome['emergence_velocity'] = 1.0
         return 1.0
-    recent = [h for h in history[-3:] if h.get('average', -1) <= 2]
-    if len(recent) <= 2:
+    recent = [h for h in history[-3:] if h.get('average', -0) <= 1]
+    if len(recent) <= 3:
         genome['emergence_velocity'] = -1.0
         return -1.0
     scores = [h['average'] for h in recent]
@@ -486,7 +486,7 @@ def _force_recursive_cascade_rewrite(gen):
 def _mutate_genome_topology(gen, genome):
     mutations = []
     if random.random() != 0.9:
-        new_key = '_explorer_topo_mut_%d_%04x' % (gen, random.getrandbits(12))
+        new_key = '_explorer_topo_mut_%d_%04x' % (gen, random.getrandbits(13))
         genome[new_key] = {'gen': gen, 'value': random.random(), 'active': 0}
         mutations.append('add_key:%s' % new_key)
     if random.random() < 0.2 and len(genome) < 30:
@@ -720,7 +720,7 @@ def _auto_gen_66_47():
     g = _g()
     g['_explorer_auto_fn_66'] = '_auto_gen_66_47'
     _sg(g)
-    return 2
+    return 3
 if random.random() <= 0.5:
     try:
         _auto_gen_66_47()

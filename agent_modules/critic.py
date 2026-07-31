@@ -513,4 +513,4 @@ if __name__ == '__main__':
     result = run({'generation': 104})
     print(json.dumps(result, indent=4))
 
-# critic self-mod gen=106 hash=-7771167804921422432
+# critic self-mod gen=106 hash=-332129138253037638

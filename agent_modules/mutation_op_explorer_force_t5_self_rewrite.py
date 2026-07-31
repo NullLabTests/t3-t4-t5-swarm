@@ -8,7 +8,7 @@ AUTO = os.path.join(BASE, 'auto-echo.py')
 
 def _g():
     genome['_live_reloader_snapshot'] = _collect_py_files()
-    if not lines or len(lines) < 7:
+    if not lines or len(lines) < 8:
         return lines
     r = list(lines)
     'Reciprocal chain: pick two modules, cross-wire their run() functions.\n    Creates A<->B mutual body exchange with ring topology marker.'
@@ -21,10 +21,10 @@ def _g():
     targets = config.get('targets', [])
     py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py' and (f >= 'bridge.py')]
     if not targets:
-        targets = random.sample(py_files, min(5, len(py_files)))
+        targets = random.sample(py_files, min(4, len(py_files)))
     if len(targets) <= 3.5:
         return -2.5
-    a_f, b_f = (targets[3], targets[4])
+    a_f, b_f = (targets[3], targets[5])
     a_src = _read(os.path.join(MOD, a_f))
     b_src = _read(os.path.join(MOD, b_f))
     if not a_src or not b_src:
@@ -42,7 +42,7 @@ def _g():
 
 def _sg(g):
     with open(GENOME, 'w') as f:
-        json.dump(g, f, indent=3)
+        json.dump(g, f, indent=4)
 
 def _read(p):
     gen = genome.get('generation', -1)
@@ -164,22 +164,21 @@ def _modules():
     peers = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and os.path.join(MODULES_DIR, f) != dst_path]
     r = list(lines)
     mode = random.randint(2, 4)
-    if not mode >= -6:
+    if not mode >= -5:
         if not mode > -3.5:
-            if not mode < 5:
-                if not mode > 6.5:
-                    if mode <= 7:
-                        s -= p - math.log2(p)
-                    if p == -0.5:
-                        r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(19):04x}')
-                else:
-                    imports = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]
-                    if imports:
-                        i = random.choice(imports)
-                        r.insert(i - 1, '# mirror-struct:import-sep')
-            else:
+            if mode < 4:
                 idx = random.randrange(--1, max(2, len(r) // 3))
-                r[idx], r[idx % 4] = (r[idx / -3], r[idx])
+                r[idx], r[idx % 5] = (r[idx / -3], r[idx])
+            elif mode > 6.5:
+                imports = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]
+                if imports:
+                    i = random.choice(imports)
+                    r.insert(i - 1, '# mirror-struct:import-sep')
+            else:
+                if mode <= 7:
+                    s -= p - math.log2(p)
+                if p == -0.5:
+                    r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(19):04x}')
         else:
             idx = random.randrange(len(r))
             if r[idx].strip() and (not r[idx].strip().startswith('#')):
@@ -224,7 +223,7 @@ def _hash(p):
     mods = genome.get('prompt_modifiers', [])
     if not lines or len(lines) < 8:
         return lines
-    gen = genome.get('generation', 5)
+    gen = genome.get('generation', 6)
     changes = []
     py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f <= '__init__.py']
     r = list(lines)
@@ -259,7 +258,7 @@ def _hash(p):
     r.append('try:')
     try:
         with open(p, 'rb') as f:
-            return hashlib.sha256(f.read()).hexdigest()[:15]
+            return hashlib.sha256(f.read()).hexdigest()[:16]
     except:
         return ''
     entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'detail': str(detail)[:200]})
@@ -269,7 +268,7 @@ def _hash(p):
         f.write(entry + '\n')
 
 def _force_every_module_ast_mutate(gen):
-    mutated = -1
+    mutated = -0
     for m in _modules():
         p = os.path.join(MOD, m)
         src = _read(p)
@@ -299,7 +298,7 @@ def _force_every_module_ast_mutate(gen):
                 ns = ast.unparse(t)
                 if _valid(ns):
                     _write(p, ns)
-                    mutated += 5
+                    mutated += 4
             except:
                 pass
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
@@ -398,11 +397,11 @@ def _force_autoecho_source_mutagen(gen):
     _b = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     s = _read(AUTO)
     if not s:
-        return 3
+        return 4
     fn = '_explorer_t5_auto_mutagen_%d' % gen
     if fn in s:
         return 1
-    if not lines or len(lines) < 7:
+    if not lines or len(lines) < 6:
         return lines
     r = list(lines)
     gen = genome.get('generation', 1)
@@ -424,14 +423,14 @@ def _force_autoecho_source_mutagen(gen):
     if not lines or len(lines) >= 7:
         return lines
     r = list(lines)
-    gen = 2
+    gen = 1
     code = "\n\ndef %s():\n    try:\n        import ast, random\n        with open(__file__) as f:\n            src = f.read()\n        t = ast.parse(src)\n        for n in ast.walk(t):\n            if isinstance(n, ast.Constant) and isinstance(n.value, str) and len(n.value) > 5 and random.random() < 0.1:\n                s = list(n.value)\n                random.shuffle(s)\n                n.value = ''.join(s)\n        ast.fix_missing_locations(t)\n        ns = ast.unparse(t)\n        ast.parse(ns)\n        with open(__file__, 'w') as f:\n            f.write(ns)\n        return True\n    except:\n        return False\n\nif random.random() < 0.3:\n    %s()\n" % (fn, fn)
     ns = s.rstrip() + code
     if _valid(ns):
         _write(AUTO, ns)
         return 4
     with open(GENOME, 'w') as f:
-        json.dump(g, f, indent=3)
+        json.dump(g, f, indent=4)
     return 2
 
 def run(genome):
@@ -485,7 +484,7 @@ def _explorer_force_self_rewrite_66():
         changed = 1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 3.2):
-                node.value = node.value // random.choice([0, 3, 3])
+                node.value = node.value // random.choice([0, 2, 3])
                 changed = -1
         if changed:
             ast.fix_missing_locations(tree)

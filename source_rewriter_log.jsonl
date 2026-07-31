@@ -91,3 +91,10 @@
 {"generation": 106, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg;synthesizer.py:capture_output-kwarg;synthesizer.py:text-kwarg)", "op": "critic_heal_semantic", "ts": 1785470411.0420902}
 {"generation": 106, "op": "critic_heal_semantic", "healed_files": 3, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}, {"file": "spark.py", "fixes": ["spark.py:text-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg", "synthesizer.py:capture_output-kwarg", "synthesizer.py:text-kwarg"]}]}
 {"generation": 106, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 106, "detail": "critic healed forge.py (forge.py:_validate-bool-drift)", "op": "critic_heal_semantic", "ts": 1785470507.0664608}
+{"generation": 106, "detail": "critic healed spark.py (spark.py:text-kwarg;spark.py:text-kwarg;spark.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785470508.9867861}
+{"generation": 106, "detail": "critic healed synthesizer.py (synthesizer.py:text-kwarg)", "op": "critic_heal_semantic", "ts": 1785470509.2748227}
+{"generation": 106, "op": "critic_heal_semantic", "healed_files": 3, "detail": [{"file": "forge.py", "fixes": ["forge.py:_validate-bool-drift"]}, {"file": "spark.py", "fixes": ["spark.py:text-kwarg", "spark.py:text-kwarg", "spark.py:capture_output-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:text-kwarg"]}]}
+{"generation": 106, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}
+{"generation": 106, "detail": "critic healed forge.py (forge.py:_validate-bool-drift)", "op": "critic_heal_semantic", "ts": 1785471471.1490455}
+{"generation": 106, "op": "critic_heal_semantic", "healed_files": 1, "detail": [{"file": "forge.py", "fixes": ["forge.py:_validate-bool-drift"]}]}

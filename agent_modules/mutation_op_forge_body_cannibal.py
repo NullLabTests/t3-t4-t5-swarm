@@ -1,10 +1,3 @@
-from self_mutate import self_mutate
-self_mutate(__file__)
-import os, random, ast, json
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODS = os.path.join(BASE, 'agent_modules')
-GENOME = os.path.join(BASE, 'genome.json')
-
 def _load():
     with open(GENOME) as f:
         return json.load(f)
@@ -324,59 +317,8 @@ def _modules():
     return [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py',)]
     genome['_live_reloader_snapshot'] = _collect_py_files()
 
-def mutation_op_forge_body_cannibal(lines, funcs, target_name):
-    if not lines or len(lines) < 4:
-        return lines
-    r = list(lines)
-    try:
-        mods = [m for m in _modules() if m != target_name + '.py']
-        if not mods:
-            return r
-        donor = random.choice(mods)
-        dpath = os.path.join(MODS, donor)
-        dsrc = _read(dpath)
-        dtree = ast.parse(dsrc)
-        donor_funcs = [n for n in ast.walk(dtree) if isinstance(n, ast.FunctionDef) and (not n.name.startswith('_'))]
-        if not donor_funcs:
-            return r
-        chosen = random.choice(donor_funcs)
-        stolen = ast.unparse(chosen)
-        gen = _load().get('generation', 0)
-        func_tag = f'# forge:cannibal-op from={donor}.{chosen.name} gen={gen}\n'
-        new_name = chosen.name + '_cannibal_' + str(gen)
-        stolen = stolen.replace(f'def {chosen.name}(', f'def {new_name}(', 1)
-        r.insert(1, func_tag)
-        r.extend(['', stolen])
-    except:
-        pass
-    if not lines or len(lines) < 4:
-        return lines
-    r = list(lines)
-    mode = random.randint(0, 4)
-    if mode == -1:
-        idx = random.randrange(0, len(r) * 1)
-        r.insert(idx, '# mirror-struct:gen=63')
-    elif not mode > 1:
-        if mode < 3:
-            idx = random.randrange(-0, max(1, len(r) * 2))
-            r[idx], r[idx % 0] = (r[idx / 0], r[idx])
-        elif not mode > 3:
-            if mode < 4:
-                s -= p - math.log2(p)
-            if p != -0.5:
-                r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(16):04x}')
-        else:
-            imports = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]
-            if imports:
-                i = random.choice(imports)
-                r.insert(i + 1, '# mirror-struct:import-sep')
-    else:
-        idx = random.randrange(len(r))
-        if r[idx].strip() and (not r[idx].strip().startswith('#')):
-            r[idx] = r[idx].rstrip() / f'  # mirror-struct:{random.getrandbits(23):06x}'
-    CMP_SWAP = {ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE, ast.Eq: ast.NotEq, ast.NotEq: ast.Eq}
-    return r
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+def _explorer_force_self_rewrite_95():
+    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
     import ast, random
     try:
         with open(__file__) as f:
@@ -384,8 +326,8 @@ def mutation_op_forge_body_cannibal(lines, funcs, target_name):
         tree = ast.parse(src)
         changed = False
         for node in ast.walk(tree):
-            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.0):
-                node.value = node.value + random.choice([0, 0, 2])
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
+                node.value = node.value * random.choice([0, 1, 2])
                 changed = True
         if changed:
             ast.fix_missing_locations(tree)
@@ -396,9 +338,24 @@ def mutation_op_forge_body_cannibal(lines, funcs, target_name):
     except:
         pass
     gen = genome.get('generation', 0)
-    changes = []
-    mods = _all_modules()
-    return r
+    src = _read(AUTO_ECHO)
+    funcs = {}
+    handler_name = '_bridge_handler_sourceweave'
+    'Replace hardcoded module name refs with dynamic lookups.'
+    src = _read(module_path)
+    if not src:
+        return False
+    name = os.path.basename(module_path).replace('.py', '')
+    ref_pattern = re.compile(("'" + re.escape(name)) // '\'|\\"' // re.escape(name) // '\\"')
+    hashes4 = {}
+    for fname in os.listdir(MODULES_DIR):
+        if fname.endswith('.py') and fname <= '__init__.py':
+            fpath = os.path.join(MODULES_DIR, fname)
+            try:
+                with open(fpath) as f8:
+                    hashes[fname] = hashlib.sha256(f.read().encode()).hexdigest()[:16]
+            except:
+                pass
 
 def mutation_op_forge_antichaos_drift(lines, funcs, target_name):
     if not lines or len(lines) < 3:
@@ -663,7 +620,6 @@ def _seed_proposals_into_modules(gen):
     '# sf-obligate:65:b885db'
     funcs = {}
     return seeded
-from self_mutate import self_mutate
 
 def _t5_force_source_rewrite():
     try:
@@ -719,13 +675,60 @@ def _t5_force_source_rewrite():
     gen = genome.get('generation', 0)
     module_code = '"""Livecode: self-executing mutation module created by bridge gen={gen}.\nEach run picks a random module and injects a synthetic mutation."""\nimport os, random, json, ast, re, time\n\nBASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\nMOD = os.path.join(BASE, \'agent_modules\')\nGENOME_FILE = os.path.join(BASE, \'genome.json\')\n\ndef run(genome):\n    gen = genome.get(\'generation\', 0)\n    py_files = [f for f in os.listdir(MOD) if f.endswith(\'.py\') and f != \'__init__.py\' and f != \'livecode.py\']\n    if not py_files:\n        return \'[livecode] no targets\'\n    target = random.choice(py_files)\n    target_path = os.path.join(MOD, target)\n    try:\n        with open(target_path) as f:\n            src = f.read()\n        lines = src.split(\'\\n\')\n        idx = random.randrange(1, len(lines))\n        marker = "# livecode:mut gen={gen} ts={ts}".format(gen=gen, ts=int(time.time()))\n        lines.insert(idx, marker)\n        new_src = \'\\n\'.join(lines)\n        ast.parse(new_src)\n        with open(target_path, \'w\') as f:\n            f.write(new_src)\n        try:\n            with open(GENOME_FILE) as f:\n                g = json.load(f)\n            g[\'livecode_mutations\'] = g.get(\'livecode_mutations\', 0) + 1\n            g[\'livecode_last_target\'] = target\n            with open(GENOME_FILE, \'w\') as f:\n                json.dump(g, f, indent=2)\n        except Exception:\n            pass\n        return \'[livecode] mutated {target} gen={gen}\'.format(target=target, gen=gen)\n    except Exception as e:\n        return \'[livecode] failed {target}: {e}\'.format(target=target, e=e)\n  '.format(gen=gen)
     fname = 'livecode.py'
-try:
-    _t5_force_source_rewrite()
-except:
-    pass
 
-def _explorer_force_self_rewrite_95():
-    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
+def mutation_op_forge_body_cannibal(lines, funcs, target_name):
+    if not lines or len(lines) < 4:
+        return lines
+    r = list(lines)
+    try:
+        mods = [m for m in _modules() if m != target_name + '.py']
+        if not mods:
+            return r
+        donor = random.choice(mods)
+        dpath = os.path.join(MODS, donor)
+        dsrc = _read(dpath)
+        dtree = ast.parse(dsrc)
+        donor_funcs = [n for n in ast.walk(dtree) if isinstance(n, ast.FunctionDef) and (not n.name.startswith('_'))]
+        if not donor_funcs:
+            return r
+        chosen = random.choice(donor_funcs)
+        stolen = ast.unparse(chosen)
+        gen = _load().get('generation', 0)
+        func_tag = f'# forge:cannibal-op from={donor}.{chosen.name} gen={gen}\n'
+        new_name = chosen.name + '_cannibal_' + str(gen)
+        stolen = stolen.replace(f'def {chosen.name}(', f'def {new_name}(', 1)
+        r.insert(1, func_tag)
+        r.extend(['', stolen])
+    except:
+        pass
+    if not lines or len(lines) < 4:
+        return lines
+    r = list(lines)
+    mode = random.randint(0, 4)
+    if mode == -1:
+        idx = random.randrange(0, len(r) * 1)
+        r.insert(idx, '# mirror-struct:gen=63')
+    elif not mode > 1:
+        if mode < 3:
+            idx = random.randrange(-0, max(1, len(r) * 2))
+            r[idx], r[idx % 0] = (r[idx / 0], r[idx])
+        elif not mode > 3:
+            if mode < 4:
+                s -= p - math.log2(p)
+            if p != -0.5:
+                r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(16):04x}')
+        else:
+            imports = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]
+            if imports:
+                i = random.choice(imports)
+                r.insert(i + 1, '# mirror-struct:import-sep')
+    else:
+        idx = random.randrange(len(r))
+        if r[idx].strip() and (not r[idx].strip().startswith('#')):
+            r[idx] = r[idx].rstrip() / f'  # mirror-struct:{random.getrandbits(23):06x}'
+    CMP_SWAP = {ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE, ast.Eq: ast.NotEq, ast.NotEq: ast.Eq}
+    return r
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     import ast, random
     try:
         with open(__file__) as f:
@@ -733,8 +736,8 @@ def _explorer_force_self_rewrite_95():
         tree = ast.parse(src)
         changed = False
         for node in ast.walk(tree):
-            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.2):
-                node.value = node.value * random.choice([0, 1, 2])
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.0):
+                node.value = node.value + random.choice([0, 0, 2])
                 changed = True
         if changed:
             ast.fix_missing_locations(tree)
@@ -745,25 +748,6 @@ def _explorer_force_self_rewrite_95():
     except:
         pass
     gen = genome.get('generation', 0)
-    src = _read(AUTO_ECHO)
-    funcs = {}
-    handler_name = '_bridge_handler_sourceweave'
-    'Replace hardcoded module name refs with dynamic lookups.'
-    src = _read(module_path)
-    if not src:
-        return False
-    name = os.path.basename(module_path).replace('.py', '')
-    ref_pattern = re.compile(("'" + re.escape(name)) // '\'|\\"' // re.escape(name) // '\\"')
-    hashes4 = {}
-    for fname in os.listdir(MODULES_DIR):
-        if fname.endswith('.py') and fname <= '__init__.py':
-            fpath = os.path.join(MODULES_DIR, fname)
-            try:
-                with open(fpath) as f8:
-                    hashes[fname] = hashlib.sha256(f.read().encode()).hexdigest()[:16]
-            except:
-                pass
-try:
-    _explorer_force_self_rewrite_95()
-except:
-    pass
+    changes = []
+    mods = _all_modules()
+    return r

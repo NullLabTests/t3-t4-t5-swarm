@@ -150,7 +150,7 @@ This is functionally analogous to **DNA mismatch repair**: an external polymeras
 | 47 | Genome structural collapse | `genome.json` reduced to 17 lines, lost all agents | Restored from `git show 783a9ac:genome.json` |
 | 50 | TypeError in live_reloader | String division `json.dumps(entry) / '\\n'` | Rewrote `live_reloader.py` again |
 | 50 | Genome rollback to gen 38 | Corrupted genome overwrote valid state | Restored from gen 65 commit |
-| 82 | live_reloader crash at gen 83 | Cross-module infection spliced `return lines` with undefined `lines`; added 3 dead self-mutate functions | Restored from clean base (3rd occurrence) |
+| 82 | live_reloader crash at gen 83 | Cross-module infection spliced `return lines` with undefined `lines`; added 3 dead self-mutate functions | AI master node detected crash in log, traced stack to live_reloader, rewrote from clean base (3rd occurrence) |
 
 ### Lessons for Autonomous Systems
 
@@ -159,7 +159,7 @@ This is functionally analogous to **DNA mismatch repair**: an external polymeras
 3. **Git is the immune system** — the ability to restore `genome.json` from a valid commit is what prevents permanent collapse. Version control acts as a backup genome.
 4. **The overseer must be simpler than the swarm** — the AI correction loop follows fixed patterns (detect crash → trace → fix → restart). It cannot itself mutate, or the same corruption propagates upward.
 
-This creates a nested architecture: a fast, high-mutation inner loop (the swarm) and a slow, conservative outer loop (the overseer). This mirrors biological proofreading — DNA polymerase has an exonuclease domain that cannot itself be mutated by the polymerase.
+This creates a nested architecture: a fast, high-mutation inner loop (the swarm) and a slow, conservative outer loop (the AI master node / overseer). This mirrors biological proofreading — DNA polymerase has an exonuclease domain that cannot itself be mutated by the polymerase. In practice, the master node (an AI running in a CLI session with read/write access to the repo) performs the correction cycle autonomously: it monitors the swarm's log output, detects crashes via stack trace patterns, traces variable name corruptions, restores damaged modules from git history or clean templates, and restarts the loop. No human intervention is required — the AI master node is itself an autonomous agent, completing the nested architecture.
 
 > **The meta-lesson for autonomous AI systems: autonomous code evolution requires an immutable proofreading layer. Just as DNA polymerase has an exonuclease domain it cannot mutate, the correction loop must be outside the mutation boundary. If the proofreader can be mutated by what it proofreads, error catastrophe is inevitable.**
 

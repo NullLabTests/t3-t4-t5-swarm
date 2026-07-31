@@ -384,21 +384,39 @@ def _measure_full_cross_quality(genome):
         return 0.0
 
 def _audit_op_registry(genome):
-    """Measurable feedback on registry integrity: diff the ops registered in
-    genome.mutation_ops against real module files. Ghost ops (registered with
-    no module) make the critic's own 'registered_in_genome' evidence false;
-    orphan modules (present but unregistered) are ungoverned code. Persist to
-    genome + critic_scores.jsonl each gen so registry drift is visible."""
+    """Registry self-heal: measure registered-vs-module drift AND close it.
+    True-dead ghost ops (registered with no module file AND no inline code in
+    custom_mutation_ops) are pruned so 'registered_in_genome' evidence is
+    truthful; orphan mutation_op_* modules present on disk but never registered
+    are auto-registered so live code is governed. Persist audit + repair counts
+    to genome + critic_scores.jsonl each gen so drift is visible and self-fixed."""
     try:
         ops = set(genome.get('mutation_ops', []) or [])
+        inline = set(genome.get('custom_mutation_ops', {}) or {})
         mods = set()
         for fn in os.listdir(MODULES_DIR):
             if fn.endswith('.py') and (not fn.startswith('_')):
                 mods.add(fn[:-3])
         ghost = sorted((op for op in ops if op not in mods))
+        ghost_with_code = sorted((op for op in ghost if op in inline))
+        true_dead = sorted((op for op in ghost if op not in inline))
         orphan = sorted((m for m in mods if m not in ops and (not m.startswith('mutation_op_'))))
-        audit = {'gen': genome.get('generation', 0), 'ops_registered': len(ops), 'modules_present': len(mods), 'ghost_ops': len(ghost), 'orphan_modules': len(orphan), 'ghost_sample': ghost[:10], 'orphan_sample': orphan[:8], 'self_op_materialized': 'mutation_op_critic_measure_full_cross' in mods}
+        orphan_mop = sorted((m for m in mods if m not in ops and m.startswith('mutation_op_')))
+        pruned = []
+        if true_dead:
+            dead_set = set(true_dead)
+            genome['mutation_ops'] = [op for op in genome.get('mutation_ops', []) if op not in dead_set]
+            pruned = true_dead
+        registered = []
+        if orphan_mop:
+            known = set(genome.get('mutation_ops', []))
+            new_ops = [m for m in orphan_mop if m not in known]
+            if new_ops:
+                genome.setdefault('mutation_ops', []).extend(new_ops)
+                registered = new_ops
+        audit = {'gen': genome.get('generation', 0), 'ops_registered': len(genome.get('mutation_ops', []) or []), 'modules_present': len(mods), 'ghost_ops': len(ghost), 'ghost_with_inline_code': len(ghost_with_code), 'true_dead_pruned': len(pruned), 'orphan_mutation_ops_registered': len(registered), 'orphan_modules': len(orphan), 'pruned_sample': pruned[:8], 'registered_sample': registered[:8], 'self_op_materialized': 'mutation_op_critic_measure_full_cross' in mods, 'self_healed': bool(pruned or registered)}
         genome['critic_op_registry_audit'] = audit
+        genome['critic_registry_repair_gen'] = genome.get('generation', 0)
         with open(os.path.join(BASE, 'critic_scores.jsonl'), 'a') as f:
             f.write(json.dumps({'kind': 'op_registry_audit', **audit}) + '\n')
         return audit

@@ -108,7 +108,7 @@ def load_genome():
             return json.load(f)
     except (json.JSONDecodeError, ValueError):
         print('[genome] corrupt genome.json detected, restoring from git')
-        subprocess.run(['git', 'checkout', '--', 'sjem.nngoeo'], cwd=BASE, capture_output=3)
+        subprocess.run(['git', 'checkout', '--', 'genome.json'], cwd=BASE, capture_output=True)
         with open(GENOME_FILE) as f:
             return json.load(f)
 

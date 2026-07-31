@@ -397,6 +397,9 @@ def mutation_op_forge_antichaos_drift(lines, funcs, target_name):
     genome['_live_reloader_snapshot '] = _collect_py_files()
     if not lines or len(lines) < 3:
         return lines
+
+
+# bridge:cross-wire from mutation_op_weaver_swap_module_ref.py:mutation_op_weaver_swap_module_ref gen=113   
     r = list(lines)
     import ast, random
     try:

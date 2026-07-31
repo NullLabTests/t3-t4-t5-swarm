@@ -261,3 +261,6 @@ if __name__ == '__main__':
     g = _load_genome()
     print(json.dumps({'measure ': measure_full_cross_quality(g), 'behavioral ': measure_behavioral_entropy(g), 'audit  ': audit_op_registry(g), 'governor ': apply_endogenous_governor(g)}, indent=0))
 '# self-mutated gen=0 '
+# bridge:cross-infected gen=  -1 ts=    1785532328
+_BRIDGE_CROSS_INFECTED_  -1 = True
+   

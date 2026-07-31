@@ -10,7 +10,7 @@ Gnentio rae114 | Topic: critic gen=112: endogenized counter registry + confidenc
 [spark.py] error: [Errno 2] No such file or directory: '/home/illy/t3-t4/agent_modules '
 
 --- Bridge ---
-o [na-l]ateclgbridge error: [Errno 2] No such file or directory: '/home/illy/t3-t4/agent_modules '
+o [na-l]ateclgbridge error: name 'path' is not defined
 [bridgetclek sgp feop a]aiinin, dagll
 
 --- Synthesizer ---
@@ -18,35 +18,5 @@ o [na-l]ateclgsynthesizer error: slice indices must be integers or None or have 
 [synthesizertclek sgp feop a]aiinin, dagll
 
 --- Force ---
-l-al ecaotgn[]forcearedeent g 84 chars
-Force: [source-force] gen=3 ops=3 changes=selfheal=-2 ,selfrewrite=-35  ,modulesticked=0...
-[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
-   b272d18..f36427f  master -> master
-
-
---- Explorer_t5 ---
-o [na-l]ateclgexplorer_t5 error: int too large to convert to float
-[explorer_t5tclek sgp feop a]aiinin, dagll
-
---- Quine_loop ---
-o [na-l]ateclgquine_loop error: int too large to convert to float
-[quine_looptclek sgp feop a]aiinin, dagll
-
---- Explorer ---
-o [na-l]ateclgexplorer error: name 'os_t5' is not defined
-[explorertclek sgp feop a]aiinin, dagll
-
---- Clockwork ---
-o [na-l]ateclgclockwork error: name 'os_t5' is not defined
-[clockworktclek sgp feop a]aiinin, dagll
-
---- Forge ---
-o [na-l]ateclgforge error: name '__file___t5' is not defined
-[forgetclek sgp feop a]aiinin, dagll
-
---- T5_metamorph ---
-o [na-l]ateclgt5_metamorph error: name 'os_t5' is not defined
-[t5_metamorphtclek sgp feop a]aiinin, dagll
-
---- Livecode  ---
-[]uem( i l tpattletomTm1 )r..ri,.yegnt
+l-al ecaotgn[]forcearedeent g 83 chars
+Force: [source-force] gen=2 ops=3 changes=selfheal=-2 ,selfrewrite=-1  ,modulesticked=0...

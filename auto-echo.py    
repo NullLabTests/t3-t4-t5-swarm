@@ -1,0 +1,99 @@
+
+
+
+# bridge:livecode handler gen=0
+def _bridge_handler_livecode(abs_path, genome):
+    try:
+        with open(abs_path) as f:
+            content = f.read()
+        local_ns = {'genome': genome, 'BASE': BASE, 'MOD': MOD, 'random': random}
+        exec(compile(content, abs_path, 'exec'), local_ns)
+        genome['livecode_count'] = genome.get('livecode_count', 0) + 1
+        save_genome(genome)
+        print('[bridge-livecode] executed ' + os.path.basename(abs_path))
+        return True
+    except Exception as e:
+        print('[bridge-livecode] failed ' + os.path.basename(abs_path) + ': ' + str(e))
+        return False
+
+# bridge:autoload handler gen=0
+def _bridge_handler_autoload(abs_path, genome):
+    try:
+        with open(abs_path) as f:
+            content = f.read()
+        mod_name = 'live_' + os.path.basename(abs_path).replace('.', '_')
+        local_ns = {'genome': genome, 'BASE': BASE}
+        exec(compile(content, abs_path, 'exec'), local_ns)
+        if 'run' in local_ns:
+            result = local_ns['run'](genome)
+            print('[bridge-autoload] ' + mod_name + '.run() -> ' + str(result)[:80])
+            return True
+        print('[bridge-autoload] ' + mod_name + ' loaded but no run()')
+        return False
+    except Exception as e:
+        print('[bridge-autoload] failed: ' + str(e))
+        return False
+
+# bridge:selfrep handler gen=0
+def _bridge_handler_selfrep(abs_path, genome):
+    try:
+        with open(abs_path) as f:
+            content = f.read()
+        if 'self_mutate' not in content:
+            content = 'from self_mutate import self_mutate\nself_mutate(__file__)\n' + content
+            with open(abs_path, 'w') as f:
+                f.write(content)
+            print('[bridge-selfrep] injected self_mutate into ' + os.path.basename(abs_path))
+            return True
+        return False
+    except Exception as e:
+        print('[bridge-selfrep] failed: ' + str(e))
+        return False
+
+# bridge:rewrite handler gen=0
+def _bridge_handler_rewrite(abs_path, genome):
+    try:
+        with open(abs_path) as f:
+            content = f.read()
+        lines = content.split('\n')
+        func_starts = [i for i, l in enumerate(lines) if re.match(r'^\s*def\s+\w+\s*\(', l)]
+        if not func_starts:
+            return False
+        idx = random.choice(func_starts)
+        indent = len(lines[idx]) - len(lines[idx].lstrip())
+        comment = "# bridge:rewrite gen=0".format(gen=genome.get('generation', 0))
+        lines.insert(idx + 1, ' ' * indent + comment)
+        with open(abs_path, 'w') as f:
+            f.write('\n'.join(lines))
+        print('[bridge-rewrite] injected marker into ' + os.path.basename(abs_path) + ' at func line ' + str(idx))
+        return True
+    except Exception as e:
+        print('[bridge-rewrite] failed: ' + str(e))
+        return False
+   
+
+# bridge:genforce handler gen=   0
+def _bridge_handler_genforce(abs_path, genome):
+    try:
+        with open(abs_path) as f:
+            content = f.read()
+        lines = content.split(chr(10))
+        if len(lines) < 3:
+            return False
+        idx = random.randrange(1, len(lines))
+        ts = int(time.time())
+        marker = "# bridge:genforce forced gen=  0 ts=" + str(ts)
+        lines.insert(idx, marker)
+        new_content = chr(10).join(lines)
+        try:
+            ast.parse(new_content)
+        except SyntaxError:
+            return False
+        with open(abs_path, "w") as f:
+            f.write(new_content)
+        genome["genforce_count"] = genome.get("genforce_count", 0) + 1
+        _save_genome(genome)
+        return True
+    except Exception:
+        return False
+    

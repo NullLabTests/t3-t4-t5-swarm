@@ -409,7 +409,85 @@ def _mutation_op_critic_fix_scoring(genome):
             genome['critic_last_fix_gen'] = gen
             return 'critic_fix_scoring: ' + choice[:45]
     return ''
+
+def _substance_scorer():
+    path = SELF_PATH
+    src = _read(path)
+    if not src:
+        return {}
+    scores = {}
+    mods = _all_modules()
+    for m in mods:
+        mpath = os.path.join(MODULES_DIR, m)
+        cs = _read(mpath)
+        if not cs:
+            scores[m] = 2.0
+            continue
+        lines = cs.split('\n')
+        nlines = len(lines)
+        nfuncs = cs.count('def ') + cs.count('async def ')
+        nimports = cs.count('import ') + cs.count('from ')
+        nloops = cs.count('for ') + cs.count('while ')
+        nconditions = cs.count('if ') + cs.count('elif ') + cs.count('else:')
+        ast_ok = _valid_py(cs)
+        base = 3.0
+        if nlines > 50:
+            base += 1.5
+        if nlines > 200:
+            base += 1.5
+        if nfuncs >= 5:
+            base += 1.5
+        if nfuncs >= 15:
+            base += 1.0
+        if nimports >= 3:
+            base += 0.5
+        if nloops >= 3:
+            base += 0.5
+        if nconditions >= 5:
+            base += 0.5
+        if not ast_ok:
+            base -= 3.0
+        if m.startswith('mutation_op_') and nlines < 30:
+            base = max(3.0, base - 1.0)
+        base = min(10.0, max(0.5, base))
+        scores[m] = round(base, 1)
+    return scores
+
+def _apply_substance_scores(gen):
+    ss = _substance_scorer()
+    gpath = GENOME_FILE
+    gen_raw = _read(gpath)
+    if not gen_raw:
+        return
+    try:
+        genome = json.loads(gen_raw)
+    except Exception:
+        return
+    agents_list = genome.get('agents', [])
+    for a in agents_list:
+        mod = a.get('module', '')
+        if mod in ss:
+            a['substance_score'] = ss[mod]
+            a['score'] = min(10.0, max(0.5, (a.get('score', 5.0) + ss[mod]) / 2))
+    genome['generation'] = gen
+    genome['critic_last_substance_gen'] = gen
+    history = genome.get('history', [])
+    entry = {
+        'generation': gen,
+        'scores': {a['id']: a['score'] for a in agents_list},
+        'average': round(sum(a['score'] for a in agents_list) / max(len(agents_list), 1), 1),
+        'mutation': 'critic_substance_scorer_gen' + str(gen)
+    }
+    history.append(entry)
+    genome['history'] = history
+    _write(gpath, json.dumps(genome, indent=2))
+    return True
+
 try:
     _mutation_op_critic_fix_scoring({'generation': 80})
+except Exception:
+    pass
+try:
+    _apply_substance_scores(82)
 except Exception:
     pass

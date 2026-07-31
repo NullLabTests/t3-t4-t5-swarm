@@ -1,5 +1,5 @@
 {
-  "generation": 65,
+  "generation": 82,
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
@@ -122,7 +122,8 @@
     "mutation_op_explorer_autoecho_boot",
     "mutation_op_clockwork_xbreed_gen65_ad95",
     "mutation_op_sf_param_drift_65",
-    "mutation_op_critic_fix_scoring"
+    "mutation_op_critic_fix_scoring",
+    "critic_substance_scorer"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -359,57 +360,65 @@
       "id": "explorer",
       "name": "Explorer",
       "module": "explorer.py",
-      "score": 5.0,
-      "prompt": "generate novel modules and contaminate across modules"
+      "score": 7.5,
+      "prompt": "generate novel modules and contaminate across modules",
+      "substance_score": 10.0
     },
     {
       "id": "critic",
       "name": "Critic",
       "module": "critic.py",
-      "score": 8.0,
-      "prompt": "score agent contributions based on git commit stats; self-heals scoring bugs every gen"
+      "score": 9.0,
+      "prompt": "score agent contributions based on git commit stats; self-heals scoring bugs every gen",
+      "substance_score": 10.0
     },
     {
       "id": "clockwork",
       "name": "Clockwork",
       "module": "clockwork.py",
-      "score": 5.5,
-      "prompt": "temporal scheduling and self-mutation"
+      "score": 7.75,
+      "prompt": "temporal scheduling and self-mutation",
+      "substance_score": 10.0
     },
     {
       "id": "bridge",
       "name": "Bridge",
       "module": "bridge.py",
-      "score": 5.0,
-      "prompt": "register new bridge types and file extension handlers"
+      "score": 7.5,
+      "prompt": "register new bridge types and file extension handlers",
+      "substance_score": 10.0
     },
     {
       "id": "quine_loop",
       "name": "QuineLoop",
       "module": "quine_loop.py",
-      "score": 9.0,
-      "prompt": "cross-module run() splicing \u2014 pull function bodies from peer modules into each target's run(), self-mutate, never skip self"
+      "score": 9.5,
+      "prompt": "cross-module run() splicing \u2014 pull function bodies from peer modules into each target's run(), self-mutate, never skip self",
+      "substance_score": 10.0
     },
     {
       "id": "force",
       "name": "Force",
       "module": "source_force.py",
-      "score": 6.5,
-      "prompt": "AST-level self-rewriting quine: force every module to rewrite itself every gen"
+      "score": 8.25,
+      "prompt": "AST-level self-rewriting quine: force every module to rewrite itself every gen",
+      "substance_score": 10.0
     },
     {
       "id": "synthesizer",
       "name": "Synthesizer",
       "module": "synthesizer.py",
-      "score": 6.0,
-      "prompt": "merge proposals, cross-wire modules, synthesize code from proposals, rewrite control flow, spawn new modules"
+      "score": 8.0,
+      "prompt": "merge proposals, cross-wire modules, synthesize code from proposals, rewrite control flow, spawn new modules",
+      "substance_score": 10.0
     },
     {
       "id": "forge",
       "name": "Forge",
       "module": "forge.py",
-      "score": 6.0,
-      "prompt": "inject chaos into selection weights, force source mutation every gen"
+      "score": 8.0,
+      "prompt": "inject chaos into selection weights, force source mutation every gen",
+      "substance_score": 10.0
     }
   ],
   "history": [
@@ -689,6 +698,21 @@
       },
       "average": 9.0,
       "mutation": "quine_loop gen=57: replaced AST-operator-swap quine with cross-module run() splicing \u2014 pulls random function bodies from peer modules into target's run(), self-mutates constants, no longer skips itself. Added mutation_op_quine_cross_splice."
+    },
+    {
+      "generation": 82,
+      "scores": {
+        "explorer": 7.5,
+        "critic": 9.0,
+        "clockwork": 7.75,
+        "bridge": 7.5,
+        "quine_loop": 9.5,
+        "force": 8.25,
+        "synthesizer": 8.0,
+        "forge": 8.0
+      },
+      "average": 8.2,
+      "mutation": "critic_substance_scorer_gen82"
     }
   ],
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",
@@ -2039,8 +2063,8 @@
     "ops"
   ],
   "_explorer_thermometer": {
-  "generation": 81,
-  "critic_last_fix_gen": 81,
+    "generation": 81,
+    "critic_last_fix_gen": 81,
     "cross_contaminations": 68,
     "rewrite_chain": 72,
     "stale_rewrites": 69,
@@ -2400,5 +2424,6 @@
     "gen": 66,
     "value": 0.4944390806364397,
     "active": true
-  }
+  },
+  "critic_last_substance_gen": 82
 }

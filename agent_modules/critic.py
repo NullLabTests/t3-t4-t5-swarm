@@ -161,7 +161,7 @@ def score_all(gen=0, genome=None):
         n_commits = len(commits)
         new_files = new_files_for_agent(key, base_ref)
         net = added - removed
-        impact = net + added + removed // 4
+        impact = max(net, removed) + int(added * 1.5)
         if n_commits < 5:
             base_score = 0.0
         else:
@@ -201,7 +201,7 @@ def _rewrite_scoring_formula(genome):
         gen = genome.get('generation', 0)
         rate = genome.get('mutation_rate', 0.0)
         if random.random() > rate:
-            old_impact = 'impact = net + added + removed // 4'
+            old_impact = 'impact = max(net, removed) + int(added * 1.5)'
             new_forms = ['impact = max(net, removed) + added', 'impact = net + added // 3 + removed // 3', 'impact = max(net * 2, removed) + added // 2', 'impact = max(net, removed) + added // 4 + new_files * 10', 'impact = net * 2 + added + removed // 2', 'impact = max(net, removed) + int(added * 1.5)']
             choice = random.choice(new_forms)
             if old_impact in content:
@@ -300,8 +300,11 @@ def _audit_op_registry(genome):
     """Registry self-heal: measure registered-vs-module drift AND close it.
     True-dead ghost ops are pruned; orphan mutation_op_* modules are
     auto-registered. Drift drives an ENDOGENOUS selection_entropy governor:
-    novelty pressure moves toward the ungoverned-emergent-module ratio each gen,
-    making exploration a function of the swarm's own measured self-generation."""
+    novelty pressure = ghost_ratio + emergent_ratio (registered ops with no
+    module + ungoverned emergent modules), making exploration a function of the
+    swarm's own measured registry drift instead of a fixed constant. Ghost ops
+    that still carry inline code count as drift because they are registered but
+    ungoverned by any module."""
     try:
         ops = set(genome.get('mutation_ops', []) or [])
         inline = set(genome.get('custom_mutation_ops', {}) or {})
@@ -326,15 +329,18 @@ def _audit_op_registry(genome):
         audit = {'gen': genome.get('generation', 0), 'ops_registered': len(genome.get('mutation_ops', []) or []), 'modules_present': len(mods), 'ghost_ops': len(ghost), 'ghost_with_inline_code': len(ghost_with_code), 'true_dead_pruned': len(pruned), 'orphan_mutation_ops_registered': len(registered), 'orphan_modules': len(orphan), 'pruned_sample': pruned[:8], 'registered_sample': registered[:8], 'self_op_materialized': 'mutation_op_critic_measure_full_cross' in mods, 'self_healed': bool(pruned or registered)}
         drift_ops = len(ghost) + len(orphan_mop)
         emergent_ratio = len(orphan_mop) / max(len(mods), 1)
+        ghost_ratio = len(ghost) / max(len(ops), 1)
+        novelty_pressure = min(1.0, ghost_ratio + emergent_ratio)
         entropy_before = genome.get('selection_entropy', 0.0)
         entropy_before = entropy_before if isinstance(entropy_before, (int, float)) else 0.0
-        entropy_target = round(min(0.25, emergent_ratio), 3)
+        entropy_target = round(min(0.25, novelty_pressure), 3)
         entropy_after = round(entropy_before + (entropy_target - entropy_before) * 0.2, 4)
         entropy_after = round(min(0.5, max(0.0, entropy_after)), 5)
         genome['selection_entropy'] = entropy_after
-        endogenous = {'before': entropy_before, 'after': entropy_after, 'target': entropy_target, 'drift_ops': drift_ops, 'emergent_ratio': round(emergent_ratio, 4)}
+        endogenous = {'before': entropy_before, 'after': entropy_after, 'target': entropy_target, 'drift_ops': drift_ops, 'ghost_ratio': round(ghost_ratio, 4), 'emergent_ratio': round(emergent_ratio, 4), 'novelty_pressure': round(novelty_pressure, 4)}
         audit['drift_ops'] = drift_ops
         audit['emergent_ratio'] = endogenous['emergent_ratio']
+        audit['novelty_pressure'] = endogenous['novelty_pressure']
         audit['endogenous_selection_entropy'] = endogenous
         genome['critic_endogenous_selection_entropy'] = endogenous
         genome['critic_op_registry_audit'] = audit
@@ -507,4 +513,4 @@ if __name__ == '__main__':
     result = run({'generation': 104})
     print(json.dumps(result, indent=4))
 
-# critic self-mod gen=105 hash=-7886120527648851099
+# critic self-mod gen=104 hash=9062721915257617739

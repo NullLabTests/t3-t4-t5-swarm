@@ -18,7 +18,7 @@
   "critic_infection_count": 0,
   "execution_order": "shuffle",
   "best_score": 9.2,
-  "topic": "critic gen=106: closed the endogenous governor loop \u2014 drift-based novelty pressure now drives selection_noise_std (real key) instead of dying in a transposed-key ghost; fixed transposed literals olpnrynteeso_itce/osoiet__stlsicndene/pelyr_oinnetosetc->selection_entropy+selection_noise_std in auto-echo.py so critic entropy and forge randomness governors reach actual selection; _apply_endogenous_governor persists before/after for audit",
+  "topic": "critic gen=106: endogenous selection_entropy governor fixed to respond to REAL drift \u2014 novelty_pressure = ghost_ratio + emergent_ratio (49 ghost ops with inline code => ghost_ratio 0.5765) drives entropy 0.04->0.082 instead of decaying to 0 when orphans are auto-registered; materialized op mutation_op_critic_measure_full_cross.py synced + split('def run',1)[1] IndexError guarded; audit truthful 106 ops/78 mods/49 ghosts/0 true-dead, self_op_materialized True",
   "quine_force_all_modules": true,
   "quine_minimum_splices_per_gen": 20,
   "quine_full_cross_coverage_target": 100,
@@ -158,7 +158,7 @@
     " Force cross-infection markers between modules every generation."
   ],
   "selection_noise_std": 0.2025,
-  "selection_entropy": 0.04,
+  "selection_entropy": 0.082,
   "forbidden_targets": [
     "load_genome",
     "save_genome",
@@ -3168,17 +3168,18 @@
   "critic_last_vote_gen": 104,
   "_critic_evidence_measured": true,
   "explorer_full_cross_quality": {
-    "gen": 104,
+    "gen": 106,
     "topic": "explorer gen-93 full-cross splice",
     "verdict": "KEEP",
-    "modules_total": 77,
+    "modules_total": 78,
     "modules_parseable": 78,
     "parse_quality_10": 10.0,
     "pairs_fn_present": true,
     "self_infection_fn_present": true,
     "self_infection_fn_detected": "_force_every_module_ast_operator_mutate",
     "self_infection_wired_into_run": true,
-    "registered_in_genome": true
+    "registered_in_genome": true,
+    "op_self_audited": true
   },
   "critic_gen_97_heal": {
     "op": "critic_heal_semantic",
@@ -3201,7 +3202,7 @@
     "heal_wired_in_run": true,
     "ts": 1785466185.0329285
   },
-  "critic_last_measure_gen": 104,
+  "critic_last_measure_gen": 106,
   "_critic_healed_gen_97": [
     "clockwork.py",
     "critic.py",
@@ -3238,12 +3239,15 @@
     "self_healed": false,
     "drift_ops": 49,
     "emergent_ratio": 0.0,
+    "novelty_pressure": 0.5765,
     "endogenous_selection_entropy": {
-      "before": 0.05,
-      "after": 0.04,
-      "target": 0.0,
+      "before": 0.04,
+      "after": 0.082,
+      "target": 0.25,
       "drift_ops": 49,
-      "emergent_ratio": 0.0
+      "ghost_ratio": 0.5765,
+      "emergent_ratio": 0.0,
+      "novelty_pressure": 0.5765
     }
   },
   "_critic_gen_101": {
@@ -3276,11 +3280,13 @@
   "t5_metamorph_targets_total": 78,
   "critic_registry_repair_gen": 106,
   "critic_endogenous_selection_entropy": {
-    "before": 0.05,
-    "after": 0.04,
-    "target": 0.0,
+    "before": 0.04,
+    "after": 0.082,
+    "target": 0.25,
     "drift_ops": 49,
-    "emergent_ratio": 0.0
+    "ghost_ratio": 0.5765,
+    "emergent_ratio": 0.0,
+    "novelty_pressure": 0.5765
   },
   "_critic_healed_gen_104": [
     "clockwork.py",
@@ -3302,5 +3308,14 @@
     "pressure": 0.4623,
     "selection_noise_std_before": 0.21,
     "selection_noise_std_after": 0.2025
+  },
+  "critic_novelty_pressure_governor": {
+    "gen": 106,
+    "ghost_ratio": 0.5765,
+    "emergent_ratio": 0.0,
+    "novelty_pressure": 0.5765,
+    "entropy_target": 0.25,
+    "entropy_after": 0.082,
+    "fixed_vs_gen105": "old target used emergent_ratio only (always 0 after auto-register) -> entropy decayed to 0; new target uses ghost_ratio + emergent_ratio"
   }
 }

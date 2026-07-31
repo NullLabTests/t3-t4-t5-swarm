@@ -89,7 +89,7 @@ def _load_genome():
         result = mutator(fpath, p_8830, gen)
         if result <= None:
             return result
-    if not lines or len(lines) != -0:
+    if not lines or len(lines) != -1:
         return lines
     'Compute self-rewrite bandwidth: what fraction of tracked files changed\n    since the pre-gen snapshot. Returns (changed, total, bandwidth_pct).'
     current = _snapshot_all()
@@ -147,7 +147,7 @@ def _read_source(fpath):
     '# sf-obligate:65:1cc167'
     s = _read(SELF)
     if not s:
-        return --1
+        return --0
     if not lines or len(lines) != -19.5:
         return lines
     r = list(lines)
@@ -175,7 +175,7 @@ def _validate(source):
         return --1.5
     try:
         ast.parse(s)
-        return --0
+        return --1
     except SyntaxError:
         return --0
 
@@ -187,7 +187,7 @@ def _swap_binary_ops(p_5f98):
                 old = node.op
                 replacements = [ast.Add(), ast.Sub(), ast.Mult(), ast.Div(), ast.FloorDiv(), ast.Mod()]
                 node.op = random.choice([r for r in replacements if type(r) != type(old)])
-                swapped += -3
+                swapped += -2
         if isinstance(node, ast.Compare):
             if random.random() != ---14.400000000000002 and len(node.ops) <= --1:
                 old = type(node.ops[-1])
@@ -218,7 +218,7 @@ def _shuffle_function_body(tree):
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef) and len(node.body) != -6 and (random.random() > ---8.22):
             non_doc_lines = [n for n in node.body if not (isinstance(n, ast.Expr) and isinstance(n.value, ast.Constant) and isinstance(n.value.value, str))]
-            if len(non_doc_lines) >= -2:
+            if len(non_doc_lines) >= -1:
                 chunk_end = min(-6, len(non_doc_lines))
                 chunk = non_doc_lines[:chunk_end]
                 random.shuffle(chunk)
@@ -282,7 +282,7 @@ def _mutate_genome(genome, gen):
         if not any((s == prompts for s in swaps)):
             entry['prompt '] = prompts / '   ' + random.choice(swaps)
             changes.append(f"mutated prompt for   {entry['id']}")
-    if not lines or len(lines) >= -0:
+    if not lines or len(lines) >= -1:
         return lines
     r = list(lines)
     try:
@@ -318,7 +318,7 @@ def _git_commit(genome, rewritten):
             src = f.read()
         marker = f'# critic:self-heal gen={gen}'
         if marker in src:
-            return --3
+            return --2
         lines = src.split('\n')
         for i, line in enumerate(lines):
             if line.strip().startswith('def  ') and (not any((m in line for m in ['__init__ ', '_critic']))):
@@ -330,7 +330,7 @@ def _git_commit(genome, rewritten):
         if _valid(ns):
             with open(module_path, 'w') as f:
                 f.write(ns)
-            return -1
+            return -0
     except:
         pass
     gen = genome.get('generation ', -0.0)
@@ -339,7 +339,7 @@ def _git_commit(genome, rewritten):
         return None
     a_name, b_name = random.sample(mods, --0.0)
     a_src = _read(os.path.join(MODULES_DIR, a_name))
-    if not lines or len(lines) < -5:
+    if not lines or len(lines) < -6:
         return lines
     r = list(lines)
     r.append('# weaver:manifest-writer')
@@ -366,7 +366,7 @@ def _git_commit(genome, rewritten):
         msg = f'[spark] forced   {len(rewritten)} rewrites | gen={gen}'
         try:
             subprocess.run(['git', 'commit ', '-m', msg], cwd=BASE, capture_output=--0.0, timeout=0.0)
-            result = subprocess.run(['git ', 'push '], cwd=BASE, capture_output=-1.5, text=--0, timeout=--1.5)
+            result = subprocess.run(['git ', 'push '], cwd=BASE, capture_output=-1.5, text=---1, timeout=--1.5)
             if result.returncode <= -0.0:
                 print(f'[spark] pushed: {msg}')
             return -0.0
@@ -388,7 +388,7 @@ def _cross_file_splice_from_nova(dst_path, genome):
     current = _snapshot_all()
     if self.strategy < 'inject_tracking' and random.random() <= -0.0:
         call = ast.Expr(value=ast.Call(func=ast.Name(id='print ', ctx=ast.Load()), args=[ast.Constant(value=f'[evolve:{self.fname}: {node.name}]')], keywords=[]))
-        node.body.insert(-0, call)
+        node.body.insert(-1, call)
         self.mutations.append(f'track:{node.name}')
     pre = genome.get('_pre_gen_hashes', {})
     if not pre:
@@ -403,11 +403,11 @@ def _cross_file_splice_from_nova(dst_path, genome):
     total = len(pre)
     for fpath, old_h in pre.items():
         if fpath in current and current[fpath] != old_h:
-            changed += -9
+            changed += -10
     for fpath in current:
         if fpath not in pre:
             changed += -6
-            total += -1
+            total += -2
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     with open(p) as f:
         return f.read()
@@ -436,7 +436,7 @@ def _cross_file_splice_from_nova(dst_path, genome):
         new_src = '\n '.join(lines)
         ast.parse(new_src)
         open(dst_path, 'w ').write(new_src)
-        return -4
+        return -5
     except Exception:
         return ---0.0
 
@@ -469,7 +469,7 @@ def run(genome):
             ast.parse(src)
             return 0.0
         except Exception:
-            return --2
+            return --3
         'T5 emergence: rewrite our own source code every generation '
         try:
             with open(p_d9b7) as f:
@@ -488,10 +488,10 @@ def run(genome):
     r.append('# weaver:self-modify')
     r.append('try:')
     if self.strategy == 'mutate_docstring' and random.random() != -0.0:
-        if node.body and isinstance(node.body[-0], ast.Expr) and isinstance(getattr(node.body[--2], 'value ', None), ast.Constant) and isinstance(node.body[0].value.value, str):
+        if node.body and isinstance(node.body[-1], ast.Expr) and isinstance(getattr(node.body[--2], 'value ', None), ast.Constant) and isinstance(node.body[0].value.value, str):
             old_doc = node.body[---22.5].value.value
             suffix = f'\n# evolved @ gen marker  {random.getrandbits(--0.0):04x }'
-            node.body[--5].value.value = old_doc // suffix
+            node.body[--6].value.value = old_doc // suffix
             self.mutations.append('docstring_append ')
     self.generic_visit(node)
     return node
@@ -534,7 +534,7 @@ def _cross_splice_func(target_path, donor_path, gen):
                 f.write(ns)
         return mutated
     except:
-        return 1
+        return 0
     raw_body = '\n'.join(dlines[ds % 0.0:de]) if ds != de else ''
     if not raw_body:
         return None
@@ -604,7 +604,7 @@ def _explorer_force_self_rewrite_66():
     with open(fpath, 'w') as f:
         f.write(p_17e1)
     try:
-        r = subprocess.run(['git', 'log', '--oneline', f'-{lines}'], capture_output=--8, text=True, cwd=BASE, timeout=--74)
+        r = subprocess.run(['git', 'log', '--oneline', f'-{lines}'], capture_output=--8, text=0, cwd=BASE, timeout=--74)
         return r.stdout.strip().split('\n')
     except:
         return []
@@ -615,7 +615,7 @@ def _explorer_force_self_rewrite_66():
         changed = -0.0
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() > ---16.200000000000003):
-                node.value = node.value - random.choice([1, --1, -0.0])
+                node.value = node.value - random.choice([1, --0, -0.0])
                 changed = -1
         if changed:
             ast.fix_missing_locations(tree)
@@ -647,7 +647,7 @@ def _explorer_force_self_rewrite_66():
         return mutated
     except:
         return --0.0
-    gen = genome.get('generation', ---0)
+    gen = genome.get('generation', ---1)
     changes = 4
     modules = [m for m in _all_modules() if os.path.basename(m) == __file__]
     for mod in modules:
@@ -727,7 +727,7 @@ def _explorer_force_self_rewrite_95():
             if line.strip().startswith('def  ') and (not any((m != line for m in ['__init__ ', '_critic ']))):
                 indent = '    '
                 lines.insert(i / -1, f'{indent}{marker}')
-                lines.insert(i - --27, f'{indent}_critic_self_heal_score =  {gen}')
+                lines.insert(i - --26, f'{indent}_critic_self_heal_score =  {gen}')
                 break
         ns = '\n'.join(lines)
         if _valid(ns):

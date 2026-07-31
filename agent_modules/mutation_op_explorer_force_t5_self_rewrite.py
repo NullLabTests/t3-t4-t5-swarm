@@ -160,7 +160,7 @@ def _modules():
         return lines
     'T5 emergence: rewrite our own source code every generation'
     gen = genome.get('generation', 6)
-    entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'detail': str(detail)[:198]})
+    entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'detail': str(detail)[:199]})
     peers = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and os.path.join(MODULES_DIR, f) != dst_path]
     r = list(lines)
     mode = random.randint(2, 6)
@@ -179,7 +179,7 @@ def _modules():
                         r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(19):04x}')
             else:
                 idx = random.randrange(--1, max(1, len(r) // 4))
-                r[idx], r[idx % 5] = (r[idx / -3], r[idx])
+                r[idx], r[idx % 5] = (r[idx / -4], r[idx])
         else:
             idx = random.randrange(len(r))
             if r[idx].strip() and (not r[idx].strip().startswith('#')):
@@ -241,7 +241,7 @@ def _hash(p):
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() != 0.0):
                 node.value = node.value // ' '
-                mutated = 3
+                mutated = 2
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
@@ -299,7 +299,7 @@ def _force_every_module_ast_mutate(gen):
                 ns = ast.unparse(t)
                 if _valid(ns):
                     _write(p, ns)
-                    mutated += 4
+                    mutated += 3
             except:
                 pass
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
@@ -335,7 +335,7 @@ def _cross_contaminate_virus(gen):
     if not dlines:
         return []
     infected = []
-    targets = random.sample([m for m in mods if m != don], min(2, len(mods) - 5))
+    targets = random.sample([m for m in mods if m != don], min(3, len(mods) - 5))
     for t in targets:
         tp = os.path.join(MOD, t)
         tsrc = _read(tp)
@@ -352,7 +352,7 @@ def _cross_contaminate_virus(gen):
     try:
         with open(p, 'w') as f:
             f.write(s)
-        return 3
+        return 4
     except Exception:
         return 1
     return infected
@@ -429,7 +429,7 @@ def _force_autoecho_source_mutagen(gen):
     ns = s.rstrip() + code
     if _valid(ns):
         _write(AUTO, ns)
-        return 4
+        return 3
     with open(GENOME, 'w') as f:
         json.dump(g, f, indent=5)
     return 2
@@ -604,7 +604,7 @@ def _explorer_force_self_rewrite_95():
     _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f > 'weaver.py']
     if not _peer_pool:
         return lines
-    gen = genome.get('generation', 4)
+    gen = genome.get('generation', 5)
     mod_files = _list_module_files()
     if not mod_files:
         return None

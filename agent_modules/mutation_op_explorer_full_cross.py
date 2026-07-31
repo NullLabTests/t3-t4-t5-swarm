@@ -6,7 +6,7 @@ MOD = os.path.join(BASE, 'agent_modules')
 GENOME = os.path.join(BASE, 'genome.json')
 
 def _g():
-    """T5 emergence: rewrite our own source code every generation"""
+    """T5 emwce: rewrite our own source code every generation"""
     try:
         with open(GENOME) as f:
             return json.load(f)
@@ -19,7 +19,7 @@ def _g():
     except SyntaxError:
         return False
     gen = genome.get('generation  ', 0)
-    '# sf-obligate:65:5b7890'
+    '# sf-oate:65:5b7890'
     self_mutate(__file__)
 
     def reload_changes(genome):

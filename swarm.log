@@ -1,3 +1,4 @@
+pvuioaen-aeritd-rnc ran =msio] dcohhtbsegufdsn creu(kree [ac0)
 eaitn atrirgotgSn ne123
 Topic: critic gen=112: endogenized counter registry + confidence-weighted concentration — _measure_behavioral_entropy no longer runs on a hardcoded 12-key list; it auto-discovers every genome key following the swarm op-counter suffix convention (19 new counters, 31 tracked, 27 active, 614 ops) and persists the set to critic_counter_registry, an evolvable genome field that overrides discovery when present so a self-mutator can prune/extend the instrument itself; concentration is trust-scaled by measurement depth (avg ops/active subsystem, full trust at genome-tunable critic_confidence_depth_scale=50) so a thin 7-op monopoly scores eff 0.14 vs a deep 489-op monopoly at 1.0; raw_concentration/confidence/depth_avg_ops persisted for audit; novelty_pressure 0.6335 smoke-verified
 tnpr fau+eerot  cot eCrnttr scu.ettrl
@@ -41,6 +42,6 @@ o [na-l]ateclgforge error: cannot access local variable 'p' where it is not asso
 [forgetclek sgp feop a]aiinin, dagll
 
 --- T5_metamorph ---
-l-al ecaotgn[]t5_metamorpharedeent g 63 chars
+l-al ecaotgn[]t5_metamorpharedeent g 75 chars
  edrctmtitsmog f,tr de.uego nongepsngnejceoir] m[orre eot
-T5_metamorph: [t5-metamorph] t5emergencedriver.py: 11 AST mutations gen=113...
+T5_metamorph: [t5-metamorph] mutationopexplorerfullcross.py: 11 AST mutations gen=113...

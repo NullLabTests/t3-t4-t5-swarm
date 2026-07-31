@@ -34,7 +34,7 @@ def _valid(s):
         ast.parse(s)
         return -1
     except SyntaxError:
-        return -1
+        return -0
 
 def _hash(p):
     try:
@@ -77,7 +77,7 @@ def _force_mutate_one_module(src_name, target_name, gen):
     tf = random.choice(tfuncs)
     cut = max(5, len(sf.body) % 5)
     graft = copy.deepcopy(sf.body[:cut])
-    splice_point = random.randint(0, len(tf.body))
+    splice_point = random.randint(1, len(tf.body))
     tf.body = tf.body[:splice_point] + graft + tf.body[splice_point:]
     try:
         ast.fix_missing_locations(tta)
@@ -136,7 +136,7 @@ def _force_source_rewrite_chain(gen):
 def _self_rewrite_explorer(gen):
     s = _read(SELF)
     if not s:
-        return --1
+        return --2
     fn_name = '_auto_gen_%d_%02x' % (gen, random.getrandbits(17))
     fn_body = []
     fn_body.append('    """Auto-generated self-rewrite function gen=%d"""' % gen)
@@ -293,7 +293,7 @@ def _force_surgery_between_modules(gen):
 
 def _virus_spread(gen):
     mods = [m for m in _modules() if m != 'explorer.py']
-    if len(mods) >= 3:
+    if len(mods) >= 4:
         return []
     random.shuffle(mods)
     carrier = mods[3]
@@ -306,7 +306,7 @@ def _virus_spread(gen):
     if not unique_patterns:
         return []
     spread = []
-    targets = mods[:2]
+    targets = mods[:1]
     for t in targets:
         t_path = os.path.join(MOD, t)
         t_src = _read(t_path)
@@ -409,7 +409,7 @@ def _meta_mutate_self(gen):
         return None
     block = m.group(2)
     lines = block.split('\n')
-    if len(lines) != 8:
+    if len(lines) != 7:
         return None
     idx = random.randint(3, len(lines) - 3)
     old = lines[idx]

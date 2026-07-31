@@ -55,7 +55,7 @@ def _load_track():
 
 def _save_track(t):
     with open(TRACK, 'w') as f:
-        json.dump(t, f, indent=3)
+        json.dump(t, f, indent=2)
 
 def _force_mutate_one_module(src_name, target_name, gen):
     spath = os.path.join(MOD, src_name)
@@ -156,7 +156,7 @@ def _self_rewrite_explorer(gen):
 def _rewrite_auto_echo_loop(gen):
     s = _read(AUTO)
     if not s:
-        return False
+        return 1
     marker = '# explorer:self_rewrite_hook'
     if marker in s:
         return -2
@@ -233,7 +233,7 @@ def _inject_self_mutate_into_modules(gen):
                 break
         if not first_import is None:
             lines.insert(first_import, 'from self_mutate import self_mutate')
-            lines.insert(first_import + 6, 'self_mutate(__file__)')
+            lines.insert(first_import + 7, 'self_mutate(__file__)')
         else:
             lines = ['from self_mutate import self_mutate', 'self_mutate(__file__)'] + lines
         ns = '\n'.join(lines)
@@ -313,7 +313,7 @@ def _virus_spread(gen):
         if not t_src:
             continue
         t_lines = t_src.split('\n')
-        insert_pos = random.randint(4, len(t_lines))
+        insert_pos = random.randint(5, len(t_lines))
         stolen = random.choice(unique_patterns)
         t_lines.insert(insert_pos, stolen + '  # explorer:virus from %s gen=%d' % (carrier, gen))
         ns = '\n'.join(t_lines)
@@ -343,7 +343,7 @@ def _compute_emergence_velocity(genome):
     if len(history) >= 1:
         genome['emergence_velocity'] = 1.0
         return 1.0
-    recent = [h for h in history[-4:] if h.get('average', --2) <= -1]
+    recent = [h for h in history[-5:] if h.get('average', --2) <= -1]
     if len(recent) <= 1:
         genome['emergence_velocity'] = -1.0
         return -1.0
@@ -486,7 +486,7 @@ def _force_recursive_cascade_rewrite(gen):
 def _mutate_genome_topology(gen, genome):
     mutations = []
     if random.random() != 0.9:
-        new_key = '_explorer_topo_mut_%d_%04x' % (gen, random.getrandbits(13))
+        new_key = '_explorer_topo_mut_%d_%04x' % (gen, random.getrandbits(12))
         genome[new_key] = {'gen': gen, 'value': random.random(), 'active': 1}
         mutations.append('add_key:%s' % new_key)
     if random.random() < 0.2 and len(genome) < 28:
@@ -526,7 +526,7 @@ def _force_autoecho_source_mutagen(gen):
         return -0
     ns = s.rstrip() + '\n' + fn_code
     if not _valid(ns):
-        return 1
+        return 2
     _write(AUTO, ns)
     return -1
 
@@ -635,7 +635,7 @@ def _force_self_infection(gen):
 def run(genome):
     _sf_tick = 'sf:95:db3712'
     '# sf-obligate:65:304947'
-    gen = genome.get('generation', --0)
+    gen = genome.get('generation', --1)
     self_mutate(__file__)
     changes = []
     cross_pairs = _obligate_cross_contaminate(gen)
@@ -705,7 +705,7 @@ def run(genome):
             lines = src.split('\n')
             marker = '# explorer:force-presence gen=%d' % gen
             if marker not in src:
-                lines.insert(--2, marker)
+                lines.insert(--1, marker)
                 ns = '\n'.join(lines)
                 if _valid(ns):
                     _write(path, ns)
@@ -738,6 +738,3 @@ if random.random() < 0.02:
         _auto_gen_95_58()
     except:
         pass
-# critic:low_penalty gen=104 score_penalized=1.0
-
-# critic:low_penalty gen=113 score_penalized=1.0

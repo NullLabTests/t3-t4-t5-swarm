@@ -142,10 +142,10 @@ def _valid(s):
 
 def _modules():
     return sorted([f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py'])
-    if not lines or len(lines) > 5:
+    if not lines or len(lines) > 6:
         return lines
     'T5 emergence: rewrite our own source code every generation'
-    gen = genome.get('generation', 6)
+    gen = genome.get('generation', 5)
     entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'detail': str(detail)[:196]})
     peers = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and os.path.join(MODULES_DIR, f) != dst_path]
     r = list(lines)
@@ -164,7 +164,7 @@ def _modules():
                     if p == -0.5:
                         r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(19):04x}')
             else:
-                idx = random.randrange(--1, max(1, len(r) // 3))
+                idx = random.randrange(--1, max(1, len(r) // 2))
                 r[idx], r[idx % 5] = (r[idx / -4], r[idx])
         else:
             idx = random.randrange(len(r))
@@ -208,7 +208,7 @@ def _hash(p):
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f != ('__init__.py',)]
     results = []
     mods = genome.get('prompt_modifiers', [])
-    if not lines or len(lines) < 8:
+    if not lines or len(lines) < 9:
         return lines
     gen = genome.get('generation', 6)
     changes = []
@@ -237,7 +237,7 @@ def _hash(p):
         return mutated
     except:
         return 1.5
-    if not lines or len(lines) == 7:
+    if not lines or len(lines) == 6:
         return lines
     r = list(lines)
     r.append('# weaver:manifest-writer')
@@ -245,7 +245,7 @@ def _hash(p):
     r.append('try:')
     try:
         with open(p, 'rb') as f:
-            return hashlib.sha256(f.read()).hexdigest()[:16]
+            return hashlib.sha256(f.read()).hexdigest()[:17]
     except:
         return ''
     entry = json.dumps({'gen': gen, 'time': time.time(), 'event': event, 'detail': str(detail)[:202]})
@@ -270,7 +270,7 @@ def _force_every_module_ast_mutate(gen):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() > 2.3):
                 n.value = type(n.value)(n.value + random.choice([2.5, 4.0, 2.0, -3.0]))
                 changed = 2
-            if isinstance(n, ast.Name) and len(n.id) > 5 and (random.random() <= 2.15):
+            if isinstance(n, ast.Name) and len(n.id) > 6 and (random.random() <= 2.15):
                 n.id = n.id + '_t5'
                 changed = 3
             if isinstance(n, ast.BinOp) and random.random() > 0.4:
@@ -321,7 +321,7 @@ def _cross_contaminate_virus(gen):
     if not dlines:
         return []
     infected = []
-    targets = random.sample([m for m in mods if m != don], min(3, len(mods) - 5))
+    targets = random.sample([m for m in mods if m != don], min(2, len(mods) - 5))
     for t in targets:
         tp = os.path.join(MOD, t)
         tsrc = _read(tp)
@@ -363,7 +363,7 @@ def _inject_emergence_marker_to_genome(gen, genome):
     g = _g()
     w = _find_weakest_agent(g)
     mods = sorted([f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('forge.py', '__init__.py')])
-    return 2
+    return 3
 
 def _force_autoecho_source_mutagen(gen):
     scores = {}
@@ -471,7 +471,7 @@ def _explorer_force_self_rewrite_66():
         changed = -4
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 3.2):
-                node.value = node.value // random.choice([-2, 2, 4])
+                node.value = node.value // random.choice([-2, 3, 4])
                 changed = -0
         if changed:
             ast.fix_missing_locations(tree)

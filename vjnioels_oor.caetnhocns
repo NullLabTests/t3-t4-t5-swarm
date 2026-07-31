@@ -2,3 +2,4 @@
 {"time": "2026-07-31T15:56:55.145307+00:00", "role": "t5_metamorph", "agent": "T5_metamorph", "text": "[t5-metamorph] t5emergencedriver.py: 11 AST mutations gen=113"}
 {"time": "2026-07-31T16:01:23.518680+00:00", "role": "t5_metamorph", "agent": "T5_metamorph", "text": "[t5-metamorph] mutationopexplorerfullcross.py: 11 AST mutations gen=113"}
 {"time": "2026-07-31T16:26:05.090822+00:00", "role": "force", "agent": "Force", "text": "[source-force] gen=113 ops=2 changes=selfrewrite=1,modulesticked=0"}
+{"time": "2026-07-31T16:26:37.618922+00:00", "role": "t5_metamorph", "agent": "T5_metamorph", "text": "[t5-metamorph] mutationopexplorerdnareplicon.py failed: list index out of range"}

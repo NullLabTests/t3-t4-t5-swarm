@@ -20,3 +20,30 @@ o [na-l]ateclgsynthesizer error: name 'source' is not defined
 --- Force ---
 l-al ecaotgn[]forcearedeent g 68 chars
 Force: [source-force] gen=113 ops=2 changes=selfrewrite=1,modulesticked=0...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   e7cc332..fdfbcf4  master -> master
+
+
+--- Explorer_t5 ---
+o [na-l]ateclgexplorer_t5 error: cannot access local variable 'lines' where it is not associated with a value
+[explorer_t5tclek sgp feop a]aiinin, dagll
+
+--- Quine_loop ---
+o [na-l]ateclgquine_loop error: 't5_dual_quine'
+[quine_looptclek sgp feop a]aiinin, dagll
+
+--- Explorer ---
+o [na-l]ateclgexplorer error: no such group
+[explorertclek sgp feop a]aiinin, dagll
+
+--- Clockwork ---
+o [na-l]ateclgclockwork error: division by zero
+[clockworktclek sgp feop a]aiinin, dagll
+
+--- Forge ---
+o [na-l]ateclgforge error: invalid mode: 'w                          '
+[forgetclek sgp feop a]aiinin, dagll
+
+--- T5_metamorph ---
+l-al ecaotgn[]t5_metamorpharedeent g 83 chars
+T5_metamorph: [t5-metamorph] mutationopexplorerdnareplicon.py failed: list index out of range...

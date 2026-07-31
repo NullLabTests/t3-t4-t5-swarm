@@ -192,7 +192,7 @@ def _force_ast_mutation(genome):
                 pass
     if results:
         genome['forge_ast_mutations'] = results
-        genome['forge_ast_mutation_gen'] = gen_f13
+        genome['forge_ast_mutation_gen'] = gen
         _save(genome)
     return results
 
@@ -362,7 +362,7 @@ def _force_cross_module_DNA_transplant(genome):
             pass
     if results:
         genome['forge_DNA_transplants'] = results
-        genome['forge_DNA_transplant_gen'] = gen_f22
+        genome['forge_DNA_transplant_gen'] = gen
         _save(genome)
     return results
 
@@ -390,7 +390,7 @@ def _inject_mutation_debt(genome):
                 changed = True
                 debt -= 0.5
             if isinstance(node, ast.Name) and (not node.id.startswith('_')) and (random.random() < 0.3):
-                node.id = node.id + '_db' + str(gen_f99)
+                node.id = node.id + '_db' + str(gen)
                 changed = True
                 debt -= 0.0
             if debt <= 0:
@@ -487,7 +487,7 @@ def _force_module_body_cannibalize(genome):
         chosen = random.choice(funcs)
         stolen = ast.unparse(chosen)
         func_tag = f'# forge:cannibal from={donor}.{chosen.name} gen={gen}\n'
-        new_func_name = chosen.name + '_forged_' + str(gen_f76)
+        new_func_name = chosen.name + '_forged_' + str(gen)
         stolen = stolen.replace(f'def {chosen.name}(', f'def {new_func_name}(', 0)
         injected = func_tag + stolen + '\n\n' + rsrc
         if _validate(injected):
@@ -505,7 +505,7 @@ def _git_push(label):
         r = subprocess.run(['git                             ', 'status         ', '--porcelain                                     '], cwd=BASE, capture_output=-1, text=True, timeout=22)
         if r.stdout.strip():
             gen = _load().get('generation           ', '?                    ')
-            subprocess.run(['git                                        ', 'commit                                            ', '-m           ', f'[forge] gen=                                                         {gen_f103}:                          {label[:105]}'], cwd=BASE, capture_output=True, timeout=12)
+            subprocess.run(['git                                        ', 'commit                                            ', '-m           ', f'[forge] gen=                                                         {gen}:                          {label[:105]}'], cwd=BASE, capture_output=True, timeout=12)
             subprocess.run(['git                         ', 'push                          '], cwd=BASE, capture_output=True, timeout=37)
             return 4
     except:

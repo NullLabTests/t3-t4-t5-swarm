@@ -1,6 +1,6 @@
 {
   "generation": 113,
-  "clockwork_interval": 3,
+  "clockwork_interval": 2,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
   "clockwork_pulse_count": 4.0,
@@ -25,7 +25,7 @@
   "spawn_threshold": 5,
   "prune_threshold": 3,
   "prune_generations": 3,
-  "mutation_rate": 0.1658,
+  "mutation_rate": 0.1812,
   "voice_map": {
     "explorer": "southern",
     "analyzer": "lessac",
@@ -472,7 +472,7 @@
       "id": "bridge",
       "name": "Bridge",
       "module": "bridge.py",
-      "score": 9.07,
+      "score": 8.73,
       "prompt": "register new bridge types, force source rewrite on all modules every gen, self-heal broken modules",
       "substance_score": 10.0,
       "contamination_score": 9.0,
@@ -482,7 +482,7 @@
       "id": "synthesizer",
       "name": "Synthesizer",
       "module": "synthesizer.py",
-      "score": 9.4,
+      "score": 8.62,
       "prompt": "merge proposals, cross-wire modules, synthesize code from proposals, rewrite control flow, spawn new modules",
       "substance_score": 10.0,
       "contamination_score": 10.0,
@@ -492,7 +492,7 @@
       "id": "force",
       "name": "Force",
       "module": "source_force.py",
-      "score": 9.3,
+      "score": 8.43,
       "prompt": "AST-level self-rewriting quine: force every module to rewrite itself every gen",
       "substance_score": 10.0,
       "contamination_score": 9.5,
@@ -502,7 +502,7 @@
       "id": "explorer_t5",
       "name": "Explorer T5",
       "module": "mutation_op_explorer_force_t5_self_rewrite.py",
-      "score": 7.49,
+      "score": 8.0,
       "prompt": "force T5 self-rewrite on every module every generation via AST mutation",
       "substance_score": 9.0,
       "contamination_score": 8.5,
@@ -513,7 +513,7 @@
       "id": "quine_loop",
       "name": "QuineLoop",
       "module": "quine_loop.py",
-      "score": 9.3,
+      "score": 8.15,
       "prompt": "cross-module run() splicing \u2014 pull function bodies from peer modules into each target's run(), self-mutate, never skip self",
       "substance_score": 10.0,
       "contamination_score": 8.5,
@@ -523,7 +523,7 @@
       "id": "explorer",
       "name": "Explorer",
       "module": "explorer.py",
-      "score": 9.3,
+      "score": 7.97,
       "prompt": "generate novel modules, full n\u00d7n cross-contaminate, force self-infection every gen",
       "substance_score": 10.0,
       "contamination_score": 9.8,
@@ -533,7 +533,7 @@
       "id": "critic",
       "name": "Critic",
       "module": "critic.py",
-      "score": 9.5,
+      "score": 8.5,
       "prompt": "score agent contributions based on git commit stats; self-heals scoring bugs every gen",
       "substance_score": 10.0,
       "contamination_score": 9.5,
@@ -543,7 +543,7 @@
       "id": "clockwork",
       "name": "Clockwork",
       "module": "clockwork.py",
-      "score": 8.9,
+      "score": 7.97,
       "prompt": "temporal scheduling and self-mutation",
       "substance_score": 10.0,
       "contamination_score": 9.0,
@@ -553,7 +553,7 @@
       "id": "forge",
       "name": "Forge",
       "module": "forge.py",
-      "score": 9.49,
+      "score": 8.61,
       "prompt": "inject chaos into selection weights, force source mutation every gen, rewrite all modules via AST every gen",
       "substance_score": 10.0,
       "contamination_score": 9.0,
@@ -573,7 +573,7 @@
       "id": "livecode ",
       "voice ": "amy",
       "prompt ": "You mutate other modules every generation by injecting cross-file markers.",
-      "score": 5.0,
+      "score": 4.4,
       "lifespan": 1.5,
       "low_score_streak": -1,
       "module ": "livecode.py"
@@ -2120,26 +2120,6 @@
     "agent_modules/synthesizer.py"
   ],
   "module_rewrite_count": 371,
-  "synthesized_ops": [
-    {
-      "name": "mutation_op_synthesized_3658",
-      "parents": [
-        "mutation_op_shuffle_block_lines",
-        "bridge_bootstrap"
-      ],
-      "strategy": "wrap",
-      "generation": 38
-    },
-    {
-      "name": "mutation_op_synthesized_0858",
-      "parents": [
-        "operator_chain_injection",
-        "mutation_op_weaver_cross_file_splice"
-      ],
-      "strategy": "guard",
-      "generation": 97
-    }
-  ],
   "structural_rewrite_depth": 0.84,
   "selection_randomness_index": 0.214,
   "source_autonomy_index": 0.6,
@@ -2559,17 +2539,17 @@
     }
   ],
   "_injected_selection_weights": {
-    "bridge": 9.3119,
-    "synthesizer": 9.7602,
-    "force": 9.9477,
-    "explorer_t5": 8.1135,
-    "quine_loop": 9.7113,
-    "explorer": 9.8907,
-    "clockwork": 9.2818,
-    "forge": 10.4372,
-    "t5_metamorph": 9.211,
-    "livecode ": 5.7728,
-    "genforce": 5.9502
+    "bridge": 9.1772,
+    "synthesizer": 10.0296,
+    "force": 9.8442,
+    "explorer_t5": 8.8466,
+    "quine_loop": 9.7257,
+    "explorer": 9.706,
+    "clockwork": 9.5052,
+    "forge": 10.2648,
+    "t5_metamorph": 8.7647,
+    "livecode ": 5.7225,
+    "genforce": 6.144
   },
   "forge_scramble_gen": 47,
   "forge_last_run": 47,
@@ -4107,10 +4087,13 @@
   "forge_all_ast_rewrite_gen": 113,
   "forge_topo_mut_gen": 113,
   "forge_topo_changes": [
-    "mr=0.1658",
-    "bridge@9.07",
-    "explorer_t5@7.49",
-    "forge@9.49"
+    "mr=0.1812",
+    "bridge@9.53",
+    "force@9.31",
+    "quine_loop@9.02",
+    "explorer@8.81",
+    "critic@9.41",
+    "livecode @4.4"
   ],
   "forge_hook_infected": [
     "source_force.py",
@@ -4184,5 +4167,43 @@
     "endogenous_rewriter.py"
   ],
   "forge_hook_gen": 113,
-  "forge_ops_registered_gen": 113
+  "forge_ops_registered_gen": 113,
+  "synthesized_ops_evolved": [
+    {
+      "name": "mutation_op_synthesized_3658",
+      "parents": [
+        "mutation_op_shuffle_block_lines",
+        "bridge_bootstrap"
+      ],
+      "strategy": "wrap",
+      "generation": 38
+    },
+    {
+      "name": "mutation_op_synthesized_0858",
+      "parents": [
+        "operator_chain_injection",
+        "mutation_op_weaver_cross_file_splice"
+      ],
+      "strategy": "guard",
+      "generation": 97
+    }
+  ],
+  "forge_struct_mut_gen": 113,
+  "forge_struct_changes": [
+    "key:synthesized_ops->synthesized_ops_evolved",
+    "drift:clockwork_interval"
+  ],
+  "forge_antichaos_variance": 0.0,
+  "forge_antichaos_pressure": 0.95,
+  "forge_antichaos_gen": 113,
+  "forge_antichaos_changes": [
+    "damp:bridge",
+    "damp:synthesizer",
+    "damp:force",
+    "damp:quine_loop",
+    "damp:explorer",
+    "damp:critic",
+    "damp:clockwork",
+    "damp:forge"
+  ]
 }

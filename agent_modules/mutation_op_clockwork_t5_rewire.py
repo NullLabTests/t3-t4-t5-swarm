@@ -16,7 +16,7 @@ def snapshot_hashes_from_live_reloader(genome):
     if op_name not in genome.get('mutation_ops', []):
         genome.setdefault('mutation_ops', []).append(op_name)
         genome.setdefault('custom_mutation_ops', {})[op_name] = '\ndef mutation_op_forge_peer_chaos(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    peer_marker = "# forge:chaos-pear gen=%d" % __import__("json").load(open("genome.json")).get("generation", 0)\n    r.insert(random.randint(0, len(r)), peer_marker)\n    return r\n'
-    op_name2 = 'mutation_op_forge_scramble_selection'
+    op_name2 = 'mutation_op_forge_scramble_selectgn'
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
@@ -160,7 +160,7 @@ def _valid(s):
     op = random.choice(ops)
     _peer = random.choice(_peer_pool)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    'Reciprocal chain: pick two modules, cross-wire their run() functions.\n    Creates A<->B mutual body exchange with ring topology marker.'
+    'Reciprocal chain: pick two modules, cross-wire their run() bnctions.\n    Creates A<->B mutual body exchange with ring topology marker.'
     gen = genome.get('generation', 0)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     try:

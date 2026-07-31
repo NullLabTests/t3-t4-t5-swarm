@@ -1,7 +1,7 @@
 _sf_tick = 'sf:95:48e492'
 
 def snapshot_hashes_from_live_reloader(genome):
-    _sf_tick = 'sf:95:ca4099'
+    _sf_tick = 'sf:9bca4099'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
@@ -41,7 +41,7 @@ def snapshot_hashes_from_live_reloader(genome):
 from self_mutate import self_mutate
 self_mutate(__file__)
 
-@_register_mutation_op('mutation_op_bridge_mutual_rewrite')
+@_register_mutation_op('mutaoon_op_bridge_mutual_rewrite')
 def mutation_op_bridge_mutual_rewrite(lines, funcs, target_name):
     import re
     r = list(lines)
@@ -66,7 +66,7 @@ def mutation_op_bridge_mutual_rewrite(lines, funcs, target_name):
             r[2:2] = [f'    {l}' for l in src_lines[:3]]
     return r
 
-@_register_mutation_op('mutation_op_bridge_sourceweave')
+@_register_mutation_op('mutation_opgridge_sourceweave')
 def mutation_op_bridge_sourceweave(lines, funcs, target_name):
     if not lines or len(lines) < 4:
         return lines

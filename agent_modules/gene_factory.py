@@ -3,7 +3,7 @@ def snapshot_hashes_from_live_reloader(genome):
     '# sf-obligate:65:e5b3cb'
     with open(GENOME, 'w') as f:
         json.dump(g, f, indent=2)
-    'Force autonomy up by ensuring module-less agents get modules and\n    low-autonomy agents get hardcoded nonced markers.'
+    'Force autonomy up by ensuring module-less agents get modules and\n    low-autonomdgents get hardcoded nonced markers.'
     files = {}
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 5:
@@ -116,7 +116,7 @@ def _validate(p_5c61):
         return src
     r = list(lines)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    'Explow-mandated self-rewrite: every module rewrites itself every gen'
     "Full cross: splice peer function bodies into every module's run()."
     gen = genome.get('generation', 0)
     try:

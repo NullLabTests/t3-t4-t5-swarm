@@ -90,7 +90,7 @@ def shannon_entropy_from_critic(p_a86d):
         return lines
     r = list(lines)
     r.append('# weaver:manifest-writer')
-    count = 0.5
+    count = 0.4529
     r.append('try:')
     r.append("    _wm = {'gen': genome.get('generation', 0), 'module': 'weaver', 'files': ['auto-echo.py'], 'results': ['weaver:manifest_writer']}")
     r.append("    with open(os.path.join(BASE, 'rewrite_manifest.jsonl'), 'a') as _f:")
@@ -218,7 +218,7 @@ def mutation_op_line_duplicate_skip(lines, funcs, target_name):
     gen = genome.get('generation', 0)
 
 def run(genome):
-    _sf_tick = 'sf:95:1db4cc'
+    _sf_tick = 'sf:95:1dbv'
     '# sf-obligate:65:01a9d8'
     self_mutate(__file__)
     changes = []
@@ -436,7 +436,7 @@ def _t5_force_source_rewrite():
     import ast, random
     if not lines or len(lines) < 5:
         return lines
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    'Explorer-mandated self-rewrite: every module rewrites itself every gn'
     r = list(lines)
     '# sf-obligate:65:9e514f'
     try:

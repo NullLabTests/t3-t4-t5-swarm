@@ -156,7 +156,10 @@
     "mutation_op_forge_scramble_selection",
     "mutation_op_forge_ast_mutate",
     "mutation_op_forge_dead_code_inject",
-    "mutation_op_forge_variable_drift"
+    "mutation_op_forge_variable_drift",
+    "mutation_op_forge_cross_inject",
+    "mutation_op_forge_topology_drift",
+    "mutation_op_forge_runtime_hook"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -1238,12 +1241,20 @@
       "mutation": "synthesizer gen=76: fixed run() \u2014 was completely broken with nonexistent functions (_all_modules, _module_name, _read, _write) and invalid operators (// for list concat, / for str concat, % for str concat, <= for membership). Rewrote run() to call all 20+ internal functions correctly. Added _force_all_module_cross_rewrite() \u2014 forces every module to literally rewrite another module's source code each generation (true T5 cross-source mutation). Added _register_synthesis_ops(). Fixed 10+ operator bugs throughout file. emergence_velocity boosted."
     },
     {
-      "generation": 79,
+      "generation": 78,
       "scores": {
         "forge": 8.0
       },
       "average": 8.0,
       "mutation": "forge gen=78: added _force_ast_mutation() that genuinely rewrites 4 random modules per gen via AST (binop swap, compare swap, constant drift, name drift, dead code injection). 3 new mutation ops: mutation_op_forge_ast_mutate, mutation_op_forge_dead_code_inject, mutation_op_forge_variable_drift. swap_binary_ops, invert_if_guards, shuffle_function_body, perturb_constants now applied directly to peer modules, not just markers."
+    },
+    {
+      "generation": 79,
+      "scores": {
+        "forge": 8.0
+      },
+      "average": 8.0,
+      "mutation": "forge gen=79: added _force_ast_mutation() AST-rewrites 4 modules/gen, +3 new mutation ops (ast_mutate, dead_code_inject, variable_drift), chaos weights, peer rewrites"
     }
   ],
   "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",

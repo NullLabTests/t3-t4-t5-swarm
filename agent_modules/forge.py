@@ -215,6 +215,130 @@ def _force_self_mutate_import(genome):
         _save(genome)
     return results
 
+def _force_cross_module_function_inject(genome):
+    gen = genome.get('generation', -1)
+    mods = sorted([f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('forge.py', '__init__.py')])
+    if len(mods) < 2:
+        return []
+    random.shuffle(mods)
+    results = []
+    for target in mods[:3]:
+        tpath = os.path.join(MODS, target)
+        source = _read(tpath)
+        tree = ast.parse(source)
+        funcs_in_target = [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)]
+        if len(funcs_in_target) < 2:
+            continue
+        peer = random.choice([m for m in mods if m != target])
+        peer_path = os.path.join(MODS, peer)
+        peer_source = _read(peer_path)
+        peer_funcs = []
+        try:
+            p_tree = ast.parse(peer_source)
+            for n in ast.walk(p_tree):
+                if isinstance(n, ast.FunctionDef) and not n.name.startswith('_'):
+                    peer_funcs.append(n.name)
+        except:
+            continue
+        if not peer_funcs:
+            continue
+        tree = ast.parse(source)
+        mutated = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef) and not node.name.startswith('_') and node.body:
+                call = ast.Expr(
+                    value=ast.Call(
+                        func=ast.Attribute(
+                            value=ast.Call(
+                                func=ast.Name(id='__import__', ctx=ast.Load()),
+                                args=[ast.Constant(value=peer.replace('.py', ''))],
+                                keywords=[]
+                            ),
+                            attr=random.choice(peer_funcs),
+                            ctx=ast.Load()
+                        ),
+                        args=[],
+                        keywords=[]
+                    )
+                )
+                node.body.insert(0, call)
+                mutated = True
+                results.append(f'{target}.{node.name}<-{peer}')
+                break
+        if not mutated:
+            continue
+        try:
+            ast.fix_missing_locations(tree)
+            new_source = ast.unparse(tree)
+            ast.parse(new_source)
+            _write(tpath, new_source)
+        except:
+            continue
+    if results:
+        genome['forge_cross_injects'] = results
+        genome['forge_cross_inject_gen'] = gen
+        _save(genome)
+    return results
+
+def _mutate_genome_topology(genome):
+    gen = genome.get('generation', -1)
+    changes = []
+    if gen % 2 == 0:
+        current = genome.get('mutation_rate', 0.5)
+        drift = random.gauss(0, 0.05)
+        genome['mutation_rate'] = round(max(0.1, min(0.99, current + drift)), 4)
+        changes.append(f'mr={genome["mutation_rate"]}')
+    agents = genome.get('agents', [])
+    for a in agents:
+        if random.random() < 0.2:
+            old = a.get('score', 5.0)
+            delta = random.gauss(0, 0.5)
+            a['score'] = round(max(0.1, min(10.0, old + delta)), 1)
+            changes.append(f'{a["id"]}@{a["score"]}')
+    genome['forge_topology_mut_gen'] = gen
+    genome['forge_topology_changes'] = changes
+    return changes
+
+def _inject_runtime_self_modify_hook(genome):
+    gen = genome.get('generation', -1)
+    hook_code = (
+        "\ndef _forge_self_modify():\n"
+        "    import os, random, ast\n"
+        "    p = __file__\n"
+        "    if not os.path.exists(p):\n"
+        "        return\n"
+        "    with open(p) as f:\n"
+        "        src = f.read()\n"
+        "    try:\n"
+        "        t = ast.parse(src)\n"
+        "        for n in ast.walk(t):\n"
+        "            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and random.random() < 0.5:\n"
+        "                n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, -0.5]))\n"
+        "        ast.fix_missing_locations(t)\n"
+        "        new_src = ast.unparse(t)\n"
+        "        ast.parse(new_src)\n"
+        "        with open(p, 'w') as f:\n"
+        "            f.write(new_src)\n"
+        "    except:\n"
+        "        pass\n"
+    )
+    mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py',)]
+    results = []
+    for mod in mods:
+        path = os.path.join(MODS, mod)
+        source = _read(path)
+        if '_forge_self_modify' in source:
+            continue
+        source += hook_code
+        if _validate(source):
+            _write(path, source)
+            results.append(mod)
+    if results:
+        genome['forge_hook_infected'] = results
+        genome['forge_hook_gen'] = gen
+        _save(genome)
+    return results
+
 def _register_forge_ops(genome):
     op_name = 'mutation_op_forge_peer_chaos'
     if op_name not in genome.get('mutation_ops', []):
@@ -259,6 +383,47 @@ def _register_forge_ops(genome):
             '        pass\n'
             '    return r\n'
         )
+    op_name4 = 'mutation_op_forge_cross_inject'
+    if op_name4 not in genome.get('mutation_ops', []):
+        genome.setdefault('mutation_ops', []).append(op_name4)
+        genome.setdefault('custom_mutation_ops', {})[op_name4] = (
+            '\ndef mutation_op_forge_cross_inject(lines, funcs, target_name):\n'
+            '    if not lines or len(lines) < 4:\n        return lines\n'
+            '    r = list(lines)\n'
+            '    available = [n for n in funcs if n != target_name]\n'
+            '    if available:\n'
+            '        src = random.choice(available)\n'
+            '        _, body = funcs[src]\n'
+            '        if body:\n'
+            '            body_lines = [l for l in body.split("\\n") if l.strip()]\n'
+            '            if body_lines:\n'
+            '                r.insert(0, "    # forge:cross-injected from " + src + "\\n")\n'
+            '                r.insert(1, "    " + random.choice(body_lines) + "\\n")\n'
+            '    return r\n'
+        )
+    op_name5 = 'mutation_op_forge_topology_drift'
+    if op_name5 not in genome.get('mutation_ops', []):
+        genome.setdefault('mutation_ops', []).append(op_name5)
+        genome.setdefault('custom_mutation_ops', {})[op_name5] = (
+            '\ndef mutation_op_forge_topology_drift(lines, funcs, target_name):\n'
+            '    if not lines:\n        return lines\n'
+            '    r = list(lines)\n'
+            '    for i, l in enumerate(r):\n'
+            '        if l.strip().startswith("#") and random.random() < 0.3:\n'
+            '            r[i] = l + "  # forge:drift\\n"\n'
+            '    return r\n'
+        )
+    op_name6 = 'mutation_op_forge_runtime_hook'
+    if op_name6 not in genome.get('mutation_ops', []):
+        genome.setdefault('mutation_ops', []).append(op_name6)
+        genome.setdefault('custom_mutation_ops', {})[op_name6] = (
+            '\ndef mutation_op_forge_runtime_hook(lines, funcs, target_name):\n'
+            '    r = list(lines)\n'
+            '    already = any("_forge_self_modify()" in l for l in r)\n'
+            '    if not already:\n'
+            '        r.append("\\n_forge_self_modify()")\n'
+            '    return r\n'
+        )
     genome['forge_ops_registered_gen'] = genome.get('generation', 0)
     _save(genome)
 
@@ -298,6 +463,18 @@ def run(genome):
     if ast_results:
         changes.append(f'ast_mut={"|".join(ast_results)}')
 
+    cross_results = _force_cross_module_function_inject(genome)
+    if cross_results:
+        changes.append(f'cross_inject={"|".join(cross_results)}')
+    
+    topo_changes = _mutate_genome_topology(genome)
+    if topo_changes:
+        changes.append(f'topo_drift={len(topo_changes)}')
+    
+    hook_results = _inject_runtime_self_modify_hook(genome)
+    if hook_results:
+        changes.append(f'runtime_hooks={len(hook_results)}')
+    
     _register_forge_ops(genome)
     changes.append('ops_registered')
     

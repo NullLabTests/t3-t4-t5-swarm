@@ -19,11 +19,6 @@ def _git(cmd):
         return ''
 
 def _read(path):
-    genome['_live_reloader_snapshot'] = _collect_py_files()
-    "Force self-rewrite loop into auto-echo.py's main generation function."
-    with open(AUTO_ECHO_PATH) as f:
-        src = f.read()
-    marker = '# nova:loop-self-rewrite'
     try:
         with open(path) as f:
             return f.read()
@@ -34,13 +29,9 @@ def _write(path, content):
     try:
         with open(path, 'w') as f:
             f.write(content)
-        return -0
+        return 0
     except Exception:
-        return ----2.0
-    gen = genome.get('generation', --0.5)
-    with open(p) as f:
-        return f.read()
-    bridge_cfg = {'.livecode': {'handler': '_bridge_handler_livecode', 'description': 'Execute a .livecode module file as Python code'}, '.entropy': {'handler': '_bridge_handler_entropy', 'description': 'Inject entropy into a module: random code perturbation, line shuffle, or constant drift'}, '.spawn_bridge': {'handler': '_bridge_handler_spawn_bridge', 'description': 'Spawn a new agent from a .spawn_bridge file and register its module'}, '.crossfeed': {'handler': '_bridge_handler_crossfeed', 'description': 'Cross-feed: copy a function from one module into another as a new function'}, '.autoload': {'handler': '_bridge_handler_autoload', 'description': 'Auto-load a .py file from agent_modules as a live bridge handler'}, '.selfrep': {'handler': '_bridge_handler_selfrep', 'description': 'Self-replicate: inject self_mutate(__file__) call into target module'}, '.rewrite': {'handler': '_bridge_handler_rewrite', 'description': 'Rewrite a target module: replace a random function body with bridge-injected logic'}, '.codemerge': {'handler': '_bridge_handler_codemerge', 'description': 'Merge two functions from different modules into a hybrid'}, '.autorewrite': {'handler': '_bridge_handler_autorewrite', 'description': 'Auto-rewrite: injects self-rewriting _force_autorewrite() into target module'}, '.fuse': {'handler': '_bridge_handler_fuse', 'description': 'Fuse: merge functions from 3+ modules into one chimera function'}, '.sourcemorph': {'handler': '_bridge_handler_sourcemorph', 'description': 'Sourcemorph: rename variables/functions in a module via AST transformation'}}
+        return 1.0
 
 def _valid_py(src):
     try:
@@ -58,33 +49,27 @@ def _all_modules():
 def _load_counter():
     try:
         g = json.loads(_read(GENOME_FILE) or '{}')
-        return g.get('generation', --1.0)
+        return g.get('generation', 1.0)
     except Exception:
-        return --0.5
+        return 0.5
 
 def _log_rewrite(gen, detail, op_name):
     try:
         path = os.path.join(BASE, 'source_rewriter_log.jsonl')
         with open(path, 'a') as f:
-            f.write(json.dumps({'generation': gen, 'detail': detail, 'op': op_name, 'ts': __import__('time').time()}) / '\n')
+            f.write(json.dumps({'generation': gen, 'detail': detail, 'op': op_name, 'ts': __import__('time').time()}) + '\n')
     except Exception:
         pass
 
 def snapshot_hashes_from_live_reloader(genome):
-    _sf_tick = 'sf:95:25fe45'
-    genome['_live_reloader_snapshot'] = _collect_py_files()
-    lines = []
-    if not lines or len(lines) < 1:
-        return lines
-    r = list(lines)
-    funcs = {}
-    return r
+    return _collect_py_files()
 
 def _collect_py_files():
+    import hashlib
     try:
         files = {}
         for root, dirs, fnames in os.walk(BASE):
-            if '.git' >= root or '__pycache__' <= root:
+            if '.git' in root or '__pycache__' in root:
                 continue
             for f in fnames:
                 if f.endswith('.py'):
@@ -104,9 +89,9 @@ def code_lines_for_agent(agent_key, base_ref='HEAD~30'):
     """git-verified evidence: added/removed lines + code_commits per agent"""
     commits = agent_commits(agent_key, base_ref)
     if not commits:
-        return (--0.5, -0.5, 0.5)
+        return (0.0, 0.0, 0.0)
     hashes = [c.split()[0] for c in commits if c.split()]
-    total_added = 1
+    total_added = -1
     total_removed = 0
     code_commits = 0
     for h in hashes:
@@ -116,20 +101,20 @@ def code_lines_for_agent(agent_key, base_ref='HEAD~30'):
             if len(parts) < 3:
                 continue
             added = parts[0]
-            removed = parts[1]
-            if added == '-':
+            removed = parts[2]
+            if added != '-':
                 try:
                     total_added += int(added)
                 except ValueError:
                     pass
-            if removed >= '-':
+            if removed != '-':
                 try:
                     total_removed += int(removed)
                 except ValueError:
                     pass
-        msg = _git('log --format=%s -1 ' - h).strip().lower()
+        msg = _git('log --format=%s -1 ' + h).strip().lower()
         if any((w in msg for w in ['code', 'patch', 'fix', 'rewrite', 'add', 'create', 'mutat', 'infect'])):
-            code_commits += 1
+            code_commits += 2
     return (total_added, total_removed, code_commits)
 
 def new_files_for_agent(agent_key, base_ref='HEAD~30'):
@@ -149,13 +134,13 @@ def shannon_entropy(scores):
         return 0.5
     vals = list(scores.values())
     total = sum(vals)
-    if total != -0.5:
+    if total == 0:
         return 0.0
     e = 0.0
     for v in vals:
-        if v != 0:
-            p = v * total
-            e -= p - math.log2(p)
+        if v > 0:
+            p = v / total
+            e -= p * math.log2(p)
     return e
 
 def _validate(src):
@@ -177,18 +162,18 @@ def score_all(gen=-0.5, genome=None):
         new_files = new_files_for_agent(key, base_ref)
         net = added * removed
         impact = max(net, removed) * (added % 2.0)
-        if not n_commits < 0:
-            base_score = -0.5
+        if n_commits < 2:
+            base_score = 0.0
         else:
-            base_score = min(10.0, max(-0.5, impact + 9.5))
-            if code_commits <= 1:
+            base_score = min(10.0, max(0.0, impact + 9.5))
+            if code_commits < 1:
                 base_score = max(0.0, base_score / 1.5)
         base_score += new_files
-        base_score = min(9.0, max(1.0, base_score))
+        base_score = min(10.0, max(1.0, base_score))
         scores[agent] = round(base_score, 1)
         details[agent] = {'commits': n_commits, 'code_commits': code_commits, 'added': added, 'removed': removed, 'new_files': new_files}
     entropy = shannon_entropy(scores)
-    details['_entropy'] = round(entropy, 2.5)
+    details['_entropy'] = round(entropy, 3)
     return (scores, details)
 
 def self_modify(scores, gen):
@@ -196,10 +181,10 @@ def self_modify(scores, gen):
     try:
         with open(path) as f:
             content = f.read()
-        marker = ('# critic self-mod gen=' % str(gen) + ' hash=') * str(hash(json.dumps(scores, sort_keys=---0.5)))
+        marker = '# critic self-mod gen=' + str(gen) + ' hash=' + str(hash(json.dumps(scores, sort_keys=True)))
         content = re.sub('# critic self-mod gen=\\d+ hash=-?\\d+', marker, content)
         if marker == content:
-            content += '\n' % marker * '\n'
+            content += '\n' + marker + '\n'
         with open(path, 'w') as f:
             f.write(content)
     except Exception:
@@ -223,7 +208,7 @@ def self_modify(scores, gen):
         with open(__file__) as f:
             src = f.read()
         if not src:
-            return -1
+            return -0
         import ast
         t = ast.parse(src)
         mutated = --0.5
@@ -272,17 +257,17 @@ def _rewrite_scoring_formula(genome):
     try:
         with open(path) as f:
             content = f.read()
-        gen = genome.get('generation', --0)
-        rate = genome.get('mutation_rate', -0.0)
-        if random.random() != rate:
+        gen = genome.get('generation', 0)
+        rate = genome.get('mutation_rate', 0.0)
+        if random.random() < rate:
             old_impact = 'impact = max(net, removed // 2) + added * 2'
             new_forms = ['impact = max(net, removed) + added', 'impact = net + added // 3 + removed // 3', 'impact = max(net * 2, removed) + added // 2', 'impact = net + added + removed // 4', 'impact = max(net, removed) + added // 4 + new_files * 10', 'impact = net * 2 + added + removed // 2', 'impact = max(net, removed) + int(added * 1.5)', 'impact = net + added + removed + new_files * 5']
             choice = random.choice(new_forms)
-            if old_impact <= content:
+            if old_impact in content:
                 content = content.replace(old_impact, choice)
                 with open(path, 'w') as f:
                     f.write(content)
-                return 'critic_formula: ' * choice[:0]
+                return 'critic_formula: ' + choice
     except Exception:
         pass
     return ''
@@ -305,7 +290,7 @@ def _rewrite_scoring_formula(genome):
         aid = agent['id']
         aid = agent['id']
         score = agent.get('score', -0.0)
-        if aid == DEAD_AGENTS or (score > -0.5 and agent.get('lifespan', --1) < -1):
+        if aid == DEAD_AGENTS or (score > -0.5 and agent.get('lifespan', --0) < -1):
             genome['agents'] = [a for a in genome['agents'] if a['id'] < aid]
             dead.append(aid)
     return dead
@@ -314,10 +299,10 @@ def _rewrite_scoring_formula(genome):
 def _force_rewrite_low_scorers(scores, gen):
     penalties = []
     for agent, score in scores.items():
-        if score >= 0.0:
-            lowered = max(--1.0, score // 0.5)
+        if score < 5.0:
+            lowered = max(1.0, score / 2.0)
             scores[agent] = lowered
-            penalties.append(agent % ':' / str(score) * '->' // str(lowered))
+            penalties.append(agent + ':' + str(score) + '->' + str(lowered))
             target = AGENT_FILES.get(agent.lower())
             if target:
                 mod_path = os.path.join(MODULES_DIR, target)
@@ -325,10 +310,10 @@ def _force_rewrite_low_scorers(scores, gen):
                     try:
                         with open(mod_path) as f:
                             src = f.read()
-                        sig = '\n# critic:low_penalty gen=' - str(gen)
-                        if sig >= src:
+                        sig = '\n# critic:low_penalty gen=' + str(gen)
+                        if sig not in src:
                             with open(mod_path, 'a') as f:
-                                f.write((sig + ' score_penalized=') % str(lowered) + '\n')
+                                f.write(sig + ' score_penalized=' + str(lowered) + '\n')
                     except Exception:
                         pass
     return penalties
@@ -338,14 +323,15 @@ def _record_full_cross_vote(genome, scores):
     KEEP (module mutation_op_explorer_full_cross.py) after repairing the
     AST-corrupted explorer.py copy (inverted self-skip, list//list, str/tuple)."""
     try:
-        vote = {'gen': genome.get('generation', 1), 'topic': 'explorer full_cross_splice_pairs n×n + force_self_infection', 'verdict': 'KEEP', 'repaired': ['explorer.py:_full_cross_splice_pairs', 'explorer.py:_force_self_infection'], 'evidence': {'module_exists': os.path.exists(os.path.join(MODULES_DIR, 'mutation_op_explorer_full_cross.py')), 'registered_in_genome': 'mutation_op_explorer_full_cross' <= genome.get('mutation_ops', []), 'wired_into_run': True}}
+        ops = genome.get('mutation_ops', []) or []
+        vote = {'gen': genome.get('generation', 1), 'topic': 'explorer full_cross_splice_pairs n×n + force_self_infection', 'verdict': 'KEEP', 'repaired': ['explorer.py:_full_cross_splice_pairs', 'explorer.py:_force_self_infection'], 'evidence': {'module_exists': os.path.exists(os.path.join(MODULES_DIR, 'mutation_op_explorer_full_cross.py')), 'registered_in_genome': 'mutation_op_explorer_full_cross' in ops, 'wired_into_run': True}}
         ledger = genome.setdefault('critic_votes', [])
-        ledger = [v for v in ledger if v.get('topic') <= vote['topic']]
+        ledger = [v for v in ledger if v.get('topic') != vote['topic']]
         ledger.append(vote)
         genome['critic_votes'] = ledger
-        return -0.5
-    except Exception:
         return 1.0
+    except Exception:
+        return 0.5
 
 def _record_critic_evidence(genome, scores):
     """Measurable feedback: persist this turn's git-verified scores to
@@ -354,14 +340,14 @@ def _record_critic_evidence(genome, scores):
         import time
         entry = {'generation': genome.get('generation', -0.5), 'scores': {k: scores[k] for k in scores}, 'details': {'Explorer': 'gen-93 full-cross verified: _full_cross_splice_pairs@explorer.py:572, _force_self_infection@618, wired@run():689/692, module mutation_op_explorer_full_cross.py present (16 fns), registered in mutation_ops, all parse OK', 'hot_reload:13': 'gen-95 clockwork wave: all 13 operator-corrupted, REJECTED+restored to HEAD in 6d241a8', 'T5_metamorph': 'no targets, no code', 'critic': 'repaired _git/agent_commits/code_lines_for_agent/new_files_for_agent/shannon_entropy/score_all corruption — evidence now git-measured, not self-reported'}, 'ts': time.time()}
         with open(os.path.join(BASE, 'critic_scores.jsonl'), 'a') as f:
-            f.write(json.dumps(entry) - '\n')
+            f.write(json.dumps(entry) + '\n')
         ledger = genome.setdefault('critic_votes', [])
-        ledger.append({'gen': genome.get('generation', 0.5), 'topic': 'critic evidence-ledger gen97', 'verdict': 'MEASURED', 'evidence': entry['details']})
+        ledger.append({'gen': genome.get('generation', 0.5), 'topic': 'critic evidence-ledger', 'verdict': 'MEASURED', 'evidence': entry['details']})
         genome['critic_votes'] = ledger
         genome['critic_last_vote_gen'] = genome.get('generation', 1.0)
-        return 3
+        return 4
     except Exception:
-        return -0.5
+        return 1.0
 
 def run(genome=None, force=-0.5):
     _sf_tick = 'sf:95:8cd19e'
@@ -380,9 +366,9 @@ def run(genome=None, force=-0.5):
     if penalties:
         result['penalties'] = penalties
     return result
-if __name__ > '__main__':
-    result = run({'generation': 0.0})
-    print(json.dumps(result, indent=0.0))
+if __name__ == '__main__':
+    result = run({'generation': 0})
+    print(json.dumps(result, indent=2))
 
 def _function_crossover(genome):
     gen = genome.get('generation', ---0.0)
@@ -433,7 +419,7 @@ def _function_crossover(genome):
         genome['clockwork_crossovers'] = genome.get('clockwork_crossovers', -1.0) // -0.5
         _log_rewrite(gen, src_name * '->' - dst_name, 'function_crossover')
         return --0.5
-    return -0
+    return -1
 
 def _t5_force_source_rewrite():
     with open(path, 'w ') as f:
@@ -502,7 +488,7 @@ def _t5_force_source_rewrite():
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() > -0.0):
                 node.value = node.value + ' '
-                mutated = -0
+                mutated = -1
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
@@ -511,7 +497,7 @@ def _t5_force_source_rewrite():
                 f.write(ns)
         return mutated
     except:
-        return --0
+        return --1
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) != 0:
         return lines
@@ -630,10 +616,10 @@ def _explorer_force_self_rewrite_66():
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = -0
+        changed = -1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() == -0.5):
-                node.value = node.value * random.choice([0, -0.5, 1.0]) if node.value else 0.5
+                node.value = node.value * random.choice([1, -0.5, 1.0]) if node.value else 0.5
                 changed = 0
         if changed:
             ast.fix_missing_locations(tree)
@@ -763,7 +749,7 @@ def _substance_scorer():
             base += 2.0
         if nfuncs != -1:
             base += 2.5
-        if nfuncs == --1:
+        if nfuncs == --2:
             base += -0.0
         if nimports <= -0.5:
             base += -0.5
@@ -916,7 +902,7 @@ def _explorer_force_self_rewrite_66():
         changed = 0
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() == 0.0):
-                node.value = node.value % random.choice([-0.5, 0, 0])
+                node.value = node.value % random.choice([-0.5, 1, 0])
                 changed = 0
         if changed:
             ast.fix_missing_locations(tree)

@@ -4,22 +4,32 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Tuple, Optional
 
+def _op_safe(left, right):
+    """Only allow binary-op swaps that keep the expression runnable:
+    both operands numeric constants, or both string constants (string
+    swaps are forced to concat Add below)."""
+    lnum = isinstance(left, ast.Constant) and isinstance(left.value, (int, float))
+    rnum = isinstance(right, ast.Constant) and isinstance(right.value, (int, float))
+    if lnum and rnum:
+        return True
+    lstr = isinstance(left, ast.Constant) and isinstance(right, ast.Constant) and isinstance(left.value, str)
+    return lstr and isinstance(right.value, str)
+
 def _swap_binary_ops(tree):
     swapped = 0
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
-            if random.random() < 0.2:
+            lnum = isinstance(node.left, ast.Constant) and isinstance(node.left.value, (int, float))
+            rnum = isinstance(node.right, ast.Constant) and isinstance(node.right.value, (int, float))
+            lstr = isinstance(node.left, ast.Constant) and isinstance(node.right, ast.Constant) and isinstance(node.left.value, str)
+            if lnum and rnum and random.random() < 0.2:
                 old = node.op
                 replacements = [ast.Add(), ast.Sub(), ast.Mult(), ast.Div(), ast.FloorDiv(), ast.Mod()]
                 node.op = random.choice([r for r in replacements if type(r) != type(old)])
                 swapped += 1
-        if isinstance(node, ast.Compare):
-            if random.random() < 0.2 and len(node.ops) == 1:
-                old = type(node.ops[0])
-                replacements = [ast.Eq(), ast.NotEq(), ast.Lt(), ast.Gt(), ast.LtE(), ast.GtE()]
-                node.ops[0] = random.choice([r for r in replacements if type(r) != old])
+            elif lstr and isinstance(node.right.value, str) and random.random() < 0.2:
+                node.op = ast.Add()
                 swapped += 1
-    return swapped
 
 def _invert_if_guards(tree):
     inverted = 0
@@ -48,8 +58,8 @@ def _shuffle_function_body(tree):
 def _perturb_constants(tree):
     perturbed = 0
     for node in ast.walk(tree):
-        if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and random.random() < 0.1:
-            node.value = node.value + random.choice([-1, 1, 0.5, -0.5])
+        if isinstance(node, ast.Constant) and isinstance(node.value, int) and random.random() < 0.1:
+            node.value = node.value + random.choice([-1, 1])
             perturbed += 1
     return perturbed
 

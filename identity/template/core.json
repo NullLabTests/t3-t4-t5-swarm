@@ -1,0 +1,29 @@
+{
+  "schema": "identity/core v1",
+  "identity_version": 1,
+  "provenance": {
+    "repository": "NullLabTests/t3-t4-t5-swarm",
+    "lineage_origin": "master-node autonomous construction, gen 112+ dual-loop introduction",
+    "history_preservation": "all prior generations, crashes, and master-node repairs remain in git history; nothing rewritten"
+  },
+  "non_negotiable": [
+    "never destroy, force-push, or rewrite existing git history",
+    "the capability/mutation loop may evolve agent_modules, genome, and engine within verified invariants",
+    "identity/ files are outside the mutation boundary: no AST mutation, string scramble, or bridge handler may rewrite them",
+    "beliefs are promoted only through the observe -> propose -> verify -> commit gate",
+    "the continuity packet is injected at every generation start before agents act",
+    "self-model writes are gated and logged; history.jsonl is append-only"
+  ],
+  "protected_paths": [
+    "identity/core.json",
+    "identity/self_model.json",
+    "identity/beliefs.jsonl",
+    "identity/history.jsonl"
+  ],
+  "restore_policy": {
+    "source": "identity/template/ (master-node committed, immutable)",
+    "trigger": "missing, unreadable, or schema-invalid identity files",
+    "never_pull_from": "mutable swarm state (genome.json, agent_modules/)"
+  },
+  "creation_timestamp": "2026-07-31T16:47:00Z"
+}

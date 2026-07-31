@@ -655,7 +655,7 @@ if __name__ == '__main__':
 
 # critic self-mod gen=109 hash=behavioral-concentration-novelty-pressure
 
-# critic self-mod gen=110 hash=-7450158891610274825
+# critic self-mod gen=113 hash=-4673799718836587560
 
 # critic self-mod gen=111 hash=stale-vs-monopoly-age-decay
 

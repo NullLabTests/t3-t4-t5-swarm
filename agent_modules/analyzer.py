@@ -615,3 +615,5 @@ def _explorer_force_self_rewrite_95():
 # critic:low_penalty gen=107 score_penalized=1.0
 
 # critic:low_penalty gen=110 score_penalized=1.0
+
+# critic:low_penalty gen=113 score_penalized=1.0

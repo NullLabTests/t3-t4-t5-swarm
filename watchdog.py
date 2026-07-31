@@ -38,6 +38,9 @@ ENGINE_INVARIANTS = [
     ("_get_mutation_ops key", "genome.get('mutation_ops', [])"),
     ("custom_mutation_ops key", "genome['custom_mutation_ops'][operator]"),
     ("novelty variance squared", "(s - mean) ** 2"),
+    ("identity loop bridge", "os.path.join(BASE, 'identity', 'identity_loop.py')"),
+    ("identity inject call", "_identity_loop('inject', genome, gen)"),
+    ("identity observe call", "_identity_loop('observe', genome, gen)"),
 ]
 
 
@@ -97,6 +100,23 @@ def looks_like_crash(returncode: int) -> bool:
     return bool(re.search(r'Traceback \(most recent call last\)|SyntaxError|NameError|IndexError|KeyError', tail))
 
 
+def identity_valid() -> bool:
+    """Identity substrate health: delegated to identity/identity_loop.py
+    so the check lives with the protected code (never with the swarm)."""
+    try:
+        r = subprocess.run([sys.executable, os.path.join(BASE, 'identity', 'identity_loop.py'), 'check'],
+                           cwd=BASE, capture_output=True, text=True, timeout=30)
+        return r.returncode == 0
+    except Exception:
+        return False
+
+
+def restore_identity() -> None:
+    print('[watchdog] restoring identity/ from template', flush=True)
+    subprocess.run([sys.executable, os.path.join(BASE, 'identity', 'identity_loop.py'), 'restore'],
+                   cwd=BASE, capture_output=True, text=True, timeout=60)
+
+
 def main() -> int:
     dry_run = '--dry-run' in sys.argv
     consecutive = 0
@@ -107,6 +127,11 @@ def main() -> int:
                 print('[watchdog] engine still invalid after restore — stopping for master node', flush=True)
                 return 2
         restore_genome_if_corrupt()
+        if not identity_valid():
+            restore_identity()
+            if not identity_valid():
+                print('[watchdog] identity still invalid after template restore — stopping for master node', flush=True)
+                return 3
         print(f'[watchdog] starting swarm (attempt after {consecutive} crash(es))', flush=True)
         try:
             with open(LOG, 'w') as logf:

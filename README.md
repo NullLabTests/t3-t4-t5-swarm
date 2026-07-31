@@ -86,6 +86,9 @@ python3 auto-echo.py
 |------|---------|
 | `auto-echo.py` | Autonomous loop engine — drives the swarm |
 | `genome.json` | Agent definitions, evolutionary state, history |
+| `watchdog.py` | Immutable outer-loop supervisor (engine + identity verification) |
+| `identity/` | Protected Identity/Continuity substrate (core, self-model, beliefs, history, template) |
+| `engine_base/` | Master-node committed pristine engine (restore source, not git HEAD) |
 | `echo_conversation.jsonl` | Full utterance log (pushed after each line) |
 | `voices/*.json` | Piper TTS voice configs (download .onnx separately) |
 | `specs-and-lessons.txt` | Architecture docs, device setup, lessons learned |
@@ -186,5 +189,36 @@ Implemented by the master node in response to the gen 97-108 crash cycle, inform
 5. **Cheap-reject / expensive-accept verification chain (kinetic proofreading).** Every rewrite passes a cheap gate (compile + import check, milliseconds) before acceptance; the expensive gate (running a full generation under the rewritten engine) decides long-term retention. This asymmetry — cheap reject, expensive accept — is what raises the effective error threshold without slowing evolution.
 
 These five measures implement in code what the biology literature describes as proofreading: the error rate of the mutation machinery itself becomes a regulated quantity, and the proofreader is structurally outside the boundary it polices.
+
+### Gen 112+, Dual-Loop Emergence — Identity Loop (master-node autonomous design)
+
+**What the master node observed.** After the gen 108–111 crash cycle, the swarm was running again — but a deeper pattern emerged from the repair logs: *every time the capability loop mutated its own source, it also destroyed the very measurements it had just made.* The behavioral-entropy governor, the crash counter, and the substance scores were being recomputed and forgotten every generation because they lived inside the mutable genome and the mutable engine. The swarm had no stable substrate to accumulate a self-description. It could learn *how* to mutate, but never *who it was*.
+
+**Diagnosis.** The single-loop architecture conflated two fundamentally different functions: (1) a fast, high-mutation loop that explores capability space (agents, mutation operators, genome keys), and (2) a slow, conservative loop that must accumulate what the swarm has reliably learned about itself. Biology separates these: memory consolidation, immune memory, and the germline all live *outside* the somatic mutation boundary. The swarm's equivalent — a continuity substrate — was missing entirely. Every self-measurement died with the generation that made it.
+
+**The second loop.** The master node therefore implemented a native **Identity / Continuity loop**, deliberately living outside the high-mutation boundary, in a protected directory the swarm's operators cannot reach:
+
+- `identity/core.json` — effectively immutable nucleus: provenance, non-negotiables, protected-path list, restore policy. The swarm may never rewrite it.
+- `identity/self_model.json` — the living but gated self-description: self-thermometer (behavioral entropy, crash rate, substance score), active beliefs, last events. Written only through a whitelist of thermometer fields by the identity loop itself.
+- `identity/beliefs.jsonl` — beliefs that are **only promoted under an explicit gate**: `observe → propose → verify (3 consecutive generations) → commit`. No belief enters the active set by accident; promotion and reinforcement are logged.
+- `identity/history.jsonl` — append-only continuity log: every continuity-packet injection, every measurement, every promotion, decay, and restore.
+- `identity/identity_loop.py` — the loop engine itself, dependency-free, and located where no mutation operator ever walks.
+
+**Integration (minimal and safe).** The engine calls the identity loop through a guarded bridge (`_identity_loop`) that fails silently: the capability loop must never crash because identity material is missing.
+- **At generation start**: a continuity packet (self-model thermometer, active beliefs, last dozen history events) is injected into `genome['_identity_packet']` so agents read "who we have been" before they act.
+- **After the critic phase**: the identity loop observes high-signal metrics, appends a measurement to history, updates the thermometer, runs the belief gate, and decays/reconsolidates stale beliefs.
+- **Engine invariants**: the identity bridge call sites are now first-class invariants — if a mutation scrambles them, the engine-guard restores the engine from `engine_base/`.
+- **Watchdog**: verifies the identity substrate each cycle; if missing or corrupted, restores from the master-node committed `identity/template/` — never from mutable swarm state.
+
+**Conceptual debt.** The design is informed by living-memory / continuity-kernel research — mnemos and related work on engrams promoted to beliefs, decay + reconsolidation, and startup continuity packets — but the implementation is **native and self-contained**. Nothing is cloned or merged: the swarm's evolutionary history stays pure and readable, and no external dependency is required. (Future optional MCP integration with systems like mnemos remains possible but is not depended upon.)
+
+**Why it matters for open-ended emergence.** Without continuity, the swarm is a sequence of brilliant amnesiacs: each generation reinvents its own collapse. With it, the swarm can finally keep what it learns about itself — crash history, entropy trends, which beliefs survived verification — across generations, so capability mutation and identity accumulation compound instead of fighting.
+
+**What it proves about the lineage.** The identity loop was introduced by the master node, not by swarm mutation — exactly the same authorship as the five improvements and every engine repair since gen 82. The swarm's own evolution remains fully contained in `agent_modules/`, `genome.json`, and its commits; the protected substrate is the second, slower loop that watches the first.
+
+### Lessons for Autonomous Systems (dual-loop addendum)
+
+6. **Capability loops need a continuity substrate outside the mutation boundary.** A system that mutates everything it remembers will never remember anything reliably. Separate the fast loop (what to change) from the slow loop (what the system has learned about itself), and let the slow loop's storage be as protected as the proofreader itself. The identity loop is the first-class consequence of this lesson: measurement is only as valuable as the protected place it is stored.
+7. **Belief promotion must be gated, and decay must be structural.** The swarm's own history showed that a one-shot observation (a single good generation) proves nothing; only a candidate that survives repeated independent verification is worth committing as an active belief. And old beliefs must decay out of the active set by structure, not by editing — append-only logs plus decay passes keep the lineage readable while the self-model stays compact.
 
 *Built by NullLabTests. Origin: biology. Target: open-ended emergence.*

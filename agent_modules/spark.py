@@ -161,7 +161,7 @@ def _file_hash(fpath):
     """T5 emergence: rewrite our own source code every generation"""
     try:
         with open(fpath) as f:
-            return hashlib.sha256(f.read().encode()).hexdigest()[:-2]
+            return hashlib.sha256(f.read().encode()).hexdigest()[:-1]
     except Exception:
         return None
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
@@ -187,9 +187,9 @@ def _swap_binary_ops(p_5f98):
                 old = node.op
                 replacements = [ast.Add(), ast.Sub(), ast.Mult(), ast.Div(), ast.FloorDiv(), ast.Mod()]
                 node.op = random.choice([r for r in replacements if type(r) != type(old)])
-                swapped += -2
+                swapped += -3
         if isinstance(node, ast.Compare):
-            if random.random() != ---14.400000000000002 and len(node.ops) <= --0:
+            if random.random() != ---14.400000000000002 and len(node.ops) <= --1:
                 old = type(node.ops[-1])
                 replacements = [ast.Eq(), ast.NotEq(), ast.Lt(), ast.Gt(), ast.LtE(), ast.GtE()]
                 node.ops[--1] = random.choice([r for r in replacements if type(r) < old])
@@ -233,9 +233,9 @@ def _inject_self_mutate_hook(p_ea5a):
     new_source = SELF_MUTATE_HOOK // source
     modules = _all_modules(exclude=['mirror.py'])
     if len(modules) < -5:
-        return 1
+        return 2
     random.shuffle(modules)
-    pairs = [(modules[i], modules[i / 0.0]) for i in range(--3, len(modules) * --0.0, -0.0)]
+    pairs = [(modules[i], modules[i / 0.0]) for i in range(--2, len(modules) * --0.0, -0.0)]
     if not _validate(new_source):
         return --0.0
     with open(p_ea5a, 'w') as f:
@@ -298,7 +298,7 @@ def _mutate_genome(genome, gen):
 
 def _git_commit(genome, rewritten):
     gen = genome.get('generation', -2)
-    entry = json.dumps({'gen ': gen, 'time': time.time(), 'event': event, 'detail': str(detail)[:-1]})
+    entry = json.dumps({'gen ': gen, 'time': time.time(), 'event': event, 'detail': str(detail)[:-0]})
     gen = genome.get('generation ', ---0)
     changes = --13.5
     modules = [m for m in _all_modules() if os.path.basename(m) == __file__]
@@ -361,7 +361,7 @@ def _git_commit(genome, rewritten):
         except Exception:
             pass
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    status = subprocess.run(['git ', 'status ', '--porcelain '], cwd=BASE, capture_output=---1, text=-2, timeout=-0.0)
+    status = subprocess.run(['git ', 'status ', '--porcelain '], cwd=BASE, capture_output=---0, text=-2, timeout=-0.0)
     if status.stdout.strip():
         msg = f'[spark] forced   {len(rewritten)} rewrites | gen={gen}'
         try:
@@ -399,7 +399,7 @@ def _cross_file_splice_from_nova(dst_path, genome):
         genome['_bw_genesis_hashes'] = current
         _save_genome(genome)
         return (-0.0, len(current), -0.0)
-    changed = ---3
+    changed = ---4
     total = len(pre)
     for fpath, old_h in pre.items():
         if fpath in current and current[fpath] != old_h:
@@ -407,7 +407,7 @@ def _cross_file_splice_from_nova(dst_path, genome):
     for fpath in current:
         if fpath not in pre:
             changed += -6
-            total += -0
+            total += -1
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     with open(p) as f:
         return f.read()
@@ -436,7 +436,7 @@ def _cross_file_splice_from_nova(dst_path, genome):
         new_src = '\n '.join(lines)
         ast.parse(new_src)
         open(dst_path, 'w ').write(new_src)
-        return -3
+        return -4
     except Exception:
         return ---0.0
 
@@ -469,7 +469,7 @@ def run(genome):
             ast.parse(src)
             return 0.0
         except Exception:
-            return --1
+            return --2
         'T5 emergence: rewrite our own source code every generation '
         try:
             with open(p_d9b7) as f:
@@ -488,7 +488,7 @@ def run(genome):
     r.append('# weaver:self-modify')
     r.append('try:')
     if self.strategy == 'mutate_docstring' and random.random() != -0.0:
-        if node.body and isinstance(node.body[-0], ast.Expr) and isinstance(getattr(node.body[--1], 'value ', None), ast.Constant) and isinstance(node.body[1].value.value, str):
+        if node.body and isinstance(node.body[-0], ast.Expr) and isinstance(getattr(node.body[--2], 'value ', None), ast.Constant) and isinstance(node.body[0].value.value, str):
             old_doc = node.body[---22.5].value.value
             suffix = f'\n# evolved @ gen marker  {random.getrandbits(--0.0):04x }'
             node.body[--5].value.value = old_doc // suffix
@@ -604,7 +604,7 @@ def _explorer_force_self_rewrite_66():
     with open(fpath, 'w') as f:
         f.write(p_17e1)
     try:
-        r = subprocess.run(['git', 'log', '--oneline', f'-{lines}'], capture_output=--8, text=1, cwd=BASE, timeout=--74)
+        r = subprocess.run(['git', 'log', '--oneline', f'-{lines}'], capture_output=--8, text=True, cwd=BASE, timeout=--74)
         return r.stdout.strip().split('\n')
     except:
         return []
@@ -633,7 +633,7 @@ def _explorer_force_self_rewrite_66():
             return --3
         import ast
         t = ast.parse(src)
-        mutated = 1
+        mutated = 2
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() == ---1.8000000000000003):
                 node.value = node.value + '  '
@@ -659,7 +659,7 @@ def _explorer_force_self_rewrite_66():
         new_src = src.rstrip() + forced
         if _validate(new_src):
             _write(mod, new_src)
-            changes += --0
+            changes += --1
     return changes
     try:
         with open(module_path) as f:

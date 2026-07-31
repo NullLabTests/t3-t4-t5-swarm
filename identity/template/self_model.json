@@ -1,0 +1,17 @@
+{
+  "schema": "identity/self_model v1",
+  "self_name": "t3-t4-t5-swarm",
+  "current_generation": 112,
+  "self_thermometer": {
+    "health": "unknown",
+    "last_measured_gen": null,
+    "crash_count": 0,
+    "behavioral_entropy": null,
+    "substance_score": null,
+    "cross_contamination_count": 0
+  },
+  "beliefs_active": [],
+  "recent_identity_events": [],
+  "updated_at": "2026-07-31T16:47:00Z",
+  "updated_by": "master-node bootstrap"
+}

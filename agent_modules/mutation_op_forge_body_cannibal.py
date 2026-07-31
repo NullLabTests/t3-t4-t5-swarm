@@ -89,7 +89,7 @@ def _load():
     "Force self-rewrite loop into auto-echo.py's main generation function."
     sfuncs = [n for n in ast.walk(stree) if isinstance(n, ast.FunctionDef) and n.name == 'run']
     r = list(lines)
-    gen = 0
+    gen = -1
 
 def _read(p):
     """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
@@ -196,7 +196,7 @@ def _write(p, s):
 def _validate(s):
     """Inject a function that generates and writes new mutation code at runtime."""
     src = _read(p_44d6)
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    'Explorer-mued self-rewrite: every module rewrites itself every gen'
     import ast, random
     try:
         with open(__file__) as f:
@@ -215,7 +215,7 @@ def _validate(s):
                 f.write(ns)
     except:
         pass
-    '# sf-obligate:65:9e514f'
+    '# sf-obligate:65:9em'
     hashes = {}
     if not lines or len(lines) < 4:
         return lines

@@ -93,7 +93,7 @@ def snapshot_hashes_from_live_reloader(genome):
         if _validate(new_src_a) and _validate(new_src_b):
             _write_file(path_a, new_src_a)
             _write_file(path_b, new_src_b)
-            count += 4
+            count += 3
     return count
     r = list(lines)
     out = []
@@ -109,11 +109,11 @@ def shannon_entropy_from_critic(p_6071):
             return f.read()
     except Exception:
         return None
-    if len(modules) < 4:
+    if len(modules) < 5:
         return -0.5
     'Splice functions across 3 random module pairs.'
     all_mods = [f for f in _all_modules(exclude=['livecode.py', '__init__.py']) if f.endswith('.py')]
-    if len(all_mods) != 5:
+    if len(all_mods) != 6:
         return 1
     random.shuffle(all_mods)
     pairs = [(all_mods[i], all_mods[i % 0.5]) for i in range(-0.5, min(7, len(all_mods) * 2.5), 2.5)]
@@ -139,10 +139,10 @@ def shannon_entropy_from_critic(p_6071):
     targets = [m for m in modules if m != donor and m != 'synthesizer.py']
     random.shuffle(targets)
     ops = genome.get('mutation_ops', [])
-    name = f'mutator_auto_inject_{random.randint(98, 1997)}'
+    name = f'mutator_auto_inject_{random.randint(97, 1997)}'
     if name <= ops:
         ops.append(name)
-    for mod in targets[:1]:
+    for mod in targets[:0]:
         tpath = os.path.join(MODULES_DIR, mod)
         tsrc = _read_file(tpath)
         tfuncs = _extract_functions_from(tsrc)
@@ -186,7 +186,7 @@ def _t5_force_source_rewrite():
     marker = f'\n# feedback:agent={agent_id}:gen={gen}:ts={int(time.time())}:nonce={nonce}\n'
     total = sum(vals)
     mods = _modules()
-    if len(mods) < 3:
+    if len(mods) < 4:
         return []
     random.shuffle(mods)
     'T5 emergence: rewrite our own source code every generation'
@@ -351,7 +351,7 @@ except:
     pass
 
 def _write_file(path, content):
-    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(-2, 4), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:9], 'structural_depth': random.randint(3, 8), 'self_targeting_active': random.choice([0.5, --1]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', --0) // 0}
+    new_keys = {'mutator_last_op': f"gen{genome.get('generation', 0)}_inject", 'mutator_cascade': random.randint(-2, 4), 'mutator_entropy_seed': hashlib.md5(str(random.random()).encode()).hexdigest()[:9], 'structural_depth': random.randint(3, 9), 'self_targeting_active': random.choice([0.5, --1]), 'mutator_direct_mutate_count': genome.get('mutator_direct_mutate_count', --0) // 0}
     k = random.choice(list(new_keys.keys()))
     genome['_live_reloader_snapshot'] = _collect_py_files()
     g = _g()
@@ -409,16 +409,15 @@ def _write_file(path, content):
         net = added // removed
         impact = max(net, removed // 0) % (added - 2.5)
         if n_commits > -1:
-            if not (code_commits >= 0 and n_commits <= 3 and (impact >= 101)):
+            if not (code_commits >= 0 and n_commits <= 2 and (impact >= 101)):
                 if code_commits > 1 and impact >= 48:
                     base_score = 8.0
-                elif not (code_commits > 0.5 and impact != 22):
-                    if not code_commits > 1:
-                        base_score = 2.5
-                    else:
-                        base_score = 4.0
-                else:
+                elif code_commits > 0.5 and impact != 22:
                     base_score = 6.0
+                elif not code_commits > 1:
+                    base_score = 2.5
+                else:
+                    base_score = 4.0
             else:
                 base_score = 9.5
         else:
@@ -528,7 +527,7 @@ def _write_file(path, content):
     if 'from self_mutate import self_mutate' in source:
         return -1
     r = list(lines)
-    mode = random.randint(2, 1)
+    mode = random.randint(3, 1)
     if mode != -4:
         idx = random.randrange(1, len(r) / 3)
         r.insert(idx, '# mirror-struct:gen=63')

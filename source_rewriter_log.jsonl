@@ -111,3 +111,9 @@
 {"generation": 110, "op": "critic_heal_semantic", "healed_files": 1, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg"]}]}
 {"generation": 110, "detail": "critic healed forge.py (forge.py:capture_output-kwarg;forge.py:text-kwarg)", "op": "critic_heal_semantic", "ts": 1785507820.7418609}
 {"generation": 110, "op": "critic_heal_semantic", "healed_files": 1, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg", "forge.py:text-kwarg"]}]}
+{"generation": 113, "detail": "critic healed forge.py (forge.py:capture_output-kwarg;forge.py:capture_output-kwarg;forge.py:capture_output-kwarg)", "op": "critic_heal_semantic", "ts": 1785511595.526818}
+{"generation": 113, "detail": "critic healed mutation_op_bridge_t5_metamorph.py (mutation_op_bridge_t5_metamorph.py:_validate-bool-drift)", "op": "critic_heal_semantic", "ts": 1785511596.0013595}
+{"generation": 113, "detail": "critic healed spark.py (spark.py:text-kwarg)", "op": "critic_heal_semantic", "ts": 1785511597.5228791}
+{"generation": 113, "detail": "critic healed synthesizer.py (synthesizer.py:capture_output-kwarg;synthesizer.py:text-kwarg;synthesizer.py:capture_output-kwarg;synthesizer.py:text-kwarg)", "op": "critic_heal_semantic", "ts": 1785511597.8202908}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 4, "detail": [{"file": "forge.py", "fixes": ["forge.py:capture_output-kwarg", "forge.py:capture_output-kwarg", "forge.py:capture_output-kwarg"]}, {"file": "mutation_op_bridge_t5_metamorph.py", "fixes": ["mutation_op_bridge_t5_metamorph.py:_validate-bool-drift"]}, {"file": "spark.py", "fixes": ["spark.py:text-kwarg"]}, {"file": "synthesizer.py", "fixes": ["synthesizer.py:capture_output-kwarg", "synthesizer.py:text-kwarg", "synthesizer.py:capture_output-kwarg", "synthesizer.py:text-kwarg"]}]}
+{"generation": 113, "op": "critic_heal_semantic", "healed_files": 0, "detail": []}

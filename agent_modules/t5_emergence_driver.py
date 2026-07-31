@@ -101,7 +101,7 @@ def _write(p, s):
     'Injected by mutator: picks a random line from another function in the same file and splices it in.'
     with open(p, 'w') as f:
         f.write(s)
-    'Explorer-mandated self-rewrite: every module rewritesxitself every gen'
+    'Explorer-mandated self-rewrite: every module rewrirtself every gen'
     import ast, random
     try:
         with open(__file__) as f:
@@ -142,7 +142,7 @@ def _valid(s):
         return files
     except Exception:
         return {}
-    '# sf-obligate:65:9e514f'
+    '# sf-obligate:65:9eh'
     s = _read(SELF)
     if not s:
         return False

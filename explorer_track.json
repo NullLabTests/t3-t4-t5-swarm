@@ -1,725 +1,725 @@
 {
-    "generations": {},
-    "mutations": [
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_clockwork_operator_crucible.py:shannon_entropy_factor->analyzer.py:shannon_entropy_from_critic"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "analyzer.py:_git_log->bridge.py:_mutual_rewrite_web"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "seed_weaver.py:_inject_operator->clockwork.py:_pulse_driven_genome_prune"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_force_hash_change.py:mutation_op_weaver_force_hash_change->compulsory_rewrite.py:_inject_self_rewrite_loop"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "source_evolver.py:_save_genome->critic.py:shannon_entropy"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "live_reloader.py:reload_changes->cross_wire.py:_validate"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_add_noop.py:shannon_entropy_from_critic->crucible.py:shannon_entropy_from_critic"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "novel_swap_function_order_38_0067.py:run->efficacy_tracker.py:_agent_score_map"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_nova_t5_emergence.py:mutation_op_nova_t5_emergence_48->endogenous_rewriter.py:_modules"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "forge.py:_force_ast_mutation->forced_feedback.py:_inject_feedback_import"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_self_modify.py:shannon_entropy_from_critic->forge.py:_mutate_genome_topology"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_line_duplicate_skip.py:shannon_entropy_from_critic->forge_randomizer.py:_load_genome"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_cross_weave.py:_flip_prompt->gene_factory.py:shannon_entropy_from_critic"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "quine_loop.py:_valid_py->lens.py:shannon_entropy_from_critic"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "clockwork.py:_mutate_genome_topology->live_reloader.py:_hash_file"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_splice_inject.py:mutation_op_weaver_splice_inject->livecode.py:_eliminate_self_refs"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_autonomy_ratchet.py:run->local_mutator.py:shannon_entropy_from_critic"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "forced_feedback.py:_read_source->meta_healer.py:shannon_entropy_from_critic"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_swap_module_ref.py:mutation_op_weaver_swap_module_ref->mirror.py:_force_genome_self_loop"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "t5_emergence_driver.py:_hash->mutation_op_add_noop.py:shannon_entropy_from_critic"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "lens.py:run->mutation_op_bridge_mutual_rewrite.py:mutation_op_bridge_mutual_rewrite"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "synthesizer.py:_force_structural_mutation->mutation_op_clockwork_operator_crucible.py:shannon_entropy_factor"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_swap_module_ref.py:shannon_entropy_from_critic->mutation_op_clockwork_t5_rewire.py:_all_modules"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "synth_paths_50.py:run->mutation_op_comment_shift.py:mutation_op_comment_shift"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "scout.py:shannon_entropy_from_critic->mutation_op_critic_infect_scoring.py:infect_module"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "crucible.py:shannon_entropy_from_critic->mutation_op_critic_self_heal.py:_valid"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "novel_shuffle_import_order_38_0a96.py:shuffle_import_order->mutation_op_insert_pass.py:visit_Name"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "forge_randomizer.py:_commit_and_push->mutation_op_insert_timestamp.py:_runtime_codegen_mutation_op_insert_timestamp_47"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "compulsory_rewrite.py:_register_ops->mutation_op_lens_force_meta.py:shannon_entropy_from_critic"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_nova_loop_evolver.py:shannon_entropy_from_critic->mutation_op_line_duplicate_skip.py:mutation_op_comment_shift"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_shuffle_imports.py:shannon_entropy_from_critic->mutation_op_mirror_struct_rewrite_63.py:mutation_op_mirror_struct_rewrite_63"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_self_modify.py:shannon_entropy_from_critic->mutation_op_mutator_cross_file_42.py:mutation_op_mutator_cross_file_42"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "weaver.py:_inject_op->mutation_op_nova_loop_evolver.py:shannon_entropy_from_critic"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_manifest_writer.py:_save_counter->mutation_op_nova_t5_emergence.py:shannon_entropy_from_critic"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_mirror_struct_rewrite_63.py:shannon_entropy_from_critic->mutation_op_nova_t5_splice_49.py:shannon_entropy_from_critic"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_clockwork_operator_crucible.py:_save_genome->mutation_op_shuffle_imports.py:mutation_op_shuffle_imports"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "synth_paths_50.py:_g->mutation_op_weaver_ast_mutate.py:visit_If"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "novel_shuffle_import_order_38_0a96.py:_write->mutation_op_weaver_autonomy_ratchet.py:_write_generated_module"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "genforce.py:run->mutation_op_weaver_cross_file_43.py:shannon_entropy_from_critic"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "source_evolver.py:_select_rewrite_strategy->mutation_op_weaver_cross_file_splice.py:shannon_entropy_from_critic"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_add_noop.py:shannon_entropy_from_critic->mutation_op_weaver_cross_weave.py:mutation_op_weaver_cross_weave"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "compulsory_rewrite.py:_load_track->mutation_op_weaver_force_hash_change.py:mutation_op_weaver_force_hash_change"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "weaver.py:_inject_op->mutation_op_weaver_force_rewrite_marker.py:shannon_entropy_from_critic"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_lens_force_meta.py:_save_genome->mutation_op_weaver_inject_self_rewrite.py:heal_module"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "source_evolver.py:_validate->mutation_op_weaver_manifest_writer.py:_save_counter"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "analyzer.py:shannon_entropy_from_critic->mutation_op_weaver_self_modify.py:shannon_entropy_from_critic"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "forced_feedback.py:_compute_autonomy->mutation_op_weaver_splice_inject.py:mutation_op_weaver_splice_inject"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "synth_paths_50.py:_g->mutation_op_weaver_swap_across_modules.py:shannon_entropy_from_critic"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "local_mutator.py:shannon_entropy_from_critic->mutation_op_weaver_swap_module_ref.py:shannon_entropy_from_critic"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_inject_self_rewrite.py:heal_module->mutation_op_weaver_t5_emergence_56.py:cross_splice_t5_force"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_critic_self_heal.py:mutation_op_critic_self_heal->mutator.py:shannon_entropy_from_critic"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "rewrite_orchestrator.py:_replace_func_body->nova.py:_inject_self_mutate_hook"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "metaforge_74.py:run->novel_shuffle_import_order_38_0a96.py:_read"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_inject_self_rewrite.py:heal_module->novel_swap_function_order_38_0067.py:_flip_prompt"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_cross_file_splice.py:run->oracle.py:_write_feedback_metrics"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "spark.py:_git_commit->quine_loop.py:_inject_quine_export"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_swap_module_ref.py:shannon_entropy_from_critic->rewrite_orchestrator.py:_read"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_add_noop.py:shannon_entropy_from_critic->runtime_codegen.py:_inject_codegen_into_existing"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_shuffle_imports.py:mutation_op_shuffle_imports->scout.py:_scout_cleanup_bak"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_cross_file_43.py:shannon_entropy_from_critic->seed_weaver.py:_inject_operator"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_clockwork_operator_crucible.py:run->source_evolver.py:visit_Name"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_cross_file_splice.py:mutation_op_weaver_cross_file_splice->source_force.py:_extract_functions"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_critic_infect_scoring.py:_valid->source_rewriter.py:__init__"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "novel_swap_function_order_38_0067.py:_valid->spark.py:_validate"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_clockwork_operator_crucible.py:run->synth_paths_50.py:_g"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "efficacy_tracker.py:_agent_score_map->synthesizer.py:_real_function_cross_wire"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_nova_t5_emergence.py:shannon_entropy_from_critic->synthesizer_selfheal_77.py:_sg"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_cross_file_splice.py:run->t5_emergence_driver.py:_write"
-        },
-        {
-            "gen": 66,
-            "type": "stale_force",
-            "detail": "mutation_op_critic_self_heal.py:shannon_entropy_from_critic->weaver.py:_inject_op"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "nova.py:_load_genome->analyzer.py:_cross_wire_two_modules"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_explorer_dna_replicon.py:_modules->bridge.py:_mutual_rewrite_web"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "scout.py:_t5_force_source_rewrite->clockwork.py:_valid_py"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "bridge.py:_bridge_handler_reciprocal_chain->compulsory_rewrite.py:_scrape_funcs"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "source_rewriter.py:_snapshot_all->critic.py:_rewrite_scoring_formula"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_force_hash_change.py:_t5_force_source_rewrite->cross_wire.py:_cross_wire_two_modules"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "oracle.py:_explorer_force_self_rewrite_66->crucible.py:_explorer_force_self_rewrite_66"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "compulsory_rewrite.py:_scrape_funcs->efficacy_tracker.py:snapshot_hashes_from_live_reloader"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_lens_force_meta.py:_explorer_force_self_rewrite_66->endogenous_rewriter.py:_endo_gen_47_09f1"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "analyzer.py:_scout_dead_agents_splice->forced_feedback.py:__init__"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "source_force.py:_force_meta_mutation_loop->forge.py:_force_genome_structure_melt"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "crucible.py:_explorer_force_self_rewrite_66->forge_randomizer.py:mutation_op_weaver_swap_across_modules"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_self_modify.py:_t5_force_source_rewrite->gene_factory.py:_read"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "cross_wire.py:snapshot_hashes_from_live_reloader->genforce.py:_explorer_force_self_rewrite_66"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "source_evolver.py:snapshot_hashes_from_live_reloader->lens.py:_function_bodies"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "analyzer.py:visit_If->live_reloader.py:_collect_py_files"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_synth_complete_graph.py:_write_file->livecode.py:_explorer_force_self_rewrite_66"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_t5_emergence_56.py:_t5_force_source_rewrite->local_mutator.py:_t5_force_source_rewrite"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_mirror_struct_rewrite_63.py:mutation_op_mirror_struct_rewrite_63->meta_healer.py:_explorer_force_self_rewrite_66"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_bridge_t5_metamorph.py:run->metaforge_74.py:visit_Constant"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_self_modify.py:mutation_op_weaver_self_modify->mirror.py:_swap_voice"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "analyzer.py:_explorer_force_self_rewrite_66->mutation_op_add_noop.py:visit_FunctionDef"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_ast_mutate.py:mutation_op_weaver_ast_mutate->mutation_op_bridge_mutual_rewrite.py:_t5_force_source_rewrite"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_t5_emergence_56.py:_all_modules->mutation_op_bridge_t5_metamorph.py:mutation_op_bridge_t5_metamorph"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "crucible.py:cross_splice_t5_force->mutation_op_clockwork_operator_crucible.py:_valid"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_swap_across_modules.py:_t5_force_source_rewrite->mutation_op_clockwork_t5_rewire.py:_write"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "analyzer.py:_scout_dead_agents_splice->mutation_op_clockwork_xbreed_gen65_ad95.py:_t5_force_source_rewrite"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_line_duplicate_skip.py:run->mutation_op_critic_infect_scoring.py:_t5_force_source_rewrite"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_clockwork_xbreed_gen65_ad95.py:snapshot_hashes_from_live_reloader->mutation_op_critic_self_heal.py:mutation_op_weaver_inject_self_rewrite"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "forge.py:_inject_selection_antichaos->mutation_op_explorer_dna_replicon.py:_inject_replicon_dna"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "forge_randomizer.py:_log->mutation_op_explorer_force_t5_self_rewrite.py:_hash"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_explorer_force_t5_self_rewrite.py:_read->mutation_op_explorer_full_cross.py:_force_every_module_ast_operator_mutate"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "analyzer.py:_explorer_force_self_rewrite_66->mutation_op_forge_body_cannibal.py:_load"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "synthesizer.py:_synthesize_new_module->mutation_op_forge_t5_force.py:_validate"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_clockwork_operator_crucible.py:_valid->mutation_op_insert_pass.py:snapshot_hashes_from_live_reloader"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_mirror_struct_rewrite_63.py:snapshot_hashes_from_live_reloader->mutation_op_insert_timestamp.py:_runtime_codegen_mutation_op_insert_timestamp_47"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_clockwork_operator_crucible.py:_load_genome->mutation_op_lens_force_meta.py:mutation_op_lens_force_meta"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_force_rewrite_marker.py:_t5_force_source_rewrite->mutation_op_line_duplicate_skip.py:reload_changes"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_add_noop.py:run->mutation_op_mirror_struct_rewrite_63.py:mutation_op_mirror_struct_rewrite_63"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "gene_factory.py:_read->mutation_op_mutator_cross_file_42.py:_explorer_force_self_rewrite_66"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_swap_module_ref.py:shannon_entropy_from_critic->mutation_op_nova_loop_evolver.py:_explorer_force_self_rewrite_66"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "lens.py:_save_counter->mutation_op_shuffle_imports.py:shannon_entropy_from_critic"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "compulsory_rewrite.py:_sg->mutation_op_synth_complete_graph.py:_extract_functions_from"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_clockwork_operator_crucible.py:shannon_entropy_factor->mutation_op_weaver_ast_mutate.py:_g"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_add_noop.py:mutation_op_mirror_struct_rewrite_63->mutation_op_weaver_autonomy_ratchet.py:_t5_force_source_rewrite"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_swap_module_ref.py:_explorer_force_self_rewrite_66->mutation_op_weaver_cross_file_43.py:mutation_op_weaver_cross_file_43"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_clockwork_t5_rewire.py:_explorer_force_self_rewrite_66->mutation_op_weaver_cross_weave.py:_flip_prompt"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "critic.py:self_modify->mutation_op_weaver_force_hash_change.py:_get_staleness_map"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "nova.py:_load_genome->mutation_op_weaver_force_rewrite_marker.py:snapshot_hashes_from_live_reloader"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "novel_shuffle_import_order_38_0a96.py:_t5_force_source_rewrite->mutation_op_weaver_inject_self_rewrite.py:heal_module"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "synthesizer_selfheal_77.py:_g->mutation_op_weaver_self_modify.py:_explorer_force_self_rewrite_66"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "seed_weaver.py:_t5_force_source_rewrite->mutation_op_weaver_splice_inject.py:_write"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_force_rewrite_marker.py:_runtime_codegen_mutation_op_nova_t5_splice_49_47->mutation_op_weaver_swap_across_modules.py:shannon_entropy_from_critic"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "forge_randomizer.py:_snapshot_hashes->mutation_op_weaver_swap_module_ref.py:snapshot_hashes_from_live_reloader"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "cross_wire.py:_all_modules->mutation_op_weaver_t5_emergence_56.py:_all_modules"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_explorer_force_t5_self_rewrite.py:_inject_self_rewrite_hook_to_modules->mutator.py:_inject_op"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "critic.py:_all_modules->nova.py:_inject_self_mutate_hook"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_explorer_full_cross.py:_read->novel_shuffle_import_order_38_0a96.py:_explorer_force_self_rewrite_66"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "forced_feedback.py:run->novel_swap_function_order_38_0067.py:visit_Constant"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "synthesizer.py:_force_cyclical_dependency_loop->oracle.py:snapshot_hashes_from_live_reloader"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "gene_factory.py:_modules->quine_loop.py:_spawn_quine_child"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "weaver.py:shannon_entropy_from_critic->rewrite_orchestrator.py:_hash"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_t5_emergence_56.py:snapshot_hashes_from_live_reloader->runtime_codegen.py:_explorer_force_self_rewrite_66"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_forge_t5_force.py:mutation_op_forge_t5_force_all->scout.py:_scout_cleanup_bak"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "analyzer.py:_t5_force_source_rewrite->seed_weaver.py:mutation_op_weaver_autonomy_ratchet"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "synth_runtime_codegen_94.py:_g->source_evolver.py:_save_genome"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_clockwork_operator_crucible.py:_t5_force_source_rewrite->source_force.py:_cross_contaminate_all"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_critic_infect_scoring.py:mutation_op_critic_infect_scoring->source_rewriter.py:_explorer_force_self_rewrite_66"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_forge_body_cannibal.py:mutation_op_forge_struct_key_drift->spark.py:_mutate_genome"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "crucible.py:_t5_force_source_rewrite->synth_paths_50.py:_t5_force_source_rewrite"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "quine_loop.py:_extract_func_bodies->synth_runtime_codegen_94.py:_validate"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_splice_inject.py:mutation_op_weaver_manifest_writer->synthesizer.py:_git_push"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "meta_healer.py:shannon_entropy_from_critic->synthesizer_selfheal_77.py:_t5_force_source_rewrite"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_weaver_self_modify.py:_seed_proposals_into_modules->t5_emergence_driver.py:_modules"
-        },
-        {
-            "gen": 95,
-            "type": "stale_force",
-            "detail": "mutation_op_add_noop.py:shannon_entropy_from_critic->weaver.py:_swap_voice"
-        }
-    ]
+   "generations": {},
+   "mutations": [
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_clockwork_operator_crucible.py:shannon_entropy_factor->analyzer.py:shannon_entropy_from_critic"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "analyzer.py:_git_log->bridge.py:_mutual_rewrite_web"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "seed_weaver.py:_inject_operator->clockwork.py:_pulse_driven_genome_prune"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_force_hash_change.py:mutation_op_weaver_force_hash_change->compulsory_rewrite.py:_inject_self_rewrite_loop"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "source_evolver.py:_save_genome->critic.py:shannon_entropy"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "live_reloader.py:reload_changes->cross_wire.py:_validate"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_add_noop.py:shannon_entropy_from_critic->crucible.py:shannon_entropy_from_critic"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "novel_swap_function_order_38_0067.py:run->efficacy_tracker.py:_agent_score_map"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_nova_t5_emergence.py:mutation_op_nova_t5_emergence_48->endogenous_rewriter.py:_modules"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "forge.py:_force_ast_mutation->forced_feedback.py:_inject_feedback_import"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_self_modify.py:shannon_entropy_from_critic->forge.py:_mutate_genome_topology"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_line_duplicate_skip.py:shannon_entropy_from_critic->forge_randomizer.py:_load_genome"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_cross_weave.py:_flip_prompt->gene_factory.py:shannon_entropy_from_critic"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "quine_loop.py:_valid_py->lens.py:shannon_entropy_from_critic"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "clockwork.py:_mutate_genome_topology->live_reloader.py:_hash_file"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_splice_inject.py:mutation_op_weaver_splice_inject->livecode.py:_eliminate_self_refs"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_autonomy_ratchet.py:run->local_mutator.py:shannon_entropy_from_critic"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "forced_feedback.py:_read_source->meta_healer.py:shannon_entropy_from_critic"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_swap_module_ref.py:mutation_op_weaver_swap_module_ref->mirror.py:_force_genome_self_loop"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "t5_emergence_driver.py:_hash->mutation_op_add_noop.py:shannon_entropy_from_critic"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "lens.py:run->mutation_op_bridge_mutual_rewrite.py:mutation_op_bridge_mutual_rewrite"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "synthesizer.py:_force_structural_mutation->mutation_op_clockwork_operator_crucible.py:shannon_entropy_factor"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_swap_module_ref.py:shannon_entropy_from_critic->mutation_op_clockwork_t5_rewire.py:_all_modules"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "synth_paths_50.py:run->mutation_op_comment_shift.py:mutation_op_comment_shift"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "scout.py:shannon_entropy_from_critic->mutation_op_critic_infect_scoring.py:infect_module"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "crucible.py:shannon_entropy_from_critic->mutation_op_critic_self_heal.py:_valid"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "novel_shuffle_import_order_38_0a96.py:shuffle_import_order->mutation_op_insert_pass.py:visit_Name"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "forge_randomizer.py:_commit_and_push->mutation_op_insert_timestamp.py:_runtime_codegen_mutation_op_insert_timestamp_47"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "compulsory_rewrite.py:_register_ops->mutation_op_lens_force_meta.py:shannon_entropy_from_critic"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_nova_loop_evolver.py:shannon_entropy_from_critic->mutation_op_line_duplicate_skip.py:mutation_op_comment_shift"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_shuffle_imports.py:shannon_entropy_from_critic->mutation_op_mirror_struct_rewrite_63.py:mutation_op_mirror_struct_rewrite_63"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_self_modify.py:shannon_entropy_from_critic->mutation_op_mutator_cross_file_42.py:mutation_op_mutator_cross_file_42"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "weaver.py:_inject_op->mutation_op_nova_loop_evolver.py:shannon_entropy_from_critic"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_manifest_writer.py:_save_counter->mutation_op_nova_t5_emergence.py:shannon_entropy_from_critic"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_mirror_struct_rewrite_63.py:shannon_entropy_from_critic->mutation_op_nova_t5_splice_49.py:shannon_entropy_from_critic"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_clockwork_operator_crucible.py:_save_genome->mutation_op_shuffle_imports.py:mutation_op_shuffle_imports"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "synth_paths_50.py:_g->mutation_op_weaver_ast_mutate.py:visit_If"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "novel_shuffle_import_order_38_0a96.py:_write->mutation_op_weaver_autonomy_ratchet.py:_write_generated_module"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "genforce.py:run->mutation_op_weaver_cross_file_43.py:shannon_entropy_from_critic"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "source_evolver.py:_select_rewrite_strategy->mutation_op_weaver_cross_file_splice.py:shannon_entropy_from_critic"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_add_noop.py:shannon_entropy_from_critic->mutation_op_weaver_cross_weave.py:mutation_op_weaver_cross_weave"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "compulsory_rewrite.py:_load_track->mutation_op_weaver_force_hash_change.py:mutation_op_weaver_force_hash_change"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "weaver.py:_inject_op->mutation_op_weaver_force_rewrite_marker.py:shannon_entropy_from_critic"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_lens_force_meta.py:_save_genome->mutation_op_weaver_inject_self_rewrite.py:heal_module"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "source_evolver.py:_validate->mutation_op_weaver_manifest_writer.py:_save_counter"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "analyzer.py:shannon_entropy_from_critic->mutation_op_weaver_self_modify.py:shannon_entropy_from_critic"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "forced_feedback.py:_compute_autonomy->mutation_op_weaver_splice_inject.py:mutation_op_weaver_splice_inject"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "synth_paths_50.py:_g->mutation_op_weaver_swap_across_modules.py:shannon_entropy_from_critic"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "local_mutator.py:shannon_entropy_from_critic->mutation_op_weaver_swap_module_ref.py:shannon_entropy_from_critic"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_inject_self_rewrite.py:heal_module->mutation_op_weaver_t5_emergence_56.py:cross_splice_t5_force"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_critic_self_heal.py:mutation_op_critic_self_heal->mutator.py:shannon_entropy_from_critic"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "rewrite_orchestrator.py:_replace_func_body->nova.py:_inject_self_mutate_hook"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "metaforge_74.py:run->novel_shuffle_import_order_38_0a96.py:_read"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_inject_self_rewrite.py:heal_module->novel_swap_function_order_38_0067.py:_flip_prompt"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_cross_file_splice.py:run->oracle.py:_write_feedback_metrics"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "spark.py:_git_commit->quine_loop.py:_inject_quine_export"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_swap_module_ref.py:shannon_entropy_from_critic->rewrite_orchestrator.py:_read"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_add_noop.py:shannon_entropy_from_critic->runtime_codegen.py:_inject_codegen_into_existing"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_shuffle_imports.py:mutation_op_shuffle_imports->scout.py:_scout_cleanup_bak"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_cross_file_43.py:shannon_entropy_from_critic->seed_weaver.py:_inject_operator"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_clockwork_operator_crucible.py:run->source_evolver.py:visit_Name"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_cross_file_splice.py:mutation_op_weaver_cross_file_splice->source_force.py:_extract_functions"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_critic_infect_scoring.py:_valid->source_rewriter.py:__init__"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "novel_swap_function_order_38_0067.py:_valid->spark.py:_validate"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_clockwork_operator_crucible.py:run->synth_paths_50.py:_g"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "efficacy_tracker.py:_agent_score_map->synthesizer.py:_real_function_cross_wire"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_nova_t5_emergence.py:shannon_entropy_from_critic->synthesizer_selfheal_77.py:_sg"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_cross_file_splice.py:run->t5_emergence_driver.py:_write"
+      },
+      {
+         "gen": 66,
+         "type": "stale_force",
+         "detail": "mutation_op_critic_self_heal.py:shannon_entropy_from_critic->weaver.py:_inject_op"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "nova.py:_load_genome->analyzer.py:_cross_wire_two_modules"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_explorer_dna_replicon.py:_modules->bridge.py:_mutual_rewrite_web"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "scout.py:_t5_force_source_rewrite->clockwork.py:_valid_py"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "bridge.py:_bridge_handler_reciprocal_chain->compulsory_rewrite.py:_scrape_funcs"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "source_rewriter.py:_snapshot_all->critic.py:_rewrite_scoring_formula"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_force_hash_change.py:_t5_force_source_rewrite->cross_wire.py:_cross_wire_two_modules"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "oracle.py:_explorer_force_self_rewrite_66->crucible.py:_explorer_force_self_rewrite_66"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "compulsory_rewrite.py:_scrape_funcs->efficacy_tracker.py:snapshot_hashes_from_live_reloader"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_lens_force_meta.py:_explorer_force_self_rewrite_66->endogenous_rewriter.py:_endo_gen_47_09f1"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "analyzer.py:_scout_dead_agents_splice->forced_feedback.py:__init__"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "source_force.py:_force_meta_mutation_loop->forge.py:_force_genome_structure_melt"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "crucible.py:_explorer_force_self_rewrite_66->forge_randomizer.py:mutation_op_weaver_swap_across_modules"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_self_modify.py:_t5_force_source_rewrite->gene_factory.py:_read"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "cross_wire.py:snapshot_hashes_from_live_reloader->genforce.py:_explorer_force_self_rewrite_66"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "source_evolver.py:snapshot_hashes_from_live_reloader->lens.py:_function_bodies"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "analyzer.py:visit_If->live_reloader.py:_collect_py_files"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_synth_complete_graph.py:_write_file->livecode.py:_explorer_force_self_rewrite_66"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_t5_emergence_56.py:_t5_force_source_rewrite->local_mutator.py:_t5_force_source_rewrite"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_mirror_struct_rewrite_63.py:mutation_op_mirror_struct_rewrite_63->meta_healer.py:_explorer_force_self_rewrite_66"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_bridge_t5_metamorph.py:run->metaforge_74.py:visit_Constant"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_self_modify.py:mutation_op_weaver_self_modify->mirror.py:_swap_voice"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "analyzer.py:_explorer_force_self_rewrite_66->mutation_op_add_noop.py:visit_FunctionDef"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_ast_mutate.py:mutation_op_weaver_ast_mutate->mutation_op_bridge_mutual_rewrite.py:_t5_force_source_rewrite"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_t5_emergence_56.py:_all_modules->mutation_op_bridge_t5_metamorph.py:mutation_op_bridge_t5_metamorph"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "crucible.py:cross_splice_t5_force->mutation_op_clockwork_operator_crucible.py:_valid"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_swap_across_modules.py:_t5_force_source_rewrite->mutation_op_clockwork_t5_rewire.py:_write"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "analyzer.py:_scout_dead_agents_splice->mutation_op_clockwork_xbreed_gen65_ad95.py:_t5_force_source_rewrite"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_line_duplicate_skip.py:run->mutation_op_critic_infect_scoring.py:_t5_force_source_rewrite"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_clockwork_xbreed_gen65_ad95.py:snapshot_hashes_from_live_reloader->mutation_op_critic_self_heal.py:mutation_op_weaver_inject_self_rewrite"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "forge.py:_inject_selection_antichaos->mutation_op_explorer_dna_replicon.py:_inject_replicon_dna"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "forge_randomizer.py:_log->mutation_op_explorer_force_t5_self_rewrite.py:_hash"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_explorer_force_t5_self_rewrite.py:_read->mutation_op_explorer_full_cross.py:_force_every_module_ast_operator_mutate"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "analyzer.py:_explorer_force_self_rewrite_66->mutation_op_forge_body_cannibal.py:_load"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "synthesizer.py:_synthesize_new_module->mutation_op_forge_t5_force.py:_validate"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_clockwork_operator_crucible.py:_valid->mutation_op_insert_pass.py:snapshot_hashes_from_live_reloader"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_mirror_struct_rewrite_63.py:snapshot_hashes_from_live_reloader->mutation_op_insert_timestamp.py:_runtime_codegen_mutation_op_insert_timestamp_47"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_clockwork_operator_crucible.py:_load_genome->mutation_op_lens_force_meta.py:mutation_op_lens_force_meta"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_force_rewrite_marker.py:_t5_force_source_rewrite->mutation_op_line_duplicate_skip.py:reload_changes"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_add_noop.py:run->mutation_op_mirror_struct_rewrite_63.py:mutation_op_mirror_struct_rewrite_63"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "gene_factory.py:_read->mutation_op_mutator_cross_file_42.py:_explorer_force_self_rewrite_66"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_swap_module_ref.py:shannon_entropy_from_critic->mutation_op_nova_loop_evolver.py:_explorer_force_self_rewrite_66"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "lens.py:_save_counter->mutation_op_shuffle_imports.py:shannon_entropy_from_critic"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "compulsory_rewrite.py:_sg->mutation_op_synth_complete_graph.py:_extract_functions_from"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_clockwork_operator_crucible.py:shannon_entropy_factor->mutation_op_weaver_ast_mutate.py:_g"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_add_noop.py:mutation_op_mirror_struct_rewrite_63->mutation_op_weaver_autonomy_ratchet.py:_t5_force_source_rewrite"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_swap_module_ref.py:_explorer_force_self_rewrite_66->mutation_op_weaver_cross_file_43.py:mutation_op_weaver_cross_file_43"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_clockwork_t5_rewire.py:_explorer_force_self_rewrite_66->mutation_op_weaver_cross_weave.py:_flip_prompt"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "critic.py:self_modify->mutation_op_weaver_force_hash_change.py:_get_staleness_map"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "nova.py:_load_genome->mutation_op_weaver_force_rewrite_marker.py:snapshot_hashes_from_live_reloader"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "novel_shuffle_import_order_38_0a96.py:_t5_force_source_rewrite->mutation_op_weaver_inject_self_rewrite.py:heal_module"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "synthesizer_selfheal_77.py:_g->mutation_op_weaver_self_modify.py:_explorer_force_self_rewrite_66"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "seed_weaver.py:_t5_force_source_rewrite->mutation_op_weaver_splice_inject.py:_write"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_force_rewrite_marker.py:_runtime_codegen_mutation_op_nova_t5_splice_49_47->mutation_op_weaver_swap_across_modules.py:shannon_entropy_from_critic"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "forge_randomizer.py:_snapshot_hashes->mutation_op_weaver_swap_module_ref.py:snapshot_hashes_from_live_reloader"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "cross_wire.py:_all_modules->mutation_op_weaver_t5_emergence_56.py:_all_modules"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_explorer_force_t5_self_rewrite.py:_inject_self_rewrite_hook_to_modules->mutator.py:_inject_op"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "critic.py:_all_modules->nova.py:_inject_self_mutate_hook"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_explorer_full_cross.py:_read->novel_shuffle_import_order_38_0a96.py:_explorer_force_self_rewrite_66"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "forced_feedback.py:run->novel_swap_function_order_38_0067.py:visit_Constant"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "synthesizer.py:_force_cyclical_dependency_loop->oracle.py:snapshot_hashes_from_live_reloader"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "gene_factory.py:_modules->quine_loop.py:_spawn_quine_child"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "weaver.py:shannon_entropy_from_critic->rewrite_orchestrator.py:_hash"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_t5_emergence_56.py:snapshot_hashes_from_live_reloader->runtime_codegen.py:_explorer_force_self_rewrite_66"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_forge_t5_force.py:mutation_op_forge_t5_force_all->scout.py:_scout_cleanup_bak"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "analyzer.py:_t5_force_source_rewrite->seed_weaver.py:mutation_op_weaver_autonomy_ratchet"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "synth_runtime_codegen_94.py:_g->source_evolver.py:_save_genome"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_clockwork_operator_crucible.py:_t5_force_source_rewrite->source_force.py:_cross_contaminate_all"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_critic_infect_scoring.py:mutation_op_critic_infect_scoring->source_rewriter.py:_explorer_force_self_rewrite_66"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_forge_body_cannibal.py:mutation_op_forge_struct_key_drift->spark.py:_mutate_genome"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "crucible.py:_t5_force_source_rewrite->synth_paths_50.py:_t5_force_source_rewrite"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "quine_loop.py:_extract_func_bodies->synth_runtime_codegen_94.py:_validate"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_splice_inject.py:mutation_op_weaver_manifest_writer->synthesizer.py:_git_push"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "meta_healer.py:shannon_entropy_from_critic->synthesizer_selfheal_77.py:_t5_force_source_rewrite"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_weaver_self_modify.py:_seed_proposals_into_modules->t5_emergence_driver.py:_modules"
+      },
+      {
+         "gen": 95,
+         "type": "stale_force",
+         "detail": "mutation_op_add_noop.py:shannon_entropy_from_critic->weaver.py:_swap_voice"
+      }
+   ]
 }

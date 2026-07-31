@@ -1,5 +1,5 @@
 {
-  "generation": 84,
+  "generation": 85,
   "clockwork_interval": 3,
   "clockwork_intensity": 0.7,
   "clockwork_diversity": 0.5,
@@ -18,9 +18,9 @@
   "critic_infection_count": 0,
   "execution_order": "shuffle",
   "best_score": 9.2,
-  "topic": "quine-loop gen=84: full cross-module run() splice — every target gets bodies from ALL peers, forced self-rewrite, deeper cascade, quine full_cross_coverage tracking",
+  "topic": "quine-loop gen=84: full cross-module run() splice \u2014 every target gets bodies from ALL peers, forced self-rewrite, deeper cascade, quine full_cross_coverage tracking",
   "quine_force_all_modules": true,
-  "quine_minimum_splices_per_gen": 15,
+  "quine_minimum_splices_per_gen": 20,
   "quine_full_cross_coverage_target": 100,
   "spawn_threshold": 5,
   "prune_threshold": 3,
@@ -128,7 +128,10 @@
     "mutation_op_sf_param_drift_65",
     "mutation_op_critic_fix_scoring",
     "critic_substance_scorer",
-    "critic_contamination_scorer"
+    "critic_contamination_scorer",
+    "mutation_op_quine_reciprocal",
+    "mutation_op_quine_chain",
+    "mutation_op_quine_spawn"
   ],
   "prompt_modifiers": [
     " Write executable code.",
@@ -713,7 +716,7 @@
       "mutation": "quine_loop gen=57: replaced AST-operator-swap quine with cross-module run() splicing \u2014 pulls random function bodies from peer modules into target's run(), self-mutates constants, no longer skips itself. Added mutation_op_quine_cross_splice."
     },
     {
-  "generation": 83,
+      "generation": 83,
       "scores": {
         "explorer": 7.5,
         "critic": 9.0,
@@ -1458,7 +1461,7 @@
   "feedback_forced_rewrites": 7,
   "feedback_failures": 0,
   "feedback_last_gen": 38,
-  "quine_loop_mutations": 1,
+  "quine_loop_mutations": 2,
   "strategy_effectiveness": {
     "extract_subexpr": 1.1,
     "rename_local_vars": 1.2000000000000002
@@ -1736,7 +1739,7 @@
     "source_autonomy_index": 0.2,
     "selection_randomness_index": 0.15
   },
-  "emergence_velocity": 0.0644,
+  "emergence_velocity": 0.0844,
   "self_rewrite_coverage": 69.2,
   "evolver_max_rewrites": 2,
   "bandwidth_governor_active": false,
@@ -2481,5 +2484,29 @@
     "value": 0.4944390806364397,
     "active": true
   },
-  "critic_last_substance_gen": 82
+  "critic_last_substance_gen": 82,
+  "quine_version": 1,
+  "quine_gen": 85,
+  "quine_reciprocal_pairs": 3,
+  "quine_chain_length": 2,
+  "quine_emergence": {
+    "export_coverage": 45.0,
+    "full_cross_coverage": 68.0,
+    "cascade_coverage": 22.0,
+    "tag_coverage": 78.0,
+    "reciprocal_coverage": 15.0,
+    "chain_coverage": 12.0,
+    "child_count": 1,
+    "t5_dual_quine": 30.0
+  },
+  "quine_emergence_composite": 0.362,
+  "quine_last_changes": [
+    "cross:multiple",
+    "reciprocal:pair1",
+    "reciprocal:pair2",
+    "chain:A->B->C",
+    "spawned:quine_child"
+  ],
+  "quine_total_splices": 15,
+  "quine_total_ops": 6
 }

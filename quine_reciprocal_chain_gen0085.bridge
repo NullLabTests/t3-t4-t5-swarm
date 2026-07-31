@@ -1,0 +1,6 @@
+# quine:bridge gen=85 type=reciprocal_chain
+# reciprocal pairs: A<->B mutual run() cross-wiring
+# chain rewriters: A->B->C->D ring topology
+# spawn: quine_child from 3 parent fragments
+# ops: mutation_op_quine_reciprocal, mutation_op_quine_chain, mutation_op_quine_spawn
+# emergence_velocity: 0.0644 -> 0.0844

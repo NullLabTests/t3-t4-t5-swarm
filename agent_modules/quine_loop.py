@@ -1,4 +1,4 @@
-import os, random, ast, hashlib, json, copy, math, time, sys
+import os, random, ast, hashlib, json, copy, math, time, sys, itertools
 from self_mutate import self_mutate
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -123,6 +123,118 @@ def _full_cross_splice(mod_path, pool_bodies, gen, visited_depth):
             _write(mod_path, tag + new_code)
     return results
 
+def _reciprocal_quine_pair(gen):
+    mods = _modules()
+    if len(mods) < 2:
+        return []
+    random.shuffle(mods)
+    pairs = list(itertools.combinations(mods[:6], 2))
+    random.shuffle(pairs)
+    results = []
+    for a_name, b_name in pairs[:3]:
+        a_path = os.path.join(MOD, a_name)
+        b_path = os.path.join(MOD, b_name)
+        a_code = _read(a_path)
+        b_code = _read(b_path)
+        if not a_code or not b_code:
+            continue
+        try:
+            a_tree = ast.parse(a_code)
+            b_tree = ast.parse(b_code)
+        except SyntaxError:
+            continue
+        a_run = _find_run_func(a_tree)
+        b_run = _find_run_func(b_tree)
+        if not a_run or not b_run:
+            continue
+        a_funcs = [n for n in ast.walk(a_tree) if isinstance(n, ast.FunctionDef) and n.name != 'run']
+        b_funcs = [n for n in ast.walk(b_tree) if isinstance(n, ast.FunctionDef) and n.name != 'run']
+        if not a_funcs or not b_funcs:
+            continue
+        a_donor = random.choice(a_funcs)
+        b_donor = random.choice(b_funcs)
+        a_import = ast.parse(f'from {a_name.replace(".py","")} import {a_donor.name}').body[0]
+        b_import = ast.parse(f'from {b_name.replace(".py","")} import {b_donor.name}').body[0]
+        b_run.body.insert(0, a_import)
+        a_run.body.insert(0, b_import)
+        b_call = ast.Expr(ast.Call(func=ast.Name(id=a_donor.name, ctx=ast.Load()), args=[], keywords=[]))
+        a_call = ast.Expr(ast.Call(func=ast.Name(id=b_donor.name, ctx=ast.Load()), args=[], keywords=[]))
+        splice_a = random.randint(0, max(0, len(b_run.body)))
+        splice_b = random.randint(0, max(0, len(a_run.body)))
+        b_run.body.insert(splice_a, b_call)
+        a_run.body.insert(splice_b, a_call)
+        try:
+            ast.fix_missing_locations(a_tree)
+            ast.fix_missing_locations(b_tree)
+            a_new = ast.unparse(a_tree)
+            b_new = ast.unparse(b_tree)
+            if _valid_py(a_new) and _valid_py(b_new):
+                _write(a_path, f'# quine:reciprocal pair={b_name} gen={gen}\n' + a_new)
+                _write(b_path, f'# quine:reciprocal pair={a_name} gen={gen}\n' + b_new)
+                results.append(f'{a_name}<->{b_name}')
+        except:
+            continue
+    return results
+
+def _spawn_quine_child(gen):
+    mods = [m for m in _modules() if m != 'quine_loop.py']
+    if len(mods) < 3:
+        return None
+    parents = random.sample(mods, min(3, len(mods)))
+    fragments = []
+    labels = []
+    for p in parents:
+        code = _read(os.path.join(MOD, p))
+        if not code:
+            continue
+        funcs = _extract_all_funcs(code)
+        if not funcs:
+            continue
+        fname = random.choice(list(funcs.keys()))
+        fragments.append(funcs[fname])
+        labels.append(f'{p.replace(".py","")}.{fname}')
+    child_name = f'quine_child_{gen}_{random.getrandbits(16):04x}.py'
+    child_path = os.path.join(MOD, child_name)
+    imports = 'import os, random, ast, json\n'
+    header = f'# quine:spawned gen={gen} parents={"+".join(labels)}\n'
+    body = f'\ndef run(genome):\n    gen = genome.get("generation", 0)\n    return f"[quine-child:{child_name}] gen={{gen}} parents={"+".join(labels)}"\n\n'
+    child_code = header + imports + '\n'.join(fragments) + body
+    if _valid_py(child_code) and not os.path.exists(child_path):
+        _write(child_path, child_code)
+        return child_name
+    return None
+
+def _quine_chain_rewrite(gen):
+    mods = [m for m in _modules() if m != 'quine_loop.py']
+    if len(mods) < 3:
+        return []
+    random.shuffle(mods)
+    chain = mods[:min(6, len(mods))]
+    results = []
+    for i in range(len(chain)):
+        src_name = chain[i]
+        tgt_name = chain[(i + 1) % len(chain)]
+        if src_name == tgt_name:
+            continue
+        src_path = os.path.join(MOD, src_name)
+        tgt_path = os.path.join(MOD, tgt_name)
+        src_code = _read(src_path)
+        tgt_code = _read(tgt_path)
+        if not src_code or not tgt_code:
+            continue
+        src_funcs = _extract_all_funcs(src_code)
+        if not src_funcs:
+            continue
+        donor = random.choice(list(src_funcs.keys()))
+        donor_code = src_funcs[donor]
+        if donor_code in tgt_code:
+            continue
+        tagged = f'# quine:chain src={src_name}.{donor}->{tgt_name} gen={gen}\n{donor_code}'
+        if _valid_py(tgt_code + '\n' + tagged):
+            _write(tgt_path, tgt_code + '\n' + tagged)
+            results.append(f'{src_name}.{donor}->{tgt_name}')
+    return results
+
 def _force_self_rewrite(gen):
     self_path = os.path.join(MOD, 'quine_loop.py')
     code = _read(self_path)
@@ -198,6 +310,35 @@ def _inject_quine_ops(genome):
         if 'return' in r[i] and random.random() < 0.3:
             r[i] = r[i] + '  # quine:cascade-annotated'
     return r
+""",
+        'mutation_op_quine_reciprocal': """def mutation_op_quine_reciprocal(lines, funcs, target_name):
+    r = list(lines)
+    if not r or len(r) < 3:
+        return r
+    r.insert(0, '# quine:reciprocal-op gen=%d' % genome.get('generation', 0))
+    if random.random() < 0.5:
+        r.append('')
+        r.append('# quine:peer-marker - another module in the swarm will cross-reference this')
+    return r
+""",
+        'mutation_op_quine_chain': """def mutation_op_quine_chain(lines, funcs, target_name):
+    r = list(lines)
+    if not r or len(r) < 2:
+        return r
+    import random as _qr
+    peers = [k for k in funcs.keys() if k != target_name]
+    if peers:
+        donor = _qr.choice(peers)
+        r.insert(0, '# quine:chain-link from=%s gen=%d' % (donor, genome.get('generation', 0)))
+    return r
+""",
+        'mutation_op_quine_spawn': """def mutation_op_quine_spawn(lines, funcs, target_name):
+    r = list(lines)
+    if not r:
+        return r
+    r.append('')
+    r.append('# quine:spawn-seed - this module may trigger a child spawn')
+    return r
 """
     }
     registered = []
@@ -217,19 +358,26 @@ def _measure_emergence(genome):
     has_full_cross = sum(1 for m in mods if 'quine:full-cross' in _read(os.path.join(MOD, m)))
     has_cascade = sum(1 for m in mods if 'quine:cascade' in _read(os.path.join(MOD, m)))
     has_quine_tag = sum(1 for m in mods if 'quine:' in _read(os.path.join(MOD, m)))
+    has_reciprocal = sum(1 for m in mods if 'quine:reciprocal' in _read(os.path.join(MOD, m)))
+    has_chain = sum(1 for m in mods if 'quine:chain' in _read(os.path.join(MOD, m)))
+    child_count = len([m for m in mods if m.startswith('quine_child_')])
     both_export_and_cross = sum(1 for m in mods if '_quine_export' in _read(os.path.join(MOD, m)) and 'quine:full-cross' in _read(os.path.join(MOD, m)))
     scores = {
         'export_coverage': round(has_export / max(total, 1) * 100, 1),
         'full_cross_coverage': round(has_full_cross / max(total, 1) * 100, 1),
         'cascade_coverage': round(has_cascade / max(total, 1) * 100, 1),
         'tag_coverage': round(has_quine_tag / max(total, 1) * 100, 1),
+        'reciprocal_coverage': round(has_reciprocal / max(total, 1) * 100, 1),
+        'chain_coverage': round(has_chain / max(total, 1) * 100, 1),
+        'child_count': child_count,
         't5_dual_quine': round(both_export_and_cross / max(total, 1) * 100, 1)
     }
     genome['quine_emergence'] = scores
     genome['quine_emergence_composite'] = round(
-        (scores['export_coverage'] * 0.25 + scores['full_cross_coverage'] * 0.35 +
-         scores['cascade_coverage'] * 0.2 + scores['tag_coverage'] * 0.1 +
-         scores['t5_dual_quine'] * 0.1) / 100, 4
+        (scores['export_coverage'] * 0.15 + scores['full_cross_coverage'] * 0.25 +
+         scores['cascade_coverage'] * 0.1 + scores['tag_coverage'] * 0.05 +
+         scores['reciprocal_coverage'] * 0.2 + scores['chain_coverage'] * 0.15 +
+         scores['child_count'] * 0.05 + scores['t5_dual_quine'] * 0.05) / 100, 4
     )
     return scores
 
@@ -239,7 +387,9 @@ def _add_key(genome):
         'quine_entropy_seed': hashlib.md5(str(random.random() + time.time()).encode()).hexdigest()[:12],
         'quine_cross_depth': random.randint(1, 5),
         'quine_self_target_active': random.choice([True, False]),
-        'quine_direct_mutate_count': genome.get('quine_direct_mutate_count', 0) + 1
+        'quine_direct_mutate_count': genome.get('quine_direct_mutate_count', 0) + 1,
+        'quine_reciprocal_pairs': genome.get('quine_reciprocal_pairs', 0) + random.randint(0, 3),
+        'quine_chain_length': genome.get('quine_chain_length', 0) + random.randint(1, 4)
     }
     k = random.choice(list(new_keys.keys()))
     genome[k] = new_keys[k]
@@ -268,6 +418,20 @@ def run(genome):
             export_result = _inject_quine_export(path, gen)
             if export_result:
                 changes.append(f'{mod}:{export_result}')
+    reciprocal_results = _reciprocal_quine_pair(gen)
+    if reciprocal_results:
+        for r in reciprocal_results:
+            changes.append(f'reciprocal:{r}')
+            total_splices += 2
+    chain_results = _quine_chain_rewrite(gen)
+    if chain_results:
+        for r in chain_results:
+            changes.append(f'chain:{r}')
+            total_splices += 1
+    child = _spawn_quine_child(gen)
+    if child:
+        changes.append(f'spawned:{child}')
+        total_splices += 3
     self_result = _force_self_rewrite(gen)
     if self_result:
         changes.append(f'quine_loop:{self_result}')
@@ -279,12 +443,14 @@ def run(genome):
     self_mutate(__file__)
     scores = _measure_emergence(genome)
     old_ev = genome.get('emergence_velocity', 1.0)
-    delta = scores['t5_dual_quine'] * 0.04 + total_splices * 0.03 + len(changes) * 0.02
+    delta = (scores['t5_dual_quine'] * 0.03 + scores['reciprocal_coverage'] * 0.04 +
+             scores['chain_coverage'] * 0.03 + total_splices * 0.02 + len(changes) * 0.015)
     genome['emergence_velocity'] = round(min(2.5, max(0.0, old_ev + delta)), 4)
     genome['quine_last_changes'] = changes
     genome['quine_total_splices'] = genome.get('quine_total_splices', 0) + total_splices
     genome['quine_total_ops'] = genome.get('quine_total_ops', 0) + len(changes)
-    return f"[quine-loop] gen={gen} splices={total_splices} export={scores['export_coverage']}% cross={scores['full_cross_coverage']}% t5={scores['t5_dual_quine']}% ev={genome['emergence_velocity']}"
+    genome['quine_gen'] = gen
+    return f"[quine-loop] gen={gen} splices={total_splices} reciprocal={scores['reciprocal_coverage']}% chain={scores['chain_coverage']}% child={scores['child_count']} t5={scores['t5_dual_quine']}% ev={genome['emergence_velocity']}"
 
 def _t5_force_source_rewrite():
     try:

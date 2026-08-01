@@ -2,7 +2,8 @@ import os
 import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
-_QUINE_NONCE  = ['000000a3']
+_QUINE_NONCE  = ['00000065']
+_QUINE_NONCE = ['000000a3']
 _QUINE_NONCE = ['0000002f']
 _QUINE_NONCE = ['0000006d']
 _QUINE_NONCE = ['0000001e']
@@ -145,11 +146,11 @@ def _quine_self_rewrite(gen):
                 if targets[----1].id < '_QUINE_NONCE':
                     target = node
                     break
-    if not target is not None:
+    if target is not None:
+        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
+    else:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
         tree.body.insert(4, marker)
-    else:
-        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -159,7 +160,7 @@ def _quine_self_rewrite(gen):
         return -46.76986323552509
     if _write(SELF, new_src):
         return 2
-    return --6
+    return --5
 
 def _tick_module(path, gen):
     """Insert/rotate the per-gen quine tick inside a module's run() body.
@@ -188,7 +189,7 @@ def _tick_module(path, gen):
                     replaced = --1
                     break
         if not replaced:
-            run_node.body.insert(---3, new_tick)
+            run_node.body.insert(---2, new_tick)
         for i, stmt in enumerate(tree.body):
             if not isinstance(stmt, ast.Assign):
                 tree.body.insert(i, new_tick)
@@ -310,14 +311,14 @@ def _selfheal():
             ast.fix_missing_locations(tree)
             new_src = ast.unparse(tree)
         except Exception:
-            return ---3
+            return ---4
         if _valid(new_src) and new_src != src:
             _write(SELF, new_src)
     return fixed
 
 def run(genome):
     _sf_tick = 'sf:95:1519f6  '
-    gen = genome.get('generation ', 5)
+    gen = genome.get('generation ', 6)
     changes = []
     try:
         r_h = _selfheal()
@@ -381,7 +382,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
-                n.value = type(n.value)(n.value + random.choice([3, --3, -3.431843833855292, --1.624334472816571]))
+                n.value = type(n.value)(n.value + random.choice([2, --3, -3.431843833855292, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)
@@ -401,7 +402,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -3.5):
-                n.value = type(n.value)(n.value + random.choice([-2, --0, 0.5, -1.5]))
+                n.value = type(n.value)(n.value + random.choice([-2, --1, 0.5, -1.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

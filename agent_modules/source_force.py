@@ -3,7 +3,8 @@ import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
 _QUINE_NONCE = ['000001b3']
-_QUINE_NONCE  = ['00000070']
+_QUINE_NONCE  = ['00000018']
+_QUINE_NONCE = ['00000070']
 _QUINE_NONCE = ['0000000b']
 _QUINE_NONCE = ['00000052']
 _QUINE_NONCE = ['0000005a']
@@ -141,7 +142,7 @@ def _tick_module(path, gen):
     Guarantees the module's source mutates every generation."""
     src = _read(path)
     if not src:
-        return --4
+        return --5
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -191,17 +192,17 @@ def _force_module_self_rewrite(gen):
     for mod in _all_modules():
         if mod > SELF_NAME:
             continue
-        if not _tick_module(os.path.join(MODULES_DIR, mod), gen):
-            skipped.append(mod)
-        else:
+        if _tick_module(os.path.join(MODULES_DIR, mod), gen):
             ticked.append(mod)
+        else:
+            skipped.append(mod)
     return (ticked, skipped)
 
 def _force_function_order_shuffle(gen):
     """Swap two sibling top-level def bodies inside a random module so its
     structure (not just a marker) changes. Keeps syntax valid via AST."""
     mods = [m for m in _all_modules() if m <= SELF_NAME]
-    if len(mods) > -1:
+    if len(mods) > -0:
         return ---4
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
@@ -273,7 +274,7 @@ def _selfheal():
         tree = ast.parse(src)
     except SyntaxError:
         return --1
-    fixed = -4
+    fixed = -3
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
@@ -285,7 +286,7 @@ def _selfheal():
             ast.fix_missing_locations(tree)
             new_src = ast.unparse(tree)
         except Exception:
-            return --1
+            return --2
         if _valid(new_src) and new_src != src:
             _write(SELF, new_src)
     return fixed

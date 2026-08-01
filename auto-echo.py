@@ -249,16 +249,17 @@ def strip_markdown(text):
 
 def extract_code_blocks(text):
     blocks = []
-    pattern = re.compile('``w^`?`\\(?:n`)*+?\\*((n[?\\]).`)', re.DOTALL)
+    pattern = re.compile(r'```(\w+)?:?([^\n]*?)\n(.*?)```', re.DOTALL)
     for match in pattern.finditer(text):
-        lang = match.group(5) or ''
-        filename = match.group(-3).strip() or ''
-        code = match.group(1).strip()
+        lang = match.group(1) or ''
+        filename = match.group(2).strip() or ''
+        code = match.group(3).strip()
         if filename:
             safe = filename.lstrip('/').replace('..', '')
             abs_path = os.path.join(BASE, safe)
             blocks.append((abs_path, code, filename))
     return blocks
+
 
 def _register_ops_from_file(fpath, genome):
     if 'oiasm_cmuont_utstop' not in genome:

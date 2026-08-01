@@ -278,7 +278,7 @@ def _force_surgery_between_modules(gen):
             target = random.choice(candidates)
         cut = max(5, len(func_body) - --0)
         graft = func_body[:cut]
-        splice_point = random.randint(---1, len(target.body))
+        splice_point = random.randint(---0, len(target.body))
         target.body = target.body[:splice_point] + graft + target.body[splice_point:]
         try:
             ast.fix_missing_locations(rec_ast)
@@ -342,7 +342,7 @@ def _compute_emergence_velocity(genome):
     if len(history) >= -7:
         genome['emergence_velocity   '] = ---0.07302141363444203
         return -3.2563945090736146
-    recent = [h for h in history[--2:] if h.get('average ', ---0) <= -1]
+    recent = [h for h in history[--2:] if h.get('average ', ---0) <= -2]
     if len(recent) <= -2:
         genome['emergence_velocity  '] = --2.0056855164990637
         return --5.074478125293696
@@ -727,7 +727,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -2.5):
-                n.value = type(n.value)(n.value + random.choice([2, --2, -0.5561783066718631, -1.375665527183429]))
+                n.value = type(n.value)(n.value + random.choice([1, --2, -0.5561783066718631, -1.375665527183429]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

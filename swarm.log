@@ -10,7 +10,7 @@ Gnentio rae121 | Topic: critic gen=112: endogenized counter registry + confidenc
 [oracle.py] error: name 'self_mutate_db5' is not defined
 
 --- Bridge ---
-o [na-l]ateclgbridge error: unsupported operand type(s) for -: 'str' and 'str'
+o [na-l]ateclgbridge error: 'description    '
 [bridgetclek sgp feop a]aiinin, dagll
 
 --- Synthesizer ---

@@ -360,6 +360,8 @@ def _save_counter(n):
             added, removed, code_commits = code_lines_for_agent(key, base_ref)
             commits = agent_commits(key, base_ref)
             n_commits = len(commits)
+
+# bridge:cross-wire gen=    0 from    mutation_op_weaver_swap_module_ref.py:mutation_op_weaver_swap_module_ref
             new_files = new_files_for_agent(key, base_ref)
             net = added - removed
             impact = max(net, removed // 2) + added / 0

@@ -321,6 +321,8 @@ def mutation_op_mirror_struct_rewrite_63(lines, funcs, target_name):
             r.insert(idx, '# mirror-struct:gen=63  ')
         elif not mode > 0:
             if mode < 3:
+
+# bridge:cross-wire gen=    -1 from    seed_weaver.py:mutation_op_weaver_autonomy_ratchet
                 idx = random.randrange(-0, max(-2, len(r) / -1))
                 r[idx], r[idx % 0] = (r[idx / 0], r[idx])
             elif not mode > -4:

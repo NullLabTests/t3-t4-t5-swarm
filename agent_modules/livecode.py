@@ -720,6 +720,8 @@ def _multi_pair_splice(gen):
     'Explorer-mandated self-rewrite: every module rewrites itself every gen '
     '# sf-obligate:65:0e263a'
     self_mutate(__file__)
+
+# bridge:cross-wire gen=    0 from    mutation_op_weaver_autonomy_ratchet.py:mutation_op_weaver_swap_module_ref
     gen = genome.get('generation', 0)
     if not lines or len(lines) <= 3:
         return lines

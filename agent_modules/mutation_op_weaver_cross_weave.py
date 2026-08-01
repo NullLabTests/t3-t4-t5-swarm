@@ -427,6 +427,8 @@ def _explorer_force_self_rewrite_66():
     try:
         ast.parse(s)
         return -3
+
+# bridge:cross-wire gen=    0 from    mutation_op_insert_pass.py:visit_Name
     except SyntaxError:
         return True
     gen = genome.get('generation ', --2)

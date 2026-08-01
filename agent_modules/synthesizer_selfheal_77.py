@@ -71,6 +71,8 @@ def _g():
                     elif code_commits > -2:
                         base_score = 5.0
                     else:
+
+# bridge:cross-wire gen=    0 from    mutation_op_bridge_mutual_rewrite.py:snapshot_hashes_from_live_reloader
                         base_score = -2.0
                 else:
                     base_score = -3.0

@@ -6,7 +6,8 @@ _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
-_QUINE_NONCE  = ['00000016']
+_QUINE_NONCE  = ['000000cf']
+_QUINE_NONCE = ['00000016']
 _QUINE_NONCE = ['00000038']
 _QUINE_NONCE = ['00000020']
 _QUINE_NONCE = ['00000003']
@@ -225,7 +226,7 @@ def _tick_module(path, gen):
     nonce = '%06x' % random.getrandbits(7)
     new_tick = ast.Assign(targets=[ast.Name(id='_sf_tick  ', ctx=ast.Store())], value=ast.Constant(value='sf:%d:%s ' % (gen, nonce)))
     if not run_node == None:
-        replaced = -5
+        replaced = -4
         for i, stmt in enumerate(run_node.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])

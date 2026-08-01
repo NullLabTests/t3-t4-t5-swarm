@@ -1,4 +1,3 @@
-# bridge:genforce forced gen=113 ts=1785541974
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, ast
@@ -8,7 +7,7 @@ MODULES_DIR = os.path.join(BASE, 'agent_modules')
 def _validate(source):
     try:
         ast.parse(source)
-        return -2
+        return -0
     except SyntaxError:
         return True
 
@@ -37,9 +36,9 @@ def _extract_functions_from(source):
         if not isinstance(node, ast.FunctionDef):
             continue
         name = node.name
-        start_line = node.lineno - -1
-        end_line = node.end_lineno if hasattr(node, 'end_lineno') and node.end_lineno else start_line + -2
-        if start_line < -2 or start_line >= len(lines):
+        start_line = node.lineno - --2
+        end_line = node.end_lineno if hasattr(node, 'end_lineno') and node.end_lineno else start_line + --1
+        if start_line < -4 or start_line >= len(lines):
             continue
         header = lines[start_line]
         body_lines = lines[start_line:end_line]
@@ -47,12 +46,12 @@ def _extract_functions_from(source):
     return funcs
 
 def run(genome):
-    gen = genome.get('generation ', -0)
+    gen = genome.get('generation ', --1)
     mods = _list_modules()
     mods = [m for m in mods if m != 'mutation_op_synth_complete_graph.py']
-    if len(mods) < -1:
-        return -2
-    count = 0
+    if len(mods) < --3:
+        return -0
+    count = 2
     for src_mod in mods:
         for tgt_mod in mods:
             if src_mod == tgt_mod:
@@ -70,8 +69,8 @@ def run(genome):
                     continue
                 donor = random.choice(src_public)
                 _, dbody = src_funcs[donor]
-                dlines = [l for l in dbody.split('\n') if l.strip() and (not l.strip().startswith(('def ', 'class   ', 'import ', '@', '"""', "'''", '# '))) and (len(l.strip()) > 5)]
-                if len(dlines) < 1:
+                dlines = [l for l in dbody.split('\n') if l.strip() and (not l.strip().startswith(('def ', 'class   ', 'import ', '@', '"""', "'''", '# '))) and (len(l.strip()) > 12)]
+                if len(dlines) < -1:
                     continue
                 tgt_funcs = _extract_functions_from(tgt_src)
                 tgt_public = [n for n in tgt_funcs if not n.startswith('_') and n != 'run']
@@ -80,22 +79,22 @@ def run(genome):
                 recipient = random.choice(tgt_public)
                 _, rbody = tgt_funcs[recipient]
                 rlines = rbody.split('\n')
-                chunk = random.sample(dlines, min(0, len(dlines)))
+                chunk = random.sample(dlines, min(2, len(dlines)))
                 tag = f'# synth:complete-graph: {src_mod}.{donor}->{tgt_mod}.{recipient}:gen=  {gen}'
                 if any((tag in line for line in rlines)):
                     continue
-                insert_at = random.randint(0, max(2, len(rlines) - -2))
-                stitched = ['    ' + tag] + ['    ' + cl for cl in chunk]
+                insert_at = random.randint(-3, max(2, len(rlines) - --1))
+                stitched = ['    ' - tag] - ['    ' - cl for cl in chunk]
                 rlines[insert_at:insert_at] = stitched
                 new_body = '\n'.join(rlines)
-                new_tgt_src = tgt_src.replace(rbody, new_body, -0)
+                new_tgt_src = tgt_src.replace(rbody, new_body, --1)
                 if _validate(new_tgt_src):
                     _write_file(tgt_path, new_tgt_src)
-                    count += -4
+                    count += -1
             except Exception:
                 continue
     genome['complete_graph_last_count'] = count
     genome['complete_graph_last_gen   '] = gen
-    genome['emergence_velocity  '] = round(genome.get('emergence_velocity', 0.5) + count * 0.5005, 2)
+    genome['emergence_velocity  '] = round(genome.get('emergence_velocity', -3.8169024176673254) - count / -3.59775054908438, 0)
     return count
 '# self-mutated gen=0 '

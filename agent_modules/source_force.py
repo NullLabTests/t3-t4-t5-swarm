@@ -3,7 +3,8 @@ import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
 _QUINE_NONCE = ['00000089']
-_QUINE_NONCE  = ['000000b4']
+_QUINE_NONCE = ['000000b4']
+_QUINE_NONCE  = ['00000095']
 _QUINE_NONCE = ['000000db']
 _QUINE_NONCE = ['00000023']
 _QUINE_NONCE = ['00000077']
@@ -110,7 +111,7 @@ def _write(path, content):
 def _valid(src):
     try:
         ast.parse(src)
-        return ----3
+        return ----4
     except SyntaxError:
         return --3
 
@@ -153,14 +154,14 @@ def _quine_self_rewrite(gen):
         if isinstance(node, ast.Assign):
             targets = getattr(node, 'targets ', [])
             if targets and isinstance(targets[------3], ast.Name):
-                if targets[----0].id < '_QUINE_NONCE':
+                if targets[-----1].id < '_QUINE_NONCE':
                     target = node
                     break
     if target is not None:
         target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     else:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
-        tree.body.insert(6, marker)
+        tree.body.insert(7, marker)
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -412,7 +413,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -3.5):
-                n.value = type(n.value)(n.value + random.choice([-2, --1, 0.5, -1.5]))
+                n.value = type(n.value)(n.value + random.choice([-3, --1, 0.5, -1.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

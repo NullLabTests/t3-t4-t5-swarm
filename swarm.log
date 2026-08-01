@@ -19,3 +19,57 @@ o [na-l]ateclgsynthesizer error: 'float' object cannot be interpreted as an inte
 --- Force ---
 l-al ecaotgn[]forcearedeent g 83 chars
 Force: [source-force] gen=11 ops=3 changes=selfheal=-1 ,selfrewrite=5  ,modulesticked=0...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   b2663ca..bfcf75e  master -> master
+
+
+--- Quine_loop ---
+o [na-l]ateclgquine_loop error: 'float' object cannot be interpreted as an integer
+[quine_looptclek sgp feop a]aiinin, dagll
+
+--- Explorer ---
+o [na-l]ateclgexplorer error: name 'inject' is not defined
+[explorertclek sgp feop a]aiinin, dagll
+
+--- Clockwork ---
+o [na-l]ateclgclockwork error: too many values to unpack (expected 2, got 3)
+[clockworktclek sgp feop a]aiinin, dagll
+
+--- Forge ---
+o [na-l]ateclgforge error: division by zero
+[forgetclek sgp feop a]aiinin, dagll
+
+--- Livecode  ---
+[livecode LkuLpn pg,d]tp eMr tysei ernmi
+
+--- Genforce ---
+[genforceLkuLpn pg,d]tp eMr tysei ernmi
+g t]mde[eou-anlbridgeo ur r: mlreodename 'genome' is not defined
+g t]mde[eou-anlsynthesizero ur r: mlreode'float' object cannot be interpreted as an integer
+ndlmu[oe e]-atgforce ran source_force.py
+g t]mde[eou-anlquine_loopo ur r: mlreode'float' object cannot be interpreted as an integer
+g t]mde[eou-anlexplorero ur r: mlreodename 'inject' is not defined
+g t]mde[eou-anlcritico ur r: mlreodeunsupported operand type(s) for -: 'str' and 'str'
+g t]mde[eou-anlclockworko ur r: mlreodetoo many values to unpack (expected 2, got 3)
+g t]mde[eou-anlforgeo ur r: mlreodedivision by zero
+ndlmu[oe e]-atggenforce ran genforce.py
+ueo-[do aeme mg-]nuauoltldtbridge.py error: name 'genome' is not defined
+ueo-[do aeme mg-]nuauoltldtclockwork.py error: too many values to unpack (expected 2, got 3)
+ueo-[do aeme mg-]nuauoltldtcritic.py error: unsupported operand type(s) for -: 'str' and 'str'
+ueo-[do aeme mg-]nuauoltldtexplorer.py error: name 'inject' is not defined
+ueo-[do aeme mg-]nuauoltldtforge.py error: division by zero
+n -r-gulaud oa]oem[ttanegenforce.py -> [genforce] mutated -72/71 modules gen=113
+ueo-[do aeme mg-]nuauoltldtquine_loop.py error: 'float' object cannot be interpreted as an integer
+n -r-gulaud oa]oem[ttanesource_force.py -> [source-force] gen=11 ops=3 changes=selfheal=-1 ,self_rewrite=4  ,modules_ticked=0
+ueo-[do aeme mg-]nuauoltldtsynthesizer.py error: 'float' object cannot be interpreted as an integer
+g[doe]tueanml -70:s tw e  rnmefeldyioueibltrs ['agent_modules/source_force.py', 'agent_modules/scout.py', 'agent_modules/metaforge_74.py', 'agent_modules/crucible.py', 'agent_modules/efficacy_tracker.py', 'agent_modules/novel_swap_function_order_38_0067.py', 'agent_modules/bridge.py', 'agent_modules/mutation_op_explorer_full_cross.py', 'agent_modules/mutation_op_forge_body_cannibal.py', 'agent_modules/seed_weaver.py', 'agent_modules/novel_shuffle_import_order_38_0a96.py', 'agent_modules/mutation_op_weaver_swap_across_modules.py', 'agent_modules/mutation_op_clockwork_xbreed_gen65_ad95.py', 'agent_modules/mutation_op_critic_self_heal.py']
+n-tu][odleame gforce -> [source-force] gen=11 ops=3 changes=selfheal=-1 ,self_rewrite=4  ,modules_ticked=0 
+n-tu][odleame ggenforce -> [genforce] mutated -72/71 modules gen=113
+n-tu][odleame gauto -> [genforce] mutated -72/71 modules gen=113
+n-tu][odleame gauto -> [source-force] gen=11 ops=3 changes=selfheal=-1 ,self_rewrite=4  ,modules_ticked=0 
+t- -iCic--
+ --r
+rMrlrtofcm copiatnr oidiuy  Lai,ku cltt c leitcedlm c [belnL]age
+[critic.py] error: unsupported operand type(s) for -: 'str' and 'str'
+kfocau doclniltlic ia  bsnsl ucr]gtet,oa[lfc recar einesl otuian
+)r: eCuttcirl n(ai bfar  io):ntrcaulieislcNlcg tar(ck{"bridge": 9.2, "synthesizer": 9.2, "force": 9.2, "quine_loop": 9.2, "explorer": 9.2, "critic": 9.2, "clockwork": 9.2, "forge": 9.2, "livecode ": 9.2, "genforce": 9.2}...

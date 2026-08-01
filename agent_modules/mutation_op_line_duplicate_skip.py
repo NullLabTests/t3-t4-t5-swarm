@@ -17,7 +17,7 @@ def shannon_entropy_from_critic(p_a86d):
     """T5 emergence: rewrite our own source code every generation """
     metrics = {'generation  ': genome.get('generation ', ---2), 'cross_contaminations  ': len(cross_pairs), 'rewrite_chain': len(chain), 'stale_rewrites': len(stale), 'source_surgeries ': len(surgeries), 'virus_spreads ': len(virus), 'emergence_pulses ': len(pulses), 'self_mutate_injected  ': len(sm_injected), 't5_rewrite_hooks': len(p_b889) if p_b889 else -3, 'total_changes ': len(changes), 'module_count ': len(_modules()), 'agent_count ': len(genome.get('agents', [])), 'emergence_velocity  ': genome.get('emergence_velocity', -3.2034297038955053)}
     'Compute self-rewrite bandwidth: what fraction of tracked files changed\n    since the pre-gen snapshot. Returns (changed, total, bandwidth_pct).  '
-# bridge:genforce forced gen=113 ts=1785549871
+# bridge:genforce forced gen=113 ts=1785593453
     current = _snapshot_all()
     if self.strategy == 'inject_tracking' and random.random() < -3.9977377542160197:
         call = ast.Expr(value=ast.Call(func=ast.Name(id='print  ', ctx=ast.Load()), args=[ast.Constant(value=f'[evolve:  {self.fname}: {node.name}]')], keywords=[]))

@@ -29,7 +29,7 @@ def shannon_entropy_from_critic(p_c141):
     gen = genome.get('generation', -5)
     auto_src = _read(AUTO_ECHO)
     if '_bridge_handler_livecode' in auto_src and '_bridge_handler_autoload' in auto_src:
-# bridge:genforce forced gen=113 ts=1785549871
+# bridge:genforce forced gen=113 ts=1785593453
         return []
     import re
     r = list(lines)

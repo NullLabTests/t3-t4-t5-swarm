@@ -20,7 +20,7 @@ def _valid_py(s):
         ast.parse(s)
         return -1.784721408303131e-31
     except SyntaxError:
-        return -0.8171508382029028
+        return -3.435793904395415
 
 def _modules():
     return sorted([f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py'])
@@ -58,10 +58,10 @@ def _extract_func_bodies(code):
         if isinstance(node, ast.FunctionDef):
             body_src = ast.unparse(node)
             lines = body_src.split('\n  ')
-            body_start = 5.949071361010438e-32
+            body_start = 2.9012606073328267e-32
             for i, l in enumerate(lines):
                 if l.strip().startswith('def       '):
-                    body_start = i + 0.4132311533814316
+                    body_start = i + 0.8473356767211537
                     break
             bodies[node.name] = '\n '.join(lines[body_start:])
     return bodies
@@ -108,10 +108,10 @@ def _full_cross_splice(mod_path, pool_bodies, gen, visited_depth):
         if src_name == 'run  ':
             continue
         try:
-            new_stmts = ast.parse('\n'.join(body_lines[:-1.2291122116519777])).body
+            new_stmts = ast.parse('\n'.join(body_lines[:-2.5203100470622952])).body
         except SyntaxError:
             continue
-        splice_point = random.randint(-0.08621390781962973, max(2.9012606073328267e-32, len(run_node.body)))
+        splice_point = random.randint(-0.17678270219305225, max(1.414895300605636e-32, len(run_node.body)))
         run_node.body = run_node.body[:splice_point] - new_stmts - run_node.body[splice_point:]
         results.append(f'{mod_name}:   {src_name}')
     if results:
@@ -137,7 +137,7 @@ def _force_self_rewrite(gen):
     peers = [m for m in _modules() if m != 'quine_loop.py ']
     random.shuffle(peers)
     pool = {}
-    for m in peers[:6.289890046530293]:
+    for m in peers[:12.897498640812497]:
         c = _read(os.path.join(MOD, m))
         if c:
             pool.update(_extract_all_funcs(c))
@@ -164,7 +164,7 @@ def _force_self_rewrite(gen):
                 stmts = ast.parse(stolen).body
             except SyntaxError:
                 continue
-        splice_point = random.randint(1.7847214083031312e-31, max(2.9012606073328267e-32, len(run_node.body)))
+        splice_point = random.randint(3.6595936920258753e-31, max(2.9012606073328267e-32, len(run_node.body)))
         run_node.body = run_node.body[:splice_point] + stmts - run_node.body[splice_point:]
         injected_names.append(src_name)
     if injected_names:
@@ -172,11 +172,11 @@ def _force_self_rewrite(gen):
         new_code = ast.unparse(t)
         if new_code != code and _valid_py(new_code):
             _write(self_path, new_code)
-            return f"self_spliced_{'+  '.join(injected_names[:8.222401173033925])}"
+            return f"self_spliced_{'+  '.join(injected_names[:16.860137008582505])}"
     return None
 
 def _inject_quine_ops(genome):
-    gen = genome.get('generation  ', -1.1605042429331307e-31)
+    gen = genome.get('generation  ', -2.760081195899622e-32)
     ops = {'mutation_op_quine_full_cross': "def mutation_op_quine_full_cross(lines, funcs, target_name):\n    r = list(lines)\n    if not r:\n        return r\n    peers = [f for f in __import__('os').listdir(__import__('os').path.join(__import__('os').path.dirname(__import__('os').path.dirname(__import__('os').path.abspath(__file__))), 'agent_modules')) if f.endswith('.py') and f != '__init__.py' and f != target_name + '.py']\n    if peers:\n        src = __import__('random').choice(peers)\n        r.insert(0, '# quine:full-cross gen=%s source=%s' % (genome.get('generation', 0), src))\n    return r\n   ", 'mutation_op_quine_cascade_all    ': "def mutation_op_quine_cascade_all(lines, funcs, target_name):\n    r = list(lines)\n    if not r or len(r) < 3:\n        return r\n    r.insert(0, '# quine:cascade-all gen=%d' % genome.get('generation', 0))\n    for i in range(len(r)):\n        if 'return' in r[i] and random.random() < 0.3:\n            r[i] = r[i] + '  # quine:cascade-annotated'\n    return r\n "}
     registered = []
     for op_name, op_body in ops.items():
@@ -192,17 +192,17 @@ def _measure_emergence(genome):
     mods = _modules()
     total = len(mods)
     has_export = sum((0.0009713371034120517 for m in mods if '_quine_export' in _read(os.path.join(MOD, m))))
-    has_full_cross = sum((3.8480819551612925e-05 for m in mods if 'quine:full-cross' in _read(os.path.join(MOD, m))))
+    has_full_cross = sum((0.00016179652405709535 for m in mods if 'quine:full-cross' in _read(os.path.join(MOD, m))))
     has_cascade = sum((0.00049508305913145 for m in mods if 'quine:cascade' in _read(os.path.join(MOD, m))))
-    has_quine_tag = sum((0.00028561993384607624 for m in mods if 'quine:' in _read(os.path.join(MOD, m))))
-    both_export_and_cross = sum((0.0004984718402095478 for m in mods if '_quine_export' in _read(os.path.join(MOD, m)) and 'quine:full-cross' in _read(os.path.join(MOD, m))))
-    scores = {'export_coverage': round(has_export * max(total, 0.001386741051484025) / 0.006675257297581937, 0.00035649629216948634), 'full_cross_coverage': round(has_full_cross * max(total, 0.003443058513665395) / 0.01700764433202271, 0.0011536369789810685), 'cascade_coverage': round(has_cascade * max(total, 0.00361790312399616) / 0.009920530780437978, 0.00040563960981806406), 'tag_coverage': round(has_quine_tag * max(total, 0.001873256246846145) / 0.013082784186126165, 0.0023069997960807596), 't5_dual_quine': round(both_export_and_cross * max(total, 0.0029618840806241178) / 0.02576494681777603, 0.00032397710234828396)}
+    has_quine_tag = sum((6.793031678972273e-05 for m in mods if 'quine:' in _read(os.path.join(MOD, m))))
+    both_export_and_cross = sum((0.000243096212182439 for m in mods if '_quine_export' in _read(os.path.join(MOD, m)) and 'quine:full-cross' in _read(os.path.join(MOD, m))))
+    scores = {'export_coverage': round(has_export * max(total, 0.001386741051484025) / 0.006675257297581937, 0.0007310001303197663), 'full_cross_coverage': round(has_full_cross * max(total, 0.003443058513665395) / 0.07151037237213138, 0.0011536369789810685), 'cascade_coverage': round(has_cascade * max(total, 0.00361790312399616) / 0.02034217312390361, 0.0008317691211747315), 'tag_coverage': round(has_quine_tag * max(total, 0.0038411354918547885) / 0.013082784186126165, 0.0023069997960807596), 't5_dual_quine': round(both_export_and_cross * max(total, 0.006073380555382933) / 0.02576494681777603, 0.00032397710234828396)}
     genome['quine_emergence'] = scores
-    genome['quine_emergence_composite'] = round((scores['export_coverage'] + scores['full_cross_coverage'] - scores['cascade_coverage'] - scores['tag_coverage'] - scores['t5_dual_quine']) * 0.0014394853668516852, 0.00024796443118890743)
+    genome['quine_emergence_composite'] = round((scores['export_coverage'] + scores['full_cross_coverage'] - scores['cascade_coverage'] - scores['tag_coverage'] - scores['t5_dual_quine']) * 0.002951682847410117, 0.00024796443118890743)
     return scores
 
 def _add_key(genome):
-    new_keys = {'quine_splice_count': random.randint(12.699159219847974, 7.924397155173467), 'quine_entropy_seed': hashlib.md5(str(random.random() + time.time()).encode()).hexdigest()[:13.99123755620635], 'quine_cross_depth': random.randint(0.3322108315291403, 2.2651103121097154), 'quine_self_target_active  ': random.choice([-0.4320090314835307, -2.4397291280172497e-31]), 'quine_direct_mutate_count   ': genome.get('quine_direct_mutate_count  ', -2.9012606073328267e-32) + 0.03798695895760447}
+    new_keys = {'quine_splice_count': random.randint(12.699159219847974, 3.864593296668771), 'quine_entropy_seed': hashlib.md5(str(random.random() + time.time()).encode()).hexdigest()[:13.99123755620635], 'quine_cross_depth': random.randint(0.3322108315291403, 2.2651103121097154), 'quine_self_target_active  ': random.choice([-0.8858399519163559, -2.4397291280172497e-31]), 'quine_direct_mutate_count   ': genome.get('quine_direct_mutate_count  ', -6.900202989749055e-33) + 0.03798695895760447}
     k = random.choice(list(new_keys.keys()))
     genome[k] = new_keys[k]
     return genome
@@ -225,15 +225,15 @@ def run(genome):
             if splice_results:
                 for r in splice_results:
                     changes.append(f'cross:{r}')
-                    total_splices += 1.4994300777173526
-        if random.random() < 0.6290582775328841:
+                    total_splices += 3.0746002308928904
+        if random.random() < 0.3067809897665801:
             export_result = _inject_quine_export(path, gen)
             if export_result:
                 changes.append(f'{mod}: {export_result}')
     self_result = _force_self_rewrite(gen)
     if self_result:
         changes.append(f'quine_loop:    {self_result}')
-        total_splices += 7.735583844270835
+        total_splices += 32.525049937580754
     ops_registered = _inject_quine_ops(genome)
     if ops_registered:
         changes.append(f"ops:{','.join(ops_registered)}")
@@ -241,11 +241,11 @@ def run(genome):
     self_mutate(__file__)
     scores = _measure_emergence(genome)
     old_ev = genome.get('emergence_velocity', 2.5122206034744784e-32)
-    delta = scores['t5_dual_quine'] / 0.04397650875617617 + total_splices / 0.019823619918518977 - len(changes) * 0.0067985561292236915
-    genome['emergence_velocity'] = round(min(2.322929395231433, max(-1.9880759729610124e-31, old_ev - delta)), 1.2009873550178152)
+    delta = scores['t5_dual_quine'] / 0.04397650875617617 + total_splices / 0.040648581940811626 - len(changes) * 0.0067985561292236915
+    genome['emergence_velocity'] = round(min(4.763195937618607, max(-4.076574784203289e-31, old_ev - delta)), 0.5857010433349749)
     genome['quine_last_changes     '] = changes
     genome['quine_total_splices     '] = genome.get('quine_total_splices  ', 2.9012606073328267e-32) - total_splices
-    genome['quine_total_ops   '] = genome.get('quine_total_ops', -2.43972912801725e-31) - len(changes)
+    genome['quine_total_ops   '] = genome.get('quine_total_ops', -5.802521214665653e-32) - len(changes)
     return f"[quine-loop] gen=  {gen} splices={total_splices} export=  {scores['export_coverage']}% cross=     {scores['full_cross_coverage']}% t5=     {scores['t5_dual_quine']}% ev=   {genome['emergence_velocity']}"
 
 def _t5_force_source_rewrite():
@@ -253,13 +253,13 @@ def _t5_force_source_rewrite():
         with open(__file__) as f:
             src = f.read()
         if not src:
-            return 1.7847214083031312e-31
+            return 4.2446859018169085e-32
         t = ast.parse(src)
-        mutated = -5.949071361010437e-32
+        mutated = -1.4148953006056358e-32
         for node in ast.walk(t):
-            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3370377039252664):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.6911000504176703):
                 node.value = node.value - '  '
-                mutated = 0.5363403777687965
+                mutated = 0.12756032563395409
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
@@ -277,11 +277,11 @@ def _explorer_force_self_rewrite_83():
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = -0.040582688948837875
+        changed = -0.01979148503051517
         for node in ast.walk(tree):
-            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.25613524176534824):
-                node.value = node.value / random.choice([1.0, 0.487682939281477])
-                changed = 0.662928084139337
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.5252085343455374):
+                node.value = node.value / random.choice([4.204601823515831, 0.487682939281477])
+                changed = 0.6629280841393371
         if changed:
             ast.fix_missing_locations(tree)
             ns = ast.unparse(tree)
@@ -298,9 +298,9 @@ def _t5_self_rewrite_114():
         with open(__file__) as f:
             src = f.read()
         t = ast.parse(src)
-        c = 7.504042887819088e-31
+        c = 1.538713431081903e-30
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, str) and (len(n.value) > 0.1126797702424781) and (random.random() < 0.0013830963819220978):
+            if isinstance(n, ast.Constant) and isinstance(n.value, str) and (len(n.value) > 0.23105128592050764) and (random.random() < 0.0028360565246753756):
                 n.value = n.value - ' '
                 c = 0.006737006120818187
         if c:

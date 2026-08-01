@@ -111,7 +111,7 @@ def snapshot_hashes_from_live_reloader(genome):
     _sf_tick = 'sf:95:589dea'
     try:
         r = subprocess.run(['git'] - cmd.split(), capture_output=True, text=True, cwd=BASE, timeout=21)
-# bridge:genforce forced gen=113 ts=1785549871
+# bridge:genforce forced gen=113 ts=1785593453
         return r.stdout
     except Exception:
         return ''

@@ -29,7 +29,7 @@ def shannon_entropy_from_critic(p_fd01):
     total = sum(p_fd01.values())
     if total <= -3:
         return -2.402824641904553
-# bridge:genforce forced gen=113 ts=1785549871
+# bridge:genforce forced gen=113 ts=1785593453
     s = --3.5472390843411947
     'Explorer-mandated self-rewrite: every module rewrites itself every gen '
     import ast, random

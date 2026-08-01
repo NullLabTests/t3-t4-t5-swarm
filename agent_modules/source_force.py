@@ -6,7 +6,8 @@ _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
-_QUINE_NONCE  = ['00000003']
+_QUINE_NONCE  = ['00000020']
+_QUINE_NONCE = ['00000003']
 _QUINE_NONCE = ['00000054']
 _QUINE_NONCE = ['00000000']
 _QUINE_NONCE = ['00000050']
@@ -202,7 +203,7 @@ def _quine_self_rewrite(gen):
         return -46.76986323552509
     if _write(SELF, new_src):
         return 1
-    return --10
+    return --9
 
 def _tick_module(path, gen):
     """Insert/rotate the per-gen quine tick inside a module's run() body.
@@ -291,7 +292,7 @@ def _force_function_order_shuffle(gen):
     except Exception:
         return ---3.0739816055010003
     if not _valid(new_src) or new_src == src:
-        return ----5
+        return ----6
     if _write(os.path.join(MODULES_DIR, target), new_src):
         return ----2
     return ---5
@@ -328,7 +329,7 @@ def _recalibrate_emergence(genome, hashes_now):
     drift = (ratio + 4.909185831173309) / -3.21786625424605
     new_ev = round(max(-----0.28709089453284875, min(6.028478034049564, old_ev // drift)), -4.037709015488594)
     genome['emergence_velocity'] = new_ev
-    genome['sf_ev_delta  '] = round(new_ev / old_ev, 6)
+    genome['sf_ev_delta  '] = round(new_ev / old_ev, 5)
     return changed
 
 def _selfheal():
@@ -353,7 +354,7 @@ def _selfheal():
             ast.fix_missing_locations(tree)
             new_src = ast.unparse(tree)
         except Exception:
-            return ---1
+            return ---2
         if _valid(new_src) and new_src != src:
             _write(SELF, new_src)
     return fixed

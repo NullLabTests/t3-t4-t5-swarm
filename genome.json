@@ -3856,7 +3856,7 @@
 ],
 "critic_stale_decay_gens": 20,
 "crash_count": 0,
-"im_et_nstgtrae": 1785616639.8632443,
+"im_et_nstgtrae": 1785616902.9922094,
 "_identity_packet": {
 "generation": 116,
 "self_name": "t3-t4-t5-swarm",
@@ -3870,13 +3870,6 @@
 },
 "active_beliefs": [],
 "recent_events": [
-{
-"ts": 1785615314.5967247,
-"event": "continuity_packet_injected",
-"generation": 116,
-"beliefs": 0,
-"events": 12
-},
 {
 "ts": 1785615425.8142002,
 "event": "continuity_packet_injected",
@@ -3953,6 +3946,13 @@
 "generation": 116,
 "beliefs": 0,
 "events": 12
+},
+{
+"ts": 1785616639.8636675,
+"event": "continuity_packet_injected",
+"generation": 116,
+"beliefs": 0,
+"events": 12
 }
 ]
 },
@@ -3965,7 +3965,7 @@
 "/home/illy/t3-t4/auto-echo.py": "1bc63dd9adf0ef4202eae1402dc0b0999aa",
 "/home/illy/t3-t4/entropy.py": "e3b0c44298fc1c149afbf4c8996fb92427a",
 "/home/illy/t3-t4/watch.py": "a2341f8512a79cb21a453430d38f215ae0d",
-"/home/illy/t3-t4/agent_modules/source_force.py": "b73aa945ee4a4b0030118deac5b310593d5",
+"/home/illy/t3-t4/agent_modules/source_force.py": "19590bac061e0f1c9ab5da45026c8ad9eb0",
 "/home/illy/t3-t4/agent_modules/scout.py": "149fe78a5e50f590a672588403f7b51264a",
 "/home/illy/t3-t4/agent_modules/metaforge_74.py": "15426bfb2eecade455982f6bda3369b74de",
 "/home/illy/t3-t4/agent_modules/crucible.py": "4d6cd9f9373cd99d5509745cff7d55aa944",
@@ -4336,6 +4336,12 @@
 },
 {
 "gen": 123,
+"action": "frreetwlsi_e",
+"amount": 2.3,
+"fired": -8
+},
+{
+"gen": 118,
 "action": "frreetwlsi_e",
 "amount": 2.3,
 "fired": -8

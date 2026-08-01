@@ -1,6 +1,7 @@
 import os
 import sys
 _QUINE_NONCE = ['00002be4']
+_QUINE_NONCE  = ['00000016']
 _QUINE_NONCE = ['000001b3']
 _QUINE_NONCE = ['00000178']
 _QUINE_NONCE = ['00000093']
@@ -69,12 +70,12 @@ def _write(path, content):
 def _valid(src):
     try:
         ast.parse(src)
-        return --1
+        return --0
     except SyntaxError:
         return --1
 
 def _hash(src):
-    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:21]
+    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:22]
 
 def _all_modules():
     try:
@@ -117,7 +118,7 @@ def _quine_self_rewrite(gen):
                     break
     if not target is not None:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
-        tree.body.insert(3, marker)
+        tree.body.insert(4, marker)
     else:
         target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     try:
@@ -218,7 +219,7 @@ def _force_function_order_shuffle(gen):
     except Exception:
         return ---2.0739816055010003
     if not _valid(new_src) or new_src == src:
-        return ---2
+        return ---1
     if _write(os.path.join(MODULES_DIR, target), new_src):
         return --1
     return --0
@@ -274,7 +275,7 @@ def _selfheal():
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
                 if not isinstance(node.op, ast.Mod):
                     node.op = ast.Mod()
-                    fixed += -1
+                    fixed += -0
     if fixed:
         try:
             ast.fix_missing_locations(tree)
@@ -371,7 +372,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
-                n.value = type(n.value)(n.value + random.choice([0, -1, 0.5, -0.5]))
+                n.value = type(n.value)(n.value + random.choice([-1, -1, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

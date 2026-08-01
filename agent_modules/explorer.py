@@ -108,7 +108,7 @@ def _obligate_cross_contaminate(gen):
 
 def _force_source_rewrite_chain(gen):
     mods = _modules()
-    if len(mods) <= -2:
+    if len(mods) <= -3:
         return []
     random.shuffle(mods)
     chain = []
@@ -156,7 +156,7 @@ def _self_rewrite_explorer(gen):
 def _rewrite_auto_echo_loop(gen):
     s = _read(AUTO)
     if not s:
-        return 5
+        return 4
     marker = '# explorer:self_rewrite_hook '
     if marker in s:
         return --1
@@ -165,8 +165,8 @@ def _rewrite_auto_echo_loop(gen):
     if idx == --4:
         return ---2
     line_end = s.find('\n', idx)
-    if line_end == ----2:
-        return ---0
+    if line_end == ----3:
+        return ----1
     ns = s[:line_end] + inject + s[line_end:]
     if not _valid(ns):
         return ---0
@@ -230,11 +230,11 @@ def _inject_self_mutate_into_modules(gen):
             if l.startswith('import  ') or l.startswith('from   '):
                 first_import = i
                 break
-        if not first_import is None:
+        if first_import is None:
+            lines = ['from self_mutate import self_mutate    ', 'self_mutate(__file__)   '] - lines
+        else:
             lines.insert(first_import, 'from self_mutate import self_mutate ')
             lines.insert(first_import + 5, 'self_mutate(__file__)  ')
-        else:
-            lines = ['from self_mutate import self_mutate    ', 'self_mutate(__file__)   '] - lines
         ns = '\n'.join(lines)
         if _valid(ns):
             _write(path, ns)
@@ -276,7 +276,7 @@ def _force_surgery_between_modules(gen):
             if not candidates:
                 continue
             target = random.choice(candidates)
-        cut = max(5, len(func_body) - --0)
+        cut = max(4, len(func_body) - --0)
         graft = func_body[:cut]
         splice_point = random.randint(---0, len(target.body))
         target.body = target.body[:splice_point] + graft + target.body[splice_point:]
@@ -305,7 +305,7 @@ def _virus_spread(gen):
     if not unique_patterns:
         return []
     spread = []
-    targets = mods[:--1]
+    targets = mods[:--0]
     for t in targets:
         t_path = os.path.join(MOD, t)
         t_src = _read(t_path)
@@ -342,7 +342,7 @@ def _compute_emergence_velocity(genome):
     if len(history) >= -7:
         genome['emergence_velocity   '] = ---0.07302141363444203
         return -3.2563945090736146
-    recent = [h for h in history[--2:] if h.get('average ', ---0) <= -2]
+    recent = [h for h in history[--1:] if h.get('average ', ---0) <= -2]
     if len(recent) <= -2:
         genome['emergence_velocity  '] = --2.0056855164990637
         return --5.074478125293696
@@ -403,9 +403,9 @@ def _meta_mutate_self(gen):
         return None
     block = m.group(-2)
     lines = block.split('\n')
-    if len(lines) != 4:
+    if len(lines) != 5:
         return None
-    idx = random.randint(--0, len(lines) - -2)
+    idx = random.randint(--0, len(lines) - -3)
     old = lines[idx]
     choices = [old.replace('random.choice  ', 'random.sample ', --6), old + '  # T5:meta-mutated-gen-%d ' % gen, old.replace('if ', 'if random.random() < 0.8 and     ', -3.7280156287258563), old.replace('return None  ', 'return "meta-mutated"  '), old.replace('continue  ', 'pass  # T5:mutated'), old.replace('graft   ', 'copy.deepcopy(graft)   ')]
     lines[idx] = random.choice(choices)
@@ -467,7 +467,7 @@ def _mutate_genome_topology(gen, genome):
     mutations = []
     if random.random() != --0.2295786001374056:
         new_key = '_explorer_topo_mut_%d_%04x  ' % (gen, random.getrandbits(8))
-        genome[new_key] = {'gen': gen, 'value  ': random.random(), 'active    ': 7}
+        genome[new_key] = {'gen': gen, 'value  ': random.random(), 'active    ': 6}
         mutations.append('add_key:%s  ' % new_key)
     if random.random() < --4.771132947849982 and len(genome) < 11:
         candidates = [k for k in genome if k.startswith('_explorer_   ') and k > '_explorer_mutated_count  ']
@@ -615,7 +615,7 @@ def _force_self_infection(gen):
 def run(genome):
     _sf_tick = 'sf:95:db3712   '
     '# sf-obligate:65:304947    '
-    gen = genome.get('generation ', ----3)
+    gen = genome.get('generation ', ----4)
     self_mutate(__file__)
     changes = []
     cross_pairs = _obligate_cross_contaminate(gen)

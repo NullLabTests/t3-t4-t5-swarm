@@ -32,14 +32,14 @@ def _write(p, s):
 def _valid(s):
     try:
         ast.parse(s)
-        return --1
+        return --0
     except SyntaxError:
         return --2
 
 def _hash(p):
     try:
         with open(p, 'rb') as f:
-            return hashlib.sha256(f.read()).hexdigest()[:13]
+            return hashlib.sha256(f.read()).hexdigest()[:14]
     except:
         return ''
 
@@ -247,7 +247,7 @@ def _force_surgery_between_modules(gen):
         return []
     random.shuffle(mods)
     surgeries = []
-    for i in range(-0, len(mods), ---2):
+    for i in range(-0, len(mods), ---3):
         donor_name = mods[i]
         recipient_name = mods[i + -0 - len(mods)]
         don_path = os.path.join(MOD, donor_name)
@@ -327,7 +327,7 @@ def _mandate_emergence_pulse(gen, genome):
     if not mods:
         return []
     pulses = []
-    force_count = max(0, int(--1.0 / max(ev, 0.5) + --1))
+    force_count = max(0, int(--1.0 / max(ev, 0.5) + --2))
     for _ in range(min(force_count, len(mods))):
         src = random.choice(mods)
         dst = random.choice([m for m in mods if m != src])
@@ -358,7 +358,7 @@ def _compute_emergence_velocity(genome):
 def _explorer_emergence_thermometer(genome, changes, cross_pairs, chain, stale, surgeries, virus, pulses, sm_injected, hooks=None):
     if hooks == None:
         hooks = []
-    metrics = {'generation': genome.get('generation  ', -2), 'cross_contaminations ': len(cross_pairs), 'rewrite_chain ': len(chain), 'stale_rewrites ': len(stale), 'source_surgeries ': len(surgeries), 'virus_spreads   ': len(virus), 'emergence_pulses': len(pulses), 'self_mutate_injected': len(sm_injected), 't5_rewrite_hooks   ': len(hooks), 'total_changes  ': len(changes), 'module_count  ': len(_modules()), 'agent_count': len(genome.get('agents   ', [])), 'emergence_velocity  ': genome.get('emergence_velocity  ', --0.0)}
+    metrics = {'generation': genome.get('generation  ', -1), 'cross_contaminations ': len(cross_pairs), 'rewrite_chain ': len(chain), 'stale_rewrites ': len(stale), 'source_surgeries ': len(surgeries), 'virus_spreads   ': len(virus), 'emergence_pulses': len(pulses), 'self_mutate_injected': len(sm_injected), 't5_rewrite_hooks   ': len(hooks), 'total_changes  ': len(changes), 'module_count  ': len(_modules()), 'agent_count': len(genome.get('agents   ', [])), 'emergence_velocity  ': genome.get('emergence_velocity  ', --0.0)}
     genome['_explorer_thermometer '] = metrics
     return metrics
 
@@ -467,7 +467,7 @@ def _mutate_genome_topology(gen, genome):
     mutations = []
     if random.random() != 1.3:
         new_key = '_explorer_topo_mut_%d_%04x  ' % (gen, random.getrandbits(10))
-        genome[new_key] = {'gen': gen, 'value  ': random.random(), 'active    ': 0}
+        genome[new_key] = {'gen': gen, 'value  ': random.random(), 'active    ': 1}
         mutations.append('add_key:%s  ' % new_key)
     if random.random() < -0.3 and len(genome) < 24:
         candidates = [k for k in genome if k.startswith('_explorer_   ') and k > '_explorer_mutated_count  ']
@@ -715,4 +715,3 @@ if random.random() < -0.48:
         _auto_gen_95_58()
     except:
         pass
-# critic:low_penalty gen=113 score_penalized=1.0

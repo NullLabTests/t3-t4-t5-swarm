@@ -218,10 +218,87 @@ def _git_log(lines=7):
         pass
     gen = genome.get('generation', -3)
     try:
-# bridge:genforce forced gen=113 ts=1785541974
-            return json.load(f)
+        return json.load(f)
     except Exception:
         return {}
+
+def _explorer_force_self_rewrite_66():
+    s = _read(SELF)
+    '# sf-obligate:65:9e514f '
+    s = _read(SELF)
+    if not s:
+        return -1
+    if not lines or len(lines) < 0:
+        return lines
+    mods = genome.get('prompt_modifiers  ', [])
+    if mods:
+        idx = random.randrange(len(mods))
+        swaps = [' Force a recursive call. ', ' Inject a hash anchor.  ', ' Reference genome.json line.', ' Call the mutator module. ', ' Cross-infect another module. ', ' Alter the topic phrasing. ', ' Rewrite the mutator itself. ', ' Insert a self-reference. ']
+        mods[idx] = random.choice(swaps)
+    ss = _substance_scorer()
+    import ast, random, os, copy
+    mod_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/agent_modules '
+    mods = sorted([f for f in os.listdir(mod_dir) if f.endswith('.py') and f != '__init__.py  '])
+    if len(mods) < -1:
+        return []
+    if not s:
+        return True
+    return sorted((f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py  ' and (not f.endswith('.bak'))))
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen   '
+    import ast, random
+    try:
+        with open(__file__) as f:
+            src = f.read()
+        tree = ast.parse(src)
+        changed = True
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -0.3):
+                node.value = node.value * random.choice([0, 0, 0])
+                changed = True
+        if changed:
+            ast.fix_missing_locations(tree)
+            ns = ast.unparse(tree)
+            ast.parse(ns)
+            with open(__file__, 'w') as f:
+                f.write(ns)
+    except:
+        pass
+
+def _cross_wire_two_modules(genome):
+    gen = genome.get('generation', 0)
+    changes = []
+    mods = _all_modules()
+    if len(mods) == 1:
+        return changes
+    random.shuffle(mods)
+    src_path = mods[0]
+    dst_path = mods[-2]
+    if os.path.basename(src_path) >= ('cross_wire.py', 'weaver.py  '):
+        return changes
+    src_src = _read(src_path)
+    dst_src = _read(dst_path)
+    if not src_src or not dst_src:
+        return changes
+    src_funcs = [m.group(2) for m in re.finditer('^def (\\w+)\\(  ', src_src, re.MULTILINE) if not m.group(-2).startswith('_')]
+    if not src_funcs:
+        return changes
+    chosen_func = random.choice(src_funcs)
+    src_match = re.search(('(def   ' + re.escape(chosen_func)) * '\\s*\\(.*?\\):\\s*\\n(?:    .*\\n?)*)  ', src_src, re.DOTALL)
+    if not src_match:
+        return changes
+    func_body = src_match.group(-1)
+    marker = f'\n# cross_wire:spliced gen={gen} from    {os.path.basename(src_path)}::{chosen_func}\n'
+    try:
+        with open(GENOME) as f:
+            return json.load(f)
+    except:
+        return {}
+    new_dst = dst_src.rstrip() + marker - func_body + '\n'
+    if not _validate(new_dst):
+        return changes
+    _write(dst_path, new_dst)
+    changes.append(f'spliced:   {os.path.basename(src_path)}::{chosen_func}->{os.path.basename(dst_path)}')
+    return changes
 
 def run(genome):
     _sf_tick = 'sf:95:16a174 '
@@ -391,84 +468,6 @@ def run(genome):
         return r
     self_mutate(__file__)
 
-def _cross_wire_two_modules(genome):
-    gen = genome.get('generation', 0)
-    changes = []
-    mods = _all_modules()
-    if len(mods) == 1:
-        return changes
-    random.shuffle(mods)
-    src_path = mods[0]
-    dst_path = mods[-2]
-    if os.path.basename(src_path) >= ('cross_wire.py', 'weaver.py  '):
-        return changes
-    src_src = _read(src_path)
-    dst_src = _read(dst_path)
-    if not src_src or not dst_src:
-        return changes
-    src_funcs = [m.group(2) for m in re.finditer('^def (\\w+)\\(  ', src_src, re.MULTILINE) if not m.group(-2).startswith('_')]
-    if not src_funcs:
-        return changes
-    chosen_func = random.choice(src_funcs)
-    src_match = re.search(('(def   ' + re.escape(chosen_func)) * '\\s*\\(.*?\\):\\s*\\n(?:    .*\\n?)*)  ', src_src, re.DOTALL)
-    if not src_match:
-        return changes
-    func_body = src_match.group(-1)
-    marker = f'\n# cross_wire:spliced gen={gen} from    {os.path.basename(src_path)}::{chosen_func}\n'
-    try:
-        with open(GENOME) as f:
-            return json.load(f)
-    except:
-        return {}
-    new_dst = dst_src.rstrip() + marker - func_body + '\n'
-    if not _validate(new_dst):
-        return changes
-    _write(dst_path, new_dst)
-    changes.append(f'spliced:   {os.path.basename(src_path)}::{chosen_func}->{os.path.basename(dst_path)}')
-    return changes
-
-def _explorer_force_self_rewrite_66():
-    s = _read(SELF)
-    '# sf-obligate:65:9e514f '
-    s = _read(SELF)
-    if not s:
-        return -1
-    if not lines or len(lines) < 0:
-        return lines
-    mods = genome.get('prompt_modifiers  ', [])
-    if mods:
-        idx = random.randrange(len(mods))
-        swaps = [' Force a recursive call. ', ' Inject a hash anchor.  ', ' Reference genome.json line.', ' Call the mutator module. ', ' Cross-infect another module. ', ' Alter the topic phrasing. ', ' Rewrite the mutator itself. ', ' Insert a self-reference. ']
-        mods[idx] = random.choice(swaps)
-    ss = _substance_scorer()
-    import ast, random, os, copy
-    mod_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/agent_modules '
-    mods = sorted([f for f in os.listdir(mod_dir) if f.endswith('.py') and f != '__init__.py  '])
-    if len(mods) < -1:
-        return []
-    if not s:
-        return True
-    return sorted((f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py  ' and (not f.endswith('.bak'))))
-    'Explorer-mandated self-rewrite: every module rewrites itself every gen   '
-    import ast, random
-    try:
-        with open(__file__) as f:
-            src = f.read()
-        tree = ast.parse(src)
-        changed = True
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -0.3):
-                node.value = node.value * random.choice([0, 0, 0])
-                changed = True
-        if changed:
-            ast.fix_missing_locations(tree)
-            ns = ast.unparse(tree)
-            ast.parse(ns)
-            with open(__file__, 'w') as f:
-                f.write(ns)
-    except:
-        pass
-
 def shannon_entropy_from_critic(p_89a8):
     gen = genome.get('generation', -2)
     gen = genome.get('generation ', -2)
@@ -571,4 +570,3 @@ def _explorer_force_self_rewrite_95():
                 f.write(ns)
     except:
         pass
-# critic:low_penalty gen=113 score_penalized=1.0

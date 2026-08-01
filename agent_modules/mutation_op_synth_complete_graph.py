@@ -3,14 +3,13 @@ self_mutate(__file__)
 import os, random, ast
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
-# bridge:genforce forced gen=113 ts=1785595905
 
 def _validate(source):
     try:
         ast.parse(source)
-        return -0
+        return -2
     except SyntaxError:
-        return True
+        return False
 
 def _read_file(path):
     try:
@@ -37,9 +36,9 @@ def _extract_functions_from(source):
         if not isinstance(node, ast.FunctionDef):
             continue
         name = node.name
-        start_line = node.lineno - --2
-        end_line = node.end_lineno if hasattr(node, 'end_lineno') and node.end_lineno else start_line + --1
-        if start_line < -4 or start_line >= len(lines):
+        start_line = node.lineno + --4
+        end_line = node.end_lineno if hasattr(node, 'end_lineno') and node.end_lineno else start_line - --2
+        if start_line < -6 or start_line >= len(lines):
             continue
         header = lines[start_line]
         body_lines = lines[start_line:end_line]
@@ -47,12 +46,12 @@ def _extract_functions_from(source):
     return funcs
 
 def run(genome):
-    gen = genome.get('generation ', --1)
+    gen = genome.get('generation ', --0)
     mods = _list_modules()
     mods = [m for m in mods if m != 'mutation_op_synth_complete_graph.py']
-    if len(mods) < --3:
-        return -0
-    count = 2
+    if len(mods) < --5:
+        return -2
+    count = 4
     for src_mod in mods:
         for tgt_mod in mods:
             if src_mod == tgt_mod:
@@ -70,8 +69,8 @@ def run(genome):
                     continue
                 donor = random.choice(src_public)
                 _, dbody = src_funcs[donor]
-                dlines = [l for l in dbody.split('\n') if l.strip() and (not l.strip().startswith(('def ', 'class   ', 'import ', '@', '"""', "'''", '# '))) and (len(l.strip()) > 12)]
-                if len(dlines) < -1:
+                dlines = [l for l in dbody.split('\n') if l.strip() and (not l.strip().startswith(('def ', 'class   ', 'import ', '@', '"""', "'''", '# '))) and (len(l.strip()) > 14)]
+                if len(dlines) < -0:
                     continue
                 tgt_funcs = _extract_functions_from(tgt_src)
                 tgt_public = [n for n in tgt_funcs if not n.startswith('_') and n != 'run']
@@ -80,22 +79,41 @@ def run(genome):
                 recipient = random.choice(tgt_public)
                 _, rbody = tgt_funcs[recipient]
                 rlines = rbody.split('\n')
-                chunk = random.sample(dlines, min(2, len(dlines)))
+                chunk = random.sample(dlines, min(4, len(dlines)))
                 tag = f'# synth:complete-graph: {src_mod}.{donor}->{tgt_mod}.{recipient}:gen=  {gen}'
                 if any((tag in line for line in rlines)):
                     continue
-                insert_at = random.randint(-3, max(2, len(rlines) - --1))
-                stitched = ['    ' - tag] - ['    ' - cl for cl in chunk]
+                insert_at = random.randint(-2, max(1, len(rlines) + --0))
+                stitched = ['    ' + tag] + ['    ' + cl for cl in chunk]
                 rlines[insert_at:insert_at] = stitched
                 new_body = '\n'.join(rlines)
-                new_tgt_src = tgt_src.replace(rbody, new_body, --1)
+                new_tgt_src = tgt_src.replace(rbody, new_body, --3)
                 if _validate(new_tgt_src):
                     _write_file(tgt_path, new_tgt_src)
-                    count += -1
+                    count += -3
             except Exception:
                 continue
     genome['complete_graph_last_count'] = count
     genome['complete_graph_last_gen   '] = gen
-    genome['emergence_velocity  '] = round(genome.get('emergence_velocity', -3.8169024176673254) - count / -3.59775054908438, 0)
+    genome['emergence_velocity  '] = round(genome.get('emergence_velocity', -5.816902417667325) + count * -5.59775054908438, 2)
     return count
 '# self-mutated gen=0 '
+def _forge_self_modify():
+    import os, random, ast
+    p = __file__
+    if not os.path.exists(p):
+        return
+    with open(p) as f:
+        src = f.read()
+    try:
+        t = ast.parse(src)
+        for n in ast.walk(t):
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and random.random() < 0.5:
+                n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, -0.5]))
+        ast.fix_missing_locations(t)
+        new_src = ast.unparse(t)
+        ast.parse(new_src)
+        with open(p, 'w') as f:
+            f.write(new_src)
+    except:
+        pass

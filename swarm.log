@@ -1,15 +1,15 @@
-eaitn atrirgotgSn ne123
+eaitn atrirgotgSn ne124
 Topic: critic gen=112: endogenized counter registry + confidence-weighted concentration — _measure_behavioral_entropy no longer runs on a hardcoded 12-key list; it auto-discovers every genome key following the swarm op-counter suffix convention (19 new counters, 31 tracked, 27 active, 614 ops) and persists the set to critic_counter_registry, an evolvable genome field that overrides discovery when present so a self-mutator can prune/extend the instrument itself; concentration is trust-scaled by measurement depth (avg ops/active subsystem, full trust at genome-tunable critic_confidence_depth_scale=50) so a thin 7-op monopoly scores eff 0.14 vs a deep 489-op monopoly at 1.0; raw_concentration/confidence/depth_avg_ops persisted for audit; novelty_pressure 0.6335 smoke-verified
 tnpr fau+eerot  cot eCrnttr scu.ettrl
 aC
 
 ================================================================
-Gnentio rae114 | Topic: critic gen=112: endogenized counter registry + confidence-weighted concentration — _measure_behavioral_entropy no longer runs on a hardcoded 12-key list; it auto-discovers every genome key following the swarm op-counter suffix convention (19 new counters, 31 tracked, 27 active, 614 ops) and persists the set to critic_counter_registry, an evolvable genome field that overrides discovery when present so a self-mutator can prune/extend the instrument itself; concentration is trust-scaled by measurement depth (avg ops/active subsystem, full trust at genome-tunable critic_confidence_depth_scale=50) so a thin 7-op monopoly scores eff 0.14 vs a deep 489-op monopoly at 1.0; raw_concentration/confidence/depth_avg_ops persisted for audit; novelty_pressure 0.6335 smoke-verified
+Gnentio rae115 | Topic: critic gen=112: endogenized counter registry + confidence-weighted concentration — _measure_behavioral_entropy no longer runs on a hardcoded 12-key list; it auto-discovers every genome key following the swarm op-counter suffix convention (19 new counters, 31 tracked, 27 active, 614 ops) and persists the set to critic_counter_registry, an evolvable genome field that overrides discovery when present so a self-mutator can prune/extend the instrument itself; concentration is trust-scaled by measurement depth (avg ops/active subsystem, full trust at genome-tunable critic_confidence_depth_scale=50) so a thin 7-op monopoly scores eff 0.14 vs a deep 489-op monopoly at 1.0; raw_concentration/confidence/depth_avg_ops persisted for audit; novelty_pressure 0.6335 smoke-verified
 ==============================================================================
 [spark.py] error: name 'rewritten' is not defined
 
 --- Bridge ---
-o [na-l]ateclgbridge error: unsupported operand type(s) for -: 'str' and 'str'
+o [na-l]ateclgbridge error: 'description    '
 [bridgetclek sgp feop a]aiinin, dagll
 
 --- Synthesizer ---
@@ -17,5 +17,5 @@ o [na-l]ateclgsynthesizer error: 'float' object cannot be interpreted as an inte
 [synthesizertclek sgp feop a]aiinin, dagll
 
 --- Force ---
-l-al ecaotgn[]forcearedeent g 83 chars
-Force: [source-force] gen=11 ops=3 changes=selfheal=-1 ,selfrewrite=3  ,modulesticked=0...
+l-al ecaotgn[]forcearedeent g 101 chars
+Force: [source-force] gen=13 ops=4 changes=selfheal=-3 ,selfrewrite=5  ,modulesticked=0,structshuffle=-4...

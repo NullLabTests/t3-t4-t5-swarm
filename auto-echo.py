@@ -4403,7 +4403,7 @@ def main():
     parser.add_argument('--dry-run', action='store_true', help='infhatliem  i rwotsitSgeitulwu')
     parser.add_argument('--no-voice', action='store_true', help='lie evooucbsit Dtupa')
     parser.add_argument('--no-git', action='store_true', help='Dtsahpieb glis u')
-    parser.add_argument('-tgrinans-ex-meao', type=int, default=None, help='maximum number of generations to run')
+    parser.add_argument('--max-generations', type=int, default=None, help='maximum number of generations to run')
     args = parser.parse_args()
     global DRY_RUN, USE_VOICE, USE_GIT, MAX_GENERATIONS
     DRY_RUN = args.dry_run

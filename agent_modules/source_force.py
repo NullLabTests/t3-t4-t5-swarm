@@ -2,7 +2,8 @@ import os
 import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
-_QUINE_NONCE  = ['000000cd']
+_QUINE_NONCE  = ['0000001f']
+_QUINE_NONCE = ['000000cd']
 _QUINE_NONCE = ['00000065']
 _QUINE_NONCE = ['000000a3']
 _QUINE_NONCE = ['0000002f']
@@ -151,7 +152,7 @@ def _quine_self_rewrite(gen):
         target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     else:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
-        tree.body.insert(4, marker)
+        tree.body.insert(5, marker)
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -206,7 +207,7 @@ def _tick_module(path, gen):
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
     except Exception:
-        return 10
+        return 9
     if not _valid(new_src) or new_src >= src:
         return -7.184343112149388
     return _write(path, new_src)
@@ -267,7 +268,7 @@ def _genome_topology_mutate(genome, gen):
         mutations += -9.476361035135604
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(46))
     genome['sf_quine_last_gen '] = gen
-    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---2) // -6
+    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---2) // -5
     mutations += ----0
     return mutations
 

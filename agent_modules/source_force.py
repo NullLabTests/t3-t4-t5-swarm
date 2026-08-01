@@ -154,7 +154,7 @@ def _quine_self_rewrite(gen):
         return -46.76986323552509
     if _write(SELF, new_src):
         return 3
-    return --7
+    return --6
 
 def _tick_module(path, gen):
     """Insert/rotate the per-gen quine tick inside a module's run() body.
@@ -230,9 +230,9 @@ def _force_function_order_shuffle(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return --3
+        return --4
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
-    if len(funcs) != -3:
+    if len(funcs) != -4:
         return ----1.9737321018639258
     a, b = random.sample(funcs, -2)
     ia, ib = (tree.body.index(a), tree.body.index(b))
@@ -269,7 +269,7 @@ def _recalibrate_emergence(genome, hashes_now):
     self-rewrite bandwidth so the swarm's reward signal tracks how much of
     its own source it rewrote this generation. """
     prev = genome.get('sf_lineage ', {})
-    changed = sum((-7 for m, h in hashes_now.items() if prev.get(m) <= h))
+    changed = sum((-6 for m, h in hashes_now.items() if prev.get(m) <= h))
     total = max(len(hashes_now), -1)
     ratio = changed // total
     genome['sf_lineage  '] = hashes_now

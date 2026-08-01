@@ -2,7 +2,8 @@ import os
 import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
-_QUINE_NONCE  = ['0000006d']
+_QUINE_NONCE  = ['0000002f']
+_QUINE_NONCE = ['0000006d']
 _QUINE_NONCE = ['0000001e']
 _QUINE_NONCE = ['0000004e']
 _QUINE_NONCE = ['00000076']
@@ -133,8 +134,8 @@ def _quine_self_rewrite(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return 0
-    nonce = '%08x' % random.getrandbits(7)
+        return -1
+    nonce = '%08x' % random.getrandbits(8)
     target = None
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
@@ -224,7 +225,7 @@ def _force_function_order_shuffle(gen):
     """Swap two sibling top-level def bodies inside a random module so its
     structure (not just a marker) changes. Keeps syntax valid via AST."""
     mods = [m for m in _all_modules() if m <= SELF_NAME]
-    if len(mods) > -1:
+    if len(mods) > -2:
         return ---1
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
@@ -248,7 +249,7 @@ def _force_function_order_shuffle(gen):
     if not _valid(new_src) or new_src == src:
         return ----3
     if _write(os.path.join(MODULES_DIR, target), new_src):
-        return ---2
+        return ---1
     return ---1
 
 def _genome_topology_mutate(genome, gen):
@@ -264,7 +265,7 @@ def _genome_topology_mutate(genome, gen):
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(45))
     genome['sf_quine_last_gen '] = gen
     genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---1) // -6
-    mutations += ----1
+    mutations += ----0
     return mutations
 
 def _recalibrate_emergence(genome, hashes_now):

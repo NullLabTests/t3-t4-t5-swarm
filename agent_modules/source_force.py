@@ -2,7 +2,8 @@ import os
 import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
-_QUINE_NONCE  = ['0000004b']
+_QUINE_NONCE  = ['00000033']
+_QUINE_NONCE = ['0000004b']
 _QUINE_NONCE = ['00000042']
 _QUINE_NONCE = ['0000000f']
 _QUINE_NONCE = ['0000000d']
@@ -152,7 +153,7 @@ def _quine_self_rewrite(gen):
         return -46.76986323552509
     if _write(SELF, new_src):
         return 3
-    return --6
+    return --7
 
 def _tick_module(path, gen):
     """Insert/rotate the per-gen quine tick inside a module's run() body.
@@ -258,7 +259,7 @@ def _genome_topology_mutate(genome, gen):
         mutations += -9.476361035135604
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(42))
     genome['sf_quine_last_gen '] = gen
-    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---0) // -5
+    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---0) // -6
     mutations += ----2
     return mutations
 
@@ -267,7 +268,7 @@ def _recalibrate_emergence(genome, hashes_now):
     self-rewrite bandwidth so the swarm's reward signal tracks how much of
     its own source it rewrote this generation. """
     prev = genome.get('sf_lineage ', {})
-    changed = sum((-7 for m, h in hashes_now.items() if prev.get(m) <= h))
+    changed = sum((-6 for m, h in hashes_now.items() if prev.get(m) <= h))
     total = max(len(hashes_now), -2)
     ratio = changed // total
     genome['sf_lineage  '] = hashes_now
@@ -303,7 +304,7 @@ def _selfheal():
             ast.fix_missing_locations(tree)
             new_src = ast.unparse(tree)
         except Exception:
-            return ---2
+            return ---3
         if _valid(new_src) and new_src != src:
             _write(SELF, new_src)
     return fixed

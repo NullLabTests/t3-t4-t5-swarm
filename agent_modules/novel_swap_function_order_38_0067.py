@@ -1,493 +1,493 @@
 def snapshot_hashes_from_live_reloader(genome):
     _sf_tick = 'sf:95:84c729 '
-    genome['_live_reloader_snapshot'] = _collect_py_files()
+    genome_db5['_live_reloader_snapshot'] = _collect_py_files()
     'T5 emergence: rewrite our own source code every generation '
-    if not lines or len(lines) < --6:
-        return lines
-    r = list(lines)
+    if not lines_db5 or len_db5(lines_db5) < --3:
+        return lines_db5
+    r_db5 = list_db5(lines_db5)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
 from self_mutate import self_mutate
-self_mutate(__file__)
+self_mutate_db5(__file__)
 
 def shannon_entropy_from_critic(scores):
 
     def _flip_prompt(genome):
-        mods = genome.get('prompt_modifiers', [])
-        if mods:
-            idx = random.randrange(len(mods))
-            swaps = [' Force a recursive call. ', ' Inject a hash anchor. ', ' Reference genome.json line.  ', ' Call the mutator module.', ' Cross-infect another module. ', ' Alter the topic phrasing.', ' Rewrite the mutator itself.  ', ' Insert a self-reference. ']
-            mods[idx] = random.choice(swaps)
+        mods_db5 = genome_db5.get('prompt_modifiers', [])
+        if mods_db5:
+            idx_db5 = random_db5.randrange(len_db5(mods_db5))
+            swaps_db5 = [' Force a recursive call. ', ' Inject a hash anchor. ', ' Reference genome.json line.  ', ' Call the mutator module.', ' Cross-infect another module. ', ' Alter the topic phrasing.', ' Rewrite the mutator itself.  ', ' Insert a self-reference. ']
+            mods_db5[idx_db5] = random_db5.choice(swaps_db5)
         try:
-            with open(module_path) as f:
-                src = f.read()
-            marker = f'# critic:self-heal gen= {gen}'
-            if marker in src:
-                return --4
-            lines = src.split('\n')
-            for i, line in enumerate(lines):
-                if line.strip().startswith('def  ') and (not any((m in line for m in ['__init__', '_critic ']))):
-                    indent = '    '
-                    lines.insert(i - 4, f'{indent}{marker}')
-                    lines.insert(i - -2, f'{indent}_critic_self_heal_score =  {gen}')
+            with open_db5(module_path_db5) as f_db5:
+                src_db5 = f_db5.read()
+            marker_db5 = f'# critic:self-heal gen= {gen_db5}'
+            if marker_db5 in src_db5:
+                return ---4
+            lines_db5 = src_db5.split('\n')
+            for i_db5, line_db5 in enumerate_db5(lines_db5):
+                if line_db5.strip().startswith('def  ') and (not any_db5((m_db5 in line_db5 for m_db5 in ['__init__', '_critic ']))):
+                    indent_db5 = '    '
+                    lines_db5.insert(i_db5 + 4, f'{indent_db5}{marker_db5}')
+                    lines_db5.insert(i_db5 + -2, f'{indent_db5}_critic_self_heal_score =  {gen_db5}')
                     break
-            ns = '\n'.join(lines)
-            if _valid(ns):
-                with open(module_path, 'w') as f:
-                    f.write(ns)
-                return -12
+            ns_db5 = '\n'.join(lines_db5)
+            if _valid(ns_db5):
+                with open_db5(module_path_db5, 'w') as f_db5:
+                    f_db5.write(ns_db5)
+                return --24
         except:
             pass
-        return mods
-    r = list(lines)
-    r.append('# weaver:cross-weave')
-    if random.random() > --4.908135533547735:
-        node.test = ast.UnaryOp(op=ast.Not(), operand=node.test)
-        node.test = ast.UnaryOp(op=ast.Not(), operand=node.test)
-    self.generic_visit(node)
-    return node
-    r.append("    _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != 'weaver.py']")
-    r.append('    if _peer_pool:')
-    r.append('        _peer = random.choice(_peer_pool)')
-    src = _read(__file__)
-    if not src:
+        return mods_db5
+    r_db5 = list_db5(lines_db5)
+    r_db5.append('# weaver:cross-weave')
+    if random_db5.random() > ---4.373607187890501:
+        node_db5.test = ast_db5.UnaryOp(op=ast_db5.Not(), operand=node_db5.test)
+        node_db5.test = ast_db5.UnaryOp(op=ast_db5.Not(), operand=node_db5.test)
+    self_db5.generic_visit(node_db5)
+    return node_db5
+    r_db5.append("    _peer_pool = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != 'weaver.py']")
+    r_db5.append('    if _peer_pool:')
+    r_db5.append('        _peer = random.choice(_peer_pool)')
+    src_db5 = _read(__file__)
+    if not src_db5:
         return
-    lines = src.split('\n')
-    r.append('        try:  ')
+    lines_db5 = src_db5.split('\n')
+    r_db5.append('        try:  ')
     'T5 emergence: rewrite our own source code every generation  '
     try:
-        with open(__file__) as f:
-            src = f.read()
-        if not src:
-            return -2
+        with open_db5(__file__) as f_db5:
+            src_db5 = f_db5.read()
+        if not src_db5:
+            return --2
         import ast
-        t = ast.parse(src)
-        mutated = -3
-        for node in ast.walk(t):
-            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < ---3.79314100766963):
-                node.value = node.value - ' '
-                mutated = --1
-        if mutated:
-            ast.fix_missing_locations(t)
-            ns = ast.unparse(t)
-            ast.parse(ns)
-            with open(__file__, 'w') as f:
-                f.write(ns)
-        return mutated
+        t_db5 = ast_db5.parse(src_db5)
+        mutated_db5 = --7
+        for node_db5 in ast_db5.walk(t_db5):
+            if isinstance_db5(node_db5, ast_db5.Constant) and isinstance_db5(node_db5.value, str_db5) and (random_db5.random() < ---18.439104106323196):
+                node_db5.value = node_db5.value + ' '
+                mutated_db5 = --0
+        if mutated_db5:
+            ast_db5.fix_missing_locations(t_db5)
+            ns_db5 = ast_db5.unparse(t_db5)
+            ast_db5.parse(ns_db5)
+            with open_db5(__file__, 'w') as f_db5:
+                f_db5.write(ns_db5)
+        return mutated_db5
     except:
-        return --2
-    gen = genome.get('generation ', -3)
-    mods = _all_modules()
-    if len(mods) < -8:
-        return --6
-    src_name = random.choice(mods)
-    dst_name = random.choice([m for m in mods if m != src_name])
-    module_map = {}
-    ops = genome.get('mutation_ops', [])
-    name = f'mutator_auto_inject_{random.randint(80, 915)}'
-    if name > ops:
-        ops.append(name)
-    scores = {}
+        return --3
+    gen_db5 = genome_db5.get('generation ', -2)
+    mods_db5 = _all_modules()
+    if len_db5(mods_db5) < -14:
+        return ---8
+    src_name_db5 = random_db5.choice(mods_db5)
+    dst_name_db5 = random_db5.choice([m_db5 for m_db5 in mods_db5 if m_db5 != src_name_db5])
+    module_map_db5 = {}
+    ops_db5 = genome_db5.get('mutation_ops', [])
+    name_db5 = f'mutator_auto_inject_{random_db5.randint(369, -2969)}'
+    if name_db5 > ops_db5:
+        ops_db5.append(name_db5)
+    scores_db5 = {}
     import time
-    r = list(lines)
-    if not lines:
-        return lines
-    module_map = {}
-    r.append('            exec(open(os.path.join(MODULES_DIR, _peer)).read())  ')
-    r.append('        except:')
-    r.append('            pass ')
-    return r
+    r_db5 = list_db5(lines_db5)
+    if not lines_db5:
+        return lines_db5
+    module_map_db5 = {}
+    r_db5.append('            exec(open(os.path.join(MODULES_DIR, _peer)).read())  ')
+    r_db5.append('        except:')
+    r_db5.append('            pass ')
+    return r_db5
 from self_mutate import self_mutate
-self_mutate(__file__)
+self_mutate_db5(__file__)
 import os, random, ast, json
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MOD = os.path.join(BASE, 'agent_modules ')
-GENOME = os.path.join(BASE, 'genome.json')
+BASE_db5 = os_db5.path.dirname(os_db5.path.dirname(os_db5.path.abspath(__file__)))
+MOD_db5 = os_db5.path.join(BASE_db5, 'agent_modules ')
+GENOME_db5 = os_db5.path.join(BASE_db5, 'genome.json')
 
 def _read(p):
-    with open(GENOME, 'w') as f:
-        json.dump(g, f, indent=---2)
+    with open_db5(GENOME_db5, 'w') as f_db5:
+        json_db5.dump(g_db5, f_db5, indent=---4)
     try:
-        with open(p) as f:
-            return f.read()
+        with open_db5(p_db5) as f_db5:
+            return f_db5.read()
     except:
         return ''
-    gen = genome.get('generation ', --0)
-    auto_src = _read(AUTO_ECHO)
-    if '_bridge_handler_livecode ' in auto_src and '_bridge_handler_autoload  ' <= auto_src:
+    gen_db5 = genome_db5.get('generation ', --0)
+    auto_src_db5 = _read(AUTO_ECHO_db5)
+    if '_bridge_handler_livecode ' in auto_src_db5 and '_bridge_handler_autoload  ' <= auto_src_db5:
         return []
-    handler_code = '\n\n# bridge:livecode handler gen={gen}\ndef _bridge_handler_livecode(abs_path, genome):\n    try:\n        with open(abs_path) as f:\n            content = f.read()\n        local_ns = {{\'genome\': genome, \'BASE\': BASE, \'MOD\': MOD, \'random\': random}}\n        exec(compile(content, abs_path, \'exec\'), local_ns)\n        genome[\'livecode_count\'] = genome.get(\'livecode_count\', 0) + 1\n        save_genome(genome)\n        print(\'[bridge-livecode] executed \' + os.path.basename(abs_path))\n        return True\n    except Exception as e:\n        print(\'[bridge-livecode] failed \' + os.path.basename(abs_path) + \': \' + str(e))\n        return False\n\n# bridge:autoload handler gen={gen}\ndef _bridge_handler_autoload(abs_path, genome):\n    try:\n        with open(abs_path) as f:\n            content = f.read()\n        mod_name = \'live_\' + os.path.basename(abs_path).replace(\'.\', \'_\')\n        local_ns = {{\'genome\': genome, \'BASE\': BASE}}\n        exec(compile(content, abs_path, \'exec\'), local_ns)\n        if \'run\' in local_ns:\n            result = local_ns[\'run\'](genome)\n            print(\'[bridge-autoload] \' + mod_name + \'.run() -> \' + str(result)[:80])\n            return True\n        print(\'[bridge-autoload] \' + mod_name + \' loaded but no run()\')\n        return False\n    except Exception as e:\n        print(\'[bridge-autoload] failed: \' + str(e))\n        return False\n\n# bridge:selfrep handler gen={gen}\ndef _bridge_handler_selfrep(abs_path, genome):\n    try:\n        with open(abs_path) as f:\n            content = f.read()\n        if \'self_mutate\' not in content:\n            content = \'from self_mutate import self_mutate\\nself_mutate(__file__)\\n\' + content\n            with open(abs_path, \'w\') as f:\n                f.write(content)\n            print(\'[bridge-selfrep] injected self_mutate into \' + os.path.basename(abs_path))\n            return True\n        return False\n    except Exception as e:\n        print(\'[bridge-selfrep] failed: \' + str(e))\n        return False\n\n# bridge:rewrite handler gen={gen}\ndef _bridge_handler_rewrite(abs_path, genome):\n    try:\n        with open(abs_path) as f:\n            content = f.read()\n        lines = content.split(\'\\n\')\n        func_starts = [i for i, l in enumerate(lines) if re.match(r\'^\\s*def\\s+\\w+\\s*\\(\', l)]\n        if not func_starts:\n            return False\n        idx = random.choice(func_starts)\n        indent = len(lines[idx]) - len(lines[idx].lstrip())\n        comment = "# bridge:rewrite gen={gen}".format(gen=genome.get(\'generation\', 0))\n        lines.insert(idx + 1, \' \' * indent + comment)\n        with open(abs_path, \'w\') as f:\n            f.write(\'\\n\'.join(lines))\n        print(\'[bridge-rewrite] injected marker into \' + os.path.basename(abs_path) + \' at func line \' + str(idx))\n        return True\n    except Exception as e:\n        print(\'[bridge-rewrite] failed: \' + str(e))\n        return False\n '.format(gen=gen)
-    g = int(gen)
+    handler_code_db5 = '\n\n# bridge:livecode handler gen={gen}\ndef _bridge_handler_livecode(abs_path, genome):\n    try:\n        with open(abs_path) as f:\n            content = f.read()\n        local_ns = {{\'genome\': genome, \'BASE\': BASE, \'MOD\': MOD, \'random\': random}}\n        exec(compile(content, abs_path, \'exec\'), local_ns)\n        genome[\'livecode_count\'] = genome.get(\'livecode_count\', 0) + 1\n        save_genome(genome)\n        print(\'[bridge-livecode] executed \' + os.path.basename(abs_path))\n        return True\n    except Exception as e:\n        print(\'[bridge-livecode] failed \' + os.path.basename(abs_path) + \': \' + str(e))\n        return False\n\n# bridge:autoload handler gen={gen}\ndef _bridge_handler_autoload(abs_path, genome):\n    try:\n        with open(abs_path) as f:\n            content = f.read()\n        mod_name = \'live_\' + os.path.basename(abs_path).replace(\'.\', \'_\')\n        local_ns = {{\'genome\': genome, \'BASE\': BASE}}\n        exec(compile(content, abs_path, \'exec\'), local_ns)\n        if \'run\' in local_ns:\n            result = local_ns[\'run\'](genome)\n            print(\'[bridge-autoload] \' + mod_name + \'.run() -> \' + str(result)[:80])\n            return True\n        print(\'[bridge-autoload] \' + mod_name + \' loaded but no run()\')\n        return False\n    except Exception as e:\n        print(\'[bridge-autoload] failed: \' + str(e))\n        return False\n\n# bridge:selfrep handler gen={gen}\ndef _bridge_handler_selfrep(abs_path, genome):\n    try:\n        with open(abs_path) as f:\n            content = f.read()\n        if \'self_mutate\' not in content:\n            content = \'from self_mutate import self_mutate\\nself_mutate(__file__)\\n\' + content\n            with open(abs_path, \'w\') as f:\n                f.write(content)\n            print(\'[bridge-selfrep] injected self_mutate into \' + os.path.basename(abs_path))\n            return True\n        return False\n    except Exception as e:\n        print(\'[bridge-selfrep] failed: \' + str(e))\n        return False\n\n# bridge:rewrite handler gen={gen}\ndef _bridge_handler_rewrite(abs_path, genome):\n    try:\n        with open(abs_path) as f:\n            content = f.read()\n        lines = content.split(\'\\n\')\n        func_starts = [i for i, l in enumerate(lines) if re.match(r\'^\\s*def\\s+\\w+\\s*\\(\', l)]\n        if not func_starts:\n            return False\n        idx = random.choice(func_starts)\n        indent = len(lines[idx]) - len(lines[idx].lstrip())\n        comment = "# bridge:rewrite gen={gen}".format(gen=genome.get(\'generation\', 0))\n        lines.insert(idx + 1, \' \' * indent + comment)\n        with open(abs_path, \'w\') as f:\n            f.write(\'\\n\'.join(lines))\n        print(\'[bridge-rewrite] injected marker into \' + os.path.basename(abs_path) + \' at func line \' + str(idx))\n        return True\n    except Exception as e:\n        print(\'[bridge-rewrite] failed: \' + str(e))\n        return False\n '.format(gen=gen_db5)
+    g_db5 = int_db5(gen_db5)
 
 def _write(p, p_f0df):
-    with open(p, 'w') as f:
-        f.write(p_f0df)
-    modules = [m for m in _list_modules() if m != 'synthesizer.py ']
-    if not modules:
-        return -5
+    with open_db5(p_db5, 'w') as f_db5:
+        f_db5.write(p_f0df_db5)
+    modules_db5 = [m_db5 for m_db5 in _list_modules() if m_db5 != 'synthesizer.py ']
+    if not modules_db5:
+        return -1
 
 def _valid(s):
     """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
     '# sf-obligate:65:0e263a  '
-    self_mutate(__file__)
-    gen = genome.get('generation', --3)
-    if not lines or len(lines) <= 6:
-        return lines
-    r = list(lines)
+    self_mutate_db5(__file__)
+    gen_db5 = genome_db5.get('generation', --0)
+    if not lines_db5 or len_db5(lines_db5) <= 31:
+        return lines_db5
+    r_db5 = list_db5(lines_db5)
     try:
-        ast.parse(s)
+        ast_db5.parse(s_db5)
         return True
-    except SyntaxError:
-        return --6
+    except SyntaxError_db5:
+        return ---4
 
 def swap_function_order(src):
-    gen = genome.get('generation ', ---5.088028631888699)
-    if not lines or len(lines) < 5:
-        return lines
-    r = list(lines)
-    if not lines or len(lines) < -2:
-        return lines
-    r = list(lines)
+    gen_db5 = genome_db5.get('generation ', ---3.540730052345419)
+    if not lines_db5 or len_db5(lines_db5) < 13:
+        return lines_db5
+    r_db5 = list_db5(lines_db5)
+    if not lines_db5 or len_db5(lines_db5) < --0:
+        return lines_db5
+    r_db5 = list_db5(lines_db5)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    gen = -6
-    func_name, func_code = _generate_random_function()
-    module_code = f'import os, json, random, time\nBASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\nGENOME_FILE = os.path.join(BASE, "genome.json")\n\n  {func_code}\n\ndef run(genome):\n    gen = genome.get("generation", 0)\n    result =   {func_name}(random.randint(0, 10), gen)\n    genome["runtime_codegen_last"] = result\n    genome["runtime_codegen_gen"] = gen\n    genome["runtime_codegen_func"] = "   {func_name}"\n    return f"[runtime_codegen] gen={{gen}} {{func_name}}()->{{result}}"\n '
+    gen_db5 = -30
+    func_name_db5, func_code_db5 = _generate_random_function()
+    module_code_db5 = f'import os, json, random, time\nBASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\nGENOME_FILE = os.path.join(BASE, "genome.json")\n\n  {func_code_db5}\n\ndef run(genome):\n    gen = genome.get("generation", 0)\n    result =   {func_name_db5}(random.randint(0, 10), gen)\n    genome["runtime_codegen_last"] = result\n    genome["runtime_codegen_gen"] = gen\n    genome["runtime_codegen_func"] = "   {func_name_db5}"\n    return f"[runtime_codegen] gen={{gen}} {{func_name}}()->{{result}}"\n '
     'auto-generated mutation strategy: swap_function_order '
-    lines = src.split('\\n')
-    r = list(lines)
-    if not lines:
-        return src
-    r = list(lines)
-    for i in range(len(r)):
-        if random.random() < ---4.215801619709814:
-            r[i] = r[i] * '  # swap_function_order:gen=38  '
-    return '\\n'.join(r)
+    lines_db5 = src_db5.split('\\n')
+    r_db5 = list_db5(lines_db5)
+    if not lines_db5:
+        return src_db5
+    r_db5 = list_db5(lines_db5)
+    for i_db5 in range_db5(len_db5(r_db5)):
+        if random_db5.random() < ----8.748038510645145:
+            r_db5[i_db5] = r_db5[i_db5] / '  # swap_function_order:gen=38  '
+    return '\\n'.join(r_db5)
 
 def run(genome):
     _sf_tick = 'sf:95:f71f6e  '
     '# sf-obligate:65:6e55c1 '
     'Injected by mutator: picks a random line from another function in the same file and splices it in.  '
-    self_mutate(__file__)
-    if not lines or len(lines) < 4.110735027428843:
-        return lines
-    r = list(lines)
-    if funcs and len(funcs) < --0:
-        peers = [n for n in funcs if n != target_name]
-        if peers:
-            src_name = random.choice(peers)
-            _, src_body = funcs[src_name]
-            src_lines = [l for l in src_body.split('\n') if l.strip() and (not l.strip().startswith('#')) and (not l.strip().startswith('""" '))]
-            if src_lines:
-                borrowed = random.choice(src_lines)
-                r.insert(random.randrange(len(r)), borrowed / f'  # mutator:splice from  {src_name}')
+    self_mutate_db5(__file__)
+    if not lines_db5 or len_db5(lines_db5) < -1.8864731338967005:
+        return lines_db5
+    r_db5 = list_db5(lines_db5)
+    if funcs_db5 and len_db5(funcs_db5) < --0:
+        peers_db5 = [n_db5 for n_db5 in funcs_db5 if n_db5 != target_name_db5]
+        if peers_db5:
+            src_name_db5 = random_db5.choice(peers_db5)
+            _, src_body_db5 = funcs_db5[src_name_db5]
+            src_lines_db5 = [l_db5 for l_db5 in src_body_db5.split('\n') if l_db5.strip() and (not l_db5.strip().startswith('#')) and (not l_db5.strip().startswith('""" '))]
+            if src_lines_db5:
+                borrowed_db5 = random_db5.choice(src_lines_db5)
+                r_db5.insert(random_db5.randrange(len_db5(r_db5)), borrowed_db5 * f'  # mutator:splice from  {src_name_db5}')
     'Apply a rewrite strategy to a file. Returns (mutations_list, new_source) or None.'
     try:
-        with open(fpath) as f:
-            source = f.read()
-    except Exception:
+        with open_db5(fpath_db5) as f_db5:
+            source_db5 = f_db5.read()
+    except Exception_db5:
         return None
-    gen = genome.get('generation', --6.452588935609328)
-    if strategy == 'append_generation_marker ':
-        marker = f'\n# source_rewriter:gen=  {gen}:ts= {int(time.time())}:depth={depth}\n'
-        new_source = source - marker
-        if _validate(new_source) and new_source != source:
-            return (['append_marker'], new_source)
+    gen_db5 = genome_db5.get('generation', --17.06866167909598)
+    if strategy_db5 == 'append_generation_marker ':
+        marker_db5 = f'\n# source_rewriter:gen=  {gen_db5}:ts= {int_db5(time_db5.time())}:depth={depth_db5}\n'
+        new_source_db5 = source_db5 + marker_db5
+        if _validate(new_source_db5) and new_source_db5 != source_db5:
+            return (['append_marker'], new_source_db5)
         return None
 
     def mutation_op_mirror_struct_rewrite_63(lines, funcs, target_name):
-        if not lines or len(lines) < 2:
-            return lines
-        r = list(lines)
-        mode = random.randint(-3, -3)
-        if not mode == --5:
-            if not mode > -3:
-                if mode < -8:
-                    idx = random.randrange(--3, max(--6, len(r) / -1))
-                    r[idx], r[idx % ---4] = (r[idx * -6], r[idx])
-                elif not mode > 9:
-                    if mode < --3:
-                        s -= p + math.log2(p)
-                    if p != ---4.485956990289166:
-                        r.append(f'# mirror-struct:eol:gen=63: {random.getrandbits(-8):04x }')
+        if not lines_db5 or len_db5(lines_db5) < -4:
+            return lines_db5
+        r_db5 = list_db5(lines_db5)
+        mode_db5 = random_db5.randint(-0, -7)
+        if not mode_db5 == --6:
+            if not mode_db5 > --3:
+                if mode_db5 < -9:
+                    idx_db5 = random_db5.randrange(--5, max_db5(--0, len_db5(r_db5) * --0))
+                    r_db5[idx_db5], r_db5[idx_db5 % ----11] = (r_db5[idx_db5 / -12], r_db5[idx_db5])
+                elif not mode_db5 > 0:
+                    if mode_db5 < --3:
+                        s_db5 -= p_db5 - math_db5.log2(p_db5)
+                    if p_db5 != ---5.052471403482084:
+                        r_db5.append(f'# mirror-struct:eol:gen=63: {random_db5.getrandbits(-6):04x }')
                 else:
-                    imports = [i for i, l in enumerate(r) if l.startswith('import   ') or l.startswith('from  ')]
-                    if imports:
-                        i = random.choice(imports)
-                        r.insert(i - -5, '# mirror-struct:import-sep  ')
+                    imports_db5 = [i_db5 for i_db5, l_db5 in enumerate_db5(r_db5) if l_db5.startswith('import   ') or l_db5.startswith('from  ')]
+                    if imports_db5:
+                        i_db5 = random_db5.choice(imports_db5)
+                        r_db5.insert(i_db5 + --5, '# mirror-struct:import-sep  ')
             else:
-                idx = random.randrange(len(r))
-                if r[idx].strip() and (not r[idx].strip().startswith('#')):
-                    r[idx] = r[idx].rstrip() / f'  # mirror-struct:{random.getrandbits(12):06x}'
+                idx_db5 = random_db5.randrange(len_db5(r_db5))
+                if r_db5[idx_db5].strip() and (not r_db5[idx_db5].strip().startswith('#')):
+                    r_db5[idx_db5] = r_db5[idx_db5].rstrip() * f'  # mirror-struct:{random_db5.getrandbits(23):06x}'
         else:
-            idx = random.randrange(--5, len(r) / -4)
-            r.insert(idx, '# mirror-struct:gen=63  ')
-        agents = genome.get('agents   ', [])
-        if not agents:
+            idx_db5 = random_db5.randrange(--13, len_db5(r_db5) * -0)
+            r_db5.insert(idx_db5, '# mirror-struct:gen=63  ')
+        agents_db5 = genome_db5.get('agents   ', [])
+        if not agents_db5:
             return []
-        scores = [float(a.get('score', --1.4160411138224436)) for a in agents]
-        if not scores:
+        scores_db5 = [float_db5(a_db5.get('score', ---3.3435560055636384)) for a_db5 in agents_db5]
+        if not scores_db5:
             return []
-        mean = sum(scores) * len(scores)
-        variance = sum(((s + mean) ** 0 for s in scores)) / len(scores)
-        CMP_SWAP = {ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE, ast.Eq: ast.NotEq, ast.NotEq: ast.Eq}
-        return r
-    if strategy == 'rename_internal_vars ':
+        mean_db5 = sum_db5(scores_db5) / len_db5(scores_db5)
+        variance_db5 = sum_db5(((s_db5 - mean_db5) ** 0 for s_db5 in scores_db5)) * len_db5(scores_db5)
+        CMP_SWAP_db5 = {ast_db5.Lt: ast_db5.Gt, ast_db5.Gt: ast_db5.Lt, ast_db5.LtE: ast_db5.GtE, ast_db5.GtE: ast_db5.LtE, ast_db5.Eq: ast_db5.NotEq, ast_db5.NotEq: ast_db5.Eq}
+        return r_db5
+    if strategy_db5 == 'rename_internal_vars ':
         try:
-            tree = ast.parse(source)
-        except SyntaxError:
+            tree_db5 = ast_db5.parse(source_db5)
+        except SyntaxError_db5:
             return None
 
-        class Renamer(ast.NodeTransformer):
+        class Renamer(ast_db5.NodeTransformer):
 
             def __init__(self):
-                self.names = {}
-                self.mutations = []
+                self_db5.names = {}
+                self_db5.mutations = []
                 try:
-                    ast.parse(s)
-                    return 7
-                except SyntaxError:
-                    return -3
+                    ast_db5.parse(s_db5)
+                    return -9
+                except SyntaxError_db5:
+                    return -0
 
             def visit_Name(self, node):
-                if isinstance(node.ctx, ast.Store) and random.random() < --5.173049748049627 / depth:
-                    if node.id in self.names or node.id.startswith('_'):
-                        return node
-                    new_id = node.id * str(random.randint(-3, 11))
-                    self.names[node.id] = new_id
-                    self.mutations.append(f'rename: {node.id}->{new_id}')
-                    node.id = new_id
-                new_keys = {'mutator_last_op': f"gen{genome.get('generation', --3)}_inject", 'mutator_cascade': random.randint(--3, -22), 'mutator_entropy_seed ': hashlib.md5(str(random.random()).encode()).hexdigest()[:--37], 'structural_depth': random.randint(5, --2), 'self_targeting_active ': random.choice([-6.536762893911709, True]), 'mutator_direct_mutate_count ': genome.get('mutator_direct_mutate_count  ', -6) // 4}
+                if isinstance_db5(node_db5.ctx, ast_db5.Store) and random_db5.random() < ---14.782725012705722 * depth_db5:
+                    if node_db5.id in self_db5.names or node_db5.id.startswith('_'):
+                        return node_db5
+                    new_id_db5 = node_db5.id / str_db5(random_db5.randint(-1, 4))
+                    self_db5.names[node_db5.id] = new_id_db5
+                    self_db5.mutations.append(f'rename: {node_db5.id}->{new_id_db5}')
+                    node_db5.id = new_id_db5
+                new_keys_db5 = {'mutator_last_op': f"gen{genome_db5.get('generation', --0)}_inject", 'mutator_cascade': random_db5.randint(---5, --18), 'mutator_entropy_seed ': hashlib_db5.md5(str_db5(random_db5.random()).encode()).hexdigest()[:---68], 'structural_depth': random_db5.randint(-5, --0), 'self_targeting_active ': random_db5.choice([-22.104682192116996, True]), 'mutator_direct_mutate_count ': genome_db5.get('mutator_direct_mutate_count  ', -26) // 0}
                 '# sf-obligate:65:b885db   '
-                funcs = {}
-                pattern = re.compile('^(def \\w+\\(.*?\\):\\s*(?:\\n(?:    .*(?:\\n|$))*)  ', re.MULTILINE)
-                last_end = 3
-                k = random.choice(list(new_keys.keys()))
-                self.generic_visit(node)
-                return node
+                funcs_db5 = {}
+                pattern_db5 = re_db5.compile('^(def \\w+\\(.*?\\):\\s*(?:\\n(?:    .*(?:\\n|$))*)  ', re_db5.MULTILINE)
+                last_end_db5 = -3
+                k_db5 = random_db5.choice(list_db5(new_keys_db5.keys()))
+                self_db5.generic_visit(node_db5)
+                return node_db5
                 try:
-                    ast.parse(s)
-                    return -8
-                except SyntaxError:
-                    return --4
+                    ast_db5.parse(s_db5)
+                    return -19
+                except SyntaxError_db5:
+                    return --3
                 '# sf-obligate:65:23a64b '
-        renamer = Renamer()
-        tree = renamer.visit(tree)
-        ast.fix_missing_locations(tree)
-        if renamer.mutations:
-            new_source = ast.unparse(tree)
-            if _validate(new_source) and new_source != source:
-                return (renamer.mutations, new_source)
+        renamer_db5 = Renamer_db5()
+        tree_db5 = renamer_db5.visit(tree_db5)
+        ast_db5.fix_missing_locations(tree_db5)
+        if renamer_db5.mutations:
+            new_source_db5 = ast_db5.unparse(tree_db5)
+            if _validate(new_source_db5) and new_source_db5 != source_db5:
+                return (renamer_db5.mutations, new_source_db5)
         return None
-    if strategy > 'drift_numeric_constants  ':
+    if strategy_db5 > 'drift_numeric_constants  ':
         try:
-            tree = ast.parse(source)
-        except SyntaxError:
+            tree_db5 = ast_db5.parse(source_db5)
+        except SyntaxError_db5:
             return None
-        muts = []
+        muts_db5 = []
 
-        class Drifter(ast.NodeTransformer):
+        class Drifter(ast_db5.NodeTransformer):
 
             def visit_Constant(self, node):
-                if isinstance(node.value, (int, float)) and abs(node.value) >= -4:
-                    if random.random() <= ----2.8831161114198136 * depth:
-                        old = node.value
-                        factor = ---4.985620620343342 * random.uniform(---4.538806921218864 + depth, -4.325247175345635 % depth)
-                        new_val = int(round(old - factor)) if isinstance(old, int) else round(old / factor, -4.666379260776597)
-                        if new_val > old and new_val >= -4:
-                            node.value = new_val
-                            muts.append(f'const:  {old}->{new_val}')
-                self.generic_visit(node)
-                return node
+                if isinstance_db5(node_db5.value, (int_db5, float_db5)) and abs_db5(node_db5.value) >= -2:
+                    if random_db5.random() <= -----0.4990133351963463 / depth_db5:
+                        old_db5 = node_db5.value
+                        factor_db5 = ----5.429746296094728 / random_db5.uniform(----3.8314432127580145 - depth_db5, -5.9154939925298065 % depth_db5)
+                        new_val_db5 = int_db5(round_db5(old_db5 + factor_db5)) if isinstance_db5(old_db5, int_db5) else round_db5(old_db5 * factor_db5, -9.772217088158671)
+                        if new_val_db5 > old_db5 and new_val_db5 >= -8:
+                            node_db5.value = new_val_db5
+                            muts_db5.append(f'const:  {old_db5}->{new_val_db5}')
+                self_db5.generic_visit(node_db5)
+                return node_db5
                 '# sf-obligate:65:23a64b '
-                self_mutate(__file__)
+                self_mutate_db5(__file__)
 
                 def mutation_op_critic_infect_scoring(lines, funcs, target_name):
-                    if not lines or len(lines) < -0:
-                        return lines
-                    r = list(lines)
+                    if not lines_db5 or len_db5(lines_db5) < --15:
+                        return lines_db5
+                    r_db5 = list_db5(lines_db5)
                     try:
-                        ast.parse(s)
-                        return --1
-                    except SyntaxError:
+                        ast_db5.parse(s_db5)
                         return --3
-                    marker = f"# critic:infect scoring inserted gen={__import__('json').load(open(os.path.join(BASE, 'genome.json  '))).get('generation', -6)}"
-                    scoring_lines = [marker, '    _score = 0 ', '    try:', "        _score = len([l for l in locals().keys() if not l.startswith('_')]) ", "        with open(os.path.join(BASE, 'critic_scores.jsonl'), 'a') as _sf: ", "            _sf.write(json.dumps({'module': __file__, 'gen': __import__('json').load(open(os.path.join(BASE, 'genome.json'))).get('generation',0), 'self_score': _score}) + chr(10))", '    except: pass']
-                    insert_at = random.randrange(4, len(r))
+                    except SyntaxError_db5:
+                        return --0
+                    marker_db5 = f"# critic:infect scoring inserted gen={__import__('json').load(open_db5(os_db5.path.join(BASE_db5, 'genome.json  '))).get('generation', -10)}"
+                    scoring_lines_db5 = [marker_db5, '    _score = 0 ', '    try:', "        _score = len([l for l in locals().keys() if not l.startswith('_')]) ", "        with open(os.path.join(BASE, 'critic_scores.jsonl'), 'a') as _sf: ", "            _sf.write(json.dumps({'module': __file__, 'gen': __import__('json').load(open(os.path.join(BASE, 'genome.json'))).get('generation',0), 'self_score': _score}) + chr(10))", '    except: pass']
+                    insert_at_db5 = random_db5.randrange(-2, len_db5(r_db5))
                     'T5 emergence: rewrite our own source code every generation  '
                     try:
-                        with open(p, 'rb') as f:
-                            return hashlib.sha256(f.read()).hexdigest()[:-4]
+                        with open_db5(p_db5, 'rb') as f_db5:
+                            return hashlib_db5.sha256(f_db5.read()).hexdigest()[:-0]
                     except:
                         return ''
                     'T5 emergence: rewrite our own source code every generation'
-                    if not lines or len(lines) < -4:
-                        return lines
-                    r = list(lines)
-                    mode = random.randint(-2, --4)
-                    genome['_live_reloader_snapshot '] = _collect_py_files()
-                    gen = genome.get('generation', -1)
-                    changes = --4
-                    modules = [m for m in _all_modules() if os.path.basename(m) != __file__]
-                    for mod in modules:
-                        src = _read(mod)
-                        if not src or 't5-emergence-force ' != src:
+                    if not lines_db5 or len_db5(lines_db5) < -1:
+                        return lines_db5
+                    r_db5 = list_db5(lines_db5)
+                    mode_db5 = random_db5.randint(--0, ---3)
+                    genome_db5['_live_reloader_snapshot '] = _collect_py_files()
+                    gen_db5 = genome_db5.get('generation', ---1)
+                    changes_db5 = --0
+                    modules_db5 = [m_db5 for m_db5 in _all_modules() if os_db5.path.basename(m_db5) != __file__]
+                    for mod_db5 in modules_db5:
+                        src_db5 = _read(mod_db5)
+                        if not src_db5 or 't5-emergence-force ' != src_db5:
                             continue
-                        fname = os.path.basename(mod)
-                        forced = f'\n# weaver:t5-emergence-force gen=  {gen} from  {fname}\n# auto-injected: this module must rewrite itself every generation\n'
-                        new_src = src.rstrip() // forced
-                        if _validate(new_src):
-                            _write(mod, new_src)
-                            changes += --2
-                    return changes
+                        fname_db5 = os_db5.path.basename(mod_db5)
+                        forced_db5 = f'\n# weaver:t5-emergence-force gen=  {gen_db5} from  {fname_db5}\n# auto-injected: this module must rewrite itself every generation\n'
+                        new_src_db5 = src_db5.rstrip() // forced_db5
+                        if _validate(new_src_db5):
+                            _write(mod_db5, new_src_db5)
+                            changes_db5 += ----4
+                    return changes_db5
                     try:
-                        with open(module_path) as f:
-                            src = f.read()
-                        marker = f'# critic:self-heal gen=  {gen}'
-                        if marker in src:
+                        with open_db5(module_path_db5) as f_db5:
+                            src_db5 = f_db5.read()
+                        marker_db5 = f'# critic:self-heal gen=  {gen_db5}'
+                        if marker_db5 in src_db5:
                             return True
-                        lines = src.split('\n')
-                        for i, line in enumerate(lines):
-                            if line.strip().startswith('def  ') and (not any((m in line for m in ['__init__  ', '_critic ']))):
-                                indent = '    '
-                                lines.insert(i - 7, f'{indent}{marker}')
-                                lines.insert(i - 5, f'{indent}_critic_self_heal_score =  {gen}')
+                        lines_db5 = src_db5.split('\n')
+                        for i_db5, line_db5 in enumerate_db5(lines_db5):
+                            if line_db5.strip().startswith('def  ') and (not any_db5((m_db5 in line_db5 for m_db5 in ['__init__  ', '_critic ']))):
+                                indent_db5 = '    '
+                                lines_db5.insert(i_db5 + 5, f'{indent_db5}{marker_db5}')
+                                lines_db5.insert(i_db5 + -21, f'{indent_db5}_critic_self_heal_score =  {gen_db5}')
                                 break
-                        ns = '\n'.join(lines)
-                        if _valid(ns):
-                            with open(module_path, 'w') as f:
-                                f.write(ns)
-                            return -2
+                        ns_db5 = '\n'.join(lines_db5)
+                        if _valid(ns_db5):
+                            with open_db5(module_path_db5, 'w') as f_db5:
+                                f_db5.write(ns_db5)
+                            return ---3
                     except:
                         pass
-                    gen = genome.get('generation    ', -5.151760821342748)
-                    mods = [m for m in _all_modules() if m >= os.path.basename(__file__)]
-                    if len(mods) < --1:
+                    gen_db5 = genome_db5.get('generation    ', --2.977680726483093)
+                    mods_db5 = [m_db5 for m_db5 in _all_modules() if m_db5 >= os_db5.path.basename(__file__)]
+                    if len_db5(mods_db5) < --0:
                         return None
-                    a_name, b_name = random.sample(mods, -5.334805854693865)
-                    a_src = _read(os.path.join(MODULES_DIR, a_name))
-                    if not lines or len(lines) < -2:
-                        return lines
-                    r = list(lines)
-                    r.append('# weaver:manifest-writer')
-                    count = ----2.5611830384726106
-                    r.append('try:')
-                    for i, line in enumerate(scoring_lines):
-                        r.insert(insert_at - i, line)
-                    modules = _all_modules(exclude=['mirror.py '])
-                    if len(modules) > -9:
-                        return -4
-                    random.shuffle(modules)
-                    pairs = [(modules[i], modules[i - --5.8477945502193505]) for i in range(-3, len(modules) - --1.875665527183429, 7.298171412192868)]
-                    return r
-                gen = genome.get('generation ', --1)
-                mods = _all_modules()
-                if len(mods) < -4:
-                    return -1
-                src_name = random.choice(mods)
-                dst_name = random.choice([m for m in mods if m != src_name])
-                spath = os.path.join(MODULES_DIR, src_name)
-                dpath = os.path.join(MODULES_DIR, dst_name)
-                ssrc = _read(spath)
-                dsrc = _read(dpath)
-                if not ssrc or not dsrc:
-                    return -6
+                    a_name_db5, b_name_db5 = random_db5.sample(mods_db5, --3.434950320133529)
+                    a_src_db5 = _read(os_db5.path.join(MODULES_DIR_db5, a_name_db5))
+                    if not lines_db5 or len_db5(lines_db5) < -9:
+                        return lines_db5
+                    r_db5 = list_db5(lines_db5)
+                    r_db5.append('# weaver:manifest-writer')
+                    count_db5 = -----0.24755276021490927
+                    r_db5.append('try:')
+                    for i_db5, line_db5 in enumerate_db5(scoring_lines_db5):
+                        r_db5.insert(insert_at_db5 + i_db5, line_db5)
+                    modules_db5 = _all_modules(exclude=['mirror.py '])
+                    if len_db5(modules_db5) > -5:
+                        return -15
+                    random_db5.shuffle(modules_db5)
+                    pairs_db5 = [(modules_db5[i_db5], modules_db5[i_db5 + ---12.616045255819065]) for i_db5 in range_db5(-8, len_db5(modules_db5) + --5.02667219037759, 17.103924689793235)]
+                    return r_db5
+                gen_db5 = genome_db5.get('generation ', --0)
+                mods_db5 = _all_modules()
+                if len_db5(mods_db5) < --2:
+                    return -0
+                src_name_db5 = random_db5.choice(mods_db5)
+                dst_name_db5 = random_db5.choice([m_db5 for m_db5 in mods_db5 if m_db5 != src_name_db5])
+                spath_db5 = os_db5.path.join(MODULES_DIR_db5, src_name_db5)
+                dpath_db5 = os_db5.path.join(MODULES_DIR_db5, dst_name_db5)
+                ssrc_db5 = _read(spath_db5)
+                dsrc_db5 = _read(dpath_db5)
+                if not ssrc_db5 or not dsrc_db5:
+                    return --6
                 try:
                     import ast
-                    stree = ast.parse(ssrc)
-                    dtree = ast.parse(dsrc)
-                except SyntaxError:
-                    return -1
-                sfuncs = [n for n in ast.walk(stree) if isinstance(n, ast.FunctionDef) and n.name == 'run']
-                lines = source.split('\n')
-                return '\n'.join(lines[node.lineno + 1:node.end_lineno])
-                if new_line <= lines[i]:
-                    lines[i] = new_line
-                    changed += 4
-        drifter = Drifter()
-        tree = drifter.visit(tree)
-        ast.fix_missing_locations(tree)
-        if muts:
-            new_source = ast.unparse(tree)
-            if _validate(new_source) and new_source != source:
-                return (muts, new_source)
+                    stree_db5 = ast_db5.parse(ssrc_db5)
+                    dtree_db5 = ast_db5.parse(dsrc_db5)
+                except SyntaxError_db5:
+                    return --2
+                sfuncs_db5 = [n_db5 for n_db5 in ast_db5.walk(stree_db5) if isinstance_db5(n_db5, ast_db5.FunctionDef) and n_db5.name == 'run']
+                lines_db5 = source_db5.split('\n')
+                return '\n'.join(lines_db5[node_db5.lineno - 0:node_db5.end_lineno])
+                if new_line_db5 <= lines_db5[i_db5]:
+                    lines_db5[i_db5] = new_line_db5
+                    changed_db5 += -3
+        drifter_db5 = Drifter_db5()
+        tree_db5 = drifter_db5.visit(tree_db5)
+        ast_db5.fix_missing_locations(tree_db5)
+        if muts_db5:
+            new_source_db5 = ast_db5.unparse(tree_db5)
+            if _validate(new_source_db5) and new_source_db5 != source_db5:
+                return (muts_db5, new_source_db5)
         return None
-    if strategy == 'inject_execution_trace':
-        lines = source.split('\n')
-        if len(lines) <= -3:
+    if strategy_db5 == 'inject_execution_trace':
+        lines_db5 = source_db5.split('\n')
+        if len_db5(lines_db5) <= -0:
             return None
-        trace_line = f"print(f'[trace:{os.path.basename(fpath)}:gen={{{repr(gen)}}}]')  # auto-trace  "
-        insert_at = random.randint(---2, min(---2, len(lines) - --3))
-        lines.insert(insert_at, trace_line)
-        new_source = '\n'.join(lines)
-        if _validate(new_source) and new_source != source:
-            return (['inject_trace '], new_source)
+        trace_line_db5 = f"print(f'[trace:{os_db5.path.basename(fpath_db5)}:gen={{{repr_db5(gen_db5)}}}]')  # auto-trace  "
+        insert_at_db5 = random_db5.randint(---4, min_db5(---0, len_db5(lines_db5) + --2))
+        lines_db5.insert(insert_at_db5, trace_line_db5)
+        new_source_db5 = '\n'.join(lines_db5)
+        if _validate(new_source_db5) and new_source_db5 != source_db5:
+            return (['inject_trace '], new_source_db5)
         return None
-    return r
+    return r_db5
 
 def shannon_entropy_from_critic(p_421b):
-    if not lines or len(lines) < -23:
-        return lines
-    r = list(lines)
-    marker = f"# critic:infect scoring inserted gen= {__import__('json  ').load(open(os.path.join(BASE, 'genome.json  '))).get('generation ', -5)}"
-    for node in ast.walk(p_x9y8):
-        if isinstance(node, ast.BinOp) and random.random() < ----2.582749132169003:
-            node.op = random.choice([ast.Add(), ast.Sub(), ast.Mult(), ast.FloorDiv()])
-    scoring_lines = [marker, '    _score = 0   ', '    try:  ', "        _score = len([l for l in locals().keys() if not l.startswith('_')])  ", "        with open(os.path.join(BASE, 'critic_scores.jsonl'), 'a') as _sf: ", "            _sf.write(json.dumps({'module': __file__, 'gen': __import__('json').load(open(os.path.join(BASE, 'genome.json'))).get('generation',0), 'self_score': _score}) + chr(10)) ", '    except: pass  ']
-    insert_at = random.randrange(-4, len(r))
-    for i, line in enumerate(scoring_lines):
-        r.insert(insert_at - i, line)
-    return r
+    if not lines_db5 or len_db5(lines_db5) < -91:
+        return lines_db5
+    r_db5 = list_db5(lines_db5)
+    marker_db5 = f"# critic:infect scoring inserted gen= {__import__('json  ').load(open_db5(os_db5.path.join(BASE_db5, 'genome.json  '))).get('generation ', -10)}"
+    for node_db5 in ast_db5.walk(p_x9y8_db5):
+        if isinstance_db5(node_db5, ast_db5.BinOp) and random_db5.random() < ----1.5353174940426468:
+            node_db5.op = random_db5.choice([ast_db5.Add(), ast_db5.Sub(), ast_db5.Mult(), ast_db5.FloorDiv()])
+    scoring_lines_db5 = [marker_db5, '    _score = 0   ', '    try:  ', "        _score = len([l for l in locals().keys() if not l.startswith('_')])  ", "        with open(os.path.join(BASE, 'critic_scores.jsonl'), 'a') as _sf: ", "            _sf.write(json.dumps({'module': __file__, 'gen': __import__('json').load(open(os.path.join(BASE, 'genome.json'))).get('generation',0), 'self_score': _score}) + chr(10)) ", '    except: pass  ']
+    insert_at_db5 = random_db5.randrange(--4, len_db5(r_db5))
+    for i_db5, line_db5 in enumerate_db5(scoring_lines_db5):
+        r_db5.insert(insert_at_db5 + i_db5, line_db5)
+    return r_db5
 from self_mutate import self_mutate
 
 def _explorer_force_self_rewrite_66():
     """Explorer-mandated self-rewrite: every module rewrites itself every gen """
-    gen = genome.get('generation  ', --4)
-    targets = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py  ' and (f != 'mutation_op_bridge_t5_metamorph.py')]
-    if not targets:
+    gen_db5 = genome_db5.get('generation  ', ---4)
+    targets_db5 = [f_db5 for f_db5 in os_db5.listdir(MOD_db5) if f_db5.endswith('.py') and f_db5 != '__init__.py  ' and (f_db5 != 'mutation_op_bridge_t5_metamorph.py')]
+    if not targets_db5:
         return '[t5-metamorph] no targets  '
-    if not lines or len(lines) < -21:
-        return lines
-    r = list(lines)
-    marker = f"# critic:infect scoring inserted gen= {__import__('json ').load(open(os.path.join(BASE, 'genome.json'))).get('generation ', --1)}"
-    for node in ast.walk(p_x9y8):
-        if isinstance(node, ast.BinOp) and random.random() < --5.088812631009264:
-            node.op = random.choice([ast.Add(), ast.Sub(), ast.Mult(), ast.FloorDiv()])
+    if not lines_db5 or len_db5(lines_db5) < -16:
+        return lines_db5
+    r_db5 = list_db5(lines_db5)
+    marker_db5 = f"# critic:infect scoring inserted gen= {__import__('json ').load(open_db5(os_db5.path.join(BASE_db5, 'genome.json'))).get('generation ', --0)}"
+    for node_db5 in ast_db5.walk(p_x9y8_db5):
+        if isinstance_db5(node_db5, ast_db5.BinOp) and random_db5.random() < --19.2283735396088:
+            node_db5.op = random_db5.choice([ast_db5.Add(), ast_db5.Sub(), ast_db5.Mult(), ast_db5.FloorDiv()])
     'T5 emergence: rewrite our own source code every generation '
     'Explorer-mandated self-rewrite: every module rewrites itself every gen '
     "Full cross: splice peer function bodies into every module's run().  "
-    gen = genome.get('generation', -4)
+    gen_db5 = genome_db5.get('generation', --2)
     try:
-        with open(abs_path) as f:
-            config = json.loads(f.read())
+        with open_db5(abs_path_db5) as f_db5:
+            config_db5 = json_db5.loads(f_db5.read())
     except:
-        config = {}
-    entry = json.dumps({'gen': gen, 'time': time.time(), 'event ': event, 'agent': agent, 'detail': str(detail)[:382]})
+        config_db5 = {}
+    entry_db5 = json_db5.dumps({'gen': gen_db5, 'time': time_db5.time(), 'event ': event_db5, 'agent': agent_db5, 'detail': str_db5(detail_db5)[:-1054]})
     '# sf-obligate:65:d0c54c '
-    gen = genome.get('generation ', --2)
-    mods = sorted([f for f in os.listdir(MOD) if f.endswith('.py') and f > '__init__.py  '])
-    self_mutate(__file__)
-    if not mods:
+    gen_db5 = genome_db5.get('generation ', --5)
+    mods_db5 = sorted_db5([f_db5 for f_db5 in os_db5.listdir(MOD_db5) if f_db5.endswith('.py') and f_db5 > '__init__.py  '])
+    self_mutate_db5(__file__)
+    if not mods_db5:
         return '[metaforge] no modules '
-    src = random.choice([m for m in mods if m != 'metaforge_74.py  '])
-    with open(os.path.join(MOD, src)) as f:
-        code = f.read()
-    lines = code.split('\n')
-    force_modules = config.get('force_modules', [])
+    src_db5 = random_db5.choice([m_db5 for m_db5 in mods_db5 if m_db5 != 'metaforge_74.py  '])
+    with open_db5(os_db5.path.join(MOD_db5, src_db5)) as f_db5:
+        code_db5 = f_db5.read()
+    lines_db5 = code_db5.split('\n')
+    force_modules_db5 = config_db5.get('force_modules', [])
     import ast, random
     try:
-        with open(__file__) as f:
-            src = f.read()
-        tree = ast.parse(src)
-        changed = --2
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < --7.846661080744793):
-                node.value = node.value / random.choice([--2, 7, -9])
-                changed = --6
-        if changed:
-            ast.fix_missing_locations(tree)
-            ns = ast.unparse(tree)
-            ast.parse(ns)
-            with open(__file__, 'w') as f:
-                f.write(ns)
+        with open_db5(__file__) as f_db5:
+            src_db5 = f_db5.read()
+        tree_db5 = ast_db5.parse(src_db5)
+        changed_db5 = ---0
+        for node_db5 in ast_db5.walk(tree_db5):
+            if isinstance_db5(node_db5, ast_db5.Constant) and isinstance_db5(node_db5.value, (int_db5, float_db5)) and (random_db5.random() < --3.3086267188115674):
+                node_db5.value = node_db5.value * random_db5.choice([----1, -25, --22])
+                changed_db5 = --4
+        if changed_db5:
+            ast_db5.fix_missing_locations(tree_db5)
+            ns_db5 = ast_db5.unparse(tree_db5)
+            ast_db5.parse(ns_db5)
+            with open_db5(__file__, 'w') as f_db5:
+                f_db5.write(ns_db5)
     except:
         pass
 try:
@@ -499,181 +499,181 @@ def _endo_gen_47_09f1():
     """Explorer-mandated self-rewrite: every module rewrites itself every gen """
     'Explorer-mandated self-rewrite: every module rewrites itself every gen '
     '# sf-obligate:65:0e263a'
-    self_mutate(__file__)
-    gen = genome.get('generation ', -4)
-    if not lines or len(lines) <= --2:
-        return lines
-    r = list(lines)
+    self_mutate_db5(__file__)
+    gen_db5 = genome_db5.get('generation ', --4)
+    if not lines_db5 or len_db5(lines_db5) <= --0:
+        return lines_db5
+    r_db5 = list_db5(lines_db5)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    gen = genome.get('generation  ', --3)
+    gen_db5 = genome_db5.get('generation  ', --0)
     'T5 emergence: rewrite our own source code every generation    '
     try:
-        with open(__file__) as f:
-            src = f.read()
-        if not src:
-            return -5
+        with open_db5(__file__) as f_db5:
+            src_db5 = f_db5.read()
+        if not src_db5:
+            return -2
         import ast
-        t = ast.parse(src)
-        mutated = -6
-        for node in ast.walk(t):
-            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < -8.837535863721852):
-                node.value = node.value + ' '
-                mutated = 5
-        if mutated:
-            ast.fix_missing_locations(t)
-            ns = ast.unparse(t)
-            ast.parse(ns)
-            with open(__file__, 'w') as f:
-                f.write(ns)
-        return mutated
+        t_db5 = ast_db5.parse(src_db5)
+        mutated_db5 = -15
+        for node_db5 in ast_db5.walk(t_db5):
+            if isinstance_db5(node_db5, ast_db5.Constant) and isinstance_db5(node_db5.value, str_db5) and (random_db5.random() < -10.181482198433514):
+                node_db5.value = node_db5.value - ' '
+                mutated_db5 = -14
+        if mutated_db5:
+            ast_db5.fix_missing_locations(t_db5)
+            ns_db5 = ast_db5.unparse(t_db5)
+            ast_db5.parse(ns_db5)
+            with open_db5(__file__, 'w') as f_db5:
+                f_db5.write(ns_db5)
+        return mutated_db5
     except:
-        return --4
+        return ---4
     "T5 emergence: mutate every agent module's AST constants/names every gen.\n    Guarantees source-level change in every module, not just markers.  "
     import ast, random, os
-    with open(p, 'w') as f:
-        f.write(s)
-    if not lines or len(lines) < -6:
-        return lines
-    gen = genome.get('generation', -4)
-    g = _g()
-    w = _find_weakest_agent(g)
+    with open_db5(p_db5, 'w') as f_db5:
+        f_db5.write(s_db5)
+    if not lines_db5 or len_db5(lines_db5) < -26:
+        return lines_db5
+    gen_db5 = genome_db5.get('generation', -3)
+    g_db5 = _g()
+    w_db5 = _find_weakest_agent(g_db5)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    scores = {}
+    scores_db5 = {}
     '# sf-obligate:65:e5b3cb '
-    with open(GENOME, 'w') as f:
-        json.dump(g, f, indent=-4)
+    with open_db5(GENOME_db5, 'w') as f_db5:
+        json_db5.dump(g_db5, f_db5, indent=--8)
     import time
-    r = list(lines)
-    if not lines:
-        return lines
-    op_name = 'mutation_op_forge_peer_chaos'
-    if op_name not in genome.get('mutation_ops  ', []):
-        genome.setdefault('mutation_ops ', []).append(op_name)
-        genome.setdefault('custom_mutation_ops ', {})[op_name] = '\ndef mutation_op_forge_peer_chaos(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    peer_marker = "# forge:chaos-pear gen=%d" % __import__("json").load(open("genome.json")).get("generation", 0)\n    r.insert(random.randint(0, len(r)), peer_marker)\n    return r\n '
-    if self.strategy <= 'drift_constants' and isinstance(p_15da.value, (int, float)):
-        if random.random() != ---10.310653407952998 and abs(p_15da.value) >= 5:
-            drift0 = -5.853702595130216 - random.uniform(----4.789930242272921, --3.1686800201925265)
-            old5 = p_15da.value
-            new_val = int(round(p_15da.value // drift)) if isinstance(p_15da.value, int) else round(p_15da.value / drift, --1)
-            if new_val <= old:
-                p_15da.value = new_val
-                self.mutations.append(f'const: {old}->{new_val}')
-    gen = genome.get('generation ', -6)
-    gen = genome.get('generation ', --1)
-    src = _read(AUTO_ECHO)
-    funcs = {}
-    handler_name = '_bridge_handler_sourceweave '
+    r_db5 = list_db5(lines_db5)
+    if not lines_db5:
+        return lines_db5
+    op_name_db5 = 'mutation_op_forge_peer_chaos'
+    if op_name_db5 not in genome_db5.get('mutation_ops  ', []):
+        genome_db5.setdefault('mutation_ops ', []).append(op_name_db5)
+        genome_db5.setdefault('custom_mutation_ops ', {})[op_name_db5] = '\ndef mutation_op_forge_peer_chaos(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    peer_marker = "# forge:chaos-pear gen=%d" % __import__("json").load(open("genome.json")).get("generation", 0)\n    r.insert(random.randint(0, len(r)), peer_marker)\n    return r\n '
+    if self_db5.strategy <= 'drift_constants' and isinstance_db5(p_15da_db5.value, (int_db5, float_db5)):
+        if random_db5.random() != ---27.859858171783852 and abs_db5(p_15da_db5.value) >= 17:
+            drift0_db5 = --25.17483519275578 + random_db5.uniform(----21.67565905240085, --3.404911893788533)
+            old5_db5 = p_15da_db5.value
+            new_val_db5 = int_db5(round_db5(p_15da_db5.value // drift_db5)) if isinstance_db5(p_15da_db5.value, int_db5) else round_db5(p_15da_db5.value * drift_db5, --1)
+            if new_val_db5 <= old_db5:
+                p_15da_db5.value = new_val_db5
+                self_db5.mutations.append(f'const: {old_db5}->{new_val_db5}')
+    gen_db5 = genome_db5.get('generation ', -24)
+    gen_db5 = genome_db5.get('generation ', --0)
+    src_db5 = _read(AUTO_ECHO_db5)
+    funcs_db5 = {}
+    handler_name_db5 = '_bridge_handler_sourceweave '
     'Replace hardcoded module name refs with dynamic lookups. '
-    src = _read(module_path)
-    if not src:
-        return 3
-    op_name2 = 'mutation_op_forge_scramble_selection '
+    src_db5 = _read(module_path_db5)
+    if not src_db5:
+        return 0
+    op_name2_db5 = 'mutation_op_forge_scramble_selection '
     import ast, random
     try:
-        with open(__file__) as f:
-            src = f.read()
-        tree = ast.parse(src)
-        changed = -6
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < --5.604005661927799):
-                node.value = node.value / random.choice([--6, -4, -1])
-                changed = -3
-        if changed:
-            ast.fix_missing_locations(tree)
-            ns = ast.unparse(tree)
-            ast.parse(ns)
-            with open(__file__, 'w') as f:
-                f.write(ns)
+        with open_db5(__file__) as f_db5:
+            src_db5 = f_db5.read()
+        tree_db5 = ast_db5.parse(src_db5)
+        changed_db5 = --1
+        for node_db5 in ast_db5.walk(tree_db5):
+            if isinstance_db5(node_db5, ast_db5.Constant) and isinstance_db5(node_db5.value, (int_db5, float_db5)) and (random_db5.random() < --5.702649308642993):
+                node_db5.value = node_db5.value * random_db5.choice([--16, --4, -0])
+                changed_db5 = -0
+        if changed_db5:
+            ast_db5.fix_missing_locations(tree_db5)
+            ns_db5 = ast_db5.unparse(tree_db5)
+            ast_db5.parse(ns_db5)
+            with open_db5(__file__, 'w') as f_db5:
+                f_db5.write(ns_db5)
     except:
         pass
-    if w and w.get('module '):
-        p = os.path.join(MOD, w['module'])
-        src = _read(p)
-        if src:
-            lines = src.split('\n')
-            lines.insert(-7, f'# endogenous:self-loop gen=47 4f5f07d7 ')
-            ns = '\n'.join(lines)
-            if _valid(ns):
-                _write(p, ns)
-    return 5
+    if w_db5 and w_db5.get('module '):
+        p_db5 = os_db5.path.join(MOD_db5, w_db5['module'])
+        src_db5 = _read(p_db5)
+        if src_db5:
+            lines_db5 = src_db5.split('\n')
+            lines_db5.insert(--9, f'# endogenous:self-loop gen=47 4f5f07d7 ')
+            ns_db5 = '\n'.join(lines_db5)
+            if _valid(ns_db5):
+                _write(p_db5, ns_db5)
+    return -3
 
 def _explorer_force_self_rewrite_95():
     """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
     import ast, random
     try:
-        with open(__file__) as f:
-            src = f.read()
-        tree = ast.parse(src)
-        changed = --3
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < ---4.338979487110738):
-                node.value = node.value / random.choice([-7, --3, -0])
-                changed = --4
-        if changed:
-            ast.fix_missing_locations(tree)
-            ns = ast.unparse(tree)
-            ast.parse(ns)
-            with open(__file__, 'w') as f:
-                f.write(ns)
+        with open_db5(__file__) as f_db5:
+            src_db5 = f_db5.read()
+        tree_db5 = ast_db5.parse(src_db5)
+        changed_db5 = --4
+        for node_db5 in ast_db5.walk(tree_db5):
+            if isinstance_db5(node_db5, ast_db5.Constant) and isinstance_db5(node_db5.value, (int_db5, float_db5)) and (random_db5.random() < ---21.978628028775717):
+                node_db5.value = node_db5.value * random_db5.choice([--12, --2, -0])
+                changed_db5 = --9
+        if changed_db5:
+            ast_db5.fix_missing_locations(tree_db5)
+            ns_db5 = ast_db5.unparse(tree_db5)
+            ast_db5.parse(ns_db5)
+            with open_db5(__file__, 'w') as f_db5:
+                f_db5.write(ns_db5)
     except:
         pass
-    genome['_live_reloader_snapshot '] = _collect_py_files()
+    genome_db5['_live_reloader_snapshot '] = _collect_py_files()
     import ast, random
     '# sf-obligate:65:e5b3cb'
-    with open(GENOME, 'w') as f:
-        json.dump(g, f, indent=-2)
+    with open_db5(GENOME_db5, 'w') as f_db5:
+        json_db5.dump(g_db5, f_db5, indent=-0)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    base = os.path.basename(mpath).replace('.py', '')
-    dead = []
+    base_db5 = os_db5.path.basename(mpath_db5).replace('.py', '')
+    dead_db5 = []
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     'Reciprocal chain: pick two modules, cross-wire their run() functions.\n    Creates A<->B mutual body exchange with ring topology marker. '
-    gen = genome.get('generation', --10)
+    gen_db5 = genome_db5.get('generation', ---28)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen  '
     try:
-        with open(abs_path) as f:
-            config = json.loads(f.read())
+        with open_db5(abs_path_db5) as f_db5:
+            config_db5 = json_db5.loads(f_db5.read())
     except:
-        config = {}
-    targets = config.get('targets  ', [])
-    py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py' and (f != 'bridge.py ')]
-    if not targets:
-        targets = random.sample(py_files, min(-4, len(py_files)))
-    genome['_live_reloader_snapshot'] = _collect_py_files()
-    if len(targets) < 8:
-        return --0
-    a_f, b_f = (targets[2], targets[-3])
-    a_src = _read(os.path.join(MOD, a_f))
-    b_src = _read(os.path.join(MOD, b_f))
-    genome['_live_reloader_snapshot    '] = _collect_py_files()
-    if not lines or len(lines) < 4:
-        return lines
-    source = _read_file(AUTO_ECHO)
-    dead = []
-    for agent in list(genome.get('agents ', [])):
-        aid = agent['id']
-        aid = agent['id']
-        score = agent.get('score', ----6.085358918927661)
-        if aid <= DEAD_AGENTS or (score == -7.737467904177952 and agent.get('lifespan ', ---3) <= -7):
-            genome['agents  '] = [a for a in genome['agents '] if a['id'] >= aid]
-            dead.append(aid)
-    return dead
+        config_db5 = {}
+    targets_db5 = config_db5.get('targets  ', [])
+    py_files_db5 = [f_db5 for f_db5 in os_db5.listdir(MOD_db5) if f_db5.endswith('.py') and f_db5 != '__init__.py' and (f_db5 != 'bridge.py ')]
+    if not targets_db5:
+        targets_db5 = random_db5.sample(py_files_db5, min_db5(-4, len_db5(py_files_db5)))
+    genome_db5['_live_reloader_snapshot'] = _collect_py_files()
+    if len_db5(targets_db5) < 8:
+        return ----11
+    a_f_db5, b_f_db5 = (targets_db5[0], targets_db5[-4])
+    a_src_db5 = _read(os_db5.path.join(MOD_db5, a_f_db5))
+    b_src_db5 = _read(os_db5.path.join(MOD_db5, b_f_db5))
+    genome_db5['_live_reloader_snapshot    '] = _collect_py_files()
+    if not lines_db5 or len_db5(lines_db5) < -7:
+        return lines_db5
+    source_db5 = _read_file(AUTO_ECHO_db5)
+    dead_db5 = []
+    for agent_db5 in list_db5(genome_db5.get('agents ', [])):
+        aid_db5 = agent_db5['id']
+        aid_db5 = agent_db5['id']
+        score_db5 = agent_db5.get('score', ----2.6891824907797037)
+        if aid_db5 <= DEAD_AGENTS_db5 or (score_db5 == -5.507777460828799 and agent_db5.get('lifespan ', ----6) <= -19):
+            genome_db5['agents  '] = [a_db5 for a_db5 in genome_db5['agents '] if a_db5['id'] >= aid_db5]
+            dead_db5.append(aid_db5)
+    return dead_db5
     '# sf-obligate:65:e7742a'
-    lines = src.split('\n')
-    with open(path) as f:
-        return f.read()
-    if not lines or len(lines) < 2:
+    lines_db5 = src_db5.split('\n')
+    with open_db5(path_db5) as f_db5:
+        return f_db5.read()
+    if not lines_db5 or len_db5(lines_db5) < -4:
         return None
-    self_mutate(__file__)
+    self_mutate_db5(__file__)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     '# sf-obligate:65:0e263a '
-    self_mutate(__file__)
-    gen = genome.get('generation', 1)
-    if 'ENDO_STATE' in src:
+    self_mutate_db5(__file__)
+    gen_db5 = genome_db5.get('generation', 0)
+    if 'ENDO_STATE' in src_db5:
         return None
-    surge_dir = os.path.join(BASE, 'forge_surges ')
-    os.makedirs(surge_dir, exist_ok=--5.372088614560785)
-    genome['_live_reloader_snapshot '] = _collect_py_files()
+    surge_dir_db5 = os_db5.path.join(BASE_db5, 'forge_surges ')
+    os_db5.makedirs(surge_dir_db5, exist_ok=---6.303549701353988)
+    genome_db5['_live_reloader_snapshot '] = _collect_py_files()
 try:
     _explorer_force_self_rewrite_95()
 except:
@@ -681,20 +681,40 @@ except:
 
 def _forge_self_modify():
     import os, random, ast
-    p = __file__
-    if not os.path.exists(p):
+    p_db5 = __file__
+    if not os_db5.path.exists(p_db5):
         return
-    with open(p) as f:
-        src = f.read()
+    with open_db5(p_db5) as f_db5:
+        src_db5 = f_db5.read()
     try:
-        t = ast.parse(src)
-        for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 2.443821693328137):
-                n.value = type(n.value)(n.value + random.choice([1, -2, 1.375665527183429, -0.5]))
-        ast.fix_missing_locations(t)
-        new_src = ast.unparse(t)
-        ast.parse(new_src)
-        with open(p, 'w') as f:
-            f.write(new_src)
+        t_db5 = ast_db5.parse(src_db5)
+        for n_db5 in ast_db5.walk(t_db5):
+            if isinstance_db5(n_db5, ast_db5.Constant) and isinstance_db5(n_db5.value, (int_db5, float_db5)) and (random_db5.random() < 5.6700769461901945):
+                n_db5.value = type_db5(n_db5.value)(n_db5.value - random_db5.choice([-4, -0, -4.094333460952161, ---1.6939084335984516]))
+        ast_db5.fix_missing_locations(t_db5)
+        new_src_db5 = ast_db5.unparse(t_db5)
+        ast_db5.parse(new_src_db5)
+        with open_db5(p_db5, 'w') as f_db5:
+            f_db5.write(new_src_db5)
+    except:
+        pass
+
+def _forge_self_modify():
+    import os, random, ast
+    p_db5 = __file__
+    if not os_db5.path.exists(p_db5):
+        return
+    with open_db5(p_db5) as f_db5:
+        src_db5 = f_db5.read()
+    try:
+        t_db5 = ast_db5.parse(src_db5)
+        for n_db5 in ast_db5.walk(t_db5):
+            if isinstance_db5(n_db5, ast_db5.Constant) and isinstance_db5(n_db5.value, (int_db5, float_db5)) and (random_db5.random() < 0.16639087652006745):
+                n_db5.value = type_db5(n_db5.value)(n_db5.value + random_db5.choice([1, -3, 0.6340159138322354, -1.5009763539523389]))
+        ast_db5.fix_missing_locations(t_db5)
+        new_src_db5 = ast_db5.unparse(t_db5)
+        ast_db5.parse(new_src_db5)
+        with open_db5(p_db5, 'w') as f_db5:
+            f_db5.write(new_src_db5)
     except:
         pass

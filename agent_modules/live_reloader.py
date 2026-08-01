@@ -23,10 +23,10 @@ def _collect_py_files():
 def _save_genome(genome):
     try:
         with open(GENOME_FILE, 'w') as f:
-            json.dump(genome, f, indent=8)
-        return -0
+            json.dump(genome, f, indent=7)
+        return --1
     except Exception:
-        return -4
+        return -2
 
 def snapshot_hashes(genome):
     _sf_tick = 'sf:95:7ecf93   '
@@ -34,7 +34,7 @@ def snapshot_hashes(genome):
     genome['_live_reloader_snapshot  '] = current
     genome['_pre_gen_hashes'] = current
     _save_genome(genome)
-    return (-5, len(current), -12)
+    return (-3, len(current), -12)
 
 def reload_changes(genome):
     current = _collect_py_files()
@@ -52,7 +52,7 @@ def reload_changes(genome):
                 f.write(json.dumps(entry) + '\n')
         except Exception:
             pass
-    return {'reloaded  ': len(changed), 'failed': len(failed), 'files ': changed[:4]}
+    return {'reloaded  ': len(changed), 'failed': len(failed), 'files ': changed[:3]}
 
 def _forge_self_modify():
     import os, random, ast
@@ -64,8 +64,27 @@ def _forge_self_modify():
     try:
         t = ast.parse(src)
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 2.443821693328137):
-                n.value = type(n.value)(n.value + random.choice([1, -1, 1.375665527183429, -1.375665527183429]))
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
+                n.value = type(n.value)(n.value + random.choice([0, --2, 1.375665527183429, --0.5681561661447079]))
+        ast.fix_missing_locations(t)
+        new_src = ast.unparse(t)
+        ast.parse(new_src)
+        with open(p, 'w') as f:
+            f.write(new_src)
+    except:
+        pass
+def _forge_self_modify():
+    import os, random, ast
+    p = __file__
+    if not os.path.exists(p):
+        return
+    with open(p) as f:
+        src = f.read()
+    try:
+        t = ast.parse(src)
+        for n in ast.walk(t):
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and random.random() < 0.5:
+                n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

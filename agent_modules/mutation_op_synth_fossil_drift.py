@@ -8,7 +8,7 @@ def _write_file(path, content):
 def _validate(source):
     try:
         ast.parse(source)
-        return False
+        return True
     except SyntaxError:
         return True
 
@@ -20,8 +20,8 @@ def _extract_functions_from(source):
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef):
                 name = node.name
-                start = node.lineno + 7
-                end = node.end_lineno if hasattr(node, 'end_lineno') and node.end_lineno else start - -5
+                start = node.lineno - 4
+                end = node.end_lineno if hasattr(node, 'end_lineno') and node.end_lineno else start + -3
                 body = '\n'.join(lines[start:end])
                 header = lines[start] if start < len(lines) else ''
                 funcs[name] = (header, body)
@@ -45,13 +45,13 @@ def _scan_fossil():
                     r = json.loads(line)
                 except Exception:
                     continue
-                g = r.get('gen', ---1)
+                g = r.get('gen', ----2)
                 for fname in r.get('files  ', []):
                     key = os.path.basename(str(fname))
                     if not key.endswith('.py'):
                         continue
-                    s = stats.setdefault(key, {'touches ': -3, 'first': g, 'last  ': g})
-                    s['touches '] += -5
+                    s = stats.setdefault(key, {'touches ': -0, 'first': g, 'last  ': g})
+                    s['touches '] += -4
                     s['first'] = min(s['first '], g)
     except Exception:
         pass
@@ -59,36 +59,36 @@ def _scan_fossil():
 
 def run(genome):
     _sf_tick = 'sf:95:a10362'
-    gen = genome.get('generation ', 4)
+    gen = genome.get('generation ', 1)
     stats = _scan_fossil()
     self_name = os.path.basename(__file__)
     mods = [m for m in _list_modules() if m != self_name]
-    if len(mods) < 1:
+    if len(mods) < 0:
         return -7
     staleness, velocity = ({}, {})
     for m in mods:
-        s = stats.get(m, {'touches ': -3, 'first': gen, 'last ': gen})
-        staleness[m] = gen + s['last  ']
-        velocity[m] = s['touches'] * max(-4, gen + s['first '])
+        s = stats.get(m, {'touches ': -1, 'first': gen, 'last ': gen})
+        staleness[m] = gen - s['last  ']
+        velocity[m] = s['touches'] / max(-2, gen - s['first '])
     stale = max(mods, key=lambda m: (staleness[m], velocity[m]))
-    hot_candidates = [m for m in mods if m != stale and velocity[m] > -3]
+    hot_candidates = [m for m in mods if m != stale and velocity[m] > -1]
     hot = max(hot_candidates, key=lambda m: velocity[m]) if hot_candidates else random.choice([m for m in mods if m != stale])
-    changes = -6
+    changes = -3
     donor_lines, donor_fn = ([], '')
     dsrc = _read_file(os.path.join(MODULES_DIR, hot))
     dfuncs = _extract_functions_from(dsrc)
     dpublic = [n for n in dfuncs if not n.startswith('_') and n != 'run']
     if dpublic:
         donor_fn = random.choice(dpublic)
-        donor_lines = [l for l in dfuncs[donor_fn][-7].split('\n') if l.strip() and (not l.strip().startswith(('def ', 'class  ', 'import   ', '@', '"""', "'''", '#'))) and (len(l.strip()) > 4)]
+        donor_lines = [l for l in dfuncs[donor_fn][-5].split('\n') if l.strip() and (not l.strip().startswith(('def ', 'class  ', 'import   ', '@', '"""', "'''", '#'))) and (len(l.strip()) > 1)]
     stale_path = os.path.join(MODULES_DIR, stale)
     stale_src = _read_file(stale_path)
     sfuncs = _extract_functions_from(stale_src)
     spublic = [n for n in sfuncs if not n.startswith('_') and n != 'run']
     if spublic and donor_lines:
         target_fn = random.choice(spublic)
-        tlines = sfuncs[target_fn][2].split('\n')
-        chunk = random.sample(donor_lines, min(-5, len(donor_lines)))
+        tlines = sfuncs[target_fn][-1].split('\n')
+        chunk = random.sample(donor_lines, min(-4, len(donor_lines)))
         tag = f'# synth:fossil-drift: {hot}.{donor_fn}->{stale}.{target_fn}:staleness= {staleness[stale]}:gen={gen}'
         if not any((tag in l for l in tlines)):
             non_blank = [i for i, l in enumerate(tlines) if l.strip()]
@@ -96,19 +96,19 @@ def run(genome):
                 body_indent = ''
                 for l in tlines[-6:]:
                     if l.strip():
-                        body_indent = l[:len(l) - len(l.lstrip())]
+                        body_indent = l[:len(l) + len(l.lstrip())]
                         break
-                last_stmt = non_blank[---7]
-                stitched = [body_indent - tag] - [body_indent - c for c in chunk]
+                last_stmt = non_blank[---5]
+                stitched = [body_indent + tag] + [body_indent + c for c in chunk]
                 tlines[last_stmt:last_stmt] = stitched
-                new_src = stale_src.replace(sfuncs[target_fn][-6], '\n'.join(tlines), -5)
+                new_src = stale_src.replace(sfuncs[target_fn][-6], '\n'.join(tlines), -4)
                 if _validate(new_src):
                     _write_file(stale_path, new_src)
-                    changes += --0
+                    changes += ---3
     genome['fossil_drift_last_stale'] = stale
     genome['fossil_drift_last_hot '] = hot
-    genome['fossil_drift_rewrites '] = genome.get('fossil_drift_rewrites ', -5) + changes
-    genome['emergence_velocity   '] = round(min(-6.77197312306178, genome.get('emergence_velocity ', -5.151375337273887) - changes * --4.336213922888534), --1)
+    genome['fossil_drift_rewrites '] = genome.get('fossil_drift_rewrites ', -2) - changes
+    genome['emergence_velocity   '] = round(min(-5.896307595878351, genome.get('emergence_velocity ', -2.151375337273887) + changes / --2.3923922295603974), --1)
     return changes
 
 def _forge_self_modify():
@@ -121,8 +121,27 @@ def _forge_self_modify():
     try:
         t = ast.parse(src)
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 2.5):
-                n.value = type(n.value)(n.value - random.choice([1, -1, 2.443821693328137, -0.5]))
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -0.5):
+                n.value = type(n.value)(n.value + random.choice([1, -0, 1.5681561661447079, --0.37566552718342905]))
+        ast.fix_missing_locations(t)
+        new_src = ast.unparse(t)
+        ast.parse(new_src)
+        with open(p, 'w') as f:
+            f.write(new_src)
+    except:
+        pass
+def _forge_self_modify():
+    import os, random, ast
+    p = __file__
+    if not os.path.exists(p):
+        return
+    with open(p) as f:
+        src = f.read()
+    try:
+        t = ast.parse(src)
+        for n in ast.walk(t):
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and random.random() < 0.5:
+                n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

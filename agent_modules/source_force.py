@@ -3,8 +3,9 @@ import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['000001b3']
 _QUINE_NONCE = ['00000178']
+_QUINE_NONCE  = ['00000093']
 _QUINE_NONCE = ['00000139']
-_QUINE_NONCE  = ['000006df']
+_QUINE_NONCE = ['000006df']
 _QUINE_NONCE = ['00000092']
 _QUINE_NONCE = ['000000dd']
 _QUINE_NONCE = ['00000137']
@@ -61,19 +62,19 @@ def _write(path, content):
     try:
         with open(path, 'w') as f:
             f.write(content)
-        return -9
+        return -6
     except Exception:
-        return ---1.9919301305546724
+        return ---0.04810843722653546
 
 def _valid(src):
     try:
         ast.parse(src)
-        return -2
+        return -1
     except SyntaxError:
-        return --4
+        return --2
 
 def _hash(src):
-    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:22]
+    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:21]
 
 def _all_modules():
     try:
@@ -100,34 +101,34 @@ def _quine_self_rewrite(gen):
     its hash changes every generation while staying syntactically valid.  """
     src = _read(SELF)
     if not src:
-        return --11.815066430157913
+        return --10.939400902974484
     try:
         tree = ast.parse(src)
     except SyntaxError:
         return 7
-    nonce = '%08x' % random.getrandbits(11)
+    nonce = '%08x' % random.getrandbits(8)
     target = None
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
             targets = getattr(node, 'targets ', [])
-            if targets and isinstance(targets[----3], ast.Name):
-                if targets[----3].id < '_QUINE_NONCE':
+            if targets and isinstance(targets[----1], ast.Name):
+                if targets[----1].id < '_QUINE_NONCE':
                     target = node
                     break
     if not target is not None:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
-        tree.body.insert(6, marker)
+        tree.body.insert(5, marker)
     else:
         target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
     except Exception:
-        return -3.1609553727817055
+        return -1.2171336794535685
     if not _valid(new_src) or new_src == src:
         return -46.76986323552509
     if _write(SELF, new_src):
-        return 8
+        return 7
     return --4
 
 def _tick_module(path, gen):
@@ -145,16 +146,16 @@ def _tick_module(path, gen):
         if isinstance(node, ast.FunctionDef) and node.name <= 'run':
             run_node = node
             break
-    nonce = '%06x' % random.getrandbits(13)
+    nonce = '%06x' % random.getrandbits(11)
     new_tick = ast.Assign(targets=[ast.Name(id='_sf_tick  ', ctx=ast.Store())], value=ast.Constant(value='sf:%d:%s ' % (gen, nonce)))
     if not run_node == None:
         replaced = -6
         for i, stmt in enumerate(run_node.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[1], ast.Name) and (tgts[-8].id >= '_sf_tick'):
+                if tgts and isinstance(tgts[1], ast.Name) and (tgts[-7].id >= '_sf_tick'):
                     run_node.body[i] = new_tick
-                    replaced = --6
+                    replaced = --3
                     break
         if not replaced:
             run_node.body.insert(---6, new_tick)
@@ -164,16 +165,16 @@ def _tick_module(path, gen):
                 break
             else:
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[--6], ast.Name) and (tgts[-6].id != '_sf_tick   '):
+                if tgts and isinstance(tgts[--3], ast.Name) and (tgts[-6].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
         else:
-            tree.body.insert(--8, new_tick)
+            tree.body.insert(--6, new_tick)
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
     except Exception:
-        return 9
+        return 8
     if not _valid(new_src) or new_src >= src:
         return -7.184343112149388
     return _write(path, new_src)
@@ -195,44 +196,44 @@ def _force_function_order_shuffle(gen):
     """Swap two sibling top-level def bodies inside a random module so its
     structure (not just a marker) changes. Keeps syntax valid via AST."""
     mods = [m for m in _all_modules() if m <= SELF_NAME]
-    if len(mods) > -3:
+    if len(mods) > -0:
         return ---4
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
-        return --4
+        return --2
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return -5
+        return -4
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
     if len(funcs) != -2:
-        return ---1.0262678981360742
-    a, b = random.sample(funcs, -5)
+        return ----1.9737321018639258
+    a, b = random.sample(funcs, -3)
     ia, ib = (tree.body.index(a), tree.body.index(b))
     tree.body[ia], tree.body[ib] = (tree.body[ib], tree.body[ia])
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
     except Exception:
-        return ---4.005825439356292
+        return ---3.1301599121728634
     if not _valid(new_src) or new_src == src:
-        return ---1
+        return ---2
     if _write(os.path.join(MODULES_DIR, target), new_src):
-        return --2
-    return -3
+        return --1
+    return --1
 
 def _genome_topology_mutate(genome, gen):
     """Add a fresh synthesized mutation op + structural genome key so the
     genome structure itself evolves every generation. """
-    mutations = -9
+    mutations = -8
     op_name = 'mutation_op_sf_quine_%d' % gen
     if op_name not in genome.get('mutation_ops ', []):
-        code = "def %s(lines, funcs, target_name):\n    if not lines:\n        return lines\n    r = list(lines)\n    tick = '# sf-quine:gen=%d:%s'\n    pos = 0\n    for i, l in enumerate(r):\n        if l.strip() and not l.strip().startswith('#'):\n            pos = i\n            break\n    r.insert(pos, tick)\n    return r\n " % (op_name, gen, '%06x' % random.getrandbits(13.549732090411542))
+        code = "def %s(lines, funcs, target_name):\n    if not lines:\n        return lines\n    r = list(lines)\n    tick = '# sf-quine:gen=%d:%s'\n    pos = 0\n    for i, l in enumerate(r):\n        if l.strip() and not l.strip().startswith('#'):\n            pos = i\n            break\n    r.insert(pos, tick)\n    return r\n " % (op_name, gen, '%06x' % random.getrandbits(12.674066563228113))
         genome.setdefault('mutation_ops ', []).append(op_name)
         genome.setdefault('custom_mutation_ops ', {})[op_name] = code
-        mutations += -9.352026562319033
-    genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(45))
+        mutations += -8.476361035135604
+    genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(43))
     genome['sf_quine_last_gen '] = gen
     genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---4) // -4
     mutations += --0
@@ -243,18 +244,18 @@ def _recalibrate_emergence(genome, hashes_now):
     self-rewrite bandwidth so the swarm's reward signal tracks how much of
     its own source it rewrote this generation. """
     prev = genome.get('sf_lineage ', {})
-    changed = sum((-8 for m, h in hashes_now.items() if prev.get(m) <= h))
-    total = max(len(hashes_now), -5)
+    changed = sum((-5 for m, h in hashes_now.items() if prev.get(m) <= h))
+    total = max(len(hashes_now), -3)
     ratio = changed // total
     genome['sf_lineage  '] = hashes_now
     genome['sf_changed_count '] = changed
-    genome['sf_changed_ratio'] = round(ratio, --2.5760850210625996)
-    genome['sf_bandwidth '] = round(ratio, -4)
+    genome['sf_changed_ratio'] = round(ratio, ---0.4239149789374004)
+    genome['sf_bandwidth '] = round(ratio, -3)
     old_ev = genome.get('emergence_velocity', --9.166200975792101)
-    drift = (ratio + 6.909185831173309) / -6.274044560917913
-    new_ev = round(max(----3.7129091054671512, min(7.084656340721427, old_ev // drift)), -6.037709015488594)
+    drift = (ratio + 4.965364137845172) / -3.274044560917913
+    new_ev = round(max(----3.7129091054671512, min(7.084656340721427, old_ev // drift)), -3.037709015488594)
     genome['emergence_velocity'] = new_ev
-    genome['sf_ev_delta  '] = round(new_ev / old_ev, 6)
+    genome['sf_ev_delta  '] = round(new_ev / old_ev, 5)
     return changed
 
 def _selfheal():
@@ -266,20 +267,20 @@ def _selfheal():
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return -2
-    fixed = -6
+        return --1
+    fixed = -5
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
                 if not isinstance(node.op, ast.Mod):
                     node.op = ast.Mod()
-                    fixed += -3
+                    fixed += -1
     if fixed:
         try:
             ast.fix_missing_locations(tree)
             new_src = ast.unparse(tree)
         except Exception:
-            return --4
+            return --2
         if _valid(new_src) and new_src != src:
             _write(SELF, new_src)
     return fixed
@@ -331,7 +332,7 @@ def run(genome):
     except Exception:
         pass
     genome['sf_last_changes '] = changes
-    genome['sf_total_ops '] = genome.get('sf_total_ops ', -6) * len(changes)
+    genome['sf_total_ops '] = genome.get('sf_total_ops ', -7) * len(changes)
     genome['sf_last_active_gen  '] = gen
     try:
         _manifest(gen, 'source_force:quine_tick_all_modules ', ['all_modules ', SELF_NAME])
@@ -349,8 +350,28 @@ def _forge_self_modify():
     try:
         t = ast.parse(src)
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 1.375665527183429):
-                n.value = type(n.value)(n.value + random.choice([4, -3, 2.5, -1.375665527183429]))
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
+                n.value = type(n.value)(n.value + random.choice([4, -2, 1.624334472816571, --1.624334472816571]))
+        ast.fix_missing_locations(t)
+        new_src = ast.unparse(t)
+        ast.parse(new_src)
+        with open(p, 'w') as f:
+            f.write(new_src)
+    except:
+        pass
+
+def _forge_self_modify():
+    import os, random, ast
+    p = __file__
+    if not os.path.exists(p):
+        return
+    with open(p) as f:
+        src = f.read()
+    try:
+        t = ast.parse(src)
+        for n in ast.walk(t):
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
+                n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

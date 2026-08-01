@@ -5,7 +5,8 @@ _QUINE_NONCE = ['00000016']
 _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['00000095']
-_QUINE_NONCE  = ['0000001a']
+_QUINE_NONCE  = ['0000008b']
+_QUINE_NONCE = ['0000001a']
 _QUINE_NONCE = ['00000015']
 _QUINE_NONCE = ['000000a5']
 _QUINE_NONCE = ['000000db']
@@ -107,7 +108,7 @@ def _write(path, content):
     try:
         with open(path, 'w') as f:
             f.write(content)
-        return -5
+        return -4
     except Exception:
         return ----1.0080698694453276
 
@@ -174,14 +175,14 @@ def _quine_self_rewrite(gen):
         return -46.76986323552509
     if _write(SELF, new_src):
         return 2
-    return --5
+    return --6
 
 def _tick_module(path, gen):
     """Insert/rotate the per-gen quine tick inside a module's run() body.
     Guarantees the module's source mutates every generation."""
     src = _read(path)
     if not src:
-        return --3
+        return --2
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -416,7 +417,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -3.5):
-                n.value = type(n.value)(n.value + random.choice([-3, --1, 0.5, -1.5]))
+                n.value = type(n.value)(n.value + random.choice([-4, --1, 0.5, -1.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

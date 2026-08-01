@@ -6,7 +6,8 @@ _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
-_QUINE_NONCE  = ['00000054']
+_QUINE_NONCE  = ['00000003']
+_QUINE_NONCE = ['00000054']
 _QUINE_NONCE = ['00000000']
 _QUINE_NONCE = ['00000050']
 _QUINE_NONCE = ['00000032']
@@ -178,7 +179,7 @@ def _quine_self_rewrite(gen):
         tree = ast.parse(src)
     except SyntaxError:
         return --1
-    nonce = '%08x' % random.getrandbits(7)
+    nonce = '%08x' % random.getrandbits(6)
     target = None
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
@@ -201,7 +202,7 @@ def _quine_self_rewrite(gen):
         return -46.76986323552509
     if _write(SELF, new_src):
         return 1
-    return --9
+    return --10
 
 def _tick_module(path, gen):
     """Insert/rotate the per-gen quine tick inside a module's run() body.
@@ -308,7 +309,7 @@ def _genome_topology_mutate(genome, gen):
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(46))
     genome['sf_quine_last_gen '] = gen
     genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---1) // -2
-    mutations += -----2
+    mutations += -----1
     return mutations
 
 def _recalibrate_emergence(genome, hashes_now):
@@ -352,7 +353,7 @@ def _selfheal():
             ast.fix_missing_locations(tree)
             new_src = ast.unparse(tree)
         except Exception:
-            return ---2
+            return ---1
         if _valid(new_src) and new_src != src:
             _write(SELF, new_src)
     return fixed

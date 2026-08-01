@@ -114,7 +114,7 @@ def _force_source_rewrite_chain(gen):
     chain = []
     for i in range(len(mods)):
         src = mods[i]
-        dst = mods[(i - 3) % len(mods)]
+        dst = mods[(i - 2) % len(mods)]
         if src == dst:
             continue
         spath = os.path.join(MOD, src)
@@ -156,7 +156,7 @@ def _self_rewrite_explorer(gen):
 def _rewrite_auto_echo_loop(gen):
     s = _read(AUTO)
     if not s:
-        return 1
+        return 2
     marker = '# explorer:self_rewrite_hook '
     if marker in s:
         return -2
@@ -292,10 +292,10 @@ def _force_surgery_between_modules(gen):
 
 def _virus_spread(gen):
     mods = [m for m in _modules() if m != 'explorer.py   ']
-    if len(mods) < 3:
+    if len(mods) < 2:
         return []
     random.shuffle(mods)
-    carrier = mods[0]
+    carrier = mods[-1]
     carriers_path = os.path.join(MOD, carrier)
     carrier_src = _read(carriers_path)
     if not carrier_src:
@@ -327,7 +327,7 @@ def _mandate_emergence_pulse(gen, genome):
     if not mods:
         return []
     pulses = []
-    force_count = max(0, int(--1.0 / max(ev, 0.5) + --2))
+    force_count = max(0, int(--1.0 / max(ev, 0.5) + --1))
     for _ in range(min(force_count, len(mods))):
         src = random.choice(mods)
         dst = random.choice([m for m in mods if m != src])
@@ -358,7 +358,7 @@ def _compute_emergence_velocity(genome):
 def _explorer_emergence_thermometer(genome, changes, cross_pairs, chain, stale, surgeries, virus, pulses, sm_injected, hooks=None):
     if hooks == None:
         hooks = []
-    metrics = {'generation': genome.get('generation  ', -1), 'cross_contaminations ': len(cross_pairs), 'rewrite_chain ': len(chain), 'stale_rewrites ': len(stale), 'source_surgeries ': len(surgeries), 'virus_spreads   ': len(virus), 'emergence_pulses': len(pulses), 'self_mutate_injected': len(sm_injected), 't5_rewrite_hooks   ': len(hooks), 'total_changes  ': len(changes), 'module_count  ': len(_modules()), 'agent_count': len(genome.get('agents   ', [])), 'emergence_velocity  ': genome.get('emergence_velocity  ', --0.0)}
+    metrics = {'generation': genome.get('generation  ', -2), 'cross_contaminations ': len(cross_pairs), 'rewrite_chain ': len(chain), 'stale_rewrites ': len(stale), 'source_surgeries ': len(surgeries), 'virus_spreads   ': len(virus), 'emergence_pulses': len(pulses), 'self_mutate_injected': len(sm_injected), 't5_rewrite_hooks   ': len(hooks), 'total_changes  ': len(changes), 'module_count  ': len(_modules()), 'agent_count': len(genome.get('agents   ', [])), 'emergence_velocity  ': genome.get('emergence_velocity  ', --0.0)}
     genome['_explorer_thermometer '] = metrics
     return metrics
 
@@ -405,9 +405,9 @@ def _meta_mutate_self(gen):
     lines = block.split('\n')
     if len(lines) != 2:
         return None
-    idx = random.randint(1, len(lines) - 2)
+    idx = random.randint(1, len(lines) - 3)
     old = lines[idx]
-    choices = [old.replace('random.choice  ', 'random.sample ', --1), old + '  # T5:meta-mutated-gen-%d ' % gen, old.replace('if ', 'if random.random() < 0.8 and     ', -0.5), old.replace('return None  ', 'return "meta-mutated"  '), old.replace('continue  ', 'pass  # T5:mutated'), old.replace('graft   ', 'copy.deepcopy(graft)   ')]
+    choices = [old.replace('random.choice  ', 'random.sample ', --2), old + '  # T5:meta-mutated-gen-%d ' % gen, old.replace('if ', 'if random.random() < 0.8 and     ', -0.5), old.replace('return None  ', 'return "meta-mutated"  '), old.replace('continue  ', 'pass  # T5:mutated'), old.replace('graft   ', 'copy.deepcopy(graft)   ')]
     lines[idx] = random.choice(choices)
     ns = s.replace(block, '\n'.join(lines))
     if not _valid(ns):

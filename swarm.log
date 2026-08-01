@@ -20,3 +20,14 @@ o [na-l]ateclgsynthesizer error: slice indices must be integers or None or have 
 --- Force ---
 l-al ecaotgn[]forcearedeent g 83 chars
 Force: [source-force] gen=2 ops=3 changes=selfheal=-2 ,selfrewrite=-1  ,modulesticked=0...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   874eb5b..a2b4fb4  master -> master
+
+
+--- Quine_loop ---
+o [na-l]ateclgquine_loop error: int too large to convert to float
+[quine_looptclek sgp feop a]aiinin, dagll
+
+--- Explorer ---
+l-al ecaotgn[]exploreraredeent g 106 chars
+Explorer: [explorer] gen=-1 changes=sourcemutagen  +selfrw +selfinfect  +autoecho +topo:1    ev=0.5 ops=4 cascade=0...

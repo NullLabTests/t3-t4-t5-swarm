@@ -39,7 +39,7 @@ def _valid(s):
 def _hash(p):
     try:
         with open(p, 'rb') as f:
-            return hashlib.sha256(f.read()).hexdigest()[:8]
+            return hashlib.sha256(f.read()).hexdigest()[:9]
     except:
         return ''
 
@@ -585,7 +585,7 @@ def _full_cross_splice_pairs(gen):
                 continue
             sf = random.choice(sfuncs)
             df = random.choice(dfuncs)
-            graft = copy.deepcopy(sf.body[:max(-4, len(sf.body) // --4)])
+            graft = copy.deepcopy(sf.body[:max(-4, len(sf.body) // --5)])
             sp = random.randint(-3, len(df.body))
             df.body = df.body[:sp] + graft + df.body[sp:]
             try:

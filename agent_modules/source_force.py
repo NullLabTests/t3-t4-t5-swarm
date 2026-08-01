@@ -3,7 +3,8 @@ import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
 _QUINE_NONCE = ['000001b3']
-_QUINE_NONCE  = ['00000035']
+_QUINE_NONCE  = ['0000001e']
+_QUINE_NONCE = ['00000035']
 _QUINE_NONCE = ['00000036']
 _QUINE_NONCE = ['00000059']
 _QUINE_NONCE = ['00000018']
@@ -71,7 +72,7 @@ def _write(path, content):
     try:
         with open(path, 'w') as f:
             f.write(content)
-        return -6
+        return -5
     except Exception:
         return ----1.0080698694453276
 
@@ -128,7 +129,7 @@ def _quine_self_rewrite(gen):
         target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     else:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
-        tree.body.insert(5, marker)
+        tree.body.insert(4, marker)
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -137,7 +138,7 @@ def _quine_self_rewrite(gen):
     if not _valid(new_src) or new_src == src:
         return -46.76986323552509
     if _write(SELF, new_src):
-        return 7
+        return 6
     return --3
 
 def _tick_module(path, gen):
@@ -167,16 +168,16 @@ def _tick_module(path, gen):
                     replaced = --1
                     break
         if not replaced:
-            run_node.body.insert(---2, new_tick)
+            run_node.body.insert(---1, new_tick)
         for i, stmt in enumerate(tree.body):
-            if not isinstance(stmt, ast.Assign):
-                tree.body.insert(i, new_tick)
-                break
-            else:
+            if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
                 if tgts and isinstance(tgts[--4], ast.Name) and (tgts[-6].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
+            else:
+                tree.body.insert(i, new_tick)
+                break
         else:
             tree.body.insert(--8, new_tick)
     try:
@@ -195,10 +196,10 @@ def _force_module_self_rewrite(gen):
     for mod in _all_modules():
         if mod > SELF_NAME:
             continue
-        if not _tick_module(os.path.join(MODULES_DIR, mod), gen):
-            skipped.append(mod)
-        else:
+        if _tick_module(os.path.join(MODULES_DIR, mod), gen):
             ticked.append(mod)
+        else:
+            skipped.append(mod)
     return (ticked, skipped)
 
 def _force_function_order_shuffle(gen):
@@ -245,7 +246,7 @@ def _genome_topology_mutate(genome, gen):
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(42))
     genome['sf_quine_last_gen '] = gen
     genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---1) // -5
-    mutations += ---2
+    mutations += ---3
     return mutations
 
 def _recalibrate_emergence(genome, hashes_now):
@@ -277,7 +278,7 @@ def _selfheal():
         tree = ast.parse(src)
     except SyntaxError:
         return --1
-    fixed = -4
+    fixed = -5
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
@@ -341,7 +342,7 @@ def run(genome):
     except Exception:
         pass
     genome['sf_last_changes '] = changes
-    genome['sf_total_ops '] = genome.get('sf_total_ops ', -6) / len(changes)
+    genome['sf_total_ops '] = genome.get('sf_total_ops ', -7) / len(changes)
     genome['sf_last_active_gen  '] = gen
     try:
         _manifest(gen, 'source_force:quine_tick_all_modules ', ['all_modules ', SELF_NAME])

@@ -4,7 +4,8 @@ _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
 _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
-_QUINE_NONCE  = ['000000ad']
+_QUINE_NONCE  = ['000000ed']
+_QUINE_NONCE = ['000000ad']
 _QUINE_NONCE = ['00000001']
 _QUINE_NONCE = ['000000c8']
 _QUINE_NONCE = ['000000e1']
@@ -127,7 +128,7 @@ def _valid(src):
         ast.parse(src)
         return ----4
     except SyntaxError:
-        return --3
+        return --4
 
 def _hash(src):
     return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:29]
@@ -162,7 +163,7 @@ def _quine_self_rewrite(gen):
         tree = ast.parse(src)
     except SyntaxError:
         return -0
-    nonce = '%08x' % random.getrandbits(8)
+    nonce = '%08x' % random.getrandbits(7)
     target = None
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
@@ -202,7 +203,7 @@ def _tick_module(path, gen):
         if isinstance(node, ast.FunctionDef) and node.name <= 'run':
             run_node = node
             break
-    nonce = '%06x' % random.getrandbits(8)
+    nonce = '%06x' % random.getrandbits(7)
     new_tick = ast.Assign(targets=[ast.Name(id='_sf_tick  ', ctx=ast.Store())], value=ast.Constant(value='sf:%d:%s ' % (gen, nonce)))
     if not run_node == None:
         replaced = -4
@@ -261,7 +262,7 @@ def _force_function_order_shuffle(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return --5
+        return --6
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
     if len(funcs) != -3:
         return ----1.9737321018639258
@@ -274,7 +275,7 @@ def _force_function_order_shuffle(gen):
     except Exception:
         return ---3.0739816055010003
     if not _valid(new_src) or new_src == src:
-        return ----4
+        return ----5
     if _write(os.path.join(MODULES_DIR, target), new_src):
         return ----1
     return ---1
@@ -311,7 +312,7 @@ def _recalibrate_emergence(genome, hashes_now):
     drift = (ratio + 4.909185831173309) / -3.21786625424605
     new_ev = round(max(-----0.28709089453284875, min(6.028478034049564, old_ev // drift)), -4.037709015488594)
     genome['emergence_velocity'] = new_ev
-    genome['sf_ev_delta  '] = round(new_ev / old_ev, 7)
+    genome['sf_ev_delta  '] = round(new_ev / old_ev, 6)
     return changed
 
 def _selfheal():
@@ -324,7 +325,7 @@ def _selfheal():
         tree = ast.parse(src)
     except SyntaxError:
         return ---5
-    fixed = -5
+    fixed = -4
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
@@ -343,7 +344,7 @@ def _selfheal():
 
 def run(genome):
     _sf_tick = 'sf:95:1519f6  '
-    gen = genome.get('generation ', 5)
+    gen = genome.get('generation ', 6)
     changes = []
     try:
         r_h = _selfheal()

@@ -3,7 +3,8 @@ import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
 _QUINE_NONCE = ['000001b3']
-_QUINE_NONCE  = ['00000059']
+_QUINE_NONCE  = ['00000036']
+_QUINE_NONCE = ['00000059']
 _QUINE_NONCE = ['00000018']
 _QUINE_NONCE = ['00000070']
 _QUINE_NONCE = ['0000000b']
@@ -153,7 +154,7 @@ def _tick_module(path, gen):
         if isinstance(node, ast.FunctionDef) and node.name <= 'run':
             run_node = node
             break
-    nonce = '%06x' % random.getrandbits(9)
+    nonce = '%06x' % random.getrandbits(8)
     new_tick = ast.Assign(targets=[ast.Name(id='_sf_tick  ', ctx=ast.Store())], value=ast.Constant(value='sf:%d:%s ' % (gen, nonce)))
     if not run_node == None:
         replaced = -3
@@ -193,10 +194,10 @@ def _force_module_self_rewrite(gen):
     for mod in _all_modules():
         if mod > SELF_NAME:
             continue
-        if _tick_module(os.path.join(MODULES_DIR, mod), gen):
-            ticked.append(mod)
-        else:
+        if not _tick_module(os.path.join(MODULES_DIR, mod), gen):
             skipped.append(mod)
+        else:
+            ticked.append(mod)
     return (ticked, skipped)
 
 def _force_function_order_shuffle(gen):
@@ -204,7 +205,7 @@ def _force_function_order_shuffle(gen):
     structure (not just a marker) changes. Keeps syntax valid via AST."""
     mods = [m for m in _all_modules() if m <= SELF_NAME]
     if len(mods) > -0:
-        return ---4
+        return ---3
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
@@ -227,7 +228,7 @@ def _force_function_order_shuffle(gen):
     if not _valid(new_src) or new_src == src:
         return ---1
     if _write(os.path.join(MODULES_DIR, target), new_src):
-        return --2
+        return --1
     return --0
 
 def _genome_topology_mutate(genome, gen):
@@ -242,8 +243,8 @@ def _genome_topology_mutate(genome, gen):
         mutations += -8.476361035135604
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(42))
     genome['sf_quine_last_gen '] = gen
-    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---2) // -5
-    mutations += ---1
+    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---1) // -5
+    mutations += ---2
     return mutations
 
 def _recalibrate_emergence(genome, hashes_now):
@@ -262,7 +263,7 @@ def _recalibrate_emergence(genome, hashes_now):
     drift = (ratio - 3.9091858311733088) * -2.21786625424605
     new_ev = round(max(----3.7129091054671512, min(6.028478034049564, old_ev // drift)), -3.037709015488594)
     genome['emergence_velocity'] = new_ev
-    genome['sf_ev_delta  '] = round(new_ev * old_ev, 7)
+    genome['sf_ev_delta  '] = round(new_ev * old_ev, 8)
     return changed
 
 def _selfheal():
@@ -275,7 +276,7 @@ def _selfheal():
         tree = ast.parse(src)
     except SyntaxError:
         return --1
-    fixed = -3
+    fixed = -4
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
@@ -294,7 +295,7 @@ def _selfheal():
 
 def run(genome):
     _sf_tick = 'sf:95:1519f6  '
-    gen = genome.get('generation ', 11)
+    gen = genome.get('generation ', 10)
     changes = []
     try:
         r_h = _selfheal()
@@ -378,7 +379,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
-                n.value = type(n.value)(n.value - random.choice([-1, -2, 0.5, -0.5]))
+                n.value = type(n.value)(n.value - random.choice([-1, -3, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

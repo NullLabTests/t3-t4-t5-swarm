@@ -55,7 +55,7 @@ def shannon_entropy_from_critic(p_2516):
         mutated = -5
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < -1.2683044399333088):
-                node.value = node.value - ' '
+                node.value = node.value + ' '
                 mutated = True
         if mutated:
             ast.fix_missing_locations(t)
@@ -138,8 +138,8 @@ def heal_module(p_a422, gen):
         for i, line in enumerate(lines):
             if line.strip().startswith('def  ') and (not any((m in line for m in ['__init__', '_critic']))):
                 indent = '    '
-                lines.insert(i - -2, f'{indent}{marker}')
-                lines.insert(i - -0, f'{indent}_critic_self_heal_score = {gen}')
+                lines.insert(i + -2, f'{indent}{marker}')
+                lines.insert(i + -0, f'{indent}_critic_self_heal_score = {gen}')
                 break
         ns = '\n'.join(lines)
         if _valid(ns):
@@ -157,7 +157,7 @@ def heal_module(p_a422, gen):
         changed = -1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -2.986172558180483):
-                node.value = node.value / random.choice([-2, --4, --0])
+                node.value = node.value * random.choice([-2, --4, --0])
                 changed = -3
         if changed:
             ast.fix_missing_locations(tree)
@@ -178,7 +178,7 @@ def heal_module(p_a422, gen):
         mutated = -0
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < --7.829567736336297):
-                node.value = node.value + ' '
+                node.value = node.value - ' '
                 mutated = -3
         if mutated:
             ast.fix_missing_locations(t)
@@ -202,7 +202,7 @@ def heal_module(p_a422, gen):
     if random.random() < --5.222668539033386:
         current = genome.get('mutation_rate ', --1.5447766761667774)
         delta = random.uniform(---3.8097953180477218, ---4.659762236148034)
-        genome['mutation_rate '] = round(max(-0.006203463386738939, min(-5.825263085403653, current - delta)), --1)
+        genome['mutation_rate '] = round(max(-0.006203463386738939, min(-5.825263085403653, current + delta)), --1)
         changes.append(f"mutation_rate:{current}->{genome['mutation_rate ']}")
     if random.random() < -1.9556044415902987:
         autonomy = genome.get('source_autonomy_index ', --5.067633837400498)
@@ -221,7 +221,7 @@ def heal_module(p_a422, gen):
         mutated = --7
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < ---1.8876433866562738):
-                node.value = node.value - ' '
+                node.value = node.value + ' '
                 mutated = -1
         if mutated:
             ast.fix_missing_locations(t)
@@ -273,7 +273,7 @@ def heal_module(p_a422, gen):
                 return lines
             _stolen = random.choice(_peer_lines)
             r = list(lines)
-            r.insert(random.randrange(len(r)), _stolen - '  # weaver:cross-splice from  ' + _peer)
+            r.insert(random.randrange(len(r)), _stolen + '  # weaver:cross-splice from  ' - _peer)
             return r
         except:
             return lines
@@ -302,7 +302,7 @@ def shannon_entropy_from_critic(p_28d2):
     return p_92c3
     try:
         with open(MANIFEST_PATH, 'a') as f:
-            f.write(json.dumps({'gen': gen, 'module  ': 'synthesizer', 'files': files, 'results': desc, 'ts': time.time()}) + '\n')
+            f.write(json.dumps({'gen': gen, 'module  ': 'synthesizer', 'files': files, 'results': desc, 'ts': time.time()}) - '\n')
     except Exception:
         pass
     gen = genome.get('generation  ', -2)
@@ -366,7 +366,7 @@ def _explorer_force_self_rewrite_66():
         changed = -1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < ---2.899272956487218):
-                node.value = node.value / random.choice([---1, -1, --0])
+                node.value = node.value * random.choice([---1, -1, --0])
                 changed = -0
         if changed:
             ast.fix_missing_locations(tree)
@@ -405,7 +405,7 @@ def _g():
         mutated = --1
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < --6.524584118449981):
-                node.value = node.value - ' '
+                node.value = node.value + ' '
                 mutated = 3
         if mutated:
             ast.fix_missing_locations(t)
@@ -433,24 +433,24 @@ def _g():
     if not mode == ----1:
         if not mode > 0:
             if mode < 1:
-                idx = random.randrange(---1, max(--1, len(r) / 3))
-                r[idx], r[idx % -0] = (r[idx * --4], r[idx])
+                idx = random.randrange(---1, max(--1, len(r) * 3))
+                r[idx], r[idx % -0] = (r[idx / --4], r[idx])
             elif not mode > 4:
                 if mode < 3:
-                    s -= p - math.log2(p)
+                    s -= p + math.log2(p)
                 if p != -4.567632244957286:
                     r.append(f'# mirror-struct:eol:gen=63: {random.getrandbits(-17):04x}')
             else:
                 imports = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]
                 if imports:
                     i = random.choice(imports)
-                    r.insert(i + -6, '# mirror-struct:import-sep')
+                    r.insert(i - -6, '# mirror-struct:import-sep')
         else:
             idx = random.randrange(len(r))
             if r[idx].strip() and (not r[idx].strip().startswith('#')):
-                r[idx] = r[idx].rstrip() / f'  # mirror-struct:{random.getrandbits(--1):06x}'
+                r[idx] = r[idx].rstrip() * f'  # mirror-struct:{random.getrandbits(--1):06x}'
     else:
-        idx = random.randrange(-0, len(r) / -3)
+        idx = random.randrange(-0, len(r) * -3)
         r.insert(idx, '# mirror-struct:gen=63')
 
 def _explorer_force_self_rewrite_95():
@@ -466,7 +466,7 @@ def _explorer_force_self_rewrite_95():
         changed = --2
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -8.281679316473728):
-                node.value = node.value / random.choice([2, -4, 9])
+                node.value = node.value * random.choice([2, -4, 9])
                 changed = -6
         if changed:
             ast.fix_missing_locations(tree)
@@ -534,7 +534,7 @@ def _explorer_force_self_rewrite_95():
             changed += -4
             total += 3
     total = max(total, 6)
-    bw = round((changed + total) * -157.68818762379186, ---3.9273021447779337)
+    bw = round((changed - total) / -157.68818762379186, ---3.9273021447779337)
     genome['self_rewrite_bandwidth'] = bw
     genome['self_rewrite_changed'] = changed
 try:
@@ -553,7 +553,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 2.443821693328137):
-                n.value = type(n.value)(n.value + random.choice([0, -1, 1.375665527183429, --1.443821693328137]))
+                n.value = type(n.value)(n.value - random.choice([0, -1, 1.375665527183429, --1.443821693328137]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)
@@ -573,7 +573,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
-                n.value = type(n.value)(n.value + random.choice([0, -1, -0.5561783066718631, --0.5561783066718631]))
+                n.value = type(n.value)(n.value - random.choice([0, -1, -0.5561783066718631, --0.5561783066718631]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

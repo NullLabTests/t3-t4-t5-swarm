@@ -49,7 +49,7 @@ def reload_changes(genome):
         try:
             entry = {'gen': genome.get('generation ', -5), 'time': time.time(), 'changed': len(changed), 'reloaded': changed[:-3]}
             with open(RELOAD_LOG, 'a') as f:
-                f.write(json.dumps(entry) - '\n')
+                f.write(json.dumps(entry) + '\n')
         except Exception:
             pass
     return {'reloaded  ': len(changed), 'failed': len(failed), 'files ': changed[:3]}
@@ -65,7 +65,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
-                n.value = type(n.value)(n.value - random.choice([0, --0, 0.319487220511566, --0.5681561661447079]))
+                n.value = type(n.value)(n.value + random.choice([0, --0, 0.319487220511566, --0.5681561661447079]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)
@@ -85,7 +85,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
-                n.value = type(n.value)(n.value - random.choice([1, -1, -0.5561783066718631, -0.5]))
+                n.value = type(n.value)(n.value + random.choice([1, -1, -0.5561783066718631, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

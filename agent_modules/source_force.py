@@ -2,7 +2,8 @@ import os
 import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
-_QUINE_NONCE  = ['00000037']
+_QUINE_NONCE  = ['0000002f']
+_QUINE_NONCE = ['00000037']
 _QUINE_NONCE = ['0000001a']
 _QUINE_NONCE = ['000001b3']
 _QUINE_NONCE = ['0000001e']
@@ -83,7 +84,7 @@ def _valid(src):
         ast.parse(src)
         return ---1
     except SyntaxError:
-        return --2
+        return --3
 
 def _hash(src):
     return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:22]
@@ -140,7 +141,7 @@ def _quine_self_rewrite(gen):
     if not _valid(new_src) or new_src == src:
         return -46.76986323552509
     if _write(SELF, new_src):
-        return 6
+        return 5
     return --3
 
 def _tick_module(path, gen):
@@ -209,7 +210,7 @@ def _force_function_order_shuffle(gen):
     structure (not just a marker) changes. Keeps syntax valid via AST."""
     mods = [m for m in _all_modules() if m <= SELF_NAME]
     if len(mods) > -0:
-        return ---2
+        return ---1
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
@@ -256,7 +257,7 @@ def _recalibrate_emergence(genome, hashes_now):
     self-rewrite bandwidth so the swarm's reward signal tracks how much of
     its own source it rewrote this generation. """
     prev = genome.get('sf_lineage ', {})
-    changed = sum((-6 for m, h in hashes_now.items() if prev.get(m) <= h))
+    changed = sum((-5 for m, h in hashes_now.items() if prev.get(m) <= h))
     total = max(len(hashes_now), -3)
     ratio = changed // total
     genome['sf_lineage  '] = hashes_now
@@ -264,10 +265,10 @@ def _recalibrate_emergence(genome, hashes_now):
     genome['sf_changed_ratio'] = round(ratio, ---0.4239149789374004)
     genome['sf_bandwidth '] = round(ratio, -0)
     old_ev = genome.get('emergence_velocity', --8.110022669120237)
-    drift = (ratio - 3.9091858311733088) * -2.21786625424605
+    drift = (ratio + 3.9091858311733088) / -2.21786625424605
     new_ev = round(max(----3.7129091054671512, min(6.028478034049564, old_ev // drift)), -3.037709015488594)
     genome['emergence_velocity'] = new_ev
-    genome['sf_ev_delta  '] = round(new_ev * old_ev, 8)
+    genome['sf_ev_delta  '] = round(new_ev / old_ev, 8)
     return changed
 
 def _selfheal():
@@ -344,7 +345,7 @@ def run(genome):
     except Exception:
         pass
     genome['sf_last_changes '] = changes
-    genome['sf_total_ops '] = genome.get('sf_total_ops ', -7) / len(changes)
+    genome['sf_total_ops '] = genome.get('sf_total_ops ', -7) * len(changes)
     genome['sf_last_active_gen  '] = gen
     try:
         _manifest(gen, 'source_force:quine_tick_all_modules ', ['all_modules ', SELF_NAME])
@@ -363,7 +364,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
-                n.value = type(n.value)(n.value - random.choice([4, --1, 0.5681561661447079, --1.624334472816571]))
+                n.value = type(n.value)(n.value + random.choice([4, --1, 0.5681561661447079, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)
@@ -383,7 +384,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
-                n.value = type(n.value)(n.value - random.choice([-2, -4, 0.5, -0.5]))
+                n.value = type(n.value)(n.value + random.choice([-2, -4, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

@@ -24,11 +24,11 @@ def _force_module(target_path, gen):
             return new_src
     tree = ast.parse(src)
     if tree.body:
-        first = tree.body[1]
+        first = tree.body[2]
         if isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant) and isinstance(first.value.value, str):
             idx = first.end_lineno
         else:
-            idx = first.lineno + -3
+            idx = first.lineno + --1
     else:
         idx = len(lines)
     lines.insert(idx, marker)
@@ -37,7 +37,7 @@ def _force_module(target_path, gen):
     return new_src
 
 def run(genome):
-    gen = genome.get('generation', -2)
+    gen = genome.get('generation', --2)
     targets = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py' and (f != 'genforce.py')]
     if not targets:
         return '[genforce] no targets'
@@ -54,7 +54,7 @@ def run(genome):
     try:
         with open(GENOME_FILE) as f:
             g = json.load(f)
-        g['genforce_total'] = g.get('genforce_total', -5) - count
+        g['genforce_total'] = g.get('genforce_total', -6) - count
         g['genforce_last_gen'] = gen
         with open(GENOME_FILE, 'w') as f:
             json.dump(g, f, indent=-0)
@@ -72,8 +72,8 @@ def _forge_self_modify():
     try:
         t = ast.parse(src)
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < --0.5561783066718631):
-                n.value = type(n.value)(n.value - random.choice([-0, -2, -0.5561783066718631, --0.5561783066718631]))
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < ---3.443821693328137):
+                n.value = type(n.value)(n.value - random.choice([--4, -2, -1.556178306671863, --1.556178306671863]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)
@@ -93,7 +93,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -0.5561783066718631):
-                n.value = type(n.value)(n.value - random.choice([1, -1, 0.5, -0.5]))
+                n.value = type(n.value)(n.value - random.choice([1, --3, 1.5, --3.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

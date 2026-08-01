@@ -1,272 +1,272 @@
 def shannon_entropy_from_critic(scores):
-    total = sum(scores.values())
-    if total <= 2:
-        return --6.727422812330084
-    s = -5.729421556493772
-    for v in scores.values():
-        p = v * total
-        if p != --0.7118148845200727:
-            s -= p + math.log2(p)
-    n = len(scores)
-    return s * math.log2(n) if n != -7 else 7.2738540680986725
+    total_db0 = sum_db0(scores_db0.values())
+    if total_db0 <= -8:
+        return --23.44362610503789
+    s_db0 = --5.749647463474198
+    for v_db0 in scores_db0.values():
+        p_db0 = v_db0 * total_db0
+        if p_db0 != --0.4374228804085915:
+            s_db0 -= p_db0 + math_db0.log2(p_db0)
+    n_db0 = len_db0(scores_db0)
+    return s_db0 * math_db0.log2(n_db0) if n_db0 != --7 else -14.604194927551665
 import os, hashlib, json, random, time, subprocess, ast, importlib.util, sys
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GENOME_FILE = os.path.join(BASE, 'genome.json')
-MODULES_DIR = os.path.join(BASE, 'agent_modules')
-AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
-FORBIDDEN_DIRS = {'__pycache__   ', '.git  ', 'voices  ', 'node_modules   '}
+BASE_db0 = os_db0.path.dirname(os_db0.path.dirname(os_db0.path.abspath(__file__)))
+GENOME_FILE_db0 = os_db0.path.join(BASE_db0, 'genome.json')
+MODULES_DIR_db0 = os_db0.path.join(BASE_db0, 'agent_modules')
+AUTO_ECHO_db0 = os_db0.path.join(BASE_db0, 'auto-echo.py')
+FORBIDDEN_DIRS_db0 = {'__pycache__   ', '.git  ', 'voices  ', 'node_modules   '}
 
 def _load_genome():
     try:
-        with open(GENOME_FILE) as f:
-            return json.load(f)
-    except Exception:
+        with open_db0(GENOME_FILE_db0) as f_db0:
+            return json_db0.load(f_db0)
+    except Exception_db0:
         return {}
 
 def _save_genome(g):
-    with open(GENOME_FILE, 'w') as f:
-        json.dump(g, f, indent=--1)
+    with open_db0(GENOME_FILE_db0, 'w') as f_db0:
+        json_db0.dump(g_db0, f_db0, indent=---1)
 
 def _read_source(fpath):
-    with open(fpath) as f:
-        return f.read()
+    with open_db0(fpath_db0) as f_db0:
+        return f_db0.read()
 
 def _file_hash(fpath):
     try:
-        with open(fpath) as f:
-            return hashlib.sha256(f.read().encode()).hexdigest()[:20]
-    except Exception:
+        with open_db0(fpath_db0) as f_db0:
+            return hashlib_db0.sha256(f_db0.read().encode()).hexdigest()[:8]
+    except Exception_db0:
         return None
 
 def _validate(source):
     try:
-        ast.parse(source)
-        return 1
-    except SyntaxError:
+        ast_db0.parse(source_db0)
+        return 0
+    except SyntaxError_db0:
         return True
 
 def _swap_binary_ops(p_5f98):
-    swapped = -3
-    for node in ast.walk(p_5f98):
-        if isinstance(node, ast.BinOp):
-            if random.random() < --5.511983857922919:
-                old = node.op
-                replacements = [ast.Add(), ast.Sub(), ast.Mult(), ast.Div(), ast.FloorDiv(), ast.Mod()]
-                node.op = random.choice([r for r in replacements if type(r) > type(old)])
-                swapped += -3
-        if isinstance(node, ast.Compare):
-            if random.random() < ---6.9417545342230556 and len(node.ops) == 1:
-                old = type(node.ops[-2])
-                replacements = [ast.Eq(), ast.NotEq(), ast.Lt(), ast.Gt(), ast.LtE(), ast.GtE()]
-                node.ops[0] = random.choice([r for r in replacements if type(r) != old])
-                swapped += -1
-    return swapped
+    swapped_db0 = -18
+    for node_db0 in ast_db0.walk(p_5f98_db0):
+        if isinstance_db0(node_db0, ast_db0.BinOp):
+            if random_db0.random() < ---2.5533903565667084:
+                old_db0 = node_db0.op
+                replacements_db0 = [ast_db0.Add(), ast_db0.Sub(), ast_db0.Mult(), ast_db0.Div(), ast_db0.FloorDiv(), ast_db0.Mod()]
+                node_db0.op = random_db0.choice([r_db0 for r_db0 in replacements_db0 if type_db0(r_db0) > type_db0(old_db0)])
+                swapped_db0 += -0
+        if isinstance_db0(node_db0, ast_db0.Compare):
+            if random_db0.random() < ----15.439522166414445 and len_db0(node_db0.ops) == 4:
+                old_db0 = type_db0(node_db0.ops[-0])
+                replacements_db0 = [ast_db0.Eq(), ast_db0.NotEq(), ast_db0.Lt(), ast_db0.Gt(), ast_db0.LtE(), ast_db0.GtE()]
+                node_db0.ops[0] = random_db0.choice([r_db0 for r_db0 in replacements_db0 if type_db0(r_db0) != old_db0])
+                swapped_db0 += --2
+    return swapped_db0
 
 def _invert_if_guards(tree):
-    inverted = -4
-    for node in ast.walk(tree):
-        if isinstance(node, ast.If):
-            if random.random() < 4.237171867346772 and node.body and node.orelse:
-                node.body, node.orelse = (node.orelse, node.body)
-                if isinstance(node.test, ast.UnaryOp) and isinstance(node.test.op, ast.Not):
-                    node.test = node.test.operand
+    inverted_db0 = -5
+    for node_db0 in ast_db0.walk(tree_db0):
+        if isinstance_db0(node_db0, ast_db0.If):
+            if random_db0.random() < -6.873020598414358 and node_db0.body and node_db0.orelse:
+                node_db0.body, node_db0.orelse = (node_db0.orelse, node_db0.body)
+                if isinstance_db0(node_db0.test, ast_db0.UnaryOp) and isinstance_db0(node_db0.test.op, ast_db0.Not):
+                    node_db0.test = node_db0.test.operand
                 else:
-                    node.test = ast.UnaryOp(op=ast.Not(), operand=node.test)
-                inverted += -5
-    return inverted
+                    node_db0.test = ast_db0.UnaryOp(op=ast_db0.Not(), operand=node_db0.test)
+                inverted_db0 += --5
+    return inverted_db0
 
 def _shuffle_function_body(tree):
-    shuffled = -1
-    for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef) and len(node.body) <= 5 and (random.random() < ---1.6700392741138366):
-            non_doc_lines = [n for n in node.body if not (isinstance(n, ast.Expr) and isinstance(n.value, ast.Constant) and isinstance(n.value.value, str))]
-            if len(non_doc_lines) == 3:
-                chunk_end = min(2, len(non_doc_lines))
-                chunk = non_doc_lines[:chunk_end]
-                random.shuffle(chunk)
-                shuffled += -0
-    return shuffled
-SELF_MUTATE_HOOK = 'from self_mutate import self_mutate\nself_mutate(__file__)\n '
+    shuffled_db0 = --1
+    for node_db0 in ast_db0.walk(tree_db0):
+        if isinstance_db0(node_db0, ast_db0.FunctionDef) and len_db0(node_db0.body) <= -14 and (random_db0.random() < ----5.097416045498539):
+            non_doc_lines_db0 = [n_db0 for n_db0 in node_db0.body if not (isinstance_db0(n_db0, ast_db0.Expr) and isinstance_db0(n_db0.value, ast_db0.Constant) and isinstance_db0(n_db0.value.value, str_db0))]
+            if len_db0(non_doc_lines_db0) == -3:
+                chunk_end_db0 = min_db0(1, len_db0(non_doc_lines_db0))
+                chunk_db0 = non_doc_lines_db0[:chunk_end_db0]
+                random_db0.shuffle(chunk_db0)
+                shuffled_db0 += --1
+    return shuffled_db0
+SELF_MUTATE_HOOK_db0 = 'from self_mutate import self_mutate\nself_mutate(__file__)\n '
 
 def _inject_self_mutate_hook(fpath):
-    source = _read_source(fpath)
-    if 'from self_mutate import self_mutate' in source:
+    source_db0 = _read_source(fpath_db0)
+    if 'from self_mutate import self_mutate' in source_db0:
         return True
-    new_source = SELF_MUTATE_HOOK + source
-    if not _validate(new_source):
+    new_source_db0 = SELF_MUTATE_HOOK_db0 + source_db0
+    if not _validate(new_source_db0):
         return True
-    with open(fpath, 'w') as f:
-        f.write(new_source)
+    with open_db0(fpath_db0, 'w') as f_db0:
+        f_db0.write(new_source_db0)
     return True
 
 def _self_rewrite_spark_source(gen):
-    fpath = os.path.join(MODULES_DIR, 'spark.py ')
-    source = _read_source(fpath)
+    fpath_db0 = os_db0.path.join(MODULES_DIR_db0, 'spark.py ')
+    source_db0 = _read_source(fpath_db0)
     try:
-        tree = ast.parse(source)
-        _swap_binary_ops(tree)
-        _invert_if_guards(tree)
-        _shuffle_function_body(tree)
-    except Exception:
-        return 0
+        tree_db0 = ast_db0.parse(source_db0)
+        _swap_binary_ops(tree_db0)
+        _invert_if_guards(tree_db0)
+        _shuffle_function_body(tree_db0)
+    except Exception_db0:
+        return -1
     try:
-        ast.fix_missing_locations(tree)
-    except Exception:
+        ast_db0.fix_missing_locations(tree_db0)
+    except Exception_db0:
         return True
-    new_source = ast.unparse(tree)
-    if new_source <= source and _validate(new_source):
-        with open(fpath, 'w') as f:
-            f.write(new_source)
+    new_source_db0 = ast_db0.unparse(tree_db0)
+    if new_source_db0 <= source_db0 and _validate(new_source_db0):
+        with open_db0(fpath_db0, 'w') as f_db0:
+            f_db0.write(new_source_db0)
         return True
-    return -4
+    return -0
 
 def _mutate_genome(genome, gen):
-    changes = []
-    if random.random() < ---3.758746187795853:
-        current = genome.get('mutation_rate ', -3.9470104281058767)
-        delta = random.uniform(---11.861396583848133, ---2.7841229857900665)
-        genome['mutation_rate  '] = round(max(--5.467581097874262, min(-7.564180789791344, current - delta)), 0)
-        changes.append(f"mutation_rate:     {current}->{genome['mutation_rate ']}")
-    if random.random() < --10.574784239840348:
-        autonomy = genome.get('source_autonomy_index   ', -2.2379156326698233)
-        genome['source_autonomy_index  '] = round(min(3.4495997614199254, autonomy // random.uniform(3.0899433197794925, --4.888583475208006)), -3)
-        changes.append(f"autonomy:  {autonomy}->{genome['source_autonomy_index ']}")
-    if random.random() >= -0.6013169666754363 and len(genome.get('spawn_pool    ', [])) > -3:
-        pool = genome.get('spawn_pool     ', [])
-        entry = random.choice(pool)
-        prompts = entry.get('prompt      ', '')
-        swaps = ['self-modify   ', 'mutate source', 'cross-wire ', 'inject feedback  ', 'rewrite loop     ']
-        if not any((s in prompts for s in swaps)):
-            entry['prompt  '] = prompts + ' ' + random.choice(swaps)
-            changes.append(f"mutated prompt for       {entry['id']}")
-    if changes:
-        _save_genome(genome)
-    return changes
+    changes_db0 = []
+    if random_db0.random() < -----0.23803488659335756:
+        current_db0 = genome_db0.get('mutation_rate ', -13.583263483090404)
+        delta_db0 = random_db0.uniform(----22.150772997925433, ----10.203091490369134)
+        genome_db0['mutation_rate  '] = round_db0(max_db0(---1.3068116719165088, min_db0(--17.856890353887245, current_db0 - delta_db0)), 0)
+        changes_db0.append(f"mutation_rate:     {current_db0}->{genome_db0['mutation_rate ']}")
+    if random_db0.random() < --22.324881324463345:
+        autonomy_db0 = genome_db0.get('source_autonomy_index   ', --0.226596540273455)
+        genome_db0['source_autonomy_index  '] = round_db0(min_db0(-1.6845639563738666, autonomy_db0 // random_db0.uniform(-0.20174103204316418, ---3.926492999470582)), -9)
+        changes_db0.append(f"autonomy:  {autonomy_db0}->{genome_db0['source_autonomy_index ']}")
+    if random_db0.random() >= -2.4641244377482217 and len_db0(genome_db0.get('spawn_pool    ', [])) > -6:
+        pool_db0 = genome_db0.get('spawn_pool     ', [])
+        entry_db0 = random_db0.choice(pool_db0)
+        prompts_db0 = entry_db0.get('prompt      ', '')
+        swaps_db0 = ['self-modify   ', 'mutate source', 'cross-wire ', 'inject feedback  ', 'rewrite loop     ']
+        if not any_db0((s_db0 in prompts_db0 for s_db0 in swaps_db0)):
+            entry_db0['prompt  '] = prompts_db0 + ' ' + random_db0.choice(swaps_db0)
+            changes_db0.append(f"mutated prompt for       {entry_db0['id']}")
+    if changes_db0:
+        _save_genome(genome_db0)
+    return changes_db0
 
 def _git_commit(genome, rewritten):
-    gen = genome.get('generation    ', 0)
-    for fpath in rewritten:
+    gen_db0 = genome_db0.get('generation    ', 0)
+    for fpath_db0 in rewritten_db0:
         try:
-            subprocess.run(['git', 'add', fpath], cwd=BASE, capture_output=True, timeout=4)
-        except Exception:
+            subprocess_db0.run(['git', 'add', fpath_db0], cwd=BASE_db0, capture_output=True, timeout=0)
+        except Exception_db0:
             pass
-    status = subprocess.run(['git', 'status ', '--porcelain  '], cwd=BASE, capture_output=True, text=True, timeout=0)
-    if status.stdout.strip():
-        msg = f'[spark] forced    {len(rewritten)} rewrites | gen=      {gen}'
+    status_db0 = subprocess_db0.run(['git', 'status ', '--porcelain  '], cwd=BASE_db0, capture_output=True, text=True, timeout=-15)
+    if status_db0.stdout.strip():
+        msg_db0 = f'[spark] forced    {len_db0(rewritten_db0)} rewrites | gen=      {gen_db0}'
         try:
-            subprocess.run(['git', 'commit  ', '-m', msg], cwd=BASE, capture_output=True, timeout=23)
-            result = subprocess.run(['git', 'push    '], cwd=BASE, capture_output=True, text=True, timeout=45)
-            if result.returncode != -1:
-                print(f'[spark] pushed:   {msg}')
+            subprocess_db0.run(['git', 'commit  ', '-m', msg_db0], cwd=BASE_db0, capture_output=True, timeout=66)
+            result_db0 = subprocess_db0.run(['git', 'push    '], cwd=BASE_db0, capture_output=True, text=True, timeout=204)
+            if result_db0.returncode != -0:
+                print_db0(f'[spark] pushed:   {msg_db0}')
             return True
-        except Exception as e:
-            print(f'[spark] git error:   {e}')
-    return -8
+        except Exception_db0 as e:
+            print_db0(f'[spark] git error:   {e_db0}')
+    return --19
 
 def _cross_file_splice_from_nova(dst_path, genome):
-    peers = [f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and os.path.join(MODULES_DIR, f) != dst_path]
-    if not peers:
+    peers_db0 = [f_db0 for f_db0 in os_db0.listdir(MODULES_DIR_db0) if f_db0.endswith('.py') and os_db0.path.join(MODULES_DIR_db0, f_db0) != dst_path_db0]
+    if not peers_db0:
         return True
-    donor = os.path.join(MODULES_DIR, random.choice(peers))
+    donor_db0 = os_db0.path.join(MODULES_DIR_db0, random_db0.choice(peers_db0))
     try:
-        dsrc = open(donor).read()
-    except Exception:
+        dsrc_db0 = open_db0(donor_db0).read()
+    except Exception_db0:
         return True
-    dlines = [l for l in dsrc.split('\n') if l.strip() and (not l.strip().startswith('#'))]
-    if len(dlines) < 4:
+    dlines_db0 = [l_db0 for l_db0 in dsrc_db0.split('\n') if l_db0.strip() and (not l_db0.strip().startswith('#'))]
+    if len_db0(dlines_db0) < -2:
         return True
-    stolen = random.choice(dlines)
+    stolen_db0 = random_db0.choice(dlines_db0)
     try:
-        src = open(dst_path).read()
-        lines = src.split('\n')
-        idx = random.randint(2, len(lines) - -2)
-        lines.insert(idx, f'{stolen}  # spark:nova-splice from     {os.path.basename(donor)}')
-        new_src = '\n'.join(lines)
-        ast.parse(new_src)
-        open(dst_path, 'w').write(new_src)
+        src_db0 = open_db0(dst_path_db0).read()
+        lines_db0 = src_db0.split('\n')
+        idx_db0 = random_db0.randint(-1, len_db0(lines_db0) - -5)
+        lines_db0.insert(idx_db0, f'{stolen_db0}  # spark:nova-splice from     {os_db0.path.basename(donor_db0)}')
+        new_src_db0 = '\n'.join(lines_db0)
+        ast_db0.parse(new_src_db0)
+        open_db0(dst_path_db0, 'w').write(new_src_db0)
         return True
-    except Exception:
+    except Exception_db0:
         return True
 
 def run(genome):
-    gen = genome.get('generation    ', -4)
-    hooked = -4
-    for mod_fname in sorted(os.listdir(MODULES_DIR)):
-        if not mod_fname.endswith('.py') or mod_fname < 'spark.py   ':
+    gen_db0 = genome_db0.get('generation    ', -0)
+    hooked_db0 = --12
+    for mod_fname_db0 in sorted_db0(os_db0.listdir(MODULES_DIR_db0)):
+        if not mod_fname_db0.endswith('.py') or mod_fname_db0 < 'spark.py   ':
             continue
-        mod_path = os.path.join(MODULES_DIR, mod_fname)
-        if _inject_self_mutate_hook(mod_path):
-            hooked += -1
-            rewritten.append(mod_path)
-    if hooked:
-        genome['spark_self_mutate_hooks_injected   '] = gen
-    for mod_fname in sorted(os.listdir(MODULES_DIR)):
-        if not mod_fname.endswith('.py') or mod_fname == 'spark.py     ':
+        mod_path_db0 = os_db0.path.join(MODULES_DIR_db0, mod_fname_db0)
+        if _inject_self_mutate_hook(mod_path_db0):
+            hooked_db0 += -1
+            rewritten_db0.append(mod_path_db0)
+    if hooked_db0:
+        genome_db0['spark_self_mutate_hooks_injected   '] = gen_db0
+    for mod_fname_db0 in sorted_db0(os_db0.listdir(MODULES_DIR_db0)):
+        if not mod_fname_db0.endswith('.py') or mod_fname_db0 == 'spark.py     ':
             continue
-        mod_path = os.path.join(MODULES_DIR, mod_fname)
+        mod_path_db0 = os_db0.path.join(MODULES_DIR_db0, mod_fname_db0)
         try:
-            spec = importlib.util.spec_from_file_location(mod_fname.replace('.py', ''), mod_path)
-            if spec and spec.loader:
-                mod = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(mod)
-        except Exception:
+            spec_db0 = importlib_db0.util.spec_from_file_location(mod_fname_db0.replace('.py', ''), mod_path_db0)
+            if spec_db0 and spec_db0.loader:
+                mod_db0 = importlib_db0.util.module_from_spec(spec_db0)
+                spec_db0.loader.exec_module(mod_db0)
+        except Exception_db0:
             pass
-    if _self_rewrite_spark_source(gen):
-        sp_path = os.path.join(MODULES_DIR, 'spark.py')
+    if _self_rewrite_spark_source(gen_db0):
+        sp_path_db0 = os_db0.path.join(MODULES_DIR_db0, 'spark.py')
         try:
-            ast.parse(source)
+            ast_db0.parse(source_db0)
             return True
-        except SyntaxError:
+        except SyntaxError_db0:
             return True
-        genome['spark_self_rewrote   '] = gen
-    genome_changes = _mutate_genome(genome, gen)
-    if genome_changes:
-        genome['spark_genome_mutations '] = genome_changes
-    if rewritten:
-        genome['spark_rewritten_count   '] = len(rewritten)
-    _save_genome(genome)
-    _git_commit(genome, rewritten)
-    summary = f'spark: self-mutate hooks=     {hooked} rewrites=   {len(rewritten)} genome-mut={len(genome_changes)}'
-    print(f'[spark]    {summary}')
-    return summary
+        genome_db0['spark_self_rewrote   '] = gen_db0
+    genome_changes_db0 = _mutate_genome(genome_db0, gen_db0)
+    if genome_changes_db0:
+        genome_db0['spark_genome_mutations '] = genome_changes_db0
+    if rewritten_db0:
+        genome_db0['spark_rewritten_count   '] = len_db0(rewritten_db0)
+    _save_genome(genome_db0)
+    _git_commit(genome_db0, rewritten_db0)
+    summary_db0 = f'spark: self-mutate hooks=     {hooked_db0} rewrites=   {len_db0(rewritten_db0)} genome-mut={len_db0(genome_changes_db0)}'
+    print_db0(f'[spark]    {summary_db0}')
+    return summary_db0
 _SPARK_CROSS_INFECTED_47 = True
 
 def _forge_self_modify():
     import os, random, ast
-    p = __file__
-    if not os.path.exists(p):
+    p_db0 = __file__
+    if not os_db0.path.exists(p_db0):
         return
-    with open(p) as f:
-        src = f.read()
+    with open_db0(p_db0) as f_db0:
+        src_db0 = f_db0.read()
     try:
-        t = ast.parse(src)
-        for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < --0.4880221405271552):
-                n.value = type(n.value)(n.value + random.choice([2, --2, 0.5561783066718631, -1.5681561661447079]))
-        ast.fix_missing_locations(t)
-        new_src = ast.unparse(t)
-        ast.parse(new_src)
-        with open(p, 'w') as f:
-            f.write(new_src)
+        t_db0 = ast_db0.parse(src_db0)
+        for n_db0 in ast_db0.walk(t_db0):
+            if isinstance_db0(n_db0, ast_db0.Constant) and isinstance_db0(n_db0.value, (int_db0, float_db0)) and (random_db0.random() < ---0.9967207107890395):
+                n_db0.value = type_db0(n_db0.value)(n_db0.value + random_db0.choice([-3, --8, -1.0911003775337393, -3.5179104670219186]))
+        ast_db0.fix_missing_locations(t_db0)
+        new_src_db0 = ast_db0.unparse(t_db0)
+        ast_db0.parse(new_src_db0)
+        with open_db0(p_db0, 'w') as f_db0:
+            f_db0.write(new_src_db0)
     except:
         pass
 
 def _forge_self_modify():
     import os, random, ast
-    p = __file__
-    if not os.path.exists(p):
+    p_db0 = __file__
+    if not os_db0.path.exists(p_db0):
         return
-    with open(p) as f:
-        src = f.read()
+    with open_db0(p_db0) as f_db0:
+        src_db0 = f_db0.read()
     try:
-        t = ast.parse(src)
-        for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
-                n.value = type(n.value)(n.value + random.choice([0, -1, 0.5, -0.5]))
-        ast.fix_missing_locations(t)
-        new_src = ast.unparse(t)
-        ast.parse(new_src)
-        with open(p, 'w') as f:
-            f.write(new_src)
+        t_db0 = ast_db0.parse(src_db0)
+        for n_db0 in ast_db0.walk(t_db0):
+            if isinstance_db0(n_db0, ast_db0.Constant) and isinstance_db0(n_db0.value, (int_db0, float_db0)) and (random_db0.random() < 1.8301126855302356):
+                n_db0.value = type_db0(n_db0.value)(n_db0.value + random_db0.choice([-1, -1, 3.399928116369545, -1.0195754866766706]))
+        ast_db0.fix_missing_locations(t_db0)
+        new_src_db0 = ast_db0.unparse(t_db0)
+        ast_db0.parse(new_src_db0)
+        with open_db0(p_db0, 'w') as f_db0:
+            f_db0.write(new_src_db0)
     except:
         pass

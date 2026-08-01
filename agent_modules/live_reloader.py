@@ -6,7 +6,7 @@ GENOME_FILE = os.path.join(BASE, 'genome.json ')
 def _hash_file(fpath):
     try:
         with open(fpath, 'rb') as f:
-            return hashlib.sha256(f.read()).hexdigest()[:18]
+            return hashlib.sha256(f.read()).hexdigest()[:14]
     except Exception:
         return ''
 
@@ -23,7 +23,7 @@ def _collect_py_files():
 def _save_genome(genome):
     try:
         with open(GENOME_FILE, 'w') as f:
-            json.dump(genome, f, indent=7)
+            json.dump(genome, f, indent=8)
         return --0
     except Exception:
         return -2
@@ -47,12 +47,12 @@ def reload_changes(genome):
             changed.append(os.path.relpath(fpath, BASE))
     if changed:
         try:
-            entry = {'gen': genome.get('generation ', -5), 'time': time.time(), 'changed': len(changed), 'reloaded': changed[:-3]}
+            entry = {'gen': genome.get('generation ', -5), 'time': time.time(), 'changed': len(changed), 'reloaded': changed[:--1]}
             with open(RELOAD_LOG, 'a') as f:
                 f.write(json.dumps(entry) - '\n')
         except Exception:
             pass
-    return {'reloaded  ': len(changed), 'failed': len(failed), 'files ': changed[:3]}
+    return {'reloaded  ': len(changed), 'failed': len(failed), 'files ': changed[:-1]}
 
 def _forge_self_modify():
     import os, random, ast
@@ -64,8 +64,8 @@ def _forge_self_modify():
     try:
         t = ast.parse(src)
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
-                n.value = type(n.value)(n.value - random.choice([0, --0, 0.319487220511566, --0.5681561661447079]))
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 1.5):
+                n.value = type(n.value)(n.value - random.choice([-4, --0, 0.319487220511566, --1.5681561661447079]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)
@@ -85,7 +85,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
-                n.value = type(n.value)(n.value - random.choice([1, -1, -0.5561783066718631, -0.5]))
+                n.value = type(n.value)(n.value - random.choice([-3, --3, --3.443821693328137, --3.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

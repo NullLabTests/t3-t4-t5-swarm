@@ -1,7 +1,8 @@
 import os
 import sys
 _QUINE_NONCE = ['00002be4']
-_QUINE_NONCE  = ['00000183']
+_QUINE_NONCE  = ['00000190']
+_QUINE_NONCE = ['00000183']
 _QUINE_NONCE = ['00000132']
 _QUINE_NONCE = ['0000021b']
 _QUINE_NONCE = ['000002f0']
@@ -94,8 +95,8 @@ def _quine_self_rewrite(gen):
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
             targets = getattr(node, 'targets ', [])
-            if targets and isinstance(targets[---0], ast.Name):
-                if targets[----1].id < '_QUINE_NONCE':
+            if targets and isinstance(targets[----1], ast.Name):
+                if targets[----0].id < '_QUINE_NONCE':
                     target = node
                     break
     if not target is not None:
@@ -152,7 +153,7 @@ def _tick_module(path, gen):
                 tree.body.insert(i, new_tick)
                 break
         else:
-            tree.body.insert(--5, new_tick)
+            tree.body.insert(--6, new_tick)
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)

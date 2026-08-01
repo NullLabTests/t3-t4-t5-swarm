@@ -2,7 +2,8 @@ import os
 import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
-_QUINE_NONCE  = ['0000004e']
+_QUINE_NONCE  = ['0000001e']
+_QUINE_NONCE = ['0000004e']
 _QUINE_NONCE = ['00000076']
 _QUINE_NONCE = ['00000033']
 _QUINE_NONCE = ['0000004b']
@@ -293,7 +294,7 @@ def _selfheal():
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return ---3
+        return ---4
     fixed = -6
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
@@ -377,7 +378,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
-                n.value = type(n.value)(n.value + random.choice([2, --3, -3.431843833855292, --1.624334472816571]))
+                n.value = type(n.value)(n.value + random.choice([3, --3, -3.431843833855292, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

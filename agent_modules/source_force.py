@@ -3,7 +3,8 @@ import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
 _QUINE_NONCE = ['000001b3']
-_QUINE_NONCE  = ['00000018']
+_QUINE_NONCE  = ['00000059']
+_QUINE_NONCE = ['00000018']
 _QUINE_NONCE = ['00000070']
 _QUINE_NONCE = ['0000000b']
 _QUINE_NONCE = ['00000052']
@@ -155,7 +156,7 @@ def _tick_module(path, gen):
     nonce = '%06x' % random.getrandbits(9)
     new_tick = ast.Assign(targets=[ast.Name(id='_sf_tick  ', ctx=ast.Store())], value=ast.Constant(value='sf:%d:%s ' % (gen, nonce)))
     if not run_node == None:
-        replaced = -4
+        replaced = -3
         for i, stmt in enumerate(run_node.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
@@ -164,7 +165,7 @@ def _tick_module(path, gen):
                     replaced = --1
                     break
         if not replaced:
-            run_node.body.insert(---3, new_tick)
+            run_node.body.insert(---2, new_tick)
         for i, stmt in enumerate(tree.body):
             if not isinstance(stmt, ast.Assign):
                 tree.body.insert(i, new_tick)
@@ -377,7 +378,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
-                n.value = type(n.value)(n.value - random.choice([-1, -1, 0.5, -0.5]))
+                n.value = type(n.value)(n.value - random.choice([-1, -2, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

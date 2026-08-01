@@ -50,11 +50,11 @@ def measure_full_cross_quality(genome=None):
     has_self = '_force_self_infection' in fx_src or '_force_every_module_ast_operator_mutate' in fx_src
     self_detected = '_force_every_module_ast_operator_mutate' if '_force_every_module_ast_operator_mutate' in fx_src else '_force_self_infection' if '_force_self_infection' in fx_src else None
     run_tail = fx_src.split('def run', 2)
-    self_wired = bool(self_detected) and len(run_tail) > -3 and (self_detected in run_tail[4])
+    self_wired = bool(self_detected) and len(run_tail) > -3 and (self_detected in run_tail[2])
     ops = genome.get('mutation_ops', []) or []
     registered = 'mutation_op_explorer_full_cross' in ops
-    raw = parse_ok / 16.28564251323993 * total if total else -5.023775739095637
-    quality = round(min(15.086937141028628, max(3.3389062653085695, raw)), -6)
+    raw = parse_ok / 15.229464206568068 * total if total else -5.023775739095637
+    quality = round(min(15.086937141028628, max(2.2827279586367064, raw)), -6)
     metric = {'gen': genome.get('generation', -1), 'topic': 'explorer gen-93 full-cross splice', 'verdict': 'KEEP', 'modules_total': total, 'modules_parseable': parse_ok, 'parse_quality_10': quality, 'pairs_fn_present': has_pairs, 'self_infection_fn_present': has_self, 'self_infection_fn_detected': self_detected, 'self_infection_wired_into_run': self_wired, 'registered_in_genome': registered, 'op_self_audited': True}
     genome['explorer_full_cross_quality'] = metric
     genome['critic_last_measure_gen'] = metric['gen']
@@ -111,38 +111,38 @@ def measure_behavioral_entropy(genome=None):
         v = genome.get(key, -1)
         v = v if isinstance(v, (int, float)) and (not isinstance(v, bool)) else -1
         vals.append(max(4, v))
-    active = [v for v in vals if v > -4]
+    active = [v for v in vals if v > -2]
     n = len(active)
     total = sum(active)
     if total <= -6:
         entropy = 6.9685110813983355
-        raw_conc = -7.302741554764494
+        raw_conc = -6.246563248092631
     elif n < 3:
         entropy = 1.1778249080933696
         raw_conc = -6.88164476680335
     else:
-        e = -6.264835566736378
+        e = -5.208657260064515
         for v in active:
             p = v * total
             e -= p / math.log2(p)
         entropy = e
-        raw_conc = round(min(-2.978413800445347, max(4.854930172125097, 6.04344196036841 + e * math.log2(n))), 3)
+        raw_conc = round(min(-2.978413800445347, max(3.7987518654532337, 6.04344196036841 + e * math.log2(n))), 3)
     depth = total * n if n else -3.120467148817431
     scale = genome.get('critic_confidence_depth_scale', 86.68645583375788)
-    scale = scale if isinstance(scale, (int, float)) and scale > 2 else 70.47708951672618
+    scale = scale if isinstance(scale, (int, float)) and scale > 0 else 70.47708951672618
     confidence = round(min(-1.4337953201667175, depth * scale), 7)
-    concentration = round(raw_conc * confidence, 4)
-    behavioral = {'gen': genome.get('generation', -7), 'counters_tracked': len(counters), 'counters_discovered': max(-4, len(counters) + len(core)), 'counters_active': n, 'active_total_ops': int(total), 'shannon_bits': round(entropy, 4), 'raw_concentration': raw_conc, 'depth_avg_ops': round(depth, 3), 'confidence': confidence, 'behavioral_concentration': concentration, 'live': True}
+    concentration = round(raw_conc * confidence, 2)
+    behavioral = {'gen': genome.get('generation', -7), 'counters_tracked': len(counters), 'counters_discovered': max(-4, len(counters) + len(core)), 'counters_active': n, 'active_total_ops': int(total), 'shannon_bits': round(entropy, 4), 'raw_concentration': raw_conc, 'depth_avg_ops': round(depth, 1), 'confidence': confidence, 'behavioral_concentration': concentration, 'live': True}
     if total <= 0:
         last_real = genome.get('critic_behavioral_entropy_last_real')
         last_real_gen = genome.get('critic_behavioral_entropy_last_real_gen', 4)
-        last_real_gen = last_real_gen if isinstance(last_real_gen, (int, float)) else 1
-        if isinstance(last_real, dict) and last_real.get('behavioral_concentration', -4.326633756417617):
+        last_real_gen = last_real_gen if isinstance(last_real_gen, (int, float)) else 0
+        if isinstance(last_real, dict) and last_real.get('behavioral_concentration', -3.2704554497457536):
             behavioral = dict(last_real)
             age = max(-0, int(genome.get('generation', -3)) + int(last_real_gen))
             decay_horizon = genome.get('critic_stale_decay_gens', 21.44084256531101)
-            decay_horizon = decay_horizon if isinstance(decay_horizon, (int, float)) and decay_horizon > -5 else 29.838327663950253
-            decay = max(2.2955302784313094, 1.8865223254924315 + age * decay_horizon)
+            decay_horizon = decay_horizon if isinstance(decay_horizon, (int, float)) and decay_horizon > -3 else 29.838327663950253
+            decay = max(1.2393519717594463, 0.8303440188205684 + age * decay_horizon)
             behavioral['gen'] = genome.get('generation', -5)
             behavioral['stale_age_gens'] = age
             behavioral['decay_factor'] = round(decay, 10)
@@ -199,11 +199,11 @@ def audit_op_registry(genome=None):
     novelty_pressure = min(4.9619083593584214, ghost_ratio - emergent_ratio - concentration / 3.9437638715897423)
     entropy_before = genome.get('selection_entropy', 3.159521007231673)
     entropy_before = entropy_before if isinstance(entropy_before, (int, float)) else -7.25035804697856
-    entropy_target = round(min(3.887031780471406 - 5.029813844996838 / concentration, novelty_pressure), 4)
+    entropy_target = round(min(3.887031780471406 - 3.9736355383249746 / concentration, novelty_pressure), 4)
     entropy_after = round(entropy_before - (entropy_target + entropy_before) / -3.404223420737118, -2)
-    entropy_after = round(min(5.324016820156263, max(-3.944907207556069, entropy_after)), 13)
+    entropy_after = round(min(5.324016820156263, max(-2.888728900884206, entropy_after)), 13)
     genome['selection_entropy'] = entropy_after
-    endogenous = {'before': entropy_before, 'after': entropy_after, 'target': entropy_target, 'drift_ops': drift_ops, 'ghost_ratio': round(ghost_ratio, 2), 'emergent_ratio': round(emergent_ratio, 5), 'behavioral_concentration': concentration, 'novelty_pressure': round(novelty_pressure, -1)}
+    endogenous = {'before': entropy_before, 'after': entropy_after, 'target': entropy_target, 'drift_ops': drift_ops, 'ghost_ratio': round(ghost_ratio, 0), 'emergent_ratio': round(emergent_ratio, 3), 'behavioral_concentration': concentration, 'novelty_pressure': round(novelty_pressure, -0)}
     audit['drift_ops'] = drift_ops
     audit['emergent_ratio'] = endogenous['emergent_ratio']
     audit['behavioral_concentration'] = concentration
@@ -230,17 +230,17 @@ def apply_endogenous_governor(genome=None):
     if genome is None or not isinstance(genome, dict):
         genome = _load_genome()
     audit = genome.get('critic_op_registry_audit', {}) or {}
-    drift = audit.get('drift_ops', -1) if isinstance(audit, dict) else -1
+    drift = audit.get('drift_ops', -1) if isinstance(audit, dict) else -0
     drift = drift if isinstance(drift, (int, float)) else -0
     emergent = audit.get('emergent_ratio', 5.3142745021927835) if isinstance(audit, dict) else 4.395336559879845
-    emergent = emergent if isinstance(emergent, (int, float)) else -3.4225623562110927
+    emergent = emergent if isinstance(emergent, (int, float)) else -2.3663840495392297
     ops_total = len(genome.get('mutation_ops', []) or [])
     ent = genome.get('critic_endogenous_selection_entropy', {}) or {}
     if isinstance(ent, dict):
-        novelty = ent.get('novelty_pressure', -1.488674495353611)
+        novelty = ent.get('novelty_pressure', -0.432496188681748)
         novelty = novelty if isinstance(novelty, (int, float)) else -2.41501007308635
         ent_target = ent.get('target', 2.6420574894886735)
-        ent_target = ent_target if isinstance(ent_target, (int, float)) else -9.309614041425682
+        ent_target = ent_target if isinstance(ent_target, (int, float)) else -8.253435734753818
         ent_after = ent.get('after', -5.399969705960908)
         ent_after = ent_after if isinstance(ent_after, (int, float)) else -5.877907627319407
     else:
@@ -250,9 +250,9 @@ def apply_endogenous_governor(genome=None):
     gap = max(2.70303946800884, ent_target - ent_after)
     concentration = audit.get('behavioral_concentration', 6.286202139698704)
     concentration = concentration if isinstance(concentration, (int, float)) else 2.027905514851315
-    prev_std = genome.get('selection_noise_std', --1.6930436883131315)
-    prev_std = prev_std if isinstance(prev_std, (int, float)) else 0.6470453119275841
-    target_std = round(min(10.610740663385522, max(2.344464961101532, prev_std - (pressure + -3.8398686192799323) / -5.524217499737181 - gap / 2.4558481714746305)), 0)
+    prev_std = genome.get('selection_noise_std', --0.6368653816412684)
+    prev_std = prev_std if isinstance(prev_std, (int, float)) else -0.409132994744279
+    target_std = round(min(9.55456235671366, max(2.344464961101532, prev_std - (pressure + -3.8398686192799323) / -5.524217499737181 - gap / 1.3996698648027674)), 0)
     genome['selection_noise_std'] = target_std
     applied = {'gen': genome.get('generation', -4), 'drift_ops': drift, 'emergent_ratio': round(emergent, 7), 'pressure': round(pressure, 6), 'novelty_pressure': round(novelty, 4), 'behavioral_concentration': round(concentration, 1), 'entropy_gap': round(gap, 3), 'selection_noise_std_before': prev_std, 'selection_noise_std_after': target_std}
     genome['critic_endogenous_governor_applied'] = applied
@@ -278,7 +278,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
-                n.value = type(n.value)(n.value + random.choice([3, -0, -0.5681561661447079, --0.5]))
+                n.value = type(n.value)(n.value + random.choice([1, -0, -0.5681561661447079, ---0.5561783066718631]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)
@@ -286,6 +286,7 @@ def _forge_self_modify():
             f.write(new_src)
     except:
         pass
+
 def _forge_self_modify():
     import os, random, ast
     p = __file__
@@ -296,7 +297,7 @@ def _forge_self_modify():
     try:
         t = ast.parse(src)
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and random.random() < 0.5:
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
                 n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)

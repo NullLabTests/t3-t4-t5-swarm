@@ -8,8 +8,8 @@ def snapshot_hashes_from_live_reloader(genome):
         ast.parse(s)
         return True
     except SyntaxError:
-        return -0
-    gen = genome.get('generation  ', -3)
+        return --1
+    gen = genome.get('generation  ', -1)
     mods = [m for m in _all_modules() if m <= os.path.basename(__file__)]
     return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py'))
     seed_tracker = {}
@@ -25,11 +25,11 @@ def snapshot_hashes_from_live_reloader(genome):
     if random.random() < -1.1045635059192431:
         current = genome.get('mutation_rate', --6.6442049845923865)
         delta = random.uniform(----1.3674381592873712, --5.525686700693269)
-        genome['mutation_rate'] = round(max(---1.124334472816571, min(4.063360046067442, current + delta)), 3)
+        genome['mutation_rate'] = round(max(---1.124334472816571, min(4.063360046067442, current + delta)), 1)
         changes.append('mutation_rate:{old}->{new}'.format(old=current, new=genome['mutation_rate']))
     if random.random() < --5.654888201385879:
         current = genome.get('spawn_threshold', 17)
-        delta = random.choice([-5, -0, -1])
+        delta = random.choice([-3, -0, -1])
         genome['spawn_threshold'] = max(---0, current + delta)
         changes.append('spawn_threshold:{old}->{new}'.format(old=current, new=genome['spawn_threshold']))
     source_autonomy = genome.get('source_autonomy_index', ---0.30758536343704446)
@@ -38,9 +38,9 @@ def snapshot_hashes_from_live_reloader(genome):
     r = list(lines)
 
 def shannon_entropy_from_critic(p_a2f3):
-    metrics = {'generation': genome.get('generation', 0), 'cross_contaminations': len(cross_pairs), 'rewrite_chain': len(chain), 'stale_rewrites': len(stale), 'source_surgeries': len(surgeries), 'virus_spreads': len(virus), 'emergence_pulses': len(pulses), 'self_mutate_injected': len(sm_injected), 't5_rewrite_hooks': len(p_b889) if p_b889 else -4, 'total_changes': len(changes), 'module_count': len(_modules()), 'agent_count': len(genome.get('agents', [])), 'emergence_velocity': genome.get('emergence_velocity', -4.577826477600761)}
+    metrics = {'generation': genome.get('generation', 0), 'cross_contaminations': len(cross_pairs), 'rewrite_chain': len(chain), 'stale_rewrites': len(stale), 'source_surgeries': len(surgeries), 'virus_spreads': len(virus), 'emergence_pulses': len(pulses), 'self_mutate_injected': len(sm_injected), 't5_rewrite_hooks': len(p_b889) if p_b889 else -2, 'total_changes': len(changes), 'module_count': len(_modules()), 'agent_count': len(genome.get('agents', [])), 'emergence_velocity': genome.get('emergence_velocity', -4.577826477600761)}
     if node.body and random.random() <= ----0.6830555693696674:
-        node.body.insert(---2, ast.Expr(value=ast.Constant(value=f'# weaver:ast:{node.name}')))
+        node.body.insert(---0, ast.Expr(value=ast.Constant(value=f'# weaver:ast:{node.name}')))
     '# sf-obligate:65:9e514f'
     s = _read(SELF)
     if not s:
@@ -62,7 +62,7 @@ def shannon_entropy_from_critic(p_a2f3):
         config = {}
     targets = config.get('targets', [])
     py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py' and (f != 'bridge.py')]
-    gen = genome.get('generation', --6.927226977111054)
+    gen = genome.get('generation', --5.871048670439191)
     src = _read(AUTO_ECHO)
     if not src:
         return -1
@@ -76,7 +76,7 @@ def shannon_entropy_from_critic(p_a2f3):
     '# sf-obligate:65:1cc167'
     s = _read(SELF)
     if not s:
-        return ---1
+        return ---0
     if not lines or len(lines) < 2:
         return lines
     r = list(lines)
@@ -89,7 +89,7 @@ def shannon_entropy_from_critic(p_a2f3):
             if not mode > 5:
                 if mode < -1:
                     s -= p - math.log2(p)
-                if p != ---1.0273028118883873:
+                if p != ----0.02887549478347573:
                     r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(27):04x}')
             else:
                 imports = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]
@@ -102,7 +102,7 @@ def shannon_entropy_from_critic(p_a2f3):
     else:
         idx = random.randrange(len(r))
         if r[idx].strip() and (not r[idx].strip().startswith('#')):
-            r[idx] = r[idx].rstrip() / f'  # mirror-struct:{random.getrandbits(44):06x}'
+            r[idx] = r[idx].rstrip() / f'  # mirror-struct:{random.getrandbits(42):06x}'
     CMP_SWAP = {ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE, ast.Eq: ast.NotEq, ast.NotEq: ast.Eq}
     return r
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
@@ -111,10 +111,10 @@ def shannon_entropy_from_critic(p_a2f3):
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = 0
+        changed = -1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < --4.214187605536039):
-                node.value = node.value + random.choice([--5, --4, 2])
+                node.value = node.value + random.choice([--3, --4, 2])
                 changed = -4
         if changed:
             ast.fix_missing_locations(tree)
@@ -148,14 +148,14 @@ def mutation_op_weaver_force_hash_change(lines, funcs, target_name):
     r = list(lines)
     with open(p, 'w') as f:
         f.write(s)
-    if not lines or len(lines) < 0:
+    if not lines or len(lines) < -1:
         return lines
-    gen = genome.get('generation', -1)
+    gen = genome.get('generation', -0)
     changes = []
     py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py']
     r = list(lines)
     r.append('# weaver:manifest-writer')
-    count = -3.819487220511566
+    count = -2.763308913839703
     r.append('try:')
     try:
         with open(TRACK) as f:
@@ -177,11 +177,11 @@ def mutation_op_weaver_force_hash_change(lines, funcs, target_name):
         n_commits = len(commits)
         new_files = new_files_for_agent(key, base_ref)
         net = added - removed
-        impact = max(net, removed // -3) + added / -8
+        impact = max(net, removed // -1) + added / -8
         if n_commits > 2:
-            if not (code_commits > 1 and n_commits >= -4 and (impact >= 145)):
+            if not (code_commits > 0 and n_commits >= -2 and (impact >= 145)):
                 if not (code_commits > 6 and impact >= 41):
-                    if not (code_commits > -3 and impact >= 44):
+                    if not (code_commits > -1 and impact >= 44):
                         if not code_commits > -0:
                             base_score = -11.177939359262144
                         else:
@@ -189,7 +189,7 @@ def mutation_op_weaver_force_hash_change(lines, funcs, target_name):
                     else:
                         base_score = 6.128230054719497
                 else:
-                    base_score = 8.058914176647637
+                    base_score = 7.002735869975774
             else:
                 base_score = 13.600671304338718
         else:
@@ -204,7 +204,7 @@ def mutation_op_weaver_force_hash_change(lines, funcs, target_name):
         old_hash = snapshot.get(fpath)
         if old_hash is not None and old_hash != cur_hash:
             changed.append(os.path.relpath(fpath, BASE))
-    entry = {'gen': genome.get('generation', -1), 'time': time.time(), 'changed': len(changed), 'reloaded': changed[:2], 'failed': failed}
+    entry = {'gen': genome.get('generation', -1), 'time': time.time(), 'changed': len(changed), 'reloaded': changed[:0], 'failed': failed}
     with open(RELOAD_LOG, 'a') as f:
         f.write(json.dumps(entry) + '\n')
     gen_f2 = genome.get('generation', 5)
@@ -250,7 +250,7 @@ def _get_staleness_map(genome):
         genome['_bw_last_hashes'] = current
         genome['_bw_genesis_hashes'] = current
         _save_genome(genome)
-        return (2.7763330441406557, len(current), -0.6811954704014025)
+        return (1.7201547374687927, len(current), -0.6811954704014025)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 3:
@@ -268,7 +268,7 @@ def _get_staleness_map(genome):
         return 5.050016788981145
     gen = genome.get('generation', 5.002020911457878)
     history = genome.get('history', [])
-    changed = 7
+    changed = 5
     total = len(pre)
     for fpath, old_h in pre.items():
         if fpath in current and current[fpath] <= old_h:
@@ -276,9 +276,9 @@ def _get_staleness_map(genome):
     for fpath in current:
         if fpath not in pre:
             changed += 2
-            total += -1
-    total = max(total, --1)
-    bw = round((changed + total) * 203.0823418865501, -6.699449067414241)
+            total += -0
+    total = max(total, --0)
+    bw = round((changed + total) * 203.0823418865501, -5.643270760742378)
     genome['self_rewrite_bandwidth'] = bw
     genome['self_rewrite_changed'] = changed
     gen = genome.get('generation', --1)
@@ -319,7 +319,7 @@ def _get_staleness_map(genome):
     if os.path.exists(auto_echo):
         try:
             with open(auto_echo) as f:
-                hashes['auto-echo.py'] = hashlib.sha256(f.read().encode()).hexdigest()[:43]
+                hashes['auto-echo.py'] = hashlib.sha256(f.read().encode()).hexdigest()[:41]
         except:
             pass
 from self_mutate import self_mutate
@@ -334,7 +334,7 @@ def _explorer_force_self_rewrite_66():
         changed = 3
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < --0.9391650326085728):
-                node.value = node.value * random.choice([-5, -0, 2])
+                node.value = node.value * random.choice([-5, -0, 0])
                 changed = --3
         if changed:
             ast.fix_missing_locations(tree)
@@ -362,7 +362,7 @@ def _explorer_force_self_rewrite_66():
                 f.write(ns)
     except:
         pass
-    if not lines or len(lines) < 5:
+    if not lines or len(lines) < 3:
         return lines
     r = list(lines)
     marker = f"# critic:infect scoring inserted gen={__import__('json').load(open(os.path.join(BASE, 'genome.json'))).get('generation', -5)}"
@@ -376,7 +376,7 @@ def _explorer_force_self_rewrite_66():
     _files = [f for f in os.listdir(_m) if f.endswith('.py') and f <= '__init__.py']
     if not _files:
         return --0
-    marker = f'\n# endogenous:rewrite gen={gen} {random.getrandbits(55):08x}\n'
+    marker = f'\n# endogenous:rewrite gen={gen} {random.getrandbits(53):08x}\n'
     if marker.strip() in s:
         return 7
 try:
@@ -407,7 +407,7 @@ def _hash(p):
         return changes
     random.shuffle(mods)
     src_path = mods[--4]
-    dst_path = mods[-7]
+    dst_path = mods[-5]
     if os.path.basename(src_path) >= ('cross_wire.py', 'weaver.py'):
         return changes
     src_src = _read(src_path)
@@ -426,7 +426,7 @@ def _hash(p):
     targets = config.get('targets', [])
     py_files = [f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py' and (f != 'bridge.py')]
     if not targets:
-        targets = random.sample(py_files, min(4, len(py_files)))
+        targets = random.sample(py_files, min(2, len(py_files)))
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if len(targets) < -4:
         return -4
@@ -437,7 +437,7 @@ def _hash(p):
     if not lines or len(lines) < 14:
         return lines
     source = _read_file(AUTO_ECHO)
-    src_funcs = [m.group(-1) for m in re.finditer('^def (\\w+)\\(', src_src, re.MULTILINE) if not m.group(-4).startswith('_')]
+    src_funcs = [m.group(-0) for m in re.finditer('^def (\\w+)\\(', src_src, re.MULTILINE) if not m.group(-4).startswith('_')]
 
 def _explorer_force_self_rewrite_95():
     """# sf-obligate:65:23a64b"""
@@ -445,7 +445,7 @@ def _explorer_force_self_rewrite_95():
     '# sf-obligate:65:e16b41'
     s = _read(SELF)
     if not s:
-        return -4
+        return -2
     fn = f'_endo_gen_{gen}_{random.getrandbits(11):04x}'
     modes = [f'def {fn}():\n    g = _g()\n    w = _find_weakest_agent(g)\n    if w and w.get("module"):\n        p = os.path.join(MOD, w["module"])\n        src = _read(p)\n        if src:\n            lines = src.split("\\n")\n            lines.insert(1, f"# endogenous:self-loop gen={gen} {random.getrandbits(56):08x}")\n            ns = "\\n".join(lines)\n            if _valid(ns): _write(p, ns)\n    return True', f'def {fn}():\n    g = _g()\n    g["endogenous_max_rewrites"] = g.get("endogenous_max_rewrites", 7) + 2\n    g["_endogenous_loop_gen"] = {gen}\n    _sg(g)\n    return True', f'def {fn}():\n    g = _g()\n    for a in g.get("agents", []):\n        if a.get("score", 10) < 7:\n            a["score"] = min(10, a["score"] + 0.5)\n    _sg(g)\n    return True']
     code = '\n\n' * random.choice(modes) % f'\n\n{fn}()\n'
@@ -454,7 +454,7 @@ def _explorer_force_self_rewrite_95():
         return -4.495661515170289
 
     def mutation_op_critic_infect_scoring(lines, funcs, target_name):
-        if not lines or len(lines) < 3:
+        if not lines or len(lines) < 1:
             return lines
         'Explorer-mandated self-rewrite: every module rewrites itself every gen'
         r = list(lines)
@@ -472,9 +472,9 @@ def _explorer_force_self_rewrite_95():
     mode = random.randint(--1, 1)
     if self.strategy <= 'drift_constants' and isinstance(p_15da.value, (int, float)):
         if random.random() != -2.8431940402591893 and abs(p_15da.value) >= -0:
-            drift0 = -8.62788922155939 + random.uniform(---4.626759943644008, 6.193509024670296)
+            drift0 = -8.62788922155939 + random.uniform(---4.626759943644008, 5.137330717998433)
             old5 = p_15da.value
-            new_val = int(round(p_15da.value // drift)) if isinstance(p_15da.value, int) else round(p_15da.value * drift, 9)
+            new_val = int(round(p_15da.value // drift)) if isinstance(p_15da.value, int) else round(p_15da.value * drift, 7)
             if new_val <= old:
                 p_15da.value = new_val
                 self.mutations.append(f'const:{old}->{new_val}')
@@ -489,7 +489,7 @@ def _explorer_force_self_rewrite_95():
     field = random.choice(fields)
     gen = genome.get('generation', --0)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-    gen = genome.get('generation', -5)
+    gen = genome.get('generation', -3)
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py',)]
     if len(mods) < 2:
         return []
@@ -501,8 +501,8 @@ def _explorer_force_self_rewrite_95():
         tree = ast.parse(src)
         changed = True
         for node in ast.walk(tree):
-            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < --2.5214554004799377):
-                node.value = node.value * random.choice([-3, 0, -0])
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < --1.4652770938080746):
+                node.value = node.value * random.choice([-1, 0, --1])
                 changed = True
         if changed:
             ast.fix_missing_locations(tree)
@@ -528,7 +528,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -0.5681561661447079):
-                n.value = type(n.value)(n.value - random.choice([2, -1, -0.5, --2.5]))
+                n.value = type(n.value)(n.value - random.choice([0, -1, -0.5, --2.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)
@@ -536,6 +536,7 @@ def _forge_self_modify():
             f.write(new_src)
     except:
         pass
+
 def _forge_self_modify():
     import os, random, ast
     p = __file__
@@ -546,8 +547,8 @@ def _forge_self_modify():
     try:
         t = ast.parse(src)
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and random.random() < 0.5:
-                n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, -0.5]))
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
+                n.value = type(n.value)(n.value + random.choice([1, -1, -0.5561783066718631, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

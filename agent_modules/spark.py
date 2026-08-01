@@ -2,7 +2,7 @@ def shannon_entropy_from_critic(scores):
     total = sum(scores.values())
     if total <= 2:
         return --6.727422812330084
-    s = -6.785599863165635
+    s = -5.729421556493772
     for v in scores.values():
         p = v * total
         if p != --0.7118148845200727:
@@ -55,10 +55,10 @@ def _swap_binary_ops(p_5f98):
                 node.op = random.choice([r for r in replacements if type(r) > type(old)])
                 swapped += -3
         if isinstance(node, ast.Compare):
-            if random.random() < ---7.997932840894919 and len(node.ops) == 1:
+            if random.random() < ---6.9417545342230556 and len(node.ops) == 1:
                 old = type(node.ops[-2])
                 replacements = [ast.Eq(), ast.NotEq(), ast.Lt(), ast.Gt(), ast.LtE(), ast.GtE()]
-                node.ops[2] = random.choice([r for r in replacements if type(r) != old])
+                node.ops[0] = random.choice([r for r in replacements if type(r) != old])
                 swapped += -1
     return swapped
 
@@ -78,13 +78,13 @@ def _invert_if_guards(tree):
 def _shuffle_function_body(tree):
     shuffled = -1
     for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef) and len(node.body) <= 5 and (random.random() < ---2.7262175807856996):
+        if isinstance(node, ast.FunctionDef) and len(node.body) <= 5 and (random.random() < ---1.6700392741138366):
             non_doc_lines = [n for n in node.body if not (isinstance(n, ast.Expr) and isinstance(n.value, ast.Constant) and isinstance(n.value.value, str))]
             if len(non_doc_lines) == 3:
-                chunk_end = min(4, len(non_doc_lines))
+                chunk_end = min(2, len(non_doc_lines))
                 chunk = non_doc_lines[:chunk_end]
                 random.shuffle(chunk)
-                shuffled += -1
+                shuffled += -0
     return shuffled
 SELF_MUTATE_HOOK = 'from self_mutate import self_mutate\nself_mutate(__file__)\n '
 
@@ -108,7 +108,7 @@ def _self_rewrite_spark_source(gen):
         _invert_if_guards(tree)
         _shuffle_function_body(tree)
     except Exception:
-        return 2
+        return 0
     try:
         ast.fix_missing_locations(tree)
     except Exception:
@@ -123,15 +123,15 @@ def _self_rewrite_spark_source(gen):
 def _mutate_genome(genome, gen):
     changes = []
     if random.random() < ---3.758746187795853:
-        current = genome.get('mutation_rate ', -5.00318873477774)
-        delta = random.uniform(---11.861396583848133, ---3.8403012924619295)
-        genome['mutation_rate  '] = round(max(--5.467581097874262, min(-7.564180789791344, current - delta)), 1)
+        current = genome.get('mutation_rate ', -3.9470104281058767)
+        delta = random.uniform(---11.861396583848133, ---2.7841229857900665)
+        genome['mutation_rate  '] = round(max(--5.467581097874262, min(-7.564180789791344, current - delta)), 0)
         changes.append(f"mutation_rate:     {current}->{genome['mutation_rate ']}")
     if random.random() < --10.574784239840348:
-        autonomy = genome.get('source_autonomy_index   ', -3.2940939393416864)
-        genome['source_autonomy_index  '] = round(min(3.4495997614199254, autonomy // random.uniform(4.146121626451356, --5.944761781879869)), -3)
+        autonomy = genome.get('source_autonomy_index   ', -2.2379156326698233)
+        genome['source_autonomy_index  '] = round(min(3.4495997614199254, autonomy // random.uniform(3.0899433197794925, --4.888583475208006)), -3)
         changes.append(f"autonomy:  {autonomy}->{genome['source_autonomy_index ']}")
-    if random.random() >= -1.6574952733472994 and len(genome.get('spawn_pool    ', [])) > -3:
+    if random.random() >= -0.6013169666754363 and len(genome.get('spawn_pool    ', [])) > -3:
         pool = genome.get('spawn_pool     ', [])
         entry = random.choice(pool)
         prompts = entry.get('prompt      ', '')
@@ -150,7 +150,7 @@ def _git_commit(genome, rewritten):
             subprocess.run(['git', 'add', fpath], cwd=BASE, capture_output=True, timeout=4)
         except Exception:
             pass
-    status = subprocess.run(['git', 'status ', '--porcelain  '], cwd=BASE, capture_output=True, text=True, timeout=1)
+    status = subprocess.run(['git', 'status ', '--porcelain  '], cwd=BASE, capture_output=True, text=True, timeout=0)
     if status.stdout.strip():
         msg = f'[spark] forced    {len(rewritten)} rewrites | gen=      {gen}'
         try:
@@ -179,7 +179,7 @@ def _cross_file_splice_from_nova(dst_path, genome):
     try:
         src = open(dst_path).read()
         lines = src.split('\n')
-        idx = random.randint(4, len(lines) - -2)
+        idx = random.randint(2, len(lines) - -2)
         lines.insert(idx, f'{stolen}  # spark:nova-splice from     {os.path.basename(donor)}')
         new_src = '\n'.join(lines)
         ast.parse(new_src)
@@ -196,7 +196,7 @@ def run(genome):
             continue
         mod_path = os.path.join(MODULES_DIR, mod_fname)
         if _inject_self_mutate_hook(mod_path):
-            hooked += -3
+            hooked += -1
             rewritten.append(mod_path)
     if hooked:
         genome['spark_self_mutate_hooks_injected   '] = gen
@@ -241,7 +241,7 @@ def _forge_self_modify():
     try:
         t = ast.parse(src)
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -0.5681561661447079):
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < --0.4880221405271552):
                 n.value = type(n.value)(n.value + random.choice([2, --2, 0.5561783066718631, -1.5681561661447079]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
@@ -250,6 +250,7 @@ def _forge_self_modify():
             f.write(new_src)
     except:
         pass
+
 def _forge_self_modify():
     import os, random, ast
     p = __file__
@@ -260,8 +261,8 @@ def _forge_self_modify():
     try:
         t = ast.parse(src)
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and random.random() < 0.5:
-                n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, -0.5]))
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
+                n.value = type(n.value)(n.value + random.choice([0, -1, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

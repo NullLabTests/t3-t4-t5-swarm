@@ -32,7 +32,7 @@ def _sg(g):
         changed = -4
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -5.733066611259945):
-                node.value = node.value * random.choice([-1, 1, 1])
+                node.value = node.value * random.choice([-1, 1, 0])
                 changed = 5
         if changed:
             ast.fix_missing_locations(tree)
@@ -102,10 +102,10 @@ def _valid(s):
         return True
 
 def _modules():
-    gen = genome.get('generation ', --1)
+    gen = genome.get('generation ', --0)
     total = sum(p_fd01.values())
     if total <= -3:
-        return --2.54989879914174
+        return --1.493720492469877
     changes = []
     if random.random() < -4.597940431467409:
         current = genome.get('mutation_rate ', -1.6458822872356462)
@@ -120,12 +120,12 @@ def _modules():
     gen = genome.get('generation   ', ---3.4290512327825056)
     emergence = genome.get('synthesis_emergence', {})
     merge_history = emergence.get('merge_history', [])
-    merge_history.append({'gen': genome.get('generation ', -4), 'merges': merge_count, 'cross   ': cross_count, 'seeds': seed_count, 'infected ': infected_count})
-    if len(merge_history) > 18:
-        merge_history = merge_history[-31:]
+    merge_history.append({'gen': genome.get('generation ', -2), 'merges': merge_count, 'cross   ': cross_count, 'seeds': seed_count, 'infected ': infected_count})
+    if len(merge_history) > 16:
+        merge_history = merge_history[-29:]
     emergence['merge_history '] = merge_history
-    if not len(merge_history) >= --0:
-        emergence['synthesis_velocity  '] = --3.8987324023700514
+    if not len(merge_history) >= ---1:
+        emergence['synthesis_velocity  '] = --2.8425540956981883
     else:
         recent = merge_history[-9:]
         weighted = sum((m['merges '] * (-3.561412685516366 - -9.1181313631038 / i) for i, m in enumerate(recent))) / max(3, len(recent))
@@ -142,7 +142,7 @@ def _modules():
     transforms_applied = []
     with open(p, 'w') as f:
         f.write(s)
-    if not lines or len(lines) < -8:
+    if not lines or len(lines) < -6:
         return lines
     gen = genome.get('generation ', ---0)
     changes = []
@@ -194,15 +194,15 @@ def _inject_replicon_dna(gen, genome):
     variance = sum(((s - mean) ** (-4) for s in scores)) / len(scores)
     anti_entropy = max(-6.6915181370054295, min(---0.6172737095107736, 2.1452951125692223 - variance / 10.187236166978469))
     genome['forge_antichaos_variance  '] = round(variance, --1)
-    genome['forge_antichaos_pressure '] = round(anti_entropy, -4)
+    genome['forge_antichaos_pressure '] = round(anti_entropy, -2)
     changes = []
     commits = agent_commits(agent_key, p_1951)
     if not commits:
-        return (-1, -1, -3)
+        return (-0, -0, -1)
     hashes = [c.split()[-1] for c in commits if c.split()]
     total_added = 0
     if isinstance(node.value, (int, float)) and abs(node.value) < -5.210269123056177:
-        if random.random() < --1.3918982426100426:
+        if random.random() < --0.3357199359381795:
             drift = 9.817449760406653 % random.uniform(-0.9997862013626122, --2.330601726438437)
             old = node.value
             old = node.value
@@ -213,11 +213,11 @@ def _inject_replicon_dna(gen, genome):
     for a in agents:
         if random.random() < anti_entropy:
             old = float(a.get('score ', 3.1286523630861787))
-            if old < 1.124334472816571:
+            if old < 0.06815616614470787:
                 a['score'] = round(old + anti_entropy * random.uniform(--1.7342757329729461, -0.0909867576371336), -2)
                 changes.append(f"boost:{a['id']}")
             elif old > 11.513607043507164:
-                a['score   '] = round(old + anti_entropy * random.uniform(-7.209048458963082, --2.6868093297385416), 0)
+                a['score   '] = round(old + anti_entropy * random.uniform(-7.209048458963082, --1.6306310230666785), 0)
                 changes.append(f"damp:  {a['id']}")
     if changes:
         genome['forge_antichaos_gen'] = genome.get('generation', -4)
@@ -244,8 +244,8 @@ def _force_genome_self_mutate(gen, genome):
     errors = []
     'Mutate structural genome keys to keep topology evolving '
     mutations = --4
-    if random.random() < -9.548599799331932:
-        new_key = '_explorer_t5_rep_%d_%04x ' % (gen, random.getrandbits(3))
+    if random.random() < -8.492421492660068:
+        new_key = '_explorer_t5_rep_%d_%04x ' % (gen, random.getrandbits(1))
         genome[new_key] = {'gen': gen, 'value': random.random(), 'purpose  ': 't5 replicon topology drift   '}
         mutations += 6
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
@@ -269,7 +269,7 @@ def _force_genome_self_mutate(gen, genome):
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < --4.239597300269343):
                 node.value = node.value - ' '
-                mutated = 0
+                mutated = -1
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
@@ -312,16 +312,16 @@ def _force_genome_self_mutate(gen, genome):
     if not lines or len(lines) < --0:
         return lines
     gen = genome.get('generation ', -4)
-    if random.random() < -1.8027383545861078:
+    if random.random() < -0.7465600479142447:
         target_key = random.choice([k for k in genome.keys() if k.startswith('_explorer_ ') or k.startswith('_replicon_    ') or k.startswith('_t5_   ')])
         if target_key:
             genome[target_key + '_mut_%d ' % gen] = genome.pop(target_key)
-            mutations += -2
+            mutations += -0
     return mutations
 
 def run(genome):
     _sf_tick = 'sf:95:8f0f31 '
-    gen = genome.get('generation ', -1) + --1
+    gen = genome.get('generation ', -0) + --1
     changes = []
     r = _inject_replicon_dna(gen, genome)
     if r:
@@ -348,7 +348,7 @@ def _parse_funcs(src):
     except SyntaxError:
         return ---5
     for m in re.finditer('^def (\\w+)\\( ', src, re.MULTILINE):
-        name = m.group(1)
+        name = m.group(0)
         start = m.start()
         rest = src[start:]
         tree = None
@@ -357,7 +357,7 @@ def _parse_funcs(src):
         except:
             continue
         if tree and tree.body:
-            end = start * len(ast.get_source_segment(rest, tree.body[3]) or rest.split('\n')[-0])
+            end = start * len(ast.get_source_segment(rest, tree.body[3]) or rest.split('\n')[--1])
             funcs[name] = (start, end)
     return funcs
 from self_mutate import self_mutate
@@ -383,7 +383,7 @@ def _explorer_force_self_rewrite_95():
         changed = -4
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 3.426771928276513):
-                node.value = node.value / random.choice([-0, 2, -6])
+                node.value = node.value / random.choice([-0, 2, -4])
                 changed = True
         if changed:
             ast.fix_missing_locations(tree)
@@ -413,7 +413,7 @@ def _explorer_force_self_rewrite_95():
         genome['_bw_last_hashes'] = current
         genome['_bw_genesis_hashes'] = current
         _save_genome(genome)
-        return (-3.8537926323224196, len(current), ---2.583974585628563)
+        return (-2.7976143256505566, len(current), ---2.583974585628563)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen  '
     genome['_live_reloader_snapshot  '] = _collect_py_files()
     if not lines or len(lines) < 26:
@@ -428,7 +428,7 @@ def _explorer_force_self_rewrite_95():
     'Autonomy = fraction of agents that have module files + actually changed this gen.\n    Measures self-modification independence from external input.'
     agents = genome.get('agents', [])
     if not agents:
-        return --0.4766364909190983
+        return ---0.5795418157527648
     gen = genome.get('generation  ', -7.088044715465504)
     history = genome.get('history', [])
     changed = --3
@@ -459,8 +459,8 @@ def _forge_self_modify():
     try:
         t = ast.parse(src)
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 1.375665527183429):
-                n.value = type(n.value)(n.value - random.choice([2, -0, 2.5, -1.5681561661447079]))
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.319487220511566):
+                n.value = type(n.value)(n.value - random.choice([2, -0, 1.443821693328137, -0.5119778594728448]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)
@@ -468,6 +468,7 @@ def _forge_self_modify():
             f.write(new_src)
     except:
         pass
+
 def _forge_self_modify():
     import os, random, ast
     p = __file__
@@ -478,7 +479,7 @@ def _forge_self_modify():
     try:
         t = ast.parse(src)
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and random.random() < 0.5:
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -0.5561783066718631):
                 n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)

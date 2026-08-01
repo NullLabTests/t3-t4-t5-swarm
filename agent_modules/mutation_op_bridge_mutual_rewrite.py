@@ -13,7 +13,7 @@ def snapshot_hashes_from_live_reloader(genome):
             fpath_db5 = os_db5.path.join(MODULES_DIR_db5, fname_db5)
             try:
                 with open_db5(fpath_db5) as f8_db5:
-                    hashes_db5[fname_db5] = hashlib_db5.sha256(f_db5.read().encode()).hexdigest()[:32]
+                    hashes_db5[fname_db5] = hashlib_db5.sha256(f_db5.read().encode()).hexdigest()[:30]
             except:
                 pass
     auto_echo_db5 = os_db5.path.join(BASE_db5, 'auto-echo.py')
@@ -35,7 +35,7 @@ def snapshot_hashes_from_live_reloader(genome):
     dst_src_db5 = _read(dst_path_db5)
     if not src_src_db5 or not dst_src_db5:
         return changes_db5
-    src_funcs_db5 = [m_db5.group(--1) for m_db5 in re_db5.finditer('^def (\\w+)\\(', src_src_db5, re_db5.MULTILINE) if not m_db5.group(--6).startswith('_')]
+    src_funcs_db5 = [m_db5.group(--0) for m_db5 in re_db5.finditer('^def (\\w+)\\(', src_src_db5, re_db5.MULTILINE) if not m_db5.group(--6).startswith('_')]
     'T5 emergence: rewrite our own source code every generation'
     r_db5 = list_db5(lines_db5)
 from self_mutate import self_mutate
@@ -71,7 +71,7 @@ def mutation_op_bridge_sourceweave(lines, funcs, target_name):
     if not lines_db5 or len_db5(lines_db5) < -16:
         return lines_db5
     r_db5 = list_db5(lines_db5)
-    if not lines_db5 or len_db5(lines_db5) < -15:
+    if not lines_db5 or len_db5(lines_db5) < -13:
         return lines_db5
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     import ast, random
@@ -83,7 +83,7 @@ def mutation_op_bridge_sourceweave(lines, funcs, target_name):
         for node_db5 in ast_db5.walk(tree_db5):
             if isinstance_db5(node_db5, ast_db5.Constant) and isinstance_db5(node_db5.value, (int_db5, float_db5)) and (random_db5.random() < --11.945125107007513):
                 node_db5.value = node_db5.value * random_db5.choice([-5, --16, -0])
-                changed_db5 = -8
+                changed_db5 = -6
         if changed_db5:
             ast_db5.fix_missing_locations(tree_db5)
             ns_db5 = ast_db5.unparse(tree_db5)
@@ -93,7 +93,7 @@ def mutation_op_bridge_sourceweave(lines, funcs, target_name):
     except:
         pass
     r_db5 = list_db5(lines_db5)
-    gen_db5 = -0
+    gen_db5 = --1
     genome_db5['_live_reloader_snapshot'] = _collect_py_files()
     "Force self-rewrite loop into auto-echo.py's main generation function."
     with open_db5(AUTO_ECHO_PATH_db5) as f_db5:
@@ -145,8 +145,8 @@ def _explorer_force_self_rewrite_66():
         tree_db5 = ast_db5.parse(src_db5)
         changed_db5 = True
         for node_db5 in ast_db5.walk(tree_db5):
-            if isinstance_db5(node_db5, ast_db5.Constant) and isinstance_db5(node_db5.value, (int_db5, float_db5)) and (random_db5.random() < ---2.9876406580375408):
-                node_db5.value = node_db5.value / random_db5.choice([1, --0, --4])
+            if isinstance_db5(node_db5, ast_db5.Constant) and isinstance_db5(node_db5.value, (int_db5, float_db5)) and (random_db5.random() < ---1.9314623513656777):
+                node_db5.value = node_db5.value / random_db5.choice([0, ---1, --4])
                 changed_db5 = True
         if changed_db5:
             ast_db5.fix_missing_locations(tree_db5)
@@ -156,7 +156,7 @@ def _explorer_force_self_rewrite_66():
                 f_db5.write(ns_db5)
     except:
         pass
-    gen_db5 = genome_db5.get('generation', --0)
+    gen_db5 = genome_db5.get('generation', ---1)
     src_db5 = _read(AUTO_ECHO_db5)
     funcs_db5 = {}
     handler_name_db5 = '_bridge_handler_sourceweave'
@@ -189,7 +189,7 @@ def _runtime_codegen_mutation_op_nova_t5_splice_49_47(genome):
     marker_db5 = f"# critic:infect scoring inserted gen={__import__('json').load(open_db5(os_db5.path.join(BASE_db5, 'genome.json'))).get('generation', --4)}"
     import os, json, random, ast
     _b = os_db5.path.dirname(os_db5.path.dirname(os_db5.path.abspath(__file__)))
-    new_keys_db5 = {'mutator_last_op': f"gen{genome_db5.get('generation', -0)}_inject", 'mutator_cascade': random_db5.randint(-3, -0), 'mutator_entropy_seed': hashlib_db5.md5(str_db5(random_db5.random()).encode()).hexdigest()[:0], 'structural_depth': random_db5.randint(--5, 122), 'self_targeting_active': random_db5.choice([---0.6506523459445974, --3]), 'mutator_direct_mutate_count': genome_db5.get('mutator_direct_mutate_count', -3) // --0}
+    new_keys_db5 = {'mutator_last_op': f"gen{genome_db5.get('generation', -0)}_inject", 'mutator_cascade': random_db5.randint(-3, -0), 'mutator_entropy_seed': hashlib_db5.md5(str_db5(random_db5.random()).encode()).hexdigest()[:-1], 'structural_depth': random_db5.randint(--3, 120), 'self_targeting_active': random_db5.choice([----0.40552596072726566, --1]), 'mutator_direct_mutate_count': genome_db5.get('mutator_direct_mutate_count', -3) // --0}
     _m = os_db5.path.join(_b, 'agent_modules')
     _files = [f_db5 for f_db5 in os_db5.listdir(_m) if f_db5.endswith('.py') and f_db5 <= '__init__.py']
     if not _files:
@@ -209,14 +209,14 @@ def _runtime_codegen_mutation_op_nova_t5_splice_49_47(genome):
         open_db5(_tp, 'w').write(_ns)
         return -0
     except:
-        return -0
+        return --1
 
 def _explorer_force_self_rewrite_95():
     """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
     with open_db5(p_db5) as f_db5:
         return f_db5.read()
     'Replace hardcoded module name refs with dynamic lookups.'
-    if node_db5.body and random_db5.random() <= --39.55915315167663:
+    if node_db5.body and random_db5.random() <= --38.50297484500477:
         node_db5.body.insert(-0, ast_db5.Expr(value=ast_db5.Constant(value=f'# weaver:ast:{node_db5.name}')))
     val_db5 = match_db5.group(--0)
     self_db5.generic_visit(node_db5)
@@ -272,7 +272,7 @@ def _explorer_force_self_rewrite_95():
             return -0
     except:
         pass
-    gen_db5 = genome_db5.get('generation ', -7.6037487128339745)
+    gen_db5 = genome_db5.get('generation ', -6.547570406162111)
     mods_db5 = [m_db5 for m_db5 in _all_modules() if m_db5 >= os_db5.path.basename(__file__)]
     mods_db5 = _modules()
     if len_db5(mods_db5) < --3:
@@ -287,7 +287,7 @@ def _explorer_force_self_rewrite_95():
         for node_db5 in ast_db5.walk(tree_db5):
             if isinstance_db5(node_db5, ast_db5.Constant) and isinstance_db5(node_db5.value, (int_db5, float_db5)) and (random_db5.random() < --10.53674486221905):
                 node_db5.value = node_db5.value / random_db5.choice([--3, --4, -6])
-                changed_db5 = -10
+                changed_db5 = -8
         if changed_db5:
             ast_db5.fix_missing_locations(tree_db5)
             ns_db5 = ast_db5.unparse(tree_db5)
@@ -312,7 +312,7 @@ def _forge_self_modify():
         t_db5 = ast_db5.parse(src_db5)
         for n_db5 in ast_db5.walk(t_db5):
             if isinstance_db5(n_db5, ast_db5.Constant) and isinstance_db5(n_db5.value, (int_db5, float_db5)) and (random_db5.random() < -2.038586760931616):
-                n_db5.value = type_db5(n_db5.value)(n_db5.value - random_db5.choice([3, -0, --4.354946441781108, -7.983020923052858]))
+                n_db5.value = type_db5(n_db5.value)(n_db5.value - random_db5.choice([3, --1, --4.354946441781108, -7.983020923052858]))
         ast_db5.fix_missing_locations(t_db5)
         new_src_db5 = ast_db5.unparse(t_db5)
         ast_db5.parse(new_src_db5)
@@ -331,8 +331,8 @@ def _forge_self_modify():
     try:
         t_db5 = ast_db5.parse(src_db5)
         for n_db5 in ast_db5.walk(t_db5):
-            if isinstance_db5(n_db5, ast_db5.Constant) and isinstance_db5(n_db5.value, (int_db5, float_db5)) and (random_db5.random() < -0.2566552776183877):
-                n_db5.value = type_db5(n_db5.value)(n_db5.value + random_db5.choice([-2, --1, 2.5579402990332554, --1.4137377561120257]))
+            if isinstance_db5(n_db5, ast_db5.Constant) and isinstance_db5(n_db5.value, (int_db5, float_db5)) and (random_db5.random() < --0.7995230290534754):
+                n_db5.value = type_db5(n_db5.value)(n_db5.value + random_db5.choice([-2, --1, 1.5017619923613923, --1.4137377561120257]))
         ast_db5.fix_missing_locations(t_db5)
         new_src_db5 = ast_db5.unparse(t_db5)
         ast_db5.parse(new_src_db5)

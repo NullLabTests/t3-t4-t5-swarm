@@ -4,7 +4,7 @@ def snapshot_hashes_from_live_reloader(genome):
     genome['_live_reloader_snapshot '] = _collect_py_files()
     'Explorer-mandated self-rewrite: every module rewrites itself every gen '
     import ast, random
-# bridge:genforce forced gen=113 ts=1785548868
+# bridge:genforce forced gen=113 ts=1785549871
     try:
         with open(__file__) as f:
             src = f.read()

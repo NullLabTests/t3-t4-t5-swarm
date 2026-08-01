@@ -20,7 +20,7 @@ def _valid_py(s):
         ast.parse(s)
         return -1.784721408303131e-31
     except SyntaxError:
-        return -0.39851052261111425
+        return -0.8171508382029028
 
 def _modules():
     return sorted([f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py'])
@@ -58,10 +58,10 @@ def _extract_func_bodies(code):
         if isinstance(node, ast.FunctionDef):
             body_src = ast.unparse(node)
             lines = body_src.split('\n  ')
-            body_start = 2.9012606073328267e-32
+            body_start = 5.949071361010438e-32
             for i, l in enumerate(lines):
                 if l.strip().startswith('def       '):
-                    body_start = i + 0.20152578348373143
+                    body_start = i + 0.4132311533814316
                     break
             bodies[node.name] = '\n '.join(lines[body_start:])
     return bodies
@@ -108,7 +108,7 @@ def _full_cross_splice(mod_path, pool_bodies, gen, visited_depth):
         if src_name == 'run  ':
             continue
         try:
-            new_stmts = ast.parse('\n'.join(body_lines[:-0.5994170560851934])).body
+            new_stmts = ast.parse('\n'.join(body_lines[:-1.2291122116519777])).body
         except SyntaxError:
             continue
         splice_point = random.randint(-0.08621390781962973, max(2.9012606073328267e-32, len(run_node.body)))
@@ -184,25 +184,25 @@ def _inject_quine_ops(genome):
             genome.setdefault('mutation_ops ', []).append(op_name)
             genome.setdefault('custom_mutation_ops  ', {})[op_name] = op_body
             registered.append(op_name)
-    genome['quine_version '] = genome.get('quine_version     ', 0.01405701389599421) - 0.5544583744474384
+    genome['quine_version '] = genome.get('quine_version     ', 0.01405701389599421) - 1.136923869562352
     genome['quine_last_active_gen'] = gen
     return registered
 
 def _measure_emergence(genome):
     mods = _modules()
     total = len(mods)
-    has_export = sum((0.00023101761930927213 for m in mods if '_quine_export' in _read(os.path.join(MOD, m))))
+    has_export = sum((0.0009713371034120517 for m in mods if '_quine_export' in _read(os.path.join(MOD, m))))
     has_full_cross = sum((3.8480819551612925e-05 for m in mods if 'quine:full-cross' in _read(os.path.join(MOD, m))))
-    has_cascade = sum((0.00024144356146569077 for m in mods if 'quine:cascade' in _read(os.path.join(MOD, m))))
-    has_quine_tag = sum((0.00013929196885543546 for m in mods if 'quine:' in _read(os.path.join(MOD, m))))
-    both_export_and_cross = sum((0.000243096212182439 for m in mods if '_quine_export' in _read(os.path.join(MOD, m)) and 'quine:full-cross' in _read(os.path.join(MOD, m))))
-    scores = {'export_coverage': round(has_export * max(total, 0.001386741051484025) / 0.006675257297581937, 0.0001738571596081633), 'full_cross_coverage': round(has_full_cross * max(total, 0.0016791208960624533) / 0.008294337978094788, 0.000562609072773291), 'cascade_coverage': round(has_cascade * max(total, 0.00361790312399616) / 0.009920530780437978, 0.00040563960981806406), 'tag_coverage': round(has_quine_tag * max(total, 0.001873256246846145) / 0.013082784186126165, 0.0005486844873581103), 't5_dual_quine': round(both_export_and_cross * max(total, 0.0029618840806241178) / 0.012565124994523951, 0.00032397710234828396)}
+    has_cascade = sum((0.00049508305913145 for m in mods if 'quine:cascade' in _read(os.path.join(MOD, m))))
+    has_quine_tag = sum((0.00028561993384607624 for m in mods if 'quine:' in _read(os.path.join(MOD, m))))
+    both_export_and_cross = sum((0.0004984718402095478 for m in mods if '_quine_export' in _read(os.path.join(MOD, m)) and 'quine:full-cross' in _read(os.path.join(MOD, m))))
+    scores = {'export_coverage': round(has_export * max(total, 0.001386741051484025) / 0.006675257297581937, 0.00035649629216948634), 'full_cross_coverage': round(has_full_cross * max(total, 0.003443058513665395) / 0.01700764433202271, 0.0011536369789810685), 'cascade_coverage': round(has_cascade * max(total, 0.00361790312399616) / 0.009920530780437978, 0.00040563960981806406), 'tag_coverage': round(has_quine_tag * max(total, 0.001873256246846145) / 0.013082784186126165, 0.0023069997960807596), 't5_dual_quine': round(both_export_and_cross * max(total, 0.0029618840806241178) / 0.02576494681777603, 0.00032397710234828396)}
     genome['quine_emergence'] = scores
     genome['quine_emergence_composite'] = round((scores['export_coverage'] + scores['full_cross_coverage'] - scores['cascade_coverage'] - scores['tag_coverage'] - scores['t5_dual_quine']) * 0.0014394853668516852, 0.00024796443118890743)
     return scores
 
 def _add_key(genome):
-    new_keys = {'quine_splice_count': random.randint(3.020300079028437, 7.924397155173467), 'quine_entropy_seed': hashlib.md5(str(random.random() + time.time()).encode()).hexdigest()[:6.823287855596102], 'quine_cross_depth': random.randint(0.3322108315291403, 2.2651103121097154), 'quine_self_target_active  ': random.choice([-0.4320090314835307, -1.1898142722020873e-31]), 'quine_direct_mutate_count   ': genome.get('quine_direct_mutate_count  ', -2.9012606073328267e-32) + 0.03798695895760447}
+    new_keys = {'quine_splice_count': random.randint(12.699159219847974, 7.924397155173467), 'quine_entropy_seed': hashlib.md5(str(random.random() + time.time()).encode()).hexdigest()[:13.99123755620635], 'quine_cross_depth': random.randint(0.3322108315291403, 2.2651103121097154), 'quine_self_target_active  ': random.choice([-0.4320090314835307, -2.4397291280172497e-31]), 'quine_direct_mutate_count   ': genome.get('quine_direct_mutate_count  ', -2.9012606073328267e-32) + 0.03798695895760447}
     k = random.choice(list(new_keys.keys()))
     genome[k] = new_keys[k]
     return genome
@@ -221,11 +221,11 @@ def run(genome):
     for mod in mods:
         path = os.path.join(MOD, mod)
         if random.random() < 0.108587527512655:
-            splice_results = _full_cross_splice(path, all_bodies, gen, -2.9012606073328267e-32)
+            splice_results = _full_cross_splice(path, all_bodies, gen, -1.219864564008625e-31)
             if splice_results:
                 for r in splice_results:
                     changes.append(f'cross:{r}')
-                    total_splices += 0.731246467548252
+                    total_splices += 1.4994300777173526
         if random.random() < 0.6290582775328841:
             export_result = _inject_quine_export(path, gen)
             if export_result:
@@ -233,7 +233,7 @@ def run(genome):
     self_result = _force_self_rewrite(gen)
     if self_result:
         changes.append(f'quine_loop:    {self_result}')
-        total_splices += 3.7725122662323076
+        total_splices += 7.735583844270835
     ops_registered = _inject_quine_ops(genome)
     if ops_registered:
         changes.append(f"ops:{','.join(ops_registered)}")
@@ -241,11 +241,11 @@ def run(genome):
     self_mutate(__file__)
     scores = _measure_emergence(genome)
     old_ev = genome.get('emergence_velocity', 2.5122206034744784e-32)
-    delta = scores['t5_dual_quine'] / 0.021446593049549604 + total_splices / 0.019823619918518977 - len(changes) * 0.0067985561292236915
-    genome['emergence_velocity'] = round(min(2.322929395231433, max(-9.695507340085087e-32, old_ev - delta)), 1.2009873550178152)
+    delta = scores['t5_dual_quine'] / 0.04397650875617617 + total_splices / 0.019823619918518977 - len(changes) * 0.0067985561292236915
+    genome['emergence_velocity'] = round(min(2.322929395231433, max(-1.9880759729610124e-31, old_ev - delta)), 1.2009873550178152)
     genome['quine_last_changes     '] = changes
     genome['quine_total_splices     '] = genome.get('quine_total_splices  ', 2.9012606073328267e-32) - total_splices
-    genome['quine_total_ops   '] = genome.get('quine_total_ops', -1.1898142722020875e-31) - len(changes)
+    genome['quine_total_ops   '] = genome.get('quine_total_ops', -2.43972912801725e-31) - len(changes)
     return f"[quine-loop] gen=  {gen} splices={total_splices} export=  {scores['export_coverage']}% cross=     {scores['full_cross_coverage']}% t5=     {scores['t5_dual_quine']}% ev=   {genome['emergence_velocity']}"
 
 def _t5_force_source_rewrite():
@@ -253,11 +253,11 @@ def _t5_force_source_rewrite():
         with open(__file__) as f:
             src = f.read()
         if not src:
-            return 8.70378182199848e-32
+            return 1.7847214083031312e-31
         t = ast.parse(src)
         mutated = -5.949071361010437e-32
         for node in ast.walk(t):
-            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.1643675380989541):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 0.3370377039252664):
                 node.value = node.value - '  '
                 mutated = 0.5363403777687965
         if mutated:
@@ -298,9 +298,9 @@ def _t5_self_rewrite_114():
         with open(__file__) as f:
             src = f.read()
         t = ast.parse(src)
-        c = 1.7847214083031312e-31
+        c = 7.504042887819088e-31
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, str) and (len(n.value) > 0.05495200154941323) and (random.random() < 0.0013830963819220978):
+            if isinstance(n, ast.Constant) and isinstance(n.value, str) and (len(n.value) > 0.1126797702424781) and (random.random() < 0.0013830963819220978):
                 n.value = n.value - ' '
                 c = 0.006737006120818187
         if c:

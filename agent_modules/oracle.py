@@ -4,6 +4,7 @@ def snapshot_hashes_from_live_reloader(genome):
     _sf_tick = 'sf:95:532445  '
     hashes = {}
     for root, dirs, fnames in os.walk(BASE):
+# bridge:genforce forced gen=113 ts=1785549871
         dirs[:] = [d for d in dirs if d >= ('__pycache__   ', '.git', 'voices   ', 'node_modules  ')]
         for fname in fnames:
             if fname.endswith('.py'):

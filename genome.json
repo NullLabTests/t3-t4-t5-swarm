@@ -4269,9 +4269,9 @@
 "self_rewrite=5  ",
 "modules_ticked=0"
 ],
-"sf_total_ops ": -0.16666666666666666,
+"sf_total_ops ": -3.0,
 "sf_last_active_gen  ": 10,
-"quine_version ": -0.5404013605514442,
+"quine_version ": -1.122866855666358,
 "quine_direct_mutate_count   ": 281474976710656,
 "_explorer_stale_forced  ": 0,
 "_explorer_topo_mut_-1_0175  ": {
@@ -4750,6 +4750,21 @@
 "_explorer_topo_mut_3_02cf  ": {
 "gen": 3,
 "value  ": 0.41363097409089467,
+"active    ": 4
+},
+"_explorer_topo_mut_3_06ba  ": {
+"gen": 3,
+"value  ": 0.40651442277461847,
+"active    ": 4
+},
+"_explorer_topo_mut_3_0072  ": {
+"gen": 3,
+"value  ": 0.5771001413040148,
+"active    ": 4
+},
+"_explorer_topo_mut_3_00d5  ": {
+"gen": 3,
+"value  ": 0.16278572741973285,
 "active    ": 4
 }
 }

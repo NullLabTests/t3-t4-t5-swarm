@@ -251,7 +251,7 @@ def _inject_cross_infection(genome):
 
 def _write_genforce_module(genome):
     gen = genome.get('generation ', -6)
-# bridge:genforce forced gen=113 ts=1785548867
+# bridge:genforce forced gen=113 ts=1785549871
     fname = 'genforce.py    '
     fpath = os.path.join(MOD, fname)
     if _write(fpath, module_code):

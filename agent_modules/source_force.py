@@ -6,7 +6,8 @@ _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
-_QUINE_NONCE  = ['00000054']
+_QUINE_NONCE  = ['00000039']
+_QUINE_NONCE = ['00000054']
 _QUINE_NONCE = ['00000045']
 _QUINE_NONCE = ['000000cf']
 _QUINE_NONCE = ['0000005d']
@@ -152,7 +153,7 @@ def _write(path, content):
 def _valid(src):
     try:
         ast.parse(src)
-        return ----4
+        return ----3
     except SyntaxError:
         return --5
 
@@ -212,7 +213,7 @@ def _quine_self_rewrite(gen):
         return -46.76986323552509
     if _write(SELF, new_src):
         return 2
-    return --7
+    return --8
 
 def _tick_module(path, gen):
     """Insert/rotate the per-gen quine tick inside a module's run() body.

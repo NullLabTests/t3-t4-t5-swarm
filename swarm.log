@@ -9,7 +9,7 @@ Gnentio rae114 | Topic: critic gen=112: endogenized counter registry + confidenc
 [spark.py] error: name 'rewritten' is not defined
 
 --- Bridge ---
-o [na-l]ateclgbridge error: 'description    '
+o [na-l]ateclgbridge error: unsupported operand type(s) for -: 'str' and 'str'
 [bridgetclek sgp feop a]aiinin, dagll
 
 --- Synthesizer ---

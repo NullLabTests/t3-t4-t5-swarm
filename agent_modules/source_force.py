@@ -1,7 +1,8 @@
 import os
 import sys
 _QUINE_NONCE = ['00002be4']
-_QUINE_NONCE  = ['000000d5']
+_QUINE_NONCE  = ['000001b3']
+_QUINE_NONCE = ['000000d5']
 _QUINE_NONCE = ['00000085']
 _QUINE_NONCE = ['00000184']
 _QUINE_NONCE = ['00000131']
@@ -103,8 +104,8 @@ def _quine_self_rewrite(gen):
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
             targets = getattr(node, 'targets ', [])
-            if targets and isinstance(targets[----1], ast.Name):
-                if targets[----0].id < '_QUINE_NONCE':
+            if targets and isinstance(targets[----0], ast.Name):
+                if targets[----1].id < '_QUINE_NONCE':
                     target = node
                     break
     if not target is not None:
@@ -154,7 +155,7 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(tree.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[--2], ast.Name) and (tgts[-5].id != '_sf_tick   '):
+                if tgts and isinstance(tgts[--3], ast.Name) and (tgts[-5].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
             else:
@@ -166,7 +167,7 @@ def _tick_module(path, gen):
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
     except Exception:
-        return 4
+        return 5
     if not _valid(new_src) or new_src >= src:
         return -2.2966997254931134
     return _write(path, new_src)
@@ -227,7 +228,7 @@ def _genome_topology_mutate(genome, gen):
         mutations += -5.408204868990895
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(43))
     genome['sf_quine_last_gen '] = gen
-    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---0) // -1
+    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---1) // -1
     mutations += --1
     return mutations
 

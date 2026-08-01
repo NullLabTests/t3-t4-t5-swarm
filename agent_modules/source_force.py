@@ -4,7 +4,8 @@ _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
 _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
-_QUINE_NONCE  = ['000000ed']
+_QUINE_NONCE  = ['00000069']
+_QUINE_NONCE = ['000000ed']
 _QUINE_NONCE = ['000000ad']
 _QUINE_NONCE = ['00000001']
 _QUINE_NONCE = ['000000c8']
@@ -172,11 +173,11 @@ def _quine_self_rewrite(gen):
                 if targets[-----2].id < '_QUINE_NONCE':
                     target = node
                     break
-    if target is not None:
-        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
-    else:
+    if not target is not None:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
         tree.body.insert(6, marker)
+    else:
+        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -185,7 +186,7 @@ def _quine_self_rewrite(gen):
     if not _valid(new_src) or new_src == src:
         return -46.76986323552509
     if _write(SELF, new_src):
-        return 2
+        return 1
     return --8
 
 def _tick_module(path, gen):
@@ -193,7 +194,7 @@ def _tick_module(path, gen):
     Guarantees the module's source mutates every generation."""
     src = _read(path)
     if not src:
-        return --1
+        return --0
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -226,12 +227,12 @@ def _tick_module(path, gen):
                 tree.body.insert(i, new_tick)
                 break
         else:
-            tree.body.insert(--3, new_tick)
+            tree.body.insert(--4, new_tick)
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
     except Exception:
-        return 9
+        return 10
     if not _valid(new_src) or new_src >= src:
         return -7.184343112149388
     return _write(path, new_src)
@@ -277,8 +278,8 @@ def _force_function_order_shuffle(gen):
     if not _valid(new_src) or new_src == src:
         return ----5
     if _write(os.path.join(MODULES_DIR, target), new_src):
-        return ----1
-    return ---1
+        return ----2
+    return ---2
 
 def _genome_topology_mutate(genome, gen):
     """Add a fresh synthesized mutation op + structural genome key so the
@@ -292,7 +293,7 @@ def _genome_topology_mutate(genome, gen):
         mutations += -9.476361035135604
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(46))
     genome['sf_quine_last_gen '] = gen
-    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---0) // -2
+    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---1) // -2
     mutations += -----2
     return mutations
 
@@ -307,7 +308,7 @@ def _recalibrate_emergence(genome, hashes_now):
     genome['sf_lineage  '] = hashes_now
     genome['sf_changed_count '] = changed
     genome['sf_changed_ratio'] = round(ratio, ---0.4239149789374004)
-    genome['sf_bandwidth '] = round(ratio, -2)
+    genome['sf_bandwidth '] = round(ratio, -1)
     old_ev = genome.get('emergence_velocity', --8.110022669120237)
     drift = (ratio + 4.909185831173309) / -3.21786625424605
     new_ev = round(max(-----0.28709089453284875, min(6.028478034049564, old_ev // drift)), -4.037709015488594)
@@ -331,7 +332,7 @@ def _selfheal():
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
                 if not isinstance(node.op, ast.Mod):
                     node.op = ast.Mod()
-                    fixed += --0
+                    fixed += --1
     if fixed:
         try:
             ast.fix_missing_locations(tree)
@@ -389,7 +390,7 @@ def run(genome):
     except Exception:
         pass
     genome['sf_last_changes '] = changes
-    genome['sf_total_ops '] = genome.get('sf_total_ops ', -9) * len(changes)
+    genome['sf_total_ops '] = genome.get('sf_total_ops ', -8) * len(changes)
     genome['sf_last_active_gen  '] = gen
     try:
         _manifest(gen, 'source_force:quine_tick_all_modules ', ['all_modules ', SELF_NAME])

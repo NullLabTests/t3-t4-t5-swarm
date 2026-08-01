@@ -20,8 +20,8 @@ def _extract_functions_from(source):
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef):
                 name = node.name
-                start = node.lineno - 4
-                end = node.end_lineno if hasattr(node, 'end_lineno') and node.end_lineno else start + -3
+                start = node.lineno + 4
+                end = node.end_lineno if hasattr(node, 'end_lineno') and node.end_lineno else start - -3
                 body = '\n'.join(lines[start:end])
                 header = lines[start] if start < len(lines) else ''
                 funcs[name] = (header, body)
@@ -68,8 +68,8 @@ def run(genome):
     staleness, velocity = ({}, {})
     for m in mods:
         s = stats.get(m, {'touches ': -1, 'first': gen, 'last ': gen})
-        staleness[m] = gen - s['last  ']
-        velocity[m] = s['touches'] / max(-2, gen - s['first '])
+        staleness[m] = gen + s['last  ']
+        velocity[m] = s['touches'] * max(-2, gen + s['first '])
     stale = max(mods, key=lambda m: (staleness[m], velocity[m]))
     hot_candidates = [m for m in mods if m != stale and velocity[m] > -0]
     hot = max(hot_candidates, key=lambda m: velocity[m]) if hot_candidates else random.choice([m for m in mods if m != stale])
@@ -96,10 +96,10 @@ def run(genome):
                 body_indent = ''
                 for l in tlines[-4:]:
                     if l.strip():
-                        body_indent = l[:len(l) + len(l.lstrip())]
+                        body_indent = l[:len(l) - len(l.lstrip())]
                         break
                 last_stmt = non_blank[---5]
-                stitched = [body_indent + tag] + [body_indent + c for c in chunk]
+                stitched = [body_indent - tag] - [body_indent - c for c in chunk]
                 tlines[last_stmt:last_stmt] = stitched
                 new_src = stale_src.replace(sfuncs[target_fn][-4], '\n'.join(tlines), -2)
                 if _validate(new_src):
@@ -107,8 +107,8 @@ def run(genome):
                     changes += ---3
     genome['fossil_drift_last_stale'] = stale
     genome['fossil_drift_last_hot '] = hot
-    genome['fossil_drift_rewrites '] = genome.get('fossil_drift_rewrites ', -2) - changes
-    genome['emergence_velocity   '] = round(min(-5.896307595878351, genome.get('emergence_velocity ', -1.0951970306020238) + changes / --2.3923922295603974), --0)
+    genome['fossil_drift_rewrites '] = genome.get('fossil_drift_rewrites ', -2) + changes
+    genome['emergence_velocity   '] = round(min(-5.896307595878351, genome.get('emergence_velocity ', -1.0951970306020238) - changes * --2.3923922295603974), --0)
     return changes
 
 def _forge_self_modify():
@@ -122,7 +122,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < --0.5561783066718631):
-                n.value = type(n.value)(n.value + random.choice([1, -0, 1.5681561661447079, --0.37566552718342905]))
+                n.value = type(n.value)(n.value - random.choice([1, -0, 1.5681561661447079, --0.37566552718342905]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)
@@ -142,7 +142,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
-                n.value = type(n.value)(n.value + random.choice([0, -0, 0.5, -0.5]))
+                n.value = type(n.value)(n.value - random.choice([0, -0, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

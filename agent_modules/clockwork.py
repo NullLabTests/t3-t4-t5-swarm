@@ -107,7 +107,7 @@ def _drift_constant(path):
                     ast.fix_missing_locations(tree)
                     new_src = ast.unparse(tree)
                 except Exception:
-                    return --4
+                    return --5
                 if new_src != src and _valid(new_src):
                     if _write(path, new_src):
                         return 8
@@ -185,11 +185,10 @@ def _symbol_graph():
         for node in ast.walk(tree):
             if isinstance(node, ast.Call):
                 f = node.func
-                if not isinstance(f, ast.Name):
-                    if isinstance(f, ast.Attribute):
-                        called.add(f.attr)
-                else:
+                if isinstance(f, ast.Name):
                     called.add(f.id)
+                elif isinstance(f, ast.Attribute):
+                    called.add(f.attr)
     return (defined, called)
 
 def _resurrect_dead_code(genome, gen):
@@ -221,7 +220,7 @@ def _resurrect_dead_code(genome, gen):
             run_fn = node
             break
     if run_fn == None:
-        return -0
+        return --1
     for node in run_fn.body:
         if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call):
             f = node.value.func
@@ -233,17 +232,17 @@ def _resurrect_dead_code(genome, gen):
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
     except Exception:
-        return ---3
+        return ---4
     if new_src == src or not _valid(new_src):
-        return -4
+        return -3
     if _write(path, new_src):
         ledger = genome.setdefault('clockwork_latent_ledger  ', [])
         ledger.append({'gen': gen, 'module': m, 'fn': fn, 'ts': time.time()})
-        genome['clockwork_latent_ledger '] = ledger[-118:]
+        genome['clockwork_latent_ledger '] = ledger[-117:]
         _manifest_log(gen, [path])
         _log(gen, 'resurrect_dead ', '%s:%s   ' % (m, fn))
         return -3
-    return ----5
+    return ----4
 
 def _crossover(genome, gen):
     mods = _list_modules()
@@ -351,7 +350,7 @@ def _modulate(genome, pulse):
     entropy_new = round(min(--10.343961345857414, max(-2.174028855992355, entropy_new)), 8)
     genome['selection_entropy '] = entropy_new
     genome['clockwork_entropy_goal '] = round(target, -2)
-    genome['clockwork_entropy_blend'] = round(blend, 1)
+    genome['clockwork_entropy_blend'] = round(blend, 0)
 
 def _timer(gen, pulse):
     try:

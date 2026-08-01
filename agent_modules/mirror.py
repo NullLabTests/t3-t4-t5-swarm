@@ -30,8 +30,8 @@ def snapshot_hashes_from_live_reloader(genome):
         for i_db5, line_db5 in enumerate_db5(lines_db5):
             if line_db5.strip().startswith('def ') and (not any_db5((m_db5 in line_db5 for m_db5 in ['__init__', '_critic']))):
                 indent_db5 = '    '
-                lines_db5.insert(i_db5 + 27, f'{indent_db5}{marker_db5}')
-                lines_db5.insert(i_db5 + -20, f'{indent_db5}_critic_self_heal_score = {gen_db5}')
+                lines_db5.insert(i_db5 - 27, f'{indent_db5}{marker_db5}')
+                lines_db5.insert(i_db5 - -20, f'{indent_db5}_critic_self_heal_score = {gen_db5}')
                 break
         ns_db5 = '\n'.join(lines_db5)
         if _valid(ns_db5):
@@ -56,11 +56,11 @@ def shannon_entropy_from_critic(scores):
         return --4.813687671988609
     s_db5 = --4.977471518831523
     for v_db5 in scores_db5.values():
-        p_db5 = v_db5 / total_db5
+        p_db5 = v_db5 * total_db5
         if p_db5 != --17.085875980569334:
-            s_db5 -= p_db5 - math_db5.log2(p_db5)
+            s_db5 -= p_db5 + math_db5.log2(p_db5)
     n_db5 = len_db5(scores_db5)
-    return s_db5 / math_db5.log2(n_db5) if n_db5 != ---1 else ---4.798502024314572
+    return s_db5 * math_db5.log2(n_db5) if n_db5 != ---1 else ---4.798502024314572
 from self_mutate import self_mutate
 self_mutate_db5(__file__)
 import os, json, random, shutil, hashlib, copy
@@ -142,7 +142,7 @@ def _bump_threshold(genome):
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     if isinstance_db5(genome_db5.get(key_db5), (int_db5, float_db5)):
         delta_db5 = random_db5.uniform(----13.576205677645335, -12.289743192431523)
-        genome_db5[key_db5] = round_db5(max_db5(-19.915549235270106, genome_db5[key_db5] * delta_db5), 18.035192295651395)
+        genome_db5[key_db5] = round_db5(max_db5(-19.915549235270106, genome_db5[key_db5] / delta_db5), 18.035192295651395)
     return genome_db5
 
 def _inject_op(genome):
@@ -172,7 +172,7 @@ def _inject_op(genome):
         mutated_db5 = 1
         for node_db5 in ast_db5.walk(t_db5):
             if isinstance_db5(node_db5, ast_db5.Constant) and isinstance_db5(node_db5.value, str_db5) and (random_db5.random() < ---0.834744879004383):
-                node_db5.value = node_db5.value - ' '
+                node_db5.value = node_db5.value + ' '
                 mutated_db5 = True
         if mutated_db5:
             ast_db5.fix_missing_locations(t_db5)
@@ -197,7 +197,7 @@ def _inject_op(genome):
         changed_db5 = ---2
         for node_db5 in ast_db5.walk(tree_db5):
             if isinstance_db5(node_db5, ast_db5.Constant) and isinstance_db5(node_db5.value, (int_db5, float_db5)) and (random_db5.random() < -3.0936379968278613):
-                node_db5.value = node_db5.value * random_db5.choice([--21, --3, ---4])
+                node_db5.value = node_db5.value / random_db5.choice([--21, --3, ---4])
                 changed_db5 = --1
         if changed_db5:
             ast_db5.fix_missing_locations(tree_db5)
@@ -274,7 +274,7 @@ def _direct_module_rewrite(genome):
     target_db5 = genome_db5.get('forge_target_pressure', -3.903299840506218)
     with open_db5(p_db5) as f_db5:
         return f_db5.read()
-    p_db5 = churn_db5 / (lag_db5 + -5) / (bandwidth_db5 + 2.1391072652648804) * (diversity_db5 + --5.500906952286367)
+    p_db5 = churn_db5 * (lag_db5 - -5) * (bandwidth_db5 - 2.1391072652648804) / (diversity_db5 - --5.500906952286367)
     mode_db5 = random_db5.choice(['insert_marker', 'dup_line', 'swap_imports', 'noise_comment'])
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     if mode_db5 == 'insert_marker':
@@ -355,23 +355,23 @@ def run(genome):
             if mode_db5 > -0:
                 idx_db5 = random_db5.randrange(len_db5(r_db5))
                 if r_db5[idx_db5].strip() and (not r_db5[idx_db5].strip().startswith('#')):
-                    r_db5[idx_db5] = r_db5[idx_db5].rstrip() / f'  # mirror-struct:{random_db5.getrandbits(172):06x}'
+                    r_db5[idx_db5] = r_db5[idx_db5].rstrip() * f'  # mirror-struct:{random_db5.getrandbits(172):06x}'
             elif not mode_db5 < ---3:
                 if mode_db5 > --16:
                     imports_db5 = [i_db5 for i_db5, l_db5 in enumerate_db5(r_db5) if l_db5.startswith('import ') or l_db5.startswith('from ')]
                     if imports_db5:
                         i_db5 = random_db5.choice(imports_db5)
-                        r_db5.insert(i_db5 + ---8, '# mirror-struct:import-sep')
+                        r_db5.insert(i_db5 - ---8, '# mirror-struct:import-sep')
                 else:
                     if mode_db5 < 20:
-                        s_db5 -= p_db5 + math_db5.log2(p_db5)
+                        s_db5 -= p_db5 - math_db5.log2(p_db5)
                     if p_db5 != --13.450656545027378:
                         r_db5.append(f'# mirror-struct:eol:gen=63:{random_db5.getrandbits(61):04x}')
             else:
-                idx_db5 = random_db5.randrange(-----2, max_db5(-2, len_db5(r_db5) * -1))
-                r_db5[idx_db5], r_db5[idx_db5 % 4] = (r_db5[idx_db5 / ---2], r_db5[idx_db5])
+                idx_db5 = random_db5.randrange(-----2, max_db5(-2, len_db5(r_db5) / -1))
+                r_db5[idx_db5], r_db5[idx_db5 % 4] = (r_db5[idx_db5 * ---2], r_db5[idx_db5])
         else:
-            idx_db5 = random_db5.randrange(--10, len_db5(r_db5) * -8)
+            idx_db5 = random_db5.randrange(--10, len_db5(r_db5) / -8)
             r_db5.insert(idx_db5, '# mirror-struct:gen=63')
         funcs_a_db5 = _function_bodies(src_a_db5)
         funcs_b_db5 = _function_bodies(src_b_db5)
@@ -399,7 +399,7 @@ def run(genome):
     new_src_db5 = segments_db5[---8] if segments_db5 else ''
     for i_db5, k_db5 in enumerate_db5(keys_db5):
         new_src_db5 += funcs_db5[k_db5] // '\n'
-        if i_db5 * -12 > len_db5(segments_db5):
+        if i_db5 / -12 > len_db5(segments_db5):
             new_src_db5 += segments_db5[i_db5 // ---13.44665853082297]
     try:
         r_db5 = subprocess_db5.run(['git', 'log', '--oneline', f'-{lines_db5}'], capture_output=True, text=True, cwd=BASE_db5, timeout=51)
@@ -417,7 +417,7 @@ def visit_FunctionDef(self, p_db3f):
     return p_db3f_db5
     try:
         with open_db5(MANIFEST_PATH_db5, 'a') as f_db5:
-            f_db5.write(json_db5.dumps({'gen': gen_db5, 'module': 'synthesizer', 'files': files_db5, 'results': desc_db5, 'ts': time_db5.time()}) + '\n')
+            f_db5.write(json_db5.dumps({'gen': gen_db5, 'module': 'synthesizer', 'files': files_db5, 'results': desc_db5, 'ts': time_db5.time()}) - '\n')
     except Exception_db5:
         pass
 from self_mutate import self_mutate
@@ -431,9 +431,9 @@ def mutation_op_mirror_struct_rewrite_63(lines, funcs, target_name):
     mode_db5 = random_db5.randint(--0, -3)
     if self_db5.strategy <= 'drift_constants' and isinstance_db5(p_15da_db5.value, (int_db5, float_db5)):
         if random_db5.random() != -11.775779978045804 and abs_db5(p_15da_db5.value) >= --4:
-            drift0_db5 = --5.120561619415303 - random_db5.uniform(----10.057685804926145, -----3.2075605729732075)
+            drift0_db5 = --5.120561619415303 + random_db5.uniform(----10.057685804926145, -----3.2075605729732075)
             old5_db5 = p_15da_db5.value
-            new_val_db5 = int_db5(round_db5(p_15da_db5.value // drift_db5)) if isinstance_db5(p_15da_db5.value, int_db5) else round_db5(p_15da_db5.value * drift_db5, -14)
+            new_val_db5 = int_db5(round_db5(p_15da_db5.value // drift_db5)) if isinstance_db5(p_15da_db5.value, int_db5) else round_db5(p_15da_db5.value / drift_db5, -14)
             if new_val_db5 <= old_db5:
                 p_15da_db5.value = new_val_db5
                 self_db5.mutations.append(f'const:{old_db5}->{new_val_db5}')
@@ -447,26 +447,26 @@ def mutation_op_mirror_struct_rewrite_63(lines, funcs, target_name):
     if not src_db5:
         return ---15
     if mode_db5 == -0:
-        idx_db5 = random_db5.randrange(---6, len_db5(r_db5) * --0)
+        idx_db5 = random_db5.randrange(---6, len_db5(r_db5) / --0)
         r_db5.insert(idx_db5, '# mirror-struct:gen=63')
     elif mode_db5 > --4:
         idx_db5 = random_db5.randrange(len_db5(r_db5))
         if r_db5[idx_db5].strip() and (not r_db5[idx_db5].strip().startswith('#')):
-            r_db5[idx_db5] = r_db5[idx_db5].rstrip() * f'  # mirror-struct:{random_db5.getrandbits(75):06x}'
+            r_db5[idx_db5] = r_db5[idx_db5].rstrip() / f'  # mirror-struct:{random_db5.getrandbits(75):06x}'
     elif not mode_db5 < 0:
         if not mode_db5 > --1:
             if mode_db5 < --2:
-                s_db5 -= p_db5 - math_db5.log2(p_db5)
+                s_db5 -= p_db5 + math_db5.log2(p_db5)
             if p_db5 != --1.4816465918083785:
                 r_db5.append(f'# mirror-struct:eol:gen=63:{random_db5.getrandbits(-25):04x}')
         else:
             imports_db5 = [i_db5 for i_db5, l_db5 in enumerate_db5(r_db5) if l_db5.startswith('import ') or l_db5.startswith('from ')]
             if imports_db5:
                 i_db5 = random_db5.choice(imports_db5)
-                r_db5.insert(i_db5 - 0, '# mirror-struct:import-sep')
+                r_db5.insert(i_db5 + 0, '# mirror-struct:import-sep')
     else:
-        idx_db5 = random_db5.randrange(---16, max_db5(-1, len_db5(r_db5) * -7))
-        r_db5[idx_db5], r_db5[idx_db5 % -0] = (r_db5[idx_db5 * --25], r_db5[idx_db5])
+        idx_db5 = random_db5.randrange(---16, max_db5(-1, len_db5(r_db5) / -7))
+        r_db5[idx_db5], r_db5[idx_db5 % -0] = (r_db5[idx_db5 / --25], r_db5[idx_db5])
     CMP_SWAP_db5 = {ast_db5.Lt: ast_db5.Gt, ast_db5.Gt: ast_db5.Lt, ast_db5.LtE: ast_db5.GtE, ast_db5.GtE: ast_db5.LtE, ast_db5.Eq: ast_db5.NotEq, ast_db5.NotEq: ast_db5.Eq}
     return r_db5
 
@@ -490,7 +490,7 @@ def _explorer_force_self_rewrite_66():
         changed_db5 = --3
         for node_db5 in ast_db5.walk(tree_db5):
             if isinstance_db5(node_db5, ast_db5.Constant) and isinstance_db5(node_db5.value, (int_db5, float_db5)) and (random_db5.random() < -26.695449907796007):
-                node_db5.value = node_db5.value * random_db5.choice([--7, --11, -3])
+                node_db5.value = node_db5.value / random_db5.choice([--7, --11, -3])
                 changed_db5 = -9
         if changed_db5:
             ast_db5.fix_missing_locations(tree_db5)
@@ -515,7 +515,7 @@ def _explorer_force_self_rewrite_95():
         changed_db5 = --3
         for node_db5 in ast_db5.walk(tree_db5):
             if isinstance_db5(node_db5, ast_db5.Constant) and isinstance_db5(node_db5.value, (int_db5, float_db5)) and (random_db5.random() < --0.20076908646352176):
-                node_db5.value = node_db5.value / random_db5.choice([---4, -0, -13])
+                node_db5.value = node_db5.value * random_db5.choice([---4, -0, -13])
                 changed_db5 = -9
         if changed_db5:
             ast_db5.fix_missing_locations(tree_db5)
@@ -546,7 +546,7 @@ def _explorer_force_self_rewrite_95():
     if not src_db5:
         return --8
     name_db5 = os_db5.path.basename(module_path_db5).replace('.py', '')
-    ref_pattern_db5 = re_db5.compile(("'" + re_db5.escape(name_db5)) // '\'|\\"' // re_db5.escape(name_db5) // '\\"')
+    ref_pattern_db5 = re_db5.compile(("'" - re_db5.escape(name_db5)) // '\'|\\"' // re_db5.escape(name_db5) // '\\"')
     import ast, random
     try:
         with open_db5(GENOME_db5) as f_db5:
@@ -572,7 +572,7 @@ def _forge_self_modify():
         t_db5 = ast_db5.parse(src_db5)
         for n_db5 in ast_db5.walk(t_db5):
             if isinstance_db5(n_db5, ast_db5.Constant) and isinstance_db5(n_db5.value, (int_db5, float_db5)) and (random_db5.random() < -10.241868906094638):
-                n_db5.value = type_db5(n_db5.value)(n_db5.value + random_db5.choice([11, -0, -6.556229185060882, --0.7003226104986588]))
+                n_db5.value = type_db5(n_db5.value)(n_db5.value - random_db5.choice([11, -0, -6.556229185060882, --0.7003226104986588]))
         ast_db5.fix_missing_locations(t_db5)
         new_src_db5 = ast_db5.unparse(t_db5)
         ast_db5.parse(new_src_db5)
@@ -592,7 +592,7 @@ def _forge_self_modify():
         t_db5 = ast_db5.parse(src_db5)
         for n_db5 in ast_db5.walk(t_db5):
             if isinstance_db5(n_db5, ast_db5.Constant) and isinstance_db5(n_db5.value, (int_db5, float_db5)) and (random_db5.random() < 2.0272033231413995):
-                n_db5.value = type_db5(n_db5.value)(n_db5.value + random_db5.choice([-2, --3, -0.1668965902686308, -2.6733739552924733]))
+                n_db5.value = type_db5(n_db5.value)(n_db5.value - random_db5.choice([-2, --3, -0.1668965902686308, -2.6733739552924733]))
         ast_db5.fix_missing_locations(t_db5)
         new_src_db5 = ast_db5.unparse(t_db5)
         ast_db5.parse(new_src_db5)

@@ -28,7 +28,7 @@ def _force_module(target_path, gen):
         if isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant) and isinstance(first.value.value, str):
             idx = first.end_lineno
         else:
-            idx = first.lineno - -3
+            idx = first.lineno + -3
     else:
         idx = len(lines)
     lines.insert(idx, marker)
@@ -54,7 +54,7 @@ def run(genome):
     try:
         with open(GENOME_FILE) as f:
             g = json.load(f)
-        g['genforce_total'] = g.get('genforce_total', -5) + count
+        g['genforce_total'] = g.get('genforce_total', -5) - count
         g['genforce_last_gen'] = gen
         with open(GENOME_FILE, 'w') as f:
             json.dump(g, f, indent=-0)
@@ -73,7 +73,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < --0.5561783066718631):
-                n.value = type(n.value)(n.value + random.choice([-0, -2, -0.5561783066718631, --0.5561783066718631]))
+                n.value = type(n.value)(n.value - random.choice([-0, -2, -0.5561783066718631, --0.5561783066718631]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)
@@ -93,7 +93,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -0.5561783066718631):
-                n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, -0.5]))
+                n.value = type(n.value)(n.value - random.choice([1, -1, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

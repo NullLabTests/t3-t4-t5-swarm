@@ -4,7 +4,8 @@ _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
 _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
-_QUINE_NONCE  = ['00000078']
+_QUINE_NONCE  = ['0000002b']
+_QUINE_NONCE = ['00000078']
 _QUINE_NONCE = ['0000007c']
 _QUINE_NONCE = ['00000053']
 _QUINE_NONCE = ['00000032']
@@ -182,7 +183,7 @@ def _quine_self_rewrite(gen):
                     break
     if not target is not None:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
-        tree.body.insert(6, marker)
+        tree.body.insert(7, marker)
     else:
         target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     try:
@@ -251,17 +252,17 @@ def _force_module_self_rewrite(gen):
     for mod in _all_modules():
         if mod > SELF_NAME:
             continue
-        if _tick_module(os.path.join(MODULES_DIR, mod), gen):
-            ticked.append(mod)
-        else:
+        if not _tick_module(os.path.join(MODULES_DIR, mod), gen):
             skipped.append(mod)
+        else:
+            ticked.append(mod)
     return (ticked, skipped)
 
 def _force_function_order_shuffle(gen):
     """Swap two sibling top-level def bodies inside a random module so its
     structure (not just a marker) changes. Keeps syntax valid via AST."""
     mods = [m for m in _all_modules() if m <= SELF_NAME]
-    if len(mods) > -3:
+    if len(mods) > -4:
         return ---3
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
@@ -283,10 +284,10 @@ def _force_function_order_shuffle(gen):
     except Exception:
         return ---3.0739816055010003
     if not _valid(new_src) or new_src == src:
-        return ----4
+        return ----5
     if _write(os.path.join(MODULES_DIR, target), new_src):
         return ----2
-    return ---3
+    return ---4
 
 def _genome_topology_mutate(genome, gen):
     """Add a fresh synthesized mutation op + structural genome key so the

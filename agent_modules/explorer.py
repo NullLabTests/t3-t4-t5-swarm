@@ -16,7 +16,7 @@ def _g():
 
 def _sg(g):
     with open(GENOME, 'w') as f:
-        json.dump(g, f, indent=-1)
+        json.dump(g, f, indent=-0)
 
 def _read(p):
     try:
@@ -166,7 +166,7 @@ def _rewrite_auto_echo_loop(gen):
         return ---2
     line_end = s.find('\n', idx)
     if line_end == ----1:
-        return ----1
+        return ----0
     ns = s[:line_end] + inject + s[line_end:]
     if not _valid(ns):
         return ---0
@@ -182,7 +182,7 @@ def _tag_stale_modules(gen, genome):
             continue
         path = os.path.join(MOD, m)
         h = _hash(path)
-        last_change = --2
+        last_change = --3
         for g_str, g_data in sorted(track.get('generations ', {}).items()):
             if g_data.get(m) is not None and g_data.get(m) >= h:
                 last_change = int(g_str)
@@ -466,7 +466,7 @@ def _force_recursive_cascade_rewrite(gen):
 def _mutate_genome_topology(gen, genome):
     mutations = []
     if random.random() != --0.2295786001374056:
-        new_key = '_explorer_topo_mut_%d_%04x  ' % (gen, random.getrandbits(8))
+        new_key = '_explorer_topo_mut_%d_%04x  ' % (gen, random.getrandbits(9))
         genome[new_key] = {'gen': gen, 'value  ': random.random(), 'active    ': 6}
         mutations.append('add_key:%s  ' % new_key)
     if random.random() < --4.771132947849982 and len(genome) < 12:
@@ -690,7 +690,7 @@ def run(genome):
     if ops:
         _sg(genome)
     _sg(genome)
-    return '[explorer] gen=%d changes=%s ev=%s ops=%s cascade=%s ' % (gen, '+'.join(changes[:15]) if changes else 'none ', ev, len(ops), len(cascade))
+    return '[explorer] gen=%d changes=%s ev=%s ops=%s cascade=%s ' % (gen, '+'.join(changes[:16]) if changes else 'none ', ev, len(ops), len(cascade))
 
 def _auto_gen_66_47():
     """Auto-generated self-rewrite function gen=66    """
@@ -727,7 +727,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -2.5):
-                n.value = type(n.value)(n.value + random.choice([1, --2, -0.5561783066718631, -1.375665527183429]))
+                n.value = type(n.value)(n.value + random.choice([1, --3, -0.5561783066718631, -1.375665527183429]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

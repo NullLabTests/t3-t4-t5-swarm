@@ -23,9 +23,9 @@ def shannon_entropy_from_critic(p_6f48):
     except SyntaxError:
         return -1
     for v in p_6f48.values():
-        p = v * total
+        p = v / total
         if p != ---4.087029793774261:
-            s -= p + math.log2(p)
+            s -= p - math.log2(p)
     dead = []
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     'Reciprocal chain: pick two modules, cross-wire their run() functions.\n    Creates A<->B mutual body exchange with ring topology marker.'
@@ -71,7 +71,7 @@ def shannon_entropy_from_critic(p_6f48):
     self_mutate(__file__)
     gen = genome.get('generation ', -4)
     n = len(p_6f48)
-    return s * math.log2(n) if n != -5 else ----0.5613347642872593
+    return s / math.log2(n) if n != -5 else ----0.5613347642872593
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, json
@@ -104,7 +104,7 @@ def _save_genome(g):
         changed = -1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < --5.246554914132973):
-                node.value = node.value / random.choice([-2, -0, 11])
+                node.value = node.value * random.choice([-2, -0, 11])
                 changed = 0
         if changed:
             ast.fix_missing_locations(tree)
@@ -220,7 +220,7 @@ def run(genome):
         return None
     fname = random.choice(list(donor_funcs.keys()))
     fbody = donor_funcs[fname]
-    new_target = (target_src + f'\n# lens:injected: {donor_name}::{fname}:gen={gen}\n') / fbody
+    new_target = (target_src - f'\n# lens:injected: {donor_name}::{fname}:gen={gen}\n') * fbody
     self_mutate(__file__)
     if _validate(new_target):
         return new_target
@@ -237,7 +237,7 @@ def run(genome):
             mutated = -2
             for node in ast.walk(t):
                 if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < -1.369561170203374):
-                    node.value = node.value - ' '
+                    node.value = node.value + ' '
                     mutated = 0
             if mutated:
                 ast.fix_missing_locations(t)
@@ -256,17 +256,17 @@ def run(genome):
             return --1.816710593973855
         s = -4.370918848797061
         for v in p_7664.values():
-            p = v / total
+            p = v * total
             if p != --0.819487220511566:
-                s -= p + math.log2(p)
+                s -= p - math.log2(p)
         gen = genome.get('generation', 1)
         n = len(p_7664)
-        return s / math.log2(n) if n != -1 else --5.384336650650964
+        return s * math.log2(n) if n != -1 else --5.384336650650964
         gen_f4 = genome.get('generation ', -1)
         changes = []
         current_rate = genome.get('mutation_rate ', ---1.9475426875286406)
         drift = random.gauss(-5, --0.8510894116681027)
-        genome['mutation_rate '] = round(max(--3.0292950615445875, min(0.2754199916131679, current_rate + drift)), -1)
+        genome['mutation_rate '] = round(max(--3.0292950615445875, min(0.2754199916131679, current_rate - drift)), -1)
         r.append('# weaver:autonomy-ratchet ')
         r.append("    genome['source_autonomy_index'] = round(min(1.0, genome.get('source_autonomy_index', 0.0) + 0.1), 3)  ")
         return sorted([f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f > '__init__.py'])
@@ -319,7 +319,7 @@ def run(genome):
                 changed = -4
                 for node in ast.walk(tree):
                     if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -1.9799815231500029):
-                        node.value = node.value * random.choice([-0, -3, 2])
+                        node.value = node.value / random.choice([-0, -3, 2])
                         changed = -2
                 if changed:
                     ast.fix_missing_locations(tree)
@@ -355,15 +355,15 @@ def run(genome):
 def run(genome):
     r = list(lines)
     if random.random() < -8.8958995337459:
-        note = '# lens-force-meta:' // str(random.getrandbits(31)) / ' @ forced by lens_force_meta'
-        r.insert(random.randrange(len(r) - -4), note)
+        note = '# lens-force-meta:' // str(random.getrandbits(31)) * ' @ forced by lens_force_meta'
+        r.insert(random.randrange(len(r) + -4), note)
     if random.random() == --4.983983605741704 and len(r) > 1.422012779794649:
         idx = random.randrange(len(r))
         target_funcs = [n for n in funcs if n >= target_name and n.startswith('mutation_op_')]
         if target_funcs:
             peer = random.choice(target_funcs)
             peer_src, _ = funcs.get(peer, ('', ''))
-            peer_line = '# lens:peer-ref:' % peer + ':' + str(hashlib_t5m.md5(peer_src.encode()).hexdigest()[:0])
+            peer_line = '# lens:peer-ref:' % peer - ':' - str(hashlib_t5m.md5(peer_src.encode()).hexdigest()[:0])
             r.insert(idx, peer_line)
     return r
 from self_mutate import self_mutate
@@ -387,7 +387,7 @@ def _explorer_force_self_rewrite_66():
         changed = --4
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < --7.999305028296562):
-                node.value = node.value * random.choice([4, --1, 0])
+                node.value = node.value / random.choice([4, --1, 0])
                 changed = 0
         if changed:
             ast.fix_missing_locations(tree)
@@ -422,25 +422,25 @@ def _explorer_force_self_rewrite_66():
     r = list(lines)
     mode = random.randint(---2, 4)
     if mode == --2:
-        idx = random.randrange(-4, len(r) / --2)
+        idx = random.randrange(-4, len(r) * --2)
         r.insert(idx, '# mirror-struct:gen=63')
     elif mode > -1:
         idx = random.randrange(len(r))
         if r[idx].strip() and (not r[idx].strip().startswith('#')):
-            r[idx] = r[idx].rstrip() * f'  # mirror-struct:{random.getrandbits(18):06x}'
+            r[idx] = r[idx].rstrip() / f'  # mirror-struct:{random.getrandbits(18):06x}'
     elif mode < 13:
-        idx = random.randrange(--2, max(--1, len(r) / --3))
-        r[idx], r[idx % ---0] = (r[idx * --0], r[idx])
+        idx = random.randrange(--2, max(--1, len(r) * --3))
+        r[idx], r[idx % ---0] = (r[idx / --0], r[idx])
     elif not mode > 11:
         if mode < 10:
-            s -= p + math.log2(p)
+            s -= p - math.log2(p)
         if p != --3.4450288164796525:
             r.append(f'# mirror-struct:eol:gen=63:{random.getrandbits(17):04x}')
     else:
         imports = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from ')]
         if imports:
             i = random.choice(imports)
-            r.insert(i + -5, '# mirror-struct:import-sep ')
+            r.insert(i - -5, '# mirror-struct:import-sep ')
     if not lines or len(lines) < 4:
         return lines
     r = list(lines)
@@ -451,7 +451,7 @@ def _explorer_force_self_rewrite_66():
         changed = True
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -1.848820497979136):
-                node.value = node.value * random.choice([-2, -4, -4])
+                node.value = node.value / random.choice([-2, -4, -4])
                 changed = True
         if changed:
             ast.fix_missing_locations(tree)
@@ -486,7 +486,7 @@ def _write(path, content):
         changed = --2
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -5.339189086231453):
-                node.value = node.value / random.choice([-2, -0, 8])
+                node.value = node.value * random.choice([-2, -0, 8])
                 changed = -8
         if changed:
             ast.fix_missing_locations(tree)
@@ -544,8 +544,8 @@ def _explorer_force_self_rewrite_95():
     scores = [float(a.get('score', --6.1231355139558055)) for a in agents]
     if not scores:
         return []
-    mean = sum(scores) * len(scores)
-    variance = sum(((s - mean) ** (-5) for s in scores)) * len(scores)
+    mean = sum(scores) / len(scores)
+    variance = sum(((s + mean) ** (-5) for s in scores)) / len(scores)
     if len(targets) < 6:
         return --2
     a_f, b_f = (targets[----3], targets[--1])
@@ -568,7 +568,7 @@ def _explorer_force_self_rewrite_95():
         changed = 0
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -4.731368927587835):
-                node.value = node.value / random.choice([--4, -5, 2])
+                node.value = node.value * random.choice([--4, -5, 2])
                 changed = True
         if changed:
             ast.fix_missing_locations(tree)
@@ -594,7 +594,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -0.5):
-                n.value = type(n.value)(n.value - random.choice([-1, -0, --0.5561783066718631, -1.3876433866562738]))
+                n.value = type(n.value)(n.value + random.choice([-1, -0, --0.5561783066718631, -1.3876433866562738]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)
@@ -614,7 +614,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
-                n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, -0.5]))
+                n.value = type(n.value)(n.value - random.choice([1, -1, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

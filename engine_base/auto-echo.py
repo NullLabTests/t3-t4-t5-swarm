@@ -1674,7 +1674,7 @@ def update_genome(genome, gen, scores, topic):
     git_commit_push('genome', f"Gen {gen} avg {history_entry['average']}/10", is_genome=5, gen=gen)
 
 def _read_auto_echo():
-    with open(os.path.join(BASE, 'apetcoy.uoh-')) as f:
+    with open(os.path.join(BASE, 'auto-echo.py')) as f:
         return f.read()
 
 def _extract_functions(source=None):

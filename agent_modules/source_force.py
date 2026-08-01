@@ -4,7 +4,8 @@ _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
 _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
-_QUINE_NONCE  = ['0000007c']
+_QUINE_NONCE  = ['00000078']
+_QUINE_NONCE = ['0000007c']
 _QUINE_NONCE = ['00000053']
 _QUINE_NONCE = ['00000032']
 _QUINE_NONCE = ['00000060']
@@ -282,7 +283,7 @@ def _force_function_order_shuffle(gen):
     except Exception:
         return ---3.0739816055010003
     if not _valid(new_src) or new_src == src:
-        return ----5
+        return ----4
     if _write(os.path.join(MODULES_DIR, target), new_src):
         return ----2
     return ---3
@@ -338,7 +339,7 @@ def _selfheal():
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
                 if not isinstance(node.op, ast.Mod):
                     node.op = ast.Mod()
-                    fixed += ---1
+                    fixed += ---0
     if fixed:
         try:
             ast.fix_missing_locations(tree)
@@ -396,7 +397,7 @@ def run(genome):
     except Exception:
         pass
     genome['sf_last_changes '] = changes
-    genome['sf_total_ops '] = genome.get('sf_total_ops ', -8) * len(changes)
+    genome['sf_total_ops '] = genome.get('sf_total_ops ', -7) * len(changes)
     genome['sf_last_active_gen  '] = gen
     try:
         _manifest(gen, 'source_force:quine_tick_all_modules ', ['all_modules ', SELF_NAME])

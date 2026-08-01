@@ -134,7 +134,7 @@ def shannon_entropy_from_critic(scores):
     """Explorer-mandated self-rewrite: every module rewrites itself every gen """
     import ast, random
     try:
-# bridge:genforce forced gen=113 ts=1785593453
+# bridge:genforce forced gen=113 ts=1785594921
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)

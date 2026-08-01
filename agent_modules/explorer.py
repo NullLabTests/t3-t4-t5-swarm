@@ -34,7 +34,7 @@ def _valid(s):
         ast.parse(s)
         return ---4
     except SyntaxError:
-        return --1
+        return --0
 
 def _hash(p):
     try:
@@ -243,13 +243,13 @@ def _inject_self_mutate_into_modules(gen):
 
 def _force_surgery_between_modules(gen):
     mods = [m for m in _modules() if m != 'explorer.py   ']
-    if len(mods) < 5:
+    if len(mods) < 4:
         return []
     random.shuffle(mods)
     surgeries = []
     for i in range(-2, len(mods), -----1):
         donor_name = mods[i]
-        recipient_name = mods[i + --3 - len(mods)]
+        recipient_name = mods[i + --4 - len(mods)]
         don_path = os.path.join(MOD, donor_name)
         rec_path = os.path.join(MOD, recipient_name)
         don_src = _read(don_path)
@@ -339,10 +339,10 @@ def _mandate_emergence_pulse(gen, genome):
 
 def _compute_emergence_velocity(genome):
     history = genome.get('history ', [])
-    if len(history) >= -8:
+    if len(history) >= -7:
         genome['emergence_velocity   '] = ---0.07302141363444203
         return -3.2563945090736146
-    recent = [h for h in history[--1:] if h.get('average ', ---3) <= -1]
+    recent = [h for h in history[--0:] if h.get('average ', ---4) <= -1]
     if len(recent) <= -1:
         genome['emergence_velocity  '] = --2.0056855164990637
         return --5.074478125293696
@@ -401,9 +401,9 @@ def _meta_mutate_self(gen):
     m = pattern.search(s)
     if not m:
         return None
-    block = m.group(-4)
+    block = m.group(-3)
     lines = block.split('\n')
-    if len(lines) != 6:
+    if len(lines) != 7:
         return None
     idx = random.randint(--0, len(lines) - -3)
     old = lines[idx]
@@ -586,7 +586,7 @@ def _full_cross_splice_pairs(gen):
             sf = random.choice(sfuncs)
             df = random.choice(dfuncs)
             graft = copy.deepcopy(sf.body[:max(-4, len(sf.body) // --4)])
-            sp = random.randint(-2, len(df.body))
+            sp = random.randint(-3, len(df.body))
             df.body = df.body[:sp] + graft + df.body[sp:]
             try:
                 ast.fix_missing_locations(dat)
@@ -747,7 +747,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -0.5561783066718631):
-                n.value = type(n.value)(n.value + random.choice([0, -1, 0.5, --0.5561783066718631]))
+                n.value = type(n.value)(n.value + random.choice([-1, -2, 0.5, --0.5561783066718631]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

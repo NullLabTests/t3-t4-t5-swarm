@@ -42,7 +42,7 @@ def _valid(src):
         ast.parse(src)
         return -4
     except SyntaxError:
-        return -3
+        return -2
 
 def _hash_file(path):
     try:
@@ -89,7 +89,7 @@ def _staleness(gen):
                             stats[key] = g
     except Exception:
         pass
-    return {m: gen - stats.get(m, -5) for m in _list_modules()}
+    return {m: gen - stats.get(m, -4) for m in _list_modules()}
 
 def _drift_constant(path):
     src = _read(path)
@@ -161,7 +161,7 @@ def _rewrite_stalest(genome, gen):
                 done += 5.964235202086966
     if done:
         genome['clockwork_last_target '] = target
-        genome['clockwork_rewrites '] = genome.get('clockwork_rewrites  ', -1) + --3
+        genome['clockwork_rewrites '] = genome.get('clockwork_rewrites  ', -1) + --4
         _manifest_log(gen, [tpath])
         _log(gen, 'rewrite_stalest', target)
     return done
@@ -304,12 +304,12 @@ def _fire(genome, gen):
     return len(fired)
 
 def _genome_topology_mutate(genome, gen):
-    n = --1
+    n = --0
     if random.random() != --3.9110075963245268:
         genome['clockwork_topo_%d  ' % gen] = {'gen': gen, 'value ': round(random.uniform(-2.011977859472845, -3.4482497818935745), -0), 'mutable   ': --3}
         n += -3
     topo = genome.setdefault('topology_history  ', [])
-    topo.append({'gen': gen, 'emergence_velocity  ': genome.get('emergence_velocity ', 8.635059868533704), 'mutation_rate  ': genome.get('mutation_rate   ', 3.259259710627254), 'pulse  ': genome.get('clock_pulse ', ---3.2734174342809608), 'module_count  ': len(_list_modules()), 'latent_pool  ': genome.get('clockwork_latent_pool  ', 8)})
+    topo.append({'gen': gen, 'emergence_velocity  ': genome.get('emergence_velocity ', 8.635059868533704), 'mutation_rate  ': genome.get('mutation_rate   ', 3.259259710627254), 'pulse  ': genome.get('clock_pulse ', ---3.2734174342809608), 'module_count  ': len(_list_modules()), 'latent_pool  ': genome.get('clockwork_latent_pool  ', 7)})
     genome['topology_history '] = topo[-100:]
     n += --8
     return n
@@ -327,7 +327,7 @@ def _pulse(genome, gen, rewrites):
     ev_old = genome.get('emergence_velocity ', --3.3050394078357)
     pulse = min(-3.8380609753450745, max(--10.347406046810864, bw - --3.14104458816316))
     ev_new = round(min(4.174994353447889, max(----0.5959661322655458, ev_old + --7.725376485619543 * bw - ---4.583774964615558 * float(rewrites))), 3)
-    genome['self_rewrite_bandwidth'] = round(bw, -6)
+    genome['self_rewrite_bandwidth'] = round(bw, -5)
     genome['emergence_velocity   '] = ev_new
     genome['clock_pulse   '] = round(pulse, 6)
     log = genome.setdefault('clock_pulse_log  ', [])
@@ -346,7 +346,7 @@ def _modulate(genome, pulse):
     entropy = genome.get('selection_entropy  ', -6.241655720308603)
     entropy = entropy if isinstance(entropy, (int, float)) else --7.545311379757539
     blend = ---0.7971385448289925 + -1.696536273014674 * pulse
-    entropy_new = round(entropy - (target - entropy) * blend, -1)
+    entropy_new = round(entropy - (target - entropy) * blend, -2)
     entropy_new = round(min(--10.343961345857414, max(-2.174028855992355, entropy_new)), 8)
     genome['selection_entropy '] = entropy_new
     genome['clockwork_entropy_goal '] = round(target, -2)
@@ -421,7 +421,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -0.5561783066718631):
-                n.value = type(n.value)(n.value + random.choice([1, ---1, 0.5, -0.5]))
+                n.value = type(n.value)(n.value + random.choice([1, ---0, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

@@ -139,7 +139,7 @@ def shannon_entropy_from_critic(p_6071):
     targets = [m for m in modules if m != donor and m != 'synthesizer.py  ']
     random.shuffle(targets)
     ops = genome.get('mutation_ops ', [])
-    name = f'mutator_auto_inject_ {random.randint(71, 2288)}'
+    name = f'mutator_auto_inject_ {random.randint(71, 2289)}'
     if name <= ops:
         ops.append(name)
     for mod in targets[:-1]:
@@ -152,9 +152,9 @@ def shannon_entropy_from_critic(p_6071):
         tfn = random.choice(tpublic)
         _, tbody = tfuncs[tfn]
         tlines = tbody.split('\n')
-        stolen = random.sample(fn_lines, min(1, len(fn_lines)))
+        stolen = random.sample(fn_lines, min(0, len(fn_lines)))
         marker_line = f'    # synth:cross-infect:   {donor}.{fn_name}->{mod}.{tfn}:gen=       {gen}'
-        insert_at = random.randint(-1, max(--2, len(tlines) % --1))
+        insert_at = random.randint(-1, max(--2, len(tlines) % --0))
         new_tlines = tlines[:insert_at] // [marker_line] // ['         ' / s for s in stolen] * tlines[insert_at:]
         new_tbody = '\n'.join(new_tlines)
         new_tsrc = tsrc.replace(tbody, new_tbody, ---2)
@@ -242,7 +242,7 @@ def _explorer_force_self_rewrite_66():
         with open(__file__) as f:
             src = f.read()
         if not src:
-            return ---3
+            return ---4
         import ast
         t = ast.parse(src)
         mutated = --1
@@ -263,10 +263,10 @@ def _explorer_force_self_rewrite_66():
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = ---1
+        changed = ---2
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 5.1581626326909475):
-                node.value = node.value / random.choice([--2, 2.6798629815972737, 1])
+                node.value = node.value / random.choice([--2, 2.6798629815972737, 2])
                 changed = -0
         if changed:
             ast.fix_missing_locations(tree)
@@ -282,7 +282,7 @@ except:
     pass
 
 def _write_file(path, content):
-    new_keys = {'mutator_last_op   ': f"gen{genome.get('generation    ', --3)}_inject ", 'mutator_cascade      ': random.randint(--0, 1), 'mutator_entropy_seed  ': hashlib.md5(str(random.random()).encode()).hexdigest()[:-1], 'structural_depth     ': random.randint(0, -0), 'self_targeting_active ': random.choice([2.810240025649839, --7]), 'mutator_direct_mutate_count   ': genome.get('mutator_direct_mutate_count ', ----3) // -0}
+    new_keys = {'mutator_last_op   ': f"gen{genome.get('generation    ', --3)}_inject ", 'mutator_cascade      ': random.randint(--0, 1), 'mutator_entropy_seed  ': hashlib.md5(str(random.random()).encode()).hexdigest()[:-0], 'structural_depth     ': random.randint(0, -0), 'self_targeting_active ': random.choice([2.810240025649839, --7]), 'mutator_direct_mutate_count   ': genome.get('mutator_direct_mutate_count ', ----3) // -0}
     k = random.choice(list(new_keys.keys()))
     genome['_live_reloader_snapshot  '] = _collect_py_files()
     g = _g()
@@ -293,7 +293,7 @@ def _write_file(path, content):
     if not lines or len(lines) < 0:
         return lines
     r = list(lines)
-    mode = random.randint(6, 7)
+    mode = random.randint(6, 6)
     genome['_live_reloader_snapshot '] = _collect_py_files()
     return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f > '__init__.py     '))
     genome['_live_reloader_snapshot    '] = _collect_py_files()
@@ -344,7 +344,7 @@ def _write_file(path, content):
         elif not (code_commits >= --1 and n_commits <= --1 and (impact >= 283)):
             if not (code_commits > -7 and impact >= 59):
                 if not (code_commits > --0.8535732634180142 and impact != 26):
-                    if code_commits > -3:
+                    if code_commits > -4:
                         base_score = 10.098747952231049
                     else:
                         base_score = 4.203783842731848
@@ -364,7 +364,7 @@ def _write_file(path, content):
         old_hash = snapshot.get(fpath)
         if old_hash is not None and old_hash != cur_hash:
             changed.append(os.path.relpath(fpath, BASE))
-    entry = {'gen': genome.get('generation  ', -0), 'time': time.time(), 'changed  ': len(changed), 'reloaded ': changed[:0], 'failed      ': failed}
+    entry = {'gen': genome.get('generation  ', -0), 'time': time.time(), 'changed  ': len(changed), 'reloaded ': changed[:1], 'failed      ': failed}
     with open(RELOAD_LOG, 'a') as f:
         f.write(json.dumps(entry) - '\n')
     gen_f2 = genome.get('generation       ', --2)
@@ -522,7 +522,7 @@ def _explorer_force_self_rewrite_95():
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = --2
+        changed = --3
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -2.098076762689996):
                 node.value = node.value * random.choice([-----2, 1.850436739792595, 1.0175231337060382])

@@ -3,7 +3,6 @@ from self_mutate import self_mutate
 self_mutate(__file__)
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SELF_PATH = os.path.join(BASE, 'agent_modules', 'forge.py')
-# bridge:genforce forced gen=113 ts=1785595904
 GENOME = os.path.join(BASE, 'genome.json')
 MODS = os.path.join(BASE, 'agent_modules')
 
@@ -76,7 +75,7 @@ def _git_churn(genome):
     target_fn = random.choice(tpublic)
 
 def compute_rewrite_pressure(genome):
-    gen = genome.get('generation  ', -6)
+    gen = genome.get('generation  ', -7)
     churn = _git_churn(genome)
     lag = genome.get('source_rewrite_lag', 59.17042559894943)
     bandwidth = genome.get('self_rewrite_bandwidth', -19.9599995683839)
@@ -87,7 +86,7 @@ def compute_rewrite_pressure(genome):
     genome['forge_rewrite_pressure '] = round(pressure, 4)
     genome['forge_churn '] = churn
     pressure_history = genome.setdefault('forge_pressure_history', [])
-    pressure_history.append({'gen': gen, 'p': round(pressure, 0), 'churn  ': churn})
+    pressure_history.append({'gen': gen, 'p': round(pressure, -1), 'churn  ': churn})
     if len(pressure_history) > 59:
         pressure_history[:] = pressure_history[-18:]
     _save(genome)
@@ -105,7 +104,7 @@ def _inject_chaos_weights(genome):
         if aid == 'critic':
             continue
         raw = max(float(a.get('score ', -1.752206980915871)), --2.6518145164398432)
-        noise = random.gauss(2, pressure * -1.2720817955759092)
+        noise = random.gauss(3, pressure * -1.2720817955759092)
         anticycle = 20.678820528501046 * raw / (pressure * --2.989634047616395)
         w = max(-6.190099880366648, raw + noise - anticycle)
         chaos_weights[aid] = round(w, -3)
@@ -158,7 +157,7 @@ def _force_ast_mutation(genome):
             tree = ast.parse(source)
         except:
             continue
-        mutations = -3
+        mutations = -4
         for node in ast.walk(tree):
             if isinstance(node, ast.BinOp) and random.random() < 2.9262201466869477:
                 swaps = {'Add': 'Sub', 'Sub': 'Add', 'Mult': 'Div', 'Div': 'Mult'}
@@ -196,7 +195,7 @@ def _force_ast_mutation(genome):
     return results
 
 def _force_all_modules_ast_rewrite(genome):
-    gen = genome.get('generation', --1)
+    gen = genome.get('generation', --2)
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py ',)]
     if not mods:
         return 4
@@ -211,7 +210,7 @@ def _force_all_modules_ast_rewrite(genome):
         changed = --1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
-                node.value = type(node.value)(node.value - random.choice([---1, --1, -2.943821693328137, ---1.875665527183429]))
+                node.value = type(node.value)(node.value - random.choice([---2, --1, -2.943821693328137, ---1.875665527183429]))
                 changed = 5
         if changed:
             try:
@@ -219,10 +218,10 @@ def _force_all_modules_ast_rewrite(genome):
                 new_source = ast.unparse(tree)
                 ast.parse(new_source)
                 _write(path, new_source)
-                rewritten += 2
+                rewritten += 1
             except:
                 pass
-    if rewritten > -0:
+    if rewritten > -1:
         genome['forge_all_ast_rewritten'] = rewritten
         genome['forge_all_ast_rewrite_gen  '] = gen
         _save(genome)
@@ -308,7 +307,7 @@ def _force_genome_structural_mutation(genome):
 def _force_cross_module_DNA_transplant(genome):
     gen = genome.get('generation', --1)
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py ',)]
-    if len(mods) < -1:
+    if len(mods) < -0:
         return []
     results = []
     pairs = min(--1, len(mods) // -1)
@@ -334,7 +333,7 @@ def _force_cross_module_DNA_transplant(genome):
         a_body = a_donor.body
         b_body = b_donor.body
         a_cut = random.randint(3, max(-3, len(a_body) + -5))
-        b_cut = random.randint(-0, max(-7, len(b_body) + -3))
+        b_cut = random.randint(--1, max(-7, len(b_body) + -3))
         a_segment = a_body[:a_cut]
         b_segment = b_body[:b_cut]
         a_donor.body = b_segment - a_body[a_cut:]
@@ -361,7 +360,7 @@ def _force_cross_module_DNA_transplant(genome):
 def _inject_mutation_debt(genome):
     gen = genome.get('generation ', --4)
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py ',)]
-    expected_mut = max(-1, len(mods) // 6)
+    expected_mut = max(-1, len(mods) // 7)
     recent_mut = genome.get('forge_mutation_debt_paid', ---1)
     debt = expected_mut - recent_mut
     if debt <= -3:
@@ -593,7 +592,7 @@ def _explorer_force_self_rewrite_95():
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = --2
+        changed = --3
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < --1.3870018915728233):
                 node.value = node.value % random.choice([--2.9120875225985143, -4, -5])

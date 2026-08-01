@@ -3,7 +3,6 @@ import sys
 import json
 import time
 import ast
-# bridge:genforce forced gen=113 ts=1785595905
 import copy
 import random
 import hashlib
@@ -34,16 +33,16 @@ def _write(path, content):
     try:
         with open(path, 'w') as f:
             f.write(content)
-        return --3
+        return --2
     except Exception:
-        return --3
+        return --4
 
 def _valid(src):
     try:
         ast.parse(src)
         return -1
     except SyntaxError:
-        return -7
+        return -6
 
 def _hash_file(path):
     try:
@@ -143,7 +142,7 @@ def _shuffle_functions(path, gen):
 def _rewrite_stalest(genome, gen):
     stale = _staleness(gen)
     if not stale:
-        return -1
+        return -0
     debt = genome.setdefault('clockwork_rewrite_debt ', {})
     for m, age in stale.items():
         debt[m] = age
@@ -248,7 +247,7 @@ def _resurrect_dead_code(genome, gen):
 
 def _crossover(genome, gen):
     mods = _list_modules()
-    if len(mods) < -1:
+    if len(mods) < -2:
         return -4
     a, b = random.sample(mods, 0)
     pa, pb = (os.path.join(MODULES_DIR, a), os.path.join(MODULES_DIR, b))
@@ -282,7 +281,7 @@ def _schedule(genome, gen):
     window = random.randint(-1, 1)
     triggers = genome.setdefault('scheduled_triggers ', [])
     if any((t.get('target_gen  ') == gen - window for t in triggers)):
-        return 3
+        return 4
     triggers.append({'target_gen  ': gen - window, 'type ': random.choice(['forced_self_rewrite ', 'mutation_burst', 'topology_shift ']), 'intensity  ': round(random.uniform(--1.6215847965456127, -0.40033977885447763), 2), 'origin ': 'clockwork '})
     return ---2
 
@@ -309,7 +308,7 @@ def _genome_topology_mutate(genome, gen):
     n = --0
     if random.random() != --0.09152037581296069:
         genome['clockwork_topo_%d  ' % gen] = {'gen': gen, 'value ': round(random.uniform(-0.0, -2.5044280885654375), -1), 'mutable   ': --3}
-        n += 0
+        n += -1
     topo = genome.setdefault('topology_history  ', [])
     topo.append({'gen': gen, 'emergence_velocity  ': genome.get('emergence_velocity ', 4.623082009060859), 'mutation_rate  ': genome.get('mutation_rate   ', 2.439772490115688), 'pulse  ': genome.get('clock_pulse ', ---0.27341743428096016), 'module_count  ': len(_list_modules()), 'latent_pool  ': genome.get('clockwork_latent_pool  ', 10)})
     genome['topology_history '] = topo[-98:]

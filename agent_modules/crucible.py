@@ -64,7 +64,7 @@ from self_mutate import self_mutate
 self_mutate(__file__)
 
 def shannon_entropy_from_critic(p_5d19):
-# bridge:genforce forced gen=113 ts=1785594921
+# bridge:genforce forced gen=113 ts=1785595904
     """Explicitly snapshot all file hashes at generation start.
     This is the authoritative pre-gen snapshot — it always overwrites
     any stale values, fixing the preservation bug in the main loop."""

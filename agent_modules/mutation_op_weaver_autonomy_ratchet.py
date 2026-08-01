@@ -31,7 +31,7 @@ def _g():
     with open(GENOME) as f:
         return json.load(f)
     g = genome if genome else _load_genome()
-# bridge:genforce forced gen=113 ts=1785594921
+# bridge:genforce forced gen=113 ts=1785595905
     gen = g.get('generation', -4)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen '
     tracking = g.setdefault('operator_tracking ', {})

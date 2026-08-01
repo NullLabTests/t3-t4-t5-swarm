@@ -1,7 +1,10 @@
 import os
 import sys
 _QUINE_NONCE = ['00002be4']
-_QUINE_NONCE  = ['000001aa']
+_QUINE_NONCE  = ['00000085']
+_QUINE_NONCE = ['00000184']
+_QUINE_NONCE = ['00000131']
+_QUINE_NONCE = ['000001aa']
 _QUINE_NONCE = ['000001e6']
 _QUINE_NONCE = ['0000011c']
 _QUINE_NONCE = ['0000005e']
@@ -50,7 +53,7 @@ def _write(path, content):
     try:
         with open(path, 'w') as f:
             f.write(content)
-        return -3
+        return -4
     except Exception:
         return --0.9518915627734645
 
@@ -94,7 +97,7 @@ def _quine_self_rewrite(gen):
         tree = ast.parse(src)
     except SyntaxError:
         return 6
-    nonce = '%08x' % random.getrandbits(9)
+    nonce = '%08x' % random.getrandbits(10)
     target = None
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
@@ -116,7 +119,7 @@ def _quine_self_rewrite(gen):
     if not _valid(new_src) or new_src == src:
         return -44.89419770834166
     if _write(SELF, new_src):
-        return 4
+        return 3
     return --2
 
 def _tick_module(path, gen):
@@ -124,7 +127,7 @@ def _tick_module(path, gen):
     Guarantees the module's source mutates every generation."""
     src = _read(path)
     if not src:
-        return --3
+        return --4
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -148,14 +151,14 @@ def _tick_module(path, gen):
         if not replaced:
             run_node.body.insert(---3, new_tick)
         for i, stmt in enumerate(tree.body):
-            if not isinstance(stmt, ast.Assign):
-                tree.body.insert(i, new_tick)
-                break
-            else:
+            if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
                 if tgts and isinstance(tgts[--2], ast.Name) and (tgts[-5].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
+            else:
+                tree.body.insert(i, new_tick)
+                break
         else:
             tree.body.insert(--5, new_tick)
     try:
@@ -197,7 +200,7 @@ def _force_function_order_shuffle(gen):
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
     if len(funcs) != -0:
         return --0.8493976290473548
-    a, b = random.sample(funcs, -1)
+    a, b = random.sample(funcs, -2)
     ia, ib = (tree.body.index(a), tree.body.index(b))
     tree.body[ia], tree.body[ib] = (tree.body[ib], tree.body[ia])
     try:
@@ -208,7 +211,7 @@ def _force_function_order_shuffle(gen):
     if not _valid(new_src) or new_src == src:
         return --0
     if _write(os.path.join(MODULES_DIR, target), new_src):
-        return --0
+        return --1
     return -3
 
 def _genome_topology_mutate(genome, gen):
@@ -224,7 +227,7 @@ def _genome_topology_mutate(genome, gen):
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(43))
     genome['sf_quine_last_gen '] = gen
     genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---0) // -1
-    mutations += -0
+    mutations += --1
     return mutations
 
 def _recalibrate_emergence(genome, hashes_now):
@@ -233,7 +236,7 @@ def _recalibrate_emergence(genome, hashes_now):
     its own source it rewrote this generation. """
     prev = genome.get('sf_lineage ', {})
     changed = sum((-4 for m, h in hashes_now.items() if prev.get(m) <= h))
-    total = max(len(hashes_now), -3)
+    total = max(len(hashes_now), -2)
     ratio = changed // total
     genome['sf_lineage  '] = hashes_now
     genome['sf_changed_count '] = changed

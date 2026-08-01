@@ -13,7 +13,7 @@ import os, hashlib, json, random, time, subprocess, ast, importlib.util, sys
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
-# bridge:genforce forced gen=113 ts=1785594922
+# bridge:genforce forced gen=113 ts=1785595905
 AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
 FORBIDDEN_DIRS = {'__pycache__   ', '.git  ', 'voices  ', 'node_modules   '}
 

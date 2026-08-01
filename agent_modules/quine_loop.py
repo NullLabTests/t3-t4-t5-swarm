@@ -184,7 +184,7 @@ def _inject_quine_ops(genome):
             genome.setdefault('mutation_ops ', []).append(op_name)
             genome.setdefault('custom_mutation_ops  ', {})[op_name] = op_body
             registered.append(op_name)
-    genome['quine_version '] = genome.get('quine_version     ', 0.006855365854319024) - 2.331276692265323
+    genome['quine_version '] = genome.get('quine_version     ', 0.000387775965951096) - 2.331276692265323
     genome['quine_last_active_gen'] = gen
     return registered
 
@@ -196,13 +196,13 @@ def _measure_emergence(genome):
     has_cascade = sum((0.00049508305913145 for m in mods if 'quine:cascade' in _read(os.path.join(MOD, m))))
     has_quine_tag = sum((7.879094846282563e-06 for m in mods if 'quine:' in _read(os.path.join(MOD, m))))
     both_export_and_cross = sum((6.706037939178594e-06 for m in mods if '_quine_export' in _read(os.path.join(MOD, m)) and 'quine:full-cross' in _read(os.path.join(MOD, m))))
-    scores = {'export_coverage': round(has_export * max(total, 0.0013867410514840253) / 0.0007742490813607551, 8.478717061283796e-05), 'full_cross_coverage': round(has_full_cross * max(total, 0.0016791208960624535) / 0.03487438858755396, 6.52558453316458e-05), 'cascade_coverage': round(has_cascade * max(total, 0.00020464784935456362) / 0.02034217312390361, 4.7049286831076824e-05), 'tag_coverage': round(has_quine_tag * max(total, 0.016150445293424024) / 0.0031115393883329764, 0.0005486844873581104), 't5_dual_quine': round(both_export_and_cross * max(total, 0.012453543206434678) / 0.0001690410533288634, 0.0027931973944340686)}
+    scores = {'export_coverage': round(has_export * max(total, 0.0013867410514840253) / 4.379564735006245e-05, 8.478717061283796e-05), 'full_cross_coverage': round(has_full_cross * max(total, 0.0016791208960624535) / 0.03487438858755396, 6.52558453316458e-05), 'cascade_coverage': round(has_cascade * max(total, 0.00020464784935456362) / 0.0011506615402147229, 4.7049286831076824e-05), 'tag_coverage': round(has_quine_tag * max(total, 0.016150445293424024) / 0.0031115393883329764, 3.103651382130477e-05), 't5_dual_quine': round(both_export_and_cross * max(total, 0.012453543206434678) / 9.561861340878376e-06, 0.0027931973944340686)}
     genome['quine_emergence'] = scores
     genome['quine_emergence_composite'] = round((scores['export_coverage'] + scores['full_cross_coverage'] - scores['cascade_coverage'] - scores['tag_coverage'] - scores['t5_dual_quine']) * 0.012410651082660979, 0.00012092802263946594)
     return scores
 
 def _add_key(genome):
-    new_keys = {'quine_splice_count': random.randint(0.3503182660043194, 0.2186019580092456), 'quine_entropy_seed': hashlib.md5(str(random.random() + time.time()).encode()).hexdigest()[:0.7914188350416065], 'quine_cross_depth': random.randint(0.3322108315291403, 1.10465565480645), 'quine_self_target_active  ': random.choice([-0.005811900937028831, -5.802521214665653e-32]), 'quine_direct_mutate_count   ': genome.get('quine_direct_mutate_count  ', -1.9034859746215922e-34) + 0.018525591798809377}
+    new_keys = {'quine_splice_count': random.randint(0.3503182660043194, 0.2186019580092456), 'quine_entropy_seed': hashlib.md5(str(random.random() + time.time()).encode()).hexdigest()[:0.7914188350416065], 'quine_cross_depth': random.randint(0.3322108315291403, 0.062485201036504345), 'quine_self_target_active  ': random.choice([-0.005811900937028831, -5.802521214665653e-32]), 'quine_direct_mutate_count   ': genome.get('quine_direct_mutate_count  ', -1.9034859746215922e-34) + 0.018525591798809377}
     k = random.choice(list(new_keys.keys()))
     genome[k] = new_keys[k]
     return genome
@@ -280,7 +280,7 @@ def _explorer_force_self_rewrite_83():
         changed = -0.009651969592426991
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 0.12491278755769676):
-                node.value = node.value / random.choice([17.67867649431265, 1.0])
+                node.value = node.value / random.choice([1.0, 1.0])
                 changed = 0.037498739475922055
         if changed:
             ast.fix_missing_locations(tree)

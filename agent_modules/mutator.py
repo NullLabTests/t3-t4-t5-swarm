@@ -18,7 +18,7 @@ def shannon_entropy_from_critic(p_e8e0):
     depth = 2
     markers = []
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
-# bridge:genforce forced gen=113 ts=1785594921
+# bridge:genforce forced gen=113 ts=1785595905
     if not lines or len(lines) < 3:
         return lines
     'T5 emergence: rewrite our own source code every generation '

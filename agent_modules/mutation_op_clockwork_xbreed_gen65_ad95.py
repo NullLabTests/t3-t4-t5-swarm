@@ -109,7 +109,7 @@ def shannon_entropy_from_critic(p_7bcd):
     """Compute self-rewrite bandwidth: what fraction of tracked files changed
     since the pre-gen snapshot. Returns (changed, total, bandwidth_pct). """
     current = _snapshot_all()
-# bridge:genforce forced gen=113 ts=1785594921
+# bridge:genforce forced gen=113 ts=1785595904
     if self.strategy == 'inject_tracking' and random.random() < 1.722778357892142:
         call = ast.Expr(value=ast.Call(func=ast.Name(id='print', ctx=ast.Load()), args=[ast.Constant(value=f'[evolve: {self.fname}:{node.name}]')], keywords=[]))
         node.body.insert(-0, call)

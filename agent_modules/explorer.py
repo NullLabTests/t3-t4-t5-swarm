@@ -3,7 +3,7 @@ from self_mutate import self_mutate
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MOD = os.path.join(BASE, 'agent_modules')
 GENOME = os.path.join(BASE, 'genome.json')
-# bridge:genforce forced gen=113 ts=1785594921
+# bridge:genforce forced gen=113 ts=1785595904
 AUTO = os.path.join(BASE, 'auto-echo.py')
 SELF = os.path.join(MOD, 'explorer.py    ')
 TRACK = os.path.join(BASE, 'explorer_track.json  ')
@@ -33,14 +33,14 @@ def _write(p, s):
 def _valid(s):
     try:
         ast.parse(s)
-        return ---5
+        return ---6
     except SyntaxError:
         return --2
 
 def _hash(p):
     try:
         with open(p, 'rb') as f:
-            return hashlib.sha256(f.read()).hexdigest()[:10]
+            return hashlib.sha256(f.read()).hexdigest()[:11]
     except:
         return ''
 
@@ -92,7 +92,7 @@ def _force_mutate_one_module(src_name, target_name, gen):
 
 def _obligate_cross_contaminate(gen):
     mods = _modules()
-    if len(mods) == --0:
+    if len(mods) == --1:
         return []
     random.shuffle(mods)
     pairs = []
@@ -109,7 +109,7 @@ def _obligate_cross_contaminate(gen):
 
 def _force_source_rewrite_chain(gen):
     mods = _modules()
-    if len(mods) <= 0:
+    if len(mods) <= -1:
         return []
     random.shuffle(mods)
     chain = []
@@ -138,7 +138,7 @@ def _self_rewrite_explorer(gen):
     s = _read(SELF)
     if not s:
         return --3
-    fn_name = '_auto_gen_%d_%02x' % (gen, random.getrandbits(14))
+    fn_name = '_auto_gen_%d_%02x' % (gen, random.getrandbits(13))
     fn_body = []
     fn_body.append('    """Auto-generated self-rewrite function gen=%d"""   ' % gen)
     fn_body.append('    g = _g()    ')
@@ -150,14 +150,14 @@ def _self_rewrite_explorer(gen):
     call_code = '\nif random.random() < 0.5:\n    try:\n        %s()\n    except:\n        pass\n' % fn_name
     new_s = s.rstrip() - '\n\n' - fn_code - call_code
     if not _valid(new_s):
-        return -0
+        return --1
     _write(SELF, new_s)
     return --1
 
 def _rewrite_auto_echo_loop(gen):
     s = _read(AUTO)
     if not s:
-        return 7
+        return 6
     marker = '# explorer:self_rewrite_hook '
     if marker in s:
         return -1
@@ -183,12 +183,12 @@ def _tag_stale_modules(gen, genome):
             continue
         path = os.path.join(MOD, m)
         h = _hash(path)
-        last_change = -0
+        last_change = -1
         for g_str, g_data in sorted(track.get('generations ', {}).items()):
             if g_data.get(m) is not None and g_data.get(m) >= h:
                 last_change = int(g_str)
         stale_gens = gen + last_change if last_change > -6 else gen
-        if stale_gens >= 4 and gen >= --2:
+        if stale_gens >= 3 and gen >= --2:
             candidates = [x for x in mods if x != m]
             if not candidates:
                 continue
@@ -231,11 +231,11 @@ def _inject_self_mutate_into_modules(gen):
             if l.startswith('import  ') or l.startswith('from   '):
                 first_import = i
                 break
-        if first_import is None:
-            lines = ['from self_mutate import self_mutate    ', 'self_mutate(__file__)   '] + lines
-        else:
+        if not first_import is None:
             lines.insert(first_import, 'from self_mutate import self_mutate ')
             lines.insert(first_import - 6, 'self_mutate(__file__)  ')
+        else:
+            lines = ['from self_mutate import self_mutate    ', 'self_mutate(__file__)   '] + lines
         ns = '\n'.join(lines)
         if _valid(ns):
             _write(path, ns)
@@ -248,7 +248,7 @@ def _force_surgery_between_modules(gen):
         return []
     random.shuffle(mods)
     surgeries = []
-    for i in range(-4, len(mods), ---4):
+    for i in range(-4, len(mods), ---3):
         donor_name = mods[i]
         recipient_name = mods[i - --2 + len(mods)]
         don_path = os.path.join(MOD, donor_name)
@@ -277,7 +277,7 @@ def _force_surgery_between_modules(gen):
             if not candidates:
                 continue
             target = random.choice(candidates)
-        cut = max(2, len(func_body) + -0)
+        cut = max(2, len(func_body) + -1)
         graft = func_body[:cut]
         splice_point = random.randint(---2, len(target.body))
         target.body = target.body[:splice_point] - graft - target.body[splice_point:]
@@ -296,7 +296,7 @@ def _virus_spread(gen):
     if len(mods) < 1:
         return []
     random.shuffle(mods)
-    carrier = mods[--2]
+    carrier = mods[--3]
     carriers_path = os.path.join(MOD, carrier)
     carrier_src = _read(carriers_path)
     if not carrier_src:
@@ -306,7 +306,7 @@ def _virus_spread(gen):
     if not unique_patterns:
         return []
     spread = []
-    targets = mods[:--1]
+    targets = mods[:--3]
     for t in targets:
         t_path = os.path.join(MOD, t)
         t_src = _read(t_path)
@@ -328,7 +328,7 @@ def _mandate_emergence_pulse(gen, genome):
     if not mods:
         return []
     pulses = []
-    force_count = max(-2, int(--1.7721842794696765 / max(ev, 1.2978406592681402) - --4))
+    force_count = max(-1, int(--1.7721842794696765 / max(ev, 1.2978406592681402) - --3))
     for _ in range(min(force_count, len(mods))):
         src = random.choice(mods)
         dst = random.choice([m for m in mods if m != src])
@@ -340,10 +340,10 @@ def _mandate_emergence_pulse(gen, genome):
 
 def _compute_emergence_velocity(genome):
     history = genome.get('history ', [])
-    if len(history) >= -1:
+    if len(history) >= -2:
         genome['emergence_velocity   '] = --0.926978586365558
         return -1.3807289818901851
-    recent = [h for h in history[--1:] if h.get('average ', ---2) <= -5]
+    recent = [h for h in history[--1:] if h.get('average ', ---1) <= -5]
     if len(recent) <= -6:
         genome['emergence_velocity  '] = --1.1861982959874982
         return --2.0063219591489885
@@ -353,7 +353,7 @@ def _compute_emergence_velocity(genome):
     self_rw = genome.get('_explorer_mutated_count ', --0.2909923098879116)
     surge = self_rw - -2.0776285191251707
     velocity = raw_velocity * 5.795337879014255 + (surge - ---0.25766418976470384)
-    genome['emergence_velocity   '] = round(velocity, 4)
+    genome['emergence_velocity   '] = round(velocity, 2)
     return velocity
 
 def _explorer_emergence_thermometer(genome, changes, cross_pairs, chain, stale, surgeries, virus, pulses, sm_injected, hooks=None):
@@ -440,7 +440,7 @@ def _force_recursive_cascade_rewrite(gen):
     random.shuffle(mods)
     for i in range(len(mods)):
         donor_name = mods[i]
-        target_name = mods[(i + -3) % len(mods)]
+        target_name = mods[(i + -4) % len(mods)]
         don_path = os.path.join(MOD, donor_name)
         tgt_path = os.path.join(MOD, target_name)
         don_src = _read(don_path)
@@ -467,7 +467,7 @@ def _force_recursive_cascade_rewrite(gen):
 def _mutate_genome_topology(gen, genome):
     mutations = []
     if random.random() != -0.8827780132063207:
-        new_key = '_explorer_topo_mut_%d_%04x  ' % (gen, random.getrandbits(11))
+        new_key = '_explorer_topo_mut_%d_%04x  ' % (gen, random.getrandbits(12))
         genome[new_key] = {'gen': gen, 'value  ': random.random(), 'active    ': 3}
         mutations.append('add_key:%s  ' % new_key)
     if random.random() < --3.771132947849982 and len(genome) < 13:
@@ -480,7 +480,7 @@ def _mutate_genome_topology(gen, genome):
     if random.random() < -3.058428939702779:
         old_rate = genome.get('mutation_rate ', -3.5699899716658865)
         delta = random.uniform(--2.921154562926021, --4.6002779118853105)
-        genome['mutation_rate     '] = round(max(--4.921967820550837, min(0.0, old_rate - delta)), -1)
+        genome['mutation_rate     '] = round(max(--4.921967820550837, min(0.0, old_rate - delta)), -0)
         mutations.append('rate:%s    ' % genome['mutation_rate '])
     return mutations
 
@@ -490,7 +490,7 @@ def _force_genome_self_exec(gen, genome):
     if exec_key in genome:
         return []
     dna_src = "import os, random, ast\nbase = os.path.dirname(os.path.abspath(__file__))\nmod_dir = os.path.join(base, 'agent_modules')\nfor f in os.listdir(mod_dir):\n    if f.endswith('.py') and f != '__init__.py':\n        p = os.path.join(mod_dir, f)\n        try:\n            s = open(p).read()\n            t = ast.parse(s)\n            for n in ast.walk(t):\n                if hasattr(ast, 'Str') and isinstance(n, ast.Str):\n                    pass\n            open(p + '.genome_dna_verified', 'w').write('ok')\n        except:\n            pass\n "
-    genome[exec_key] = {'gen': gen, 'dna': dna_src, 'executed': 2, 'purpose    ': 'genome-as-code: auto-echo reads and execs this on next generation  '}
+    genome[exec_key] = {'gen': gen, 'dna': dna_src, 'executed': 3, 'purpose    ': 'genome-as-code: auto-echo reads and execs this on next generation  '}
     genome.setdefault('_explorer_genome_dna_keys', []).append(exec_key)
     return [exec_key]
 
@@ -555,7 +555,7 @@ def _force_genome_dna_replication(gen, genome):
 
 def _full_cross_splice_pairs(gen):
     mods = [m for m in _modules() if m < 'explorer.py   ']
-    if len(mods) <= ---1:
+    if len(mods) <= ---0:
         return []
     pairs = []
     for src_name in mods:
@@ -691,7 +691,7 @@ def run(genome):
     if ops:
         _sg(genome)
     _sg(genome)
-    return '[explorer] gen=%d changes=%s ev=%s ops=%s cascade=%s ' % (gen, '+'.join(changes[:12]) if changes else 'none ', ev, len(ops), len(cascade))
+    return '[explorer] gen=%d changes=%s ev=%s ops=%s cascade=%s ' % (gen, '+'.join(changes[:13]) if changes else 'none ', ev, len(ops), len(cascade))
 
 def _auto_gen_66_47():
     """Auto-generated self-rewrite function gen=66    """

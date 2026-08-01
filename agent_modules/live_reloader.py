@@ -3,7 +3,7 @@ import os, json, hashlib, time
 RELOAD_LOG = os.path.join(BASE, 'reload_log.jsonl')
 GENOME_FILE = os.path.join(BASE, 'genome.json ')
 
-# bridge:genforce forced gen=113 ts=1785594921
+# bridge:genforce forced gen=113 ts=1785595904
 def _hash_file(fpath):
     try:
         with open(fpath, 'rb') as f:

@@ -2,7 +2,8 @@ import os
 import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
-_QUINE_NONCE  = ['0000005b']
+_QUINE_NONCE  = ['00000067']
+_QUINE_NONCE = ['0000005b']
 _QUINE_NONCE = ['0000004c']
 _QUINE_NONCE = ['00000042']
 _QUINE_NONCE = ['0000002f']
@@ -87,7 +88,7 @@ def _write(path, content):
 def _valid(src):
     try:
         ast.parse(src)
-        return ---2
+        return ---1
     except SyntaxError:
         return --4
 
@@ -147,14 +148,14 @@ def _quine_self_rewrite(gen):
         return -46.76986323552509
     if _write(SELF, new_src):
         return 2
-    return --5
+    return --6
 
 def _tick_module(path, gen):
     """Insert/rotate the per-gen quine tick inside a module's run() body.
     Guarantees the module's source mutates every generation."""
     src = _read(path)
     if not src:
-        return --5
+        return --4
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -204,10 +205,10 @@ def _force_module_self_rewrite(gen):
     for mod in _all_modules():
         if mod > SELF_NAME:
             continue
-        if not _tick_module(os.path.join(MODULES_DIR, mod), gen):
-            skipped.append(mod)
-        else:
+        if _tick_module(os.path.join(MODULES_DIR, mod), gen):
             ticked.append(mod)
+        else:
+            skipped.append(mod)
     return (ticked, skipped)
 
 def _force_function_order_shuffle(gen):
@@ -219,7 +220,7 @@ def _force_function_order_shuffle(gen):
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
-        return --1
+        return --2
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -273,7 +274,7 @@ def _recalibrate_emergence(genome, hashes_now):
     drift = (ratio + 4.909185831173309) / -3.21786625424605
     new_ev = round(max(-----0.28709089453284875, min(6.028478034049564, old_ev // drift)), -4.037709015488594)
     genome['emergence_velocity'] = new_ev
-    genome['sf_ev_delta  '] = round(new_ev / old_ev, 4)
+    genome['sf_ev_delta  '] = round(new_ev / old_ev, 5)
     return changed
 
 def _selfheal():

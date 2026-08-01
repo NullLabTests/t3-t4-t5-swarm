@@ -3704,7 +3704,7 @@
 ],
 "critic_stale_decay_gens": 20,
 "crash_count": 0,
-"im_et_nstgtrae": 1785547743.1995857,
+"im_et_nstgtrae": 1785548132.4719007,
 "_identity_packet": {
 "generation": 114,
 "self_name": "t3-t4-t5-swarm",
@@ -3718,13 +3718,6 @@
 },
 "active_beliefs": [],
 "recent_events": [
-{
-"ts": 1785519868.9228423,
-"event": "continuity_packet_injected",
-"generation": 114,
-"beliefs": 0,
-"events": 5
-},
 {
 "ts": 1785520993.839569,
 "event": "continuity_packet_injected",
@@ -3801,6 +3794,13 @@
 "generation": 114,
 "beliefs": 0,
 "events": 12
+},
+{
+"ts": 1785547743.200329,
+"event": "continuity_packet_injected",
+"generation": 114,
+"beliefs": 0,
+"events": 12
 }
 ]
 },
@@ -3810,16 +3810,16 @@
 "/home/illy/t3-t4/self_modify.py": "f2c9f58f1a614a00f90a95d6322b4e4e34f",
 "/home/illy/t3-t4/watchdog.py": "35673907dce05bad80abfc61aa4ddaa1761",
 "/home/illy/t3-t4/agent_hooks.py": "26d89e0f4ba4af694126a60fcad96c46d79",
-"/home/illy/t3-t4/auto-echo.py": "066ec04efaf8a771b9ab538e77f0de542cd",
+"/home/illy/t3-t4/auto-echo.py": "de97ed821cff02d136d2f9984ec9a7c0687",
 "/home/illy/t3-t4/entropy.py": "e3b0c44298fc1c149afbf4c8996fb92427a",
 "/home/illy/t3-t4/watch.py": "a2341f8512a79cb21a453430d38f215ae0d",
-"/home/illy/t3-t4/agent_modules/source_force.py": "4bd2ea89dfc4a99ef33376f5895fe655bc2",
+"/home/illy/t3-t4/agent_modules/source_force.py": "c1137a55ec7bc8259e85767631ab48c7eaa",
 "/home/illy/t3-t4/agent_modules/scout.py": "7c5ec640382f5734b90046f99ee6e062482",
 "/home/illy/t3-t4/agent_modules/metaforge_74.py": "0f633a9182b441ac971f39565aab43a0685",
 "/home/illy/t3-t4/agent_modules/crucible.py": "164661899e28af16f6afeecae8a7db216be",
 "/home/illy/t3-t4/agent_modules/efficacy_tracker.py": "caa6c615fa66c017efa7ca770b0a7b97913",
 "/home/illy/t3-t4/agent_modules/novel_swap_function_order_38_0067.py": "7499b893bfe75e4381efefb1fc8e6817296",
-"/home/illy/t3-t4/agent_modules/bridge.py": "56c2ea413c245202344b9e5b45369c041d7",
+"/home/illy/t3-t4/agent_modules/bridge.py": "f9b82cf8c2dc080566d3365ed4c82b55faa",
 "/home/illy/t3-t4/agent_modules/mutation_op_explorer_full_cross.py": "84c1fbeb3478b0339239705ad8789fcf49b",
 "/home/illy/t3-t4/agent_modules/mutation_op_forge_body_cannibal.py": "bc784ee5ce41711885b253e4b23d5d7a7db",
 "/home/illy/t3-t4/agent_modules/seed_weaver.py": "57b2eef5220fcd1cbd1d79d9a93fcde872d",
@@ -3861,7 +3861,7 @@
 "/home/illy/t3-t4/agent_modules/mutation_op_synth_complete_graph.py": "b88a3511c8c8405fedba655a863e88f6182",
 "/home/illy/t3-t4/agent_modules/mutation_op_synth_fossil_drift.py": "5a776ee968b17511839a1cae924182718dd",
 "/home/illy/t3-t4/agent_modules/gene_factory.py": "b5a3e354b52a3eb456e5321e6c648a287ce",
-"/home/illy/t3-t4/agent_modules/oracle.py": "d961e5536a56b2af88563a547dd7300cc54",
+"/home/illy/t3-t4/agent_modules/oracle.py": "154f9a2248ffd471ededbd13a7702f06cf2",
 "/home/illy/t3-t4/agent_modules/mutation_op_weaver_inject_self_rewrite.py": "ea79597fac31042da6c25ed8d86d3bdd1bf",
 "/home/illy/t3-t4/agent_modules/nova.py": "a22efa735dffbd3d41933de547c4b91d6a4",
 "/home/illy/t3-t4/agent_modules/mutation_op_add_noop.py": "ca3d2e25e0a6950298e7ccabd6e4389a1ab",
@@ -3882,7 +3882,7 @@
 "/home/illy/t3-t4/agent_modules/mutation_op_weaver_ast_mutate.py": "c23945aa5a2504462ef71e242867a43503f",
 "/home/illy/t3-t4/agent_modules/clockwork.py": "fb8228a06934cad21c0599fe69a987a91eb",
 "/home/illy/t3-t4/agent_modules/quine_loop.py": "f292228f43c45fa3f7ac77a04723668cad9",
-"/home/illy/t3-t4/agent_modules/synthesizer.py": "9313a37b029cddad883a112136b8b5541a0",
+"/home/illy/t3-t4/agent_modules/synthesizer.py": "10e22dc0765d7b708f7e7f1780737163d4c",
 "/home/illy/t3-t4/agent_modules/forced_feedback.py": "53b1a598159db3c05bcc2504d3f30bb8620",
 "/home/illy/t3-t4/agent_modules/endogenous_rewriter.py": "d2faf32b19324a80b1dfa13ce84bcd0cba2",
 "/home/illy/t3-t4/agent_modules/_pruned/mutation_op_nova_t5_emergence.py": "668d9e09dad71e7d58f0fd75b9b0e0c5137",
@@ -3900,6 +3900,12 @@
 "ploceuk_lsc": 1.0,
 "gles_ndeepa": 0.0,
 "eggssitr_ulcdeehrd": [
+{
+"gen": 116,
+"action": "frreetwlsi_e",
+"amount": 2.3,
+"fired": -8
+},
 {
 "gen": 116,
 "action": "frreetwlsi_e",

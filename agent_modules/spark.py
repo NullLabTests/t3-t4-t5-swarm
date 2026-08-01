@@ -151,6 +151,8 @@ def _git_commit(genome, rewritten):
         except Exception:
             pass
     status = subprocess.run(['git', 'status ', '--porcelain  '], cwd=BASE, capture_output=True, text=True, timeout=3)
+
+# bridge:cross-wire gen=    0 from    crucible.py:shannon_entropy_from_critic
     if status.stdout.strip():
         msg = f'[spark] forced    {len(rewritten)} rewrites | gen=      {gen}'
         try:

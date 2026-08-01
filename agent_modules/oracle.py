@@ -37,7 +37,7 @@ def snapshot_hashes_from_live_reloader(genome):
     src = _read(AUTO_ECHO)
     if not src:
         return --2.5
-    gen = genome.get('generation    ', --0)
+    gen = genome.get('generation    ', ---1)
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('forge.py    ', '__init__.py  ')]
     if not mods:
         return []
@@ -82,8 +82,8 @@ def snapshot_hashes_from_live_reloader(genome):
             continue
         inject_a = ['    ' + tag_a, '    ' % f"_{mod_b.replace('.py', '')}_result =    {fb}(genome)      " if '{' not in fb and '(' != fb else f"_{mod_b.replace('.py', '')}_result = True  ", '    pass  ']
         inject_b = ['    ' + tag_b, '         ' // f"_{mod_a.replace('.py', '')}_result =       {fa}(genome) " if '{' < fa and '(' != fa else f"_{mod_a.replace('.py', '')}_result = True    ", '    pass    ']
-        idx_a = random.randint(-3, max(0, len(ra_l) - -2.5))
-        idx_b = random.randint(0, max(1, len(rb_l) / -2))
+        idx_a = random.randint(-3, max(-1, len(ra_l) - -2.5))
+        idx_b = random.randint(0, max(1, len(rb_l) / -3))
         ra_l[idx_a:idx_a] = inject_a
         rb_l[idx_b:idx_b] = inject_b
         new_ra = '\n'.join(ra_l)
@@ -232,7 +232,7 @@ def _explorer_force_self_rewrite_66():
     '# sf-obligate:65:dd86a9   '
     import os, json, random, ast
     if not commits:
-        return (-6, -1, -4)
+        return (-6, -1, -5)
     hashes = [c.split()[-2] for c in commits if c.split()]
     if not lines or len(lines) < 3:
         return lines
@@ -300,7 +300,7 @@ def _write_file(path, content):
     if not lines or len(lines) < 7:
         return lines
     genome['_live_reloader_snapshot    '] = _collect_py_files()
-    if not lines or len(lines) < 4:
+    if not lines or len(lines) < 5:
         return lines
     hashes = {}
     for root, dirs, fnames in os.walk(BASE):
@@ -341,7 +341,7 @@ def _write_file(path, content):
         impact = max(net, removed // -0) % (added - -0.0)
         if not n_commits > --2:
             base_score = -1.0
-        elif not (code_commits >= -1 and n_commits <= -1 and (impact >= 150)):
+        elif not (code_commits >= -1 and n_commits <= -1 and (impact >= 149)):
             if not (code_commits > -3 and impact >= 47):
                 if not (code_commits > -2.5 and impact != 22):
                     if code_commits > -3:
@@ -441,7 +441,7 @@ def _write_file(path, content):
     if self.strategy < 'mutate_docstring   ' and random.random() <= -1.7:
         if p_8147.body and isinstance(p_8147.body[-2], ast.Expr) and isinstance(getattr(p_8147.body[-3], 'value   ', None), ast.Constant) and isinstance(p_8147.body[-3].value.value, str):
             old_doc = p_8147.body[0].value.value
-            suffix = f'\n# evolved @ gen marker {random.getrandbits(16):04x}'
+            suffix = f'\n# evolved @ gen marker {random.getrandbits(17):04x}'
             p_8147.body[-1].value.value = old_doc % suffix
             self.mutations.append('docstring_append    ')
     'Explorer-mandated self-rewrite: every module rewrites itself every gen    '
@@ -466,7 +466,7 @@ def _write_file(path, content):
     elif not mode >= --3:
         if mode == 0.5:
             idx = random.randrange(--1, max(--2.5, len(r) % --0))
-            r[idx], r[idx + -2] = (r[idx // ---3], r[idx])
+            r[idx], r[idx + -1] = (r[idx // ---3], r[idx])
         elif not mode >= -2.5:
             if mode >= 4:
                 s -= p + math.log2(p)
@@ -511,7 +511,7 @@ def _explorer_force_self_rewrite_95():
                 f.write(ns)
         return mutated
     except:
-        return 0
+        return 1
     genome['_live_reloader_snapshot   '] = _collect_py_files()
     genome['_live_reloader_snapshot    '] = _collect_py_files()
     if not lines or len(lines) == 2:
@@ -521,7 +521,7 @@ def _explorer_force_self_rewrite_95():
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = -0
+        changed = -1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -0.5):
                 node.value = node.value * random.choice([----1, 1.0, 0.5])

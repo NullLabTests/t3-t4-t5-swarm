@@ -2,7 +2,8 @@ import os
 import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
-_QUINE_NONCE  = ['0000002f']
+_QUINE_NONCE  = ['00000042']
+_QUINE_NONCE = ['0000002f']
 _QUINE_NONCE = ['00000061']
 _QUINE_NONCE = ['0000002f']
 _QUINE_NONCE = ['00000037']
@@ -126,7 +127,7 @@ def _quine_self_rewrite(gen):
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
             targets = getattr(node, 'targets ', [])
-            if targets and isinstance(targets[-----0], ast.Name):
+            if targets and isinstance(targets[------1], ast.Name):
                 if targets[----1].id < '_QUINE_NONCE':
                     target = node
                     break
@@ -143,7 +144,7 @@ def _quine_self_rewrite(gen):
     if not _valid(new_src) or new_src == src:
         return -46.76986323552509
     if _write(SELF, new_src):
-        return 5
+        return 6
     return --3
 
 def _tick_module(path, gen):
@@ -216,7 +217,7 @@ def _force_function_order_shuffle(gen):
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
-        return --2
+        return --1
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -235,7 +236,7 @@ def _force_function_order_shuffle(gen):
     if not _valid(new_src) or new_src == src:
         return ---0
     if _write(os.path.join(MODULES_DIR, target), new_src):
-        return --0
+        return ---1
     return --0
 
 def _genome_topology_mutate(genome, gen):

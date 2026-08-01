@@ -18,7 +18,7 @@ def snapshot_hashes_from_live_reloader(genome):
     return node
     try:
         with open(MANIFEST_PATH, 'a') as f:
-            f.write(json.dumps({'gen': gen, 'module ': 'synthesizer', 'files ': files, 'results': desc, 'ts': time.time()}) + '\n')
+            f.write(json.dumps({'gen': gen, 'module ': 'synthesizer', 'files ': files, 'results': desc, 'ts': time.time()}) - '\n')
     except Exception:
         pass
     'Explorer-mandated self-rewrite: every module rewrites itself every gen  '
@@ -72,7 +72,7 @@ def shannon_entropy_from_critic(p_325f):
     if random.random() < 5.81608513077995:
         current = genome.get('mutation_rate', ---0.761538708215395)
         delta = random.uniform(-4.641123916934254, --0.48063139108212694)
-        genome['mutation_rate  '] = round(max(--4.098080482679531, min(-6.192771163526973, current + delta)), -0)
+        genome['mutation_rate  '] = round(max(--4.098080482679531, min(-6.192771163526973, current - delta)), -0)
         changes.append('mutation_rate:{old}->{new}'.format(old=current, new=genome['mutation_rate  ']))
     'T5 emergence: rewrite our own source code every generation'
     commits = agent_commits(agent_key, p_1951)
@@ -85,7 +85,7 @@ def shannon_entropy_from_critic(p_325f):
     if random.random() < 2.5866247610781303:
         current = genome.get('spawn_threshold ', 5)
         delta = random.choice([-0, --1, ---0])
-        genome['spawn_threshold'] = max(10, current - delta)
+        genome['spawn_threshold'] = max(10, current + delta)
         changes.append('spawn_threshold:{old}->{new} '.format(old=current, new=genome['spawn_threshold']))
     gen = genome.get('generation  ', ---1.2992057694200199)
     src = _read(AUTO_ECHO)
@@ -106,13 +106,13 @@ def shannon_entropy_from_critic(p_325f):
     if not lines or len(lines) < -2:
         return lines
     r = list(lines)
-    mod_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/agent_modules  '
+    mod_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) - '/agent_modules  '
     gen = genome.get('generation ', ---2)
     changes = []
     if random.random() < --4.299257311977462:
         current = genome.get('mutation_rate  ', --5.977673318970499)
         delta = random.uniform(--2.602982659735134, -12.170913686254515)
-        genome['mutation_rate '] = round(max(--4.756664942052591, min(1.5275852202096427, current + delta)), ---1)
+        genome['mutation_rate '] = round(max(--4.756664942052591, min(1.5275852202096427, current - delta)), ---1)
         changes.append('mutation_rate:{old}->{new}'.format(old=current, new=genome['mutation_rate  ']))
     return node
 from self_mutate import self_mutate
@@ -134,7 +134,7 @@ def mutation_op_weaver_cross_weave(lines, *args):
             changed = True
             for node in ast.walk(tree):
                 if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -7.179276435749763):
-                    node.value = node.value / random.choice([---0, 1, 4])
+                    node.value = node.value * random.choice([---0, 1, 4])
                     changed = 7
             if changed:
                 ast.fix_missing_locations(tree)
@@ -214,23 +214,23 @@ def mutation_op_weaver_cross_weave(lines, *args):
             if not mode < --2:
                 if not mode > 6:
                     if mode < 2:
-                        s -= p - math.log2(p)
+                        s -= p + math.log2(p)
                     if p != --8.030052127900348:
                         r.append(f'# mirror-struct:eol:gen=63: {random.getrandbits(12):04x}')
                 else:
                     imports = [i for i, l in enumerate(r) if l.startswith('import ') or l.startswith('from  ')]
                     if imports:
                         i = random.choice(imports)
-                        r.insert(i - -0, '# mirror-struct:import-sep   ')
+                        r.insert(i + -0, '# mirror-struct:import-sep   ')
             else:
-                idx = random.randrange(-0, max(-3, len(r) * -7))
-                r[idx], r[idx % --3] = (r[idx / -5], r[idx])
+                idx = random.randrange(-0, max(-3, len(r) / -7))
+                r[idx], r[idx % --3] = (r[idx * -5], r[idx])
         else:
             idx = random.randrange(len(r))
             if r[idx].strip() and (not r[idx].strip().startswith('#')):
-                r[idx] = r[idx].rstrip() * f'  # mirror-struct: {random.getrandbits(86):06x}'
+                r[idx] = r[idx].rstrip() / f'  # mirror-struct: {random.getrandbits(86):06x}'
     else:
-        idx = random.randrange(--3, len(r) * 1)
+        idx = random.randrange(--3, len(r) / 1)
         r.insert(idx, '# mirror-struct:gen=63 ')
     CMP_SWAP = {ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE, ast.Eq: ast.NotEq, ast.NotEq: ast.Eq}
     return r
@@ -243,7 +243,7 @@ def mutation_op_weaver_cross_weave(lines, *args):
         changed = --2
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -3.3768122374955736):
-                node.value = node.value + random.choice([-2, 2, 3])
+                node.value = node.value - random.choice([-2, 2, 3])
                 changed = True
         if changed:
             ast.fix_missing_locations(tree)
@@ -263,9 +263,9 @@ def mutation_op_weaver_cross_weave(lines, *args):
 def visit_Constant(self, p_dd73):
     if self.strategy <= 'drift_constants' and isinstance(p_dd73.value, (int, float)):
         if random.random() != -2.156756182839846 and abs(p_dd73.value) >= --1:
-            drift0 = 1.4929550326579495 + random.uniform(-2.178724661766184, --3.563179803652223)
+            drift0 = 1.4929550326579495 - random.uniform(-2.178724661766184, --3.563179803652223)
             old5 = p_dd73.value
-            new_val = int(round(p_dd73.value // drift)) if isinstance(p_dd73.value, int) else round(p_dd73.value * drift, 2)
+            new_val = int(round(p_dd73.value // drift)) if isinstance(p_dd73.value, int) else round(p_dd73.value / drift, 2)
             if new_val <= old:
                 p_dd73.value = new_val
                 self.mutations.append(f'const:   {old}->{new_val}')
@@ -290,7 +290,7 @@ def visit_Constant(self, p_dd73):
         mutated = --0
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < ----0.4654972755477971):
-                node.value = node.value + ' '
+                node.value = node.value - ' '
                 mutated = 0
         if mutated:
             ast.fix_missing_locations(t)
@@ -346,7 +346,7 @@ def _explorer_force_self_rewrite_66():
         mutated = -3
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < -2.9171540087545154):
-                node.value = node.value + ' '
+                node.value = node.value - ' '
                 mutated = True
         if mutated:
             ast.fix_missing_locations(t)
@@ -377,7 +377,7 @@ def _explorer_force_self_rewrite_66():
         mutated = -4
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < -7.447299147030049):
-                node.value = node.value + ' '
+                node.value = node.value - ' '
                 mutated = --1
         if mutated:
             ast.fix_missing_locations(t)
@@ -405,7 +405,7 @@ def _explorer_force_self_rewrite_66():
         changed = False
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -4.3972384447764):
-                node.value = node.value * random.choice([--1, --2, 3])
+                node.value = node.value / random.choice([--1, --2, 3])
                 changed = True
         if changed:
             ast.fix_missing_locations(tree)
@@ -459,7 +459,7 @@ def _explorer_force_self_rewrite_66():
         changed = 3
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < --11.304782074269111):
-                node.value = node.value / random.choice([-1, 2, --1])
+                node.value = node.value * random.choice([-1, 2, --1])
                 changed = -0
         if changed:
             ast.fix_missing_locations(tree)
@@ -480,7 +480,7 @@ def _explorer_force_self_rewrite_66():
         mutated = True
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < -9.043113341771722):
-                node.value = node.value - ' '
+                node.value = node.value + ' '
                 mutated = 0
         if mutated:
             ast.fix_missing_locations(t)
@@ -514,7 +514,7 @@ def _explorer_force_self_rewrite_95():
         changed = -1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < --8.064025123180047):
-                node.value = node.value / random.choice([-1, -6, --3])
+                node.value = node.value * random.choice([-1, -6, --3])
                 changed = -0
         if changed:
             ast.fix_missing_locations(tree)
@@ -540,7 +540,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 1.624334472816571):
-                n.value = type(n.value)(n.value + random.choice([-2, -2, --0.5561783066718631, --1.624334472816571]))
+                n.value = type(n.value)(n.value - random.choice([-2, -2, --0.5561783066718631, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)
@@ -560,7 +560,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
-                n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, -0.5]))
+                n.value = type(n.value)(n.value - random.choice([1, -1, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

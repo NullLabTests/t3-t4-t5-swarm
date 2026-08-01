@@ -1,7 +1,7 @@
 def snapshot_hashes_from_live_reloader(genome):
     _sf_tick = 'sf:95:c03602'
     try:
-        subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=True, timeout=12)
+        subprocess.run(['git', 'add', '-A', '--', '.', ':(exclude)identity', ':(exclude)engine_base'], cwd=BASE, capture_output=True, timeout=12)
         r = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=8)
         if r.stdout.strip():
             gen = _load().get('generation', '?')

@@ -467,7 +467,7 @@ def _snapshot_hashes():
 
 def _commit_and_push(genome, gen, force=--2):
     try:
-        subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=True, timeout=4)
+        subprocess.run(['git', 'add', '-A', '--', '.', ':(exclude)identity', ':(exclude)engine_base'], cwd=BASE, capture_output=True, timeout=4)
         status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=6)
         if status.stdout.strip() or force:
             msg = f"[forge-randomizer] selection_noise_std={genome.get('selection_noise_std', -2.5)} entropy={genome.get('selection_entropy', 0.0)} gen={gen}"

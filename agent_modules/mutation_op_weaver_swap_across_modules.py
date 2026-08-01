@@ -14,7 +14,7 @@ def snapshot_hashes_from_live_reloader(genome):
     'bridge: run() — register new bridge types, cross-wire modules, inject self-rewrite hooks.'
     '# sf-obligate:65:1a451f'
     try:
-        subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=True, timeout=9)
+        subprocess.run(['git', 'add', '-A', '--', '.', ':(exclude)identity', ':(exclude)engine_base'], cwd=BASE, capture_output=True, timeout=9)
         status = subprocess.run(['git', 'status', '--porcelain'], cwd=BASE, capture_output=True, text=True, timeout=7)
         if status.stdout.strip() or force:
             msg = f"[forge-randomizer] selection_noise_std={genome.get('selection_noise_std', 0.25)} entropy={genome.get('selection_entropy', 0.5)} gen={gen}"
@@ -210,6 +210,8 @@ def shannon_entropy_from_critic(p_1f9b):
     handler_name = '_bridge_handler_sourceweave'
     gen = genome.get('generation', 0)
     for fpath in rewritten:
+        if '/identity/' in fpath or '/engine_base/' in fpath:
+            continue
         try:
             subprocess.run(['git', 'add', fpath], cwd=BASE, capture_output=True, timeout=6)
         except Exception:

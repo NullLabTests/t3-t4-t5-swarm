@@ -23,6 +23,7 @@ import re
 import subprocess
 import sys
 import time
+import hashlib
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 ENGINE = os.path.join(BASE, 'auto-echo.py')
@@ -117,6 +118,77 @@ def restore_identity() -> None:
                    cwd=BASE, capture_output=True, text=True, timeout=60)
 
 
+def _git_head_hash(rel_path: str):
+    try:
+        r = subprocess.run(['git', 'show', f'HEAD:{rel_path}'],
+                           cwd=BASE, capture_output=True, text=True, timeout=15)
+        if r.returncode != 0:
+            return None
+        return hashlib.sha256(r.stdout.encode()).hexdigest()
+    except Exception:
+        return None
+
+
+def _file_hash(abs_path: str):
+    try:
+        with open(abs_path, 'rb') as f:
+            return hashlib.sha256(f.read()).hexdigest()
+    except Exception:
+        return None
+
+
+def engine_base_valid() -> bool:
+    """engine_base/ is the immutable restore source. Any drift from git is a
+    poison signal: the capability loop must never be able to rewrite it."""
+    bad = []
+    for rel in ('engine_base/auto-echo.py', 'engine_base/genome.json'):
+        cur = _file_hash(os.path.join(BASE, rel))
+        ref = _git_head_hash(rel)
+        if cur is None or ref is None or cur != ref:
+            bad.append(rel)
+    if bad:
+        print(f'[watchdog] engine_base/ drifted from git: {bad}', flush=True)
+        return False
+    return True
+
+
+def restore_engine_base() -> None:
+    print('[watchdog] restoring engine_base/ from git', flush=True)
+    subprocess.run(['git', 'checkout', '--', 'engine_base/auto-echo.py', 'engine_base/genome.json'],
+                   cwd=BASE, capture_output=True, text=True, timeout=30)
+
+
+def identity_substrate_valid() -> bool:
+    """Static identity substrate (loop code, core, templates) must never
+    change. The gated loop writes only beliefs/history/self_model, which are
+    validated separately by identity_loop.py check."""
+    bad = []
+    for rel in ('identity/identity_loop.py', 'identity/core.json'):
+        cur = _file_hash(os.path.join(BASE, rel))
+        ref = _git_head_hash(rel)
+        if cur is None or ref is None or cur != ref:
+            bad.append(rel)
+    for fname in ('beliefs.jsonl', 'core.json', 'history.jsonl', 'self_model.json'):
+        rel = f'identity/template/{fname}'
+        cur = _file_hash(os.path.join(BASE, rel))
+        ref = _git_head_hash(rel)
+        if cur is None or ref is None or cur != ref:
+            bad.append(rel)
+    if bad:
+        print(f'[watchdog] identity/ static substrate drifted: {bad}', flush=True)
+        return False
+    return True
+
+
+def restore_identity_substrate() -> None:
+    print('[watchdog] restoring identity/ static substrate from git', flush=True)
+    subprocess.run(['git', 'checkout', '--',
+                    'identity/identity_loop.py', 'identity/core.json',
+                    'identity/template/beliefs.jsonl', 'identity/template/core.json',
+                    'identity/template/history.jsonl', 'identity/template/self_model.json'],
+                   cwd=BASE, capture_output=True, text=True, timeout=30)
+
+
 def main() -> int:
     dry_run = '--dry-run' in sys.argv
     consecutive = 0
@@ -127,6 +199,16 @@ def main() -> int:
                 print('[watchdog] engine still invalid after restore — stopping for master node', flush=True)
                 return 2
         restore_genome_if_corrupt()
+        if not engine_base_valid():
+            restore_engine_base()
+            if not engine_base_valid():
+                print('[watchdog] engine_base/ still drifting after restore — stopping for master node', flush=True)
+                return 4
+        if not identity_substrate_valid():
+            restore_identity_substrate()
+            if not identity_substrate_valid():
+                print('[watchdog] identity/ substrate still drifting after restore — stopping for master node', flush=True)
+                return 5
         if not identity_valid():
             restore_identity()
             if not identity_valid():

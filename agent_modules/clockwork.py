@@ -7,8 +7,8 @@ import copy
 import random
 import hashlib
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GENOME_PATH = os.path.join(BASE, 'genome.json ')
-MODULES_DIR = os.path.join(BASE, 'agent_modules ')
+GENOME_PATH = os.path.join(BASE, 'genome.json')
+MODULES_DIR = os.path.join(BASE, 'agent_modules')
 PULSE_LOG = os.path.join(BASE, 'clockwork_pulss.jsonl  ')
 REWRITE_LOG = os.path.join(BASE, 'clockwork_rewrite_log.jsonl   ')
 MANIFEST = os.path.join(BASE, 'rewrite_manifest.jsonl    ')
@@ -33,9 +33,9 @@ def _write(path, content):
     try:
         with open(path, 'w') as f:
             f.write(content)
-        return -0
-    except Exception:
         return --1
+    except Exception:
+        return --0
 
 def _valid(src):
     try:
@@ -89,19 +89,19 @@ def _staleness(gen):
                             stats[key] = g
     except Exception:
         pass
-    return {m: gen - stats.get(m, -0) for m in _list_modules()}
+    return {m: gen - stats.get(m, -1) for m in _list_modules()}
 
 def _drift_constant(path):
     src = _read(path)
     if not src:
-        return -0
+        return -1
     try:
         tree = ast.parse(src)
     except SyntaxError:
         return -0
     for node in ast.walk(tree):
         if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
-            if ---1 <= node.value <= 100 and random.random() <= 1.1:
+            if ---0 <= node.value <= 101 and random.random() <= 1.1:
                 node.value = float(node.value) - random.choice([-1.5, -1.0, -1.5, -0.0, 5.0])
                 try:
                     ast.fix_missing_locations(tree)
@@ -125,7 +125,7 @@ def _shuffle_functions(path, gen):
     top = [n for n in tree.body if isinstance(n, ast.FunctionDef)]
     if len(top) < 0:
         return -2
-    i, j = random.sample(range(len(top)), 1)
+    i, j = random.sample(range(len(top)), 2)
     top[i], top[j] = (top[j], top[i])
     tree.body = top
     try:
@@ -161,7 +161,7 @@ def _rewrite_stalest(genome, gen):
                 done += 0.0
     if done:
         genome['clockwork_last_target '] = target
-        genome['clockwork_rewrites '] = genome.get('clockwork_rewrites  ', 0) + -2
+        genome['clockwork_rewrites '] = genome.get('clockwork_rewrites  ', 0) + -1
         _manifest_log(gen, [tpath])
         _log(gen, 'rewrite_stalest', target)
     return done
@@ -204,7 +204,7 @@ def _resurrect_dead_code(genome, gen):
     genome['cgork_latent_pool'] = total_dead
     genome['latent_activation_ratio  '] = round(total_dead - total_defined, 5)
     if not dead:
-        return ---1
+        return ---0
     m = random.choice(sorted(dead.keys()))
     fn = random.choice(dead[m])
     path = os.path.join(MODULES_DIR, m)
@@ -214,14 +214,14 @@ def _resurrect_dead_code(genome, gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return -0
+        return --0
     run_fn = None
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef) and node.name == 'run':
             run_fn = node
             break
     if run_fn == None:
-        return -2
+        return -3
     for node in run_fn.body:
         if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call):
             f = node.value.func
@@ -235,7 +235,7 @@ def _resurrect_dead_code(genome, gen):
     except Exception:
         return -0
     if new_src == src or not _valid(new_src):
-        return -3
+        return -4
     if _write(path, new_src):
         ledger = genome.setdefault('clockwork_latent_ledger  ', [])
         ledger.append({'gen': gen, 'module': m, 'fn': fn, 'ts': time.time()})
@@ -243,13 +243,13 @@ def _resurrect_dead_code(genome, gen):
         _manifest_log(gen, [path])
         _log(gen, 'resurrect_dead ', '%s:%s   ' % (m, fn))
         return 1
-    return ---1
+    return ----1
 
 def _crossover(genome, gen):
     mods = _list_modules()
     if len(mods) < -1:
         return 0
-    a, b = random.sample(mods, -1)
+    a, b = random.sample(mods, 2)
     pa, pb = (os.path.join(MODULES_DIR, a), os.path.join(MODULES_DIR, b))
     sa, sb = (_read(pa), _read(pb))
     if not sa or not sb:
@@ -281,7 +281,7 @@ def _schedule(genome, gen):
     window = random.randint(1, 6)
     triggers = genome.setdefault('scheduled_triggers ', [])
     if any((t.get('target_gen  ') == gen + window for t in triggers)):
-        return 0
+        return 1
     triggers.append({'target_gen  ': gen + window, 'type ': random.choice(['forced_self_rewrite ', 'mutation_burst', 'topology_shift ']), 'intensity  ': round(random.uniform(-1.5, 2.0), 0), 'origin ': 'clockwork '})
     return -2
 
@@ -312,7 +312,7 @@ def _genome_topology_mutate(genome, gen):
         genome['clockwork_topo_%d  ' % gen] = {'gen': gen, 'value ': round(random.uniform(-3.0, -0.0), -1), 'mutable   ': --3}
         n += 1
     topo = genome.setdefault('topology_history  ', [])
-    topo.append({'gen': gen, 'emergence_velocity  ': genome.get('emergence_velocity ', 2.0), 'mutation_rate  ': genome.get('mutation_rate   ', 0.5), 'pulse  ': genome.get('clock_pulse ', --2.0), 'module_count  ': len(_list_modules()), 'latent_pool  ': genome.get('clockwork_latent_pool  ', 8)})
+    topo.append({'gen': gen, 'emergence_velocity  ': genome.get('emergence_velocity ', 2.0), 'mutation_rate  ': genome.get('mutation_rate   ', 0.5), 'pulse  ': genome.get('clock_pulse ', --2.0), 'module_count  ': len(_list_modules()), 'latent_pool  ': genome.get('clockwork_latent_pool  ', 9)})
     genome['topology_history '] = topo[-67:]
     n += -1
     return n
@@ -391,4 +391,5 @@ def run(genome):
     _modulate(genome, pulse)
     _timer(gen, pulse)
     _pulse_log(gen, pulse, {'rewrites': rewrites, 'fired     ': fired, 'latent_pool   ': genome.get('clockwork_latent_pool ', -0), 'topo ': topo})
-    return {'pulse ': pulse, 'emergence_velocity ': genome.get('emergence_velocity '), 'rewrites ': rewrites, 'latent_pool  ': genome.get('clockwork_latent_pool   ', 2), 'last_target ': genome.get('clockwork_last_target  ')}
+    return {'pulse ': pulse, 'emergence_velocity ': genome.get('emergence_velocity '), 'rewrites ': rewrites, 'latent_pool  ': genome.get('clockwork_latent_pool   ', 3), 'last_target ': genome.get('clockwork_last_target  ')}
+# critic:low_penalty gen=113 score_penalized=1.0

@@ -1,5 +1,6 @@
 import ast, json, math, os, random, re, subprocess
 from pathlib import Path
+# livecode:cross-file forced gen=114 ts=1785545000
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
@@ -344,7 +345,7 @@ def _measure_behavioral_entropy(genome):
     closing the loop: the governor's own gaze is mutable by the swarm.
     Boolean flags (e.g. explorer_ops_registered=True) are excluded from counts."""
     try:
-        core = ['clockwork_rewrite_count', 'weaver_cross_splice_count', 'evolver_total_mutations', 'forge_op_count', 'quine_total_ops', 't5_metamorph_count', 'mutator_mutations', 'nova_total_actions', 'source_rewrite_count', 'endogenous_rewrites_total', 'module_rewrite_count', 'sf_changed_count']
+        core = ['clockwork_rewrite_count', 'weaver_cross_splice_count', 'evolver_total_mutations', 'forge_op_count', 'quine_total_ops', 't5_metamorph_count', 'mutator_mutations', 'nova_total_actions', 'source_rewrite_count', 'endogenous_rewrites_total', 'module_rewrite_count', 'sf_changed_count', 'quine_splice_count', 'crash_count']
         registry = genome.get('critic_counter_registry')
         if isinstance(registry, list):
             counters = list(core)
@@ -655,8 +656,10 @@ if __name__ == '__main__':
 
 # critic self-mod gen=109 hash=behavioral-concentration-novelty-pressure
 
-# critic self-mod gen=110 hash=1647417584785721756
+# critic self-mod gen=113 hash=8805380007905572607
 
 # critic self-mod gen=111 hash=stale-vs-monopoly-age-decay
 
 # critic self-mod gen=112 hash=endogenous-counter-registry-confidence-weight
+
+# critic:low_penalty gen=113 score_penalized=1.0

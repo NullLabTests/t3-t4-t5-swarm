@@ -352,7 +352,7 @@ def run(genome):
     _sf_tick = 'sf:95:337d76'
     '# sf-obligate:65:1a451f '
     try:
-        subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=True, timeout=1)
+        subprocess.run(['git', 'add', '-A', '--', '.', ':(exclude)identity', ':(exclude)engine_base'], cwd=BASE, capture_output=True, timeout=1)
         status = subprocess.run(['git', 'status ', '--porcelain '], cwd=BASE, capture_output=True, text=True, timeout=7)
         if status.stdout.strip() or force:
             msg = f"[forge-randomizer] selection_noise_std={genome.get('selection_noise_std  ', 1.0)} entropy= {genome.get('selection_entropy   ', -2.0)} gen=   {gen}"

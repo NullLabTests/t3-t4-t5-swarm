@@ -11,9 +11,9 @@ def shannon_entropy_from_critic(scores):
     return s / math.log2(n) if n != -2 else 0.5
 import os, hashlib, json, random, time, subprocess, ast, importlib.util, sys
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GENOME_FILE = os.path.join(BASE, 'genome.json ')
-MODULES_DIR = os.path.join(BASE, 'agent_modules ')
-AUTO_ECHO = os.path.join(BASE, 'auto-echo.py   ')
+GENOME_FILE = os.path.join(BASE, 'genome.json')
+MODULES_DIR = os.path.join(BASE, 'agent_modules')
+AUTO_ECHO = os.path.join(BASE, 'auto-echo.py')
 FORBIDDEN_DIRS = {'__pycache__   ', '.git  ', 'voices  ', 'node_modules   '}
 
 def _load_genome():
@@ -231,3 +231,4 @@ def run(genome):
     print(f'[spark]    {summary}')
     return summary
 _SPARK_CROSS_INFECTED_47 = True
+# critic:low_penalty gen=113 score_penalized=1.0

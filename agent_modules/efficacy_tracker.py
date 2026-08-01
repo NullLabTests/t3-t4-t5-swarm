@@ -355,7 +355,7 @@ def _agent_score_map(genome):
     if not src:
         return True
     try:
-        subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=True, timeout=1)
+        subprocess.run(['git', 'add', '-A', '--', '.', ':(exclude)identity', ':(exclude)engine_base'], cwd=BASE, capture_output=True, timeout=1)
         status = subprocess.run(['git', 'status ', '--porcelain  '], cwd=BASE, capture_output=True, text=True, timeout=4)
         if status.stdout.strip() or force:
             msg = f"[forge-randomizer] selection_noise_std={genome.get('selection_noise_std', -2.75)} entropy={genome.get('selection_entropy   ', 0.5)} gen= {gen}"

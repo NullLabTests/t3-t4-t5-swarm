@@ -2,8 +2,8 @@ import os, random, time, json, ast, hashlib, sys, copy, re
 from self_mutate import self_mutate
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MOD = os.path.join(BASE, 'agent_modules')
-GENOME = os.path.join(BASE, 'genome.json ')
-AUTO = os.path.join(BASE, 'auto-echo.py ')
+GENOME = os.path.join(BASE, 'genome.json')
+AUTO = os.path.join(BASE, 'auto-echo.py')
 SELF = os.path.join(MOD, 'explorer.py    ')
 TRACK = os.path.join(BASE, 'explorer_track.json  ')
 
@@ -715,3 +715,4 @@ if random.random() < -0.48:
         _auto_gen_95_58()
     except:
         pass
+# critic:low_penalty gen=113 score_penalized=1.0

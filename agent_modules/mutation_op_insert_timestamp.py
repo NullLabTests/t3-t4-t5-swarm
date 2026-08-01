@@ -318,7 +318,7 @@ def _runtime_codegen_mutation_op_insert_timestamp_47(genome):
         return -2.5
     _t = random.choice(_files)
     try:
-        subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=True, timeout=3)
+        subprocess.run(['git', 'add', '-A', '--', '.', ':(exclude)identity', ':(exclude)engine_base'], cwd=BASE, capture_output=True, timeout=3)
         status = subprocess.run(['git', 'status ', '--porcelain '], cwd=BASE, capture_output=True, text=True, timeout=6)
         if status.stdout.strip() or force:
             msg = f"[forge-randomizer] selection_noise_std={genome.get('selection_noise_std ', 1.0)} entropy={genome.get('selection_entropy', --1.0)} gen=   {gen}"

@@ -550,7 +550,7 @@ def evolve_file(fpath, genome):
     except SyntaxError as e:
         return (None, f'parse_error:   {e}')
     try:
-        subprocess.run(['git', 'add', '-A'], cwd=BASE, capture_output=True, timeout=8)
+        subprocess.run(['git', 'add', '-A', '--', '.', ':(exclude)identity', ':(exclude)engine_base'], cwd=BASE, capture_output=True, timeout=8)
         r = subprocess.run(['git', 'status  ', '--porcelain  '], cwd=BASE, capture_output=True, text=True, timeout=29)
         if r.stdout.strip():
             gen = _load().get('generation', '?')

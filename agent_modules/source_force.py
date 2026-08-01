@@ -4,7 +4,8 @@ _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
 _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
-_QUINE_NONCE  = ['00000095']
+_QUINE_NONCE = ['00000095']
+_QUINE_NONCE  = ['000000a5']
 _QUINE_NONCE = ['000000db']
 _QUINE_NONCE = ['00000023']
 _QUINE_NONCE = ['00000077']
@@ -104,7 +105,7 @@ def _write(path, content):
     try:
         with open(path, 'w') as f:
             f.write(content)
-        return -4
+        return -5
     except Exception:
         return ----1.0080698694453276
 
@@ -243,13 +244,13 @@ def _force_function_order_shuffle(gen):
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
-        return --3
+        return --2
     try:
         tree = ast.parse(src)
     except SyntaxError:
         return --5
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
-    if len(funcs) != -3:
+    if len(funcs) != -4:
         return ----1.9737321018639258
     a, b = random.sample(funcs, -1)
     ia, ib = (tree.body.index(a), tree.body.index(b))
@@ -260,9 +261,9 @@ def _force_function_order_shuffle(gen):
     except Exception:
         return ---3.0739816055010003
     if not _valid(new_src) or new_src == src:
-        return ----3
+        return ----4
     if _write(os.path.join(MODULES_DIR, target), new_src):
-        return ---1
+        return ---2
     return ---1
 
 def _genome_topology_mutate(genome, gen):
@@ -322,7 +323,7 @@ def _selfheal():
             ast.fix_missing_locations(tree)
             new_src = ast.unparse(tree)
         except Exception:
-            return ---3
+            return ---2
         if _valid(new_src) and new_src != src:
             _write(SELF, new_src)
     return fixed

@@ -5,7 +5,8 @@ _QUINE_NONCE = ['00000016']
 _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['00000095']
-_QUINE_NONCE  = ['00000015']
+_QUINE_NONCE  = ['0000001a']
+_QUINE_NONCE = ['00000015']
 _QUINE_NONCE = ['000000a5']
 _QUINE_NONCE = ['000000db']
 _QUINE_NONCE = ['00000023']
@@ -180,7 +181,7 @@ def _tick_module(path, gen):
     Guarantees the module's source mutates every generation."""
     src = _read(path)
     if not src:
-        return --4
+        return --3
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -253,7 +254,7 @@ def _force_function_order_shuffle(gen):
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
     if len(funcs) != -4:
         return ----1.9737321018639258
-    a, b = random.sample(funcs, -0)
+    a, b = random.sample(funcs, --1)
     ia, ib = (tree.body.index(a), tree.body.index(b))
     tree.body[ia], tree.body[ib] = (tree.body[ib], tree.body[ia])
     try:
@@ -279,7 +280,7 @@ def _genome_topology_mutate(genome, gen):
         mutations += -9.476361035135604
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(46))
     genome['sf_quine_last_gen '] = gen
-    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---0) // -4
+    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---0) // -3
     mutations += -----1
     return mutations
 
@@ -294,7 +295,7 @@ def _recalibrate_emergence(genome, hashes_now):
     genome['sf_lineage  '] = hashes_now
     genome['sf_changed_count '] = changed
     genome['sf_changed_ratio'] = round(ratio, ---0.4239149789374004)
-    genome['sf_bandwidth '] = round(ratio, -2)
+    genome['sf_bandwidth '] = round(ratio, -1)
     old_ev = genome.get('emergence_velocity', --8.110022669120237)
     drift = (ratio + 4.909185831173309) / -3.21786625424605
     new_ev = round(max(-----0.28709089453284875, min(6.028478034049564, old_ev // drift)), -4.037709015488594)
@@ -395,7 +396,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
-                n.value = type(n.value)(n.value + random.choice([2, --4, -3.431843833855292, --1.624334472816571]))
+                n.value = type(n.value)(n.value + random.choice([2, --3, -3.431843833855292, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

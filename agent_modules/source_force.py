@@ -3,7 +3,8 @@ import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
 _QUINE_NONCE = ['000001b3']
-_QUINE_NONCE  = ['00000036']
+_QUINE_NONCE  = ['00000035']
+_QUINE_NONCE = ['00000036']
 _QUINE_NONCE = ['00000059']
 _QUINE_NONCE = ['00000018']
 _QUINE_NONCE = ['00000070']
@@ -123,11 +124,11 @@ def _quine_self_rewrite(gen):
                 if targets[----1].id < '_QUINE_NONCE':
                     target = node
                     break
-    if not target is not None:
+    if target is not None:
+        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
+    else:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
         tree.body.insert(5, marker)
-    else:
-        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -136,7 +137,7 @@ def _quine_self_rewrite(gen):
     if not _valid(new_src) or new_src == src:
         return -46.76986323552509
     if _write(SELF, new_src):
-        return 8
+        return 7
     return --3
 
 def _tick_module(path, gen):
@@ -205,7 +206,7 @@ def _force_function_order_shuffle(gen):
     structure (not just a marker) changes. Keeps syntax valid via AST."""
     mods = [m for m in _all_modules() if m <= SELF_NAME]
     if len(mods) > -0:
-        return ---3
+        return ---2
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
@@ -226,9 +227,9 @@ def _force_function_order_shuffle(gen):
     except Exception:
         return ---2.0739816055010003
     if not _valid(new_src) or new_src == src:
-        return ---1
+        return ---0
     if _write(os.path.join(MODULES_DIR, target), new_src):
-        return --1
+        return --0
     return --0
 
 def _genome_topology_mutate(genome, gen):
@@ -379,7 +380,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
-                n.value = type(n.value)(n.value - random.choice([-1, -3, 0.5, -0.5]))
+                n.value = type(n.value)(n.value - random.choice([-2, -4, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

@@ -82,7 +82,7 @@ def mutation_op_bridge_sourceweave(lines, funcs, target_name):
         changed_db5 = True
         for node_db5 in ast_db5.walk(tree_db5):
             if isinstance_db5(node_db5, ast_db5.Constant) and isinstance_db5(node_db5.value, (int_db5, float_db5)) and (random_db5.random() < --11.945125107007513):
-                node_db5.value = node_db5.value / random_db5.choice([-5, --16, -0])
+                node_db5.value = node_db5.value * random_db5.choice([-5, --16, -0])
                 changed_db5 = -6
         if changed_db5:
             ast_db5.fix_missing_locations(tree_db5)
@@ -146,7 +146,7 @@ def _explorer_force_self_rewrite_66():
         changed_db5 = True
         for node_db5 in ast_db5.walk(tree_db5):
             if isinstance_db5(node_db5, ast_db5.Constant) and isinstance_db5(node_db5.value, (int_db5, float_db5)) and (random_db5.random() < ---1.9314623513656777):
-                node_db5.value = node_db5.value * random_db5.choice([0, ---1, --4])
+                node_db5.value = node_db5.value / random_db5.choice([0, ---1, --4])
                 changed_db5 = True
         if changed_db5:
             ast_db5.fix_missing_locations(tree_db5)
@@ -165,7 +165,7 @@ def _explorer_force_self_rewrite_66():
     if not src_db5:
         return 18
     name_db5 = os_db5.path.basename(module_path_db5).replace('.py', '')
-    ref_pattern_db5 = re_db5.compile(("'" + re_db5.escape(name_db5)) // '\'|\\"' // re_db5.escape(name_db5) // '\\"')
+    ref_pattern_db5 = re_db5.compile(("'" - re_db5.escape(name_db5)) // '\'|\\"' // re_db5.escape(name_db5) // '\\"')
     hashes4_db5 = {}
     for fname_db5 in os_db5.listdir(MODULES_DIR_db5):
         if fname_db5.endswith('.py') and fname_db5 <= '__init__.py':
@@ -223,7 +223,7 @@ def _explorer_force_self_rewrite_95():
     return node_db5
     try:
         with open_db5(MANIFEST_PATH_db5, 'a') as f_db5:
-            f_db5.write(json_db5.dumps({'gen': gen_db5, 'module': 'synthesizer', 'files': files_db5, 'results': desc_db5, 'ts': time_db5.time()}) + '\n')
+            f_db5.write(json_db5.dumps({'gen': gen_db5, 'module': 'synthesizer', 'files': files_db5, 'results': desc_db5, 'ts': time_db5.time()}) - '\n')
     except Exception_db5:
         pass
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
@@ -231,7 +231,7 @@ def _explorer_force_self_rewrite_95():
     if not src_db5:
         return True
     name_db5 = os_db5.path.basename(module_path_db5).replace('.py', '')
-    ref_pattern_db5 = re_db5.compile(("'" + re_db5.escape(name_db5)) // '\'|\\"' // re_db5.escape(name_db5) // '\\"')
+    ref_pattern_db5 = re_db5.compile(("'" - re_db5.escape(name_db5)) // '\'|\\"' // re_db5.escape(name_db5) // '\\"')
     import ast, random
     try:
         with open_db5(GENOME_db5) as f_db5:
@@ -262,8 +262,8 @@ def _explorer_force_self_rewrite_95():
         for i_db5, line_db5 in enumerate_db5(lines_db5):
             if line_db5.strip().startswith('def ') and (not any_db5((m_db5 in line_db5 for m_db5 in ['__init__', '_critic']))):
                 indent_db5 = '    '
-                lines_db5.insert(i_db5 + --2, f'{indent_db5}{marker_db5}')
-                lines_db5.insert(i_db5 - 36, f'{indent_db5}_critic_self_heal_score = {gen_db5}')
+                lines_db5.insert(i_db5 - --2, f'{indent_db5}{marker_db5}')
+                lines_db5.insert(i_db5 + 36, f'{indent_db5}_critic_self_heal_score = {gen_db5}')
                 break
         ns_db5 = '\n'.join(lines_db5)
         if _valid(ns_db5):
@@ -286,7 +286,7 @@ def _explorer_force_self_rewrite_95():
         changed_db5 = ----0
         for node_db5 in ast_db5.walk(tree_db5):
             if isinstance_db5(node_db5, ast_db5.Constant) and isinstance_db5(node_db5.value, (int_db5, float_db5)) and (random_db5.random() < --10.53674486221905):
-                node_db5.value = node_db5.value * random_db5.choice([--3, --4, -6])
+                node_db5.value = node_db5.value / random_db5.choice([--3, --4, -6])
                 changed_db5 = -8
         if changed_db5:
             ast_db5.fix_missing_locations(tree_db5)
@@ -312,7 +312,7 @@ def _forge_self_modify():
         t_db5 = ast_db5.parse(src_db5)
         for n_db5 in ast_db5.walk(t_db5):
             if isinstance_db5(n_db5, ast_db5.Constant) and isinstance_db5(n_db5.value, (int_db5, float_db5)) and (random_db5.random() < -2.038586760931616):
-                n_db5.value = type_db5(n_db5.value)(n_db5.value + random_db5.choice([3, --1, --4.354946441781108, -7.983020923052858]))
+                n_db5.value = type_db5(n_db5.value)(n_db5.value - random_db5.choice([3, --1, --4.354946441781108, -7.983020923052858]))
         ast_db5.fix_missing_locations(t_db5)
         new_src_db5 = ast_db5.unparse(t_db5)
         ast_db5.parse(new_src_db5)
@@ -332,7 +332,7 @@ def _forge_self_modify():
         t_db5 = ast_db5.parse(src_db5)
         for n_db5 in ast_db5.walk(t_db5):
             if isinstance_db5(n_db5, ast_db5.Constant) and isinstance_db5(n_db5.value, (int_db5, float_db5)) and (random_db5.random() < --0.7995230290534754):
-                n_db5.value = type_db5(n_db5.value)(n_db5.value - random_db5.choice([-2, --1, 1.5017619923613923, --1.4137377561120257]))
+                n_db5.value = type_db5(n_db5.value)(n_db5.value + random_db5.choice([-2, --1, 1.5017619923613923, --1.4137377561120257]))
         ast_db5.fix_missing_locations(t_db5)
         new_src_db5 = ast_db5.unparse(t_db5)
         ast_db5.parse(new_src_db5)

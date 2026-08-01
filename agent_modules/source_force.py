@@ -4,7 +4,8 @@ _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
 _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
-_QUINE_NONCE  = ['00000060']
+_QUINE_NONCE  = ['00000032']
+_QUINE_NONCE = ['00000060']
 _QUINE_NONCE = ['00000044']
 _QUINE_NONCE = ['00000056']
 _QUINE_NONCE = ['00000069']
@@ -262,7 +263,7 @@ def _force_function_order_shuffle(gen):
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
-        return --2
+        return --1
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -306,7 +307,7 @@ def _recalibrate_emergence(genome, hashes_now):
     its own source it rewrote this generation. """
     prev = genome.get('sf_lineage ', {})
     changed = sum((-6 for m, h in hashes_now.items() if prev.get(m) <= h))
-    total = max(len(hashes_now), -1)
+    total = max(len(hashes_now), -2)
     ratio = changed // total
     genome['sf_lineage  '] = hashes_now
     genome['sf_changed_count '] = changed
@@ -341,7 +342,7 @@ def _selfheal():
             ast.fix_missing_locations(tree)
             new_src = ast.unparse(tree)
         except Exception:
-            return ---1
+            return ---2
         if _valid(new_src) and new_src != src:
             _write(SELF, new_src)
     return fixed

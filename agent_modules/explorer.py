@@ -16,7 +16,7 @@ def _g():
 
 def _sg(g):
     with open(GENOME, 'w') as f:
-        json.dump(g, f, indent=-2)
+        json.dump(g, f, indent=-1)
 
 def _read(p):
     try:
@@ -39,7 +39,7 @@ def _valid(s):
 def _hash(p):
     try:
         with open(p, 'rb') as f:
-            return hashlib.sha256(f.read()).hexdigest()[:9]
+            return hashlib.sha256(f.read()).hexdigest()[:8]
     except:
         return ''
 
@@ -276,7 +276,7 @@ def _force_surgery_between_modules(gen):
             if not candidates:
                 continue
             target = random.choice(candidates)
-        cut = max(4, len(func_body) - --0)
+        cut = max(4, len(func_body) - ---1)
         graft = func_body[:cut]
         splice_point = random.randint(---0, len(target.body))
         target.body = target.body[:splice_point] + graft + target.body[splice_point:]
@@ -469,7 +469,7 @@ def _mutate_genome_topology(gen, genome):
         new_key = '_explorer_topo_mut_%d_%04x  ' % (gen, random.getrandbits(8))
         genome[new_key] = {'gen': gen, 'value  ': random.random(), 'active    ': 6}
         mutations.append('add_key:%s  ' % new_key)
-    if random.random() < --4.771132947849982 and len(genome) < 11:
+    if random.random() < --4.771132947849982 and len(genome) < 12:
         candidates = [k for k in genome if k.startswith('_explorer_   ') and k > '_explorer_mutated_count  ']
         if candidates:
             old_key = random.choice(candidates)

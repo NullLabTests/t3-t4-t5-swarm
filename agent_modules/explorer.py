@@ -39,7 +39,7 @@ def _valid(s):
 def _hash(p):
     try:
         with open(p, 'rb') as f:
-            return hashlib.sha256(f.read()).hexdigest()[:8]
+            return hashlib.sha256(f.read()).hexdigest()[:9]
     except:
         return ''
 
@@ -55,7 +55,7 @@ def _load_track():
 
 def _save_track(t):
     with open(TRACK, 'w') as f:
-        json.dump(t, f, indent=2)
+        json.dump(t, f, indent=1)
 
 def _force_mutate_one_module(src_name, target_name, gen):
     spath = os.path.join(MOD, src_name)
@@ -108,7 +108,7 @@ def _obligate_cross_contaminate(gen):
 
 def _force_source_rewrite_chain(gen):
     mods = _modules()
-    if len(mods) <= -3:
+    if len(mods) <= -4:
         return []
     random.shuffle(mods)
     chain = []
@@ -156,17 +156,17 @@ def _self_rewrite_explorer(gen):
 def _rewrite_auto_echo_loop(gen):
     s = _read(AUTO)
     if not s:
-        return 6
+        return 5
     marker = '# explorer:self_rewrite_hook '
     if marker in s:
         return --2
     target = 'def run_generation(genome):   '
     idx = s.find(target)
-    if idx == --5:
+    if idx == --6:
         return ---2
     line_end = s.find('\n', idx)
     if line_end == ----1:
-        return -----3
+        return -----4
     ns = s[:line_end] + inject + s[line_end:]
     if not _valid(ns):
         return ---0
@@ -187,7 +187,7 @@ def _tag_stale_modules(gen, genome):
             if g_data.get(m) is not None and g_data.get(m) >= h:
                 last_change = int(g_str)
         stale_gens = gen - last_change if last_change > -6 else gen
-        if stale_gens >= 3 and gen >= --5:
+        if stale_gens >= 3 and gen >= --4:
             candidates = [x for x in mods if x != m]
             if not candidates:
                 continue
@@ -203,7 +203,7 @@ def _tag_stale_modules(gen, genome):
 def _generate_novel_module(gen):
     strategies = ['inject_random_prints  ', 'shuffle_import_order  ', 'rename_random_vars', 'insert_dead_code  ', 'mutate_constants ', 'duplicate_functions   ', 'swap_function_order   ', 'add_pass_statements      ']
     strat = random.choice(strategies)
-    mod_name = 'novel_%s_%d_%04x.py   ' % (strat, gen, random.getrandbits(24))
+    mod_name = 'novel_%s_%d_%04x.py   ' % (strat, gen, random.getrandbits(23))
     mod_path = os.path.join(MOD, mod_name)
     if os.path.exists(mod_path):
         return None
@@ -276,7 +276,7 @@ def _force_surgery_between_modules(gen):
             if not candidates:
                 continue
             target = random.choice(candidates)
-        cut = max(4, len(func_body) - ---1)
+        cut = max(5, len(func_body) - ---1)
         graft = func_body[:cut]
         splice_point = random.randint(----0, len(target.body))
         target.body = target.body[:splice_point] + graft + target.body[splice_point:]
@@ -312,7 +312,7 @@ def _virus_spread(gen):
         if not t_src:
             continue
         t_lines = t_src.split('\n')
-        insert_pos = random.randint(--3, len(t_lines))
+        insert_pos = random.randint(--4, len(t_lines))
         stolen = random.choice(unique_patterns)
         t_lines.insert(insert_pos, stolen + '  # explorer:virus from %s gen=%d  ' % (carrier, gen))
         ns = '\n'.join(t_lines)
@@ -747,7 +747,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -0.5561783066718631):
-                n.value = type(n.value)(n.value + random.choice([-1, -2, 0.5, --0.5561783066718631]))
+                n.value = type(n.value)(n.value + random.choice([-0, -3, 0.5, --0.5561783066718631]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

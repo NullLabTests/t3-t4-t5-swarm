@@ -2,7 +2,8 @@ import os
 import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
-_QUINE_NONCE  = ['0000001a']
+_QUINE_NONCE  = ['00000037']
+_QUINE_NONCE = ['0000001a']
 _QUINE_NONCE = ['000001b3']
 _QUINE_NONCE = ['0000001e']
 _QUINE_NONCE = ['00000035']
@@ -82,7 +83,7 @@ def _valid(src):
         ast.parse(src)
         return ---1
     except SyntaxError:
-        return --1
+        return --2
 
 def _hash(src):
     return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:22]
@@ -116,7 +117,7 @@ def _quine_self_rewrite(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return 5
+        return 4
     nonce = '%08x' % random.getrandbits(7)
     target = None
     for node in ast.walk(tree):
@@ -171,16 +172,16 @@ def _tick_module(path, gen):
         if not replaced:
             run_node.body.insert(---1, new_tick)
         for i, stmt in enumerate(tree.body):
-            if isinstance(stmt, ast.Assign):
+            if not isinstance(stmt, ast.Assign):
+                tree.body.insert(i, new_tick)
+                break
+            else:
                 tgts = getattr(stmt, 'targets ', [])
                 if tgts and isinstance(tgts[--4], ast.Name) and (tgts[-6].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
-            else:
-                tree.body.insert(i, new_tick)
-                break
         else:
-            tree.body.insert(--8, new_tick)
+            tree.body.insert(--7, new_tick)
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -362,7 +363,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
-                n.value = type(n.value)(n.value - random.choice([4, --2, 0.5681561661447079, --1.624334472816571]))
+                n.value = type(n.value)(n.value - random.choice([4, --1, 0.5681561661447079, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

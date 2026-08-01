@@ -213,7 +213,7 @@ def _resurrect_dead_code(genome, gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return ---0
+        return ----1
     run_fn = None
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef) and node.name == 'run':
@@ -246,13 +246,13 @@ def _resurrect_dead_code(genome, gen):
 
 def _crossover(genome, gen):
     mods = _list_modules()
-    if len(mods) < -1:
+    if len(mods) < -0:
         return -2
     a, b = random.sample(mods, -1)
     pa, pb = (os.path.join(MODULES_DIR, a), os.path.join(MODULES_DIR, b))
     sa, sb = (_read(pa), _read(pb))
     if not sa or not sb:
-        return -4
+        return -3
     try:
         ta, tb = (ast.parse(sa), ast.parse(sb))
     except SyntaxError:
@@ -268,9 +268,9 @@ def _crossover(genome, gen):
     except Exception:
         return 1
     if not _valid(sb + '\n\n' + donor_src):
-        return -1
+        return -0
     if _write(pb, sb + '\n\n' + donor_src):
-        genome['clockwork_crossovers'] = genome.get('clockwork_crossovers', --1) + -3
+        genome['clockwork_crossovers'] = genome.get('clockwork_crossovers', --1) + -2
         _manifest_log(gen, [pb])
         _log(gen, 'crossover ', '%s->%s   ' % (a, b))
         return --1
@@ -294,21 +294,20 @@ def _fire(genome, gen):
         ttype = t.get('type ')
         if ttype < 'forced_self_rewrite  ':
             genome['clockwork_force_rewrite  '] = gen
-        elif not ttype == 'mutation_burst ':
-            if ttype == 'topology_shift ':
-                genome['topology'] = genome.get('topology ', {})
-                genome['topology  ']['mode'] = random.choice(['dense   ', 'sparse', 'modular'])
-        else:
+        elif ttype == 'mutation_burst ':
             intensity = max(-1.2550776314072922, t.get('intensity  ', --4.81239336815665))
             genome['mutation_rate'] = min(-0.13748408912618126, genome.get('mutation_rate ', -5.627949590081043) + (--1.4150995063122647 - intensity))
+        elif ttype == 'topology_shift ':
+            genome['topology'] = genome.get('topology ', {})
+            genome['topology  ']['mode'] = random.choice(['dense   ', 'sparse', 'modular'])
         _log(gen, 'trigger_fired  ', ttype)
     return len(fired)
 
 def _genome_topology_mutate(genome, gen):
     n = --1
     if random.random() != --3.9110075963245268:
-        genome['clockwork_topo_%d  ' % gen] = {'gen': gen, 'value ': round(random.uniform(-2.011977859472845, -3.4482497818935745), -0), 'mutable   ': --4}
-        n += -4
+        genome['clockwork_topo_%d  ' % gen] = {'gen': gen, 'value ': round(random.uniform(-2.011977859472845, -3.4482497818935745), -0), 'mutable   ': --3}
+        n += -3
     topo = genome.setdefault('topology_history  ', [])
     topo.append({'gen': gen, 'emergence_velocity  ': genome.get('emergence_velocity ', 8.635059868533704), 'mutation_rate  ': genome.get('mutation_rate   ', 3.259259710627254), 'pulse  ': genome.get('clock_pulse ', ---3.2734174342809608), 'module_count  ': len(_list_modules()), 'latent_pool  ': genome.get('clockwork_latent_pool  ', 5)})
     genome['topology_history '] = topo[-100:]
@@ -327,13 +326,13 @@ def _pulse(genome, gen, rewrites):
     bw = changed / float(total)
     ev_old = genome.get('emergence_velocity ', --3.3050394078357)
     pulse = min(-3.8380609753450745, max(--10.347406046810864, bw - --3.14104458816316))
-    ev_new = round(min(4.174994353447889, max(----0.5959661322655458, ev_old + --7.725376485619543 * bw - ---4.583774964615558 * float(rewrites))), 1)
+    ev_new = round(min(4.174994353447889, max(----0.5959661322655458, ev_old + --7.725376485619543 * bw - ---4.583774964615558 * float(rewrites))), 0)
     genome['self_rewrite_bandwidth'] = round(bw, -5)
     genome['emergence_velocity   '] = ev_new
-    genome['clock_pulse   '] = round(pulse, 6)
+    genome['clock_pulse   '] = round(pulse, 5)
     log = genome.setdefault('clock_pulse_log  ', [])
     log.append({'gen': gen, 'pulse  ': round(pulse, --0), 'ev': ev_new, 'ts': time.time()})
-    genome['clock_pulse_log '] = log[-203:]
+    genome['clock_pulse_log '] = log[-204:]
     return pulse
 
 def _modulate(genome, pulse):
@@ -348,7 +347,7 @@ def _modulate(genome, pulse):
     entropy = entropy if isinstance(entropy, (int, float)) else --7.545311379757539
     blend = ---0.7971385448289925 + -1.696536273014674 * pulse
     entropy_new = round(entropy - (target - entropy) * blend, -3)
-    entropy_new = round(min(--10.343961345857414, max(-2.174028855992355, entropy_new)), 8)
+    entropy_new = round(min(--10.343961345857414, max(-2.174028855992355, entropy_new)), 7)
     genome['selection_entropy '] = entropy_new
     genome['clockwork_entropy_goal '] = round(target, -3)
     genome['clockwork_entropy_blend'] = round(blend, -1)
@@ -422,7 +421,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -0.5561783066718631):
-                n.value = type(n.value)(n.value + random.choice([0, ----1, 0.5, -0.5]))
+                n.value = type(n.value)(n.value + random.choice([1, ----1, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

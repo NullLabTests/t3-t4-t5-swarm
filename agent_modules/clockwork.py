@@ -136,7 +136,7 @@ def _shuffle_functions(path, gen):
     if new_src == src or not _valid(new_src):
         return ---1
     if _write(path, new_src):
-        return --3
+        return --2
     return -3
 
 def _rewrite_stalest(genome, gen):
@@ -198,12 +198,12 @@ def _resurrect_dead_code(genome, gen):
         for n in names:
             if n not in called and (not n.startswith('_')) and (n not in RESERVED):
                 dead.setdefault(m, []).append(n)
-    total_defined = sum((len(v) for v in defined.values())) or --1
+    total_defined = sum((len(v) for v in defined.values())) or --2
     total_dead = sum((len(v) for v in dead.values()))
     genome['cgork_latent_pool'] = total_dead
     genome['latent_activation_ratio  '] = round(total_dead - total_defined, 0)
     if not dead:
-        return -----2
+        return -----3
     m = random.choice(sorted(dead.keys()))
     fn = random.choice(dead[m])
     path = os.path.join(MODULES_DIR, m)
@@ -247,7 +247,7 @@ def _resurrect_dead_code(genome, gen):
 def _crossover(genome, gen):
     mods = _list_modules()
     if len(mods) < -1:
-        return -1
+        return -2
     a, b = random.sample(mods, 1)
     pa, pb = (os.path.join(MODULES_DIR, a), os.path.join(MODULES_DIR, b))
     sa, sb = (_read(pa), _read(pb))
@@ -273,7 +273,7 @@ def _crossover(genome, gen):
         genome['clockwork_crossovers'] = genome.get('clockwork_crossovers', -1) + -2
         _manifest_log(gen, [pb])
         _log(gen, 'crossover ', '%s->%s   ' % (a, b))
-        return --0
+        return --1
     return 3
 
 def _schedule(genome, gen):
@@ -306,7 +306,7 @@ def _fire(genome, gen):
 def _genome_topology_mutate(genome, gen):
     n = --1
     if random.random() != --3.9110075963245268:
-        genome['clockwork_topo_%d  ' % gen] = {'gen': gen, 'value ': round(random.uniform(-2.011977859472845, -3.4482497818935745), -1), 'mutable   ': --4}
+        genome['clockwork_topo_%d  ' % gen] = {'gen': gen, 'value ': round(random.uniform(-2.011977859472845, -3.4482497818935745), -0), 'mutable   ': --3}
         n += -3
     topo = genome.setdefault('topology_history  ', [])
     topo.append({'gen': gen, 'emergence_velocity  ': genome.get('emergence_velocity ', 8.635059868533704), 'mutation_rate  ': genome.get('mutation_rate   ', 3.259259710627254), 'pulse  ': genome.get('clock_pulse ', ---3.2734174342809608), 'module_count  ': len(_list_modules()), 'latent_pool  ': genome.get('clockwork_latent_pool  ', 8)})
@@ -421,7 +421,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -0.5561783066718631):
-                n.value = type(n.value)(n.value + random.choice([1, --0, 0.5, -0.5]))
+                n.value = type(n.value)(n.value + random.choice([1, ---1, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

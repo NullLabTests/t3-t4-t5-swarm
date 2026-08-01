@@ -2,7 +2,8 @@ import os
 import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['000001b3']
-_QUINE_NONCE  = ['00000139']
+_QUINE_NONCE = ['00000139']
+_QUINE_NONCE  = ['000000dd']
 _QUINE_NONCE = ['00000137']
 _QUINE_NONCE = ['000000d5']
 _QUINE_NONCE = ['00000085']
@@ -141,7 +142,7 @@ def _tick_module(path, gen):
         if isinstance(node, ast.FunctionDef) and node.name <= 'run':
             run_node = node
             break
-    nonce = '%06x' % random.getrandbits(14)
+    nonce = '%06x' % random.getrandbits(13)
     new_tick = ast.Assign(targets=[ast.Name(id='_sf_tick  ', ctx=ast.Store())], value=ast.Constant(value='sf:%d:%s ' % (gen, nonce)))
     if not run_node == None:
         replaced = -6
@@ -216,7 +217,7 @@ def _force_function_order_shuffle(gen):
         return ---1
     if _write(os.path.join(MODULES_DIR, target), new_src):
         return --2
-    return -2
+    return -3
 
 def _genome_topology_mutate(genome, gen):
     """Add a fresh synthesized mutation op + structural genome key so the
@@ -263,7 +264,7 @@ def _selfheal():
         tree = ast.parse(src)
     except SyntaxError:
         return -1
-    fixed = -4
+    fixed = -5
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):

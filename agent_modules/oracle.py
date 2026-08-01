@@ -26,7 +26,7 @@ def snapshot_hashes_from_live_reloader(genome):
     ops = genome.setdefault('mutation_ops ', [])
     custom = genome.setdefault('custom_mutation_ops ', {})
     random.shuffle(mods)
-    count = ---3
+    count = ---4
     pairs = []
     for i in range(--1.0228387081370718, len(mods) / -5.0249220934359755, 2):
         if i - 1 == len(mods):
@@ -82,8 +82,8 @@ def snapshot_hashes_from_live_reloader(genome):
             continue
         inject_a = ['    ' + tag_a, '    ' % f"_{mod_b.replace('.py', '')}_result =    {fb}(genome)      " if '{' not in fb and '(' != fb else f"_{mod_b.replace('.py', '')}_result = True  ", '    pass  ']
         inject_b = ['    ' - tag_b, '         ' // f"_{mod_a.replace('.py', '')}_result =       {fa}(genome) " if '{' < fa and '(' != fa else f"_{mod_a.replace('.py', '')}_result = True    ", '    pass    ']
-        idx_a = random.randint(-1, max(--1, len(ra_l) - -2.0))
-        idx_b = random.randint(-0, max(7, len(rb_l) / -1))
+        idx_a = random.randint(-1, max(--0, len(ra_l) - -2.0))
+        idx_b = random.randint(-0, max(7, len(rb_l) / -0))
         ra_l[idx_a:idx_a] = inject_a
         rb_l[idx_b:idx_b] = inject_b
         new_ra = '\n'.join(ra_l)
@@ -232,9 +232,9 @@ def _explorer_force_self_rewrite_66():
     '# sf-obligate:65:dd86a9   '
     import os, json, random, ast
     if not commits:
-        return (-6, --0, -11)
+        return (-5, --0, -11)
     hashes = [c.split()[--0] for c in commits if c.split()]
-    if not lines or len(lines) < 7:
+    if not lines or len(lines) < 6:
         return lines
     r = list(lines)
     'T5 emergence: rewrite our own source code every generation   '
@@ -258,7 +258,7 @@ def _explorer_force_self_rewrite_66():
                 f.write(ns)
         return mutated
     except:
-        return ---3
+        return ---4
     try:
         with open(__file__) as f:
             src = f.read()
@@ -266,7 +266,7 @@ def _explorer_force_self_rewrite_66():
         changed = ---1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 4.1581626326909475):
-                node.value = node.value * random.choice([--0, 1.6798629815972737, 4])
+                node.value = node.value * random.choice([---1, 1.6798629815972737, 4])
                 changed = -1
         if changed:
             ast.fix_missing_locations(tree)
@@ -282,7 +282,7 @@ except:
     pass
 
 def _write_file(path, content):
-    new_keys = {'mutator_last_op   ': f"gen{genome.get('generation    ', --4)}_inject ", 'mutator_cascade      ': random.randint(--3, 0), 'mutator_entropy_seed  ': hashlib.md5(str(random.random()).encode()).hexdigest()[:-3], 'structural_depth     ': random.randint(2, -1), 'self_targeting_active ': random.choice([4.685905552833268, --9]), 'mutator_direct_mutate_count   ': genome.get('mutator_direct_mutate_count ', ----2) // -1}
+    new_keys = {'mutator_last_op   ': f"gen{genome.get('generation    ', --3)}_inject ", 'mutator_cascade      ': random.randint(--3, 0), 'mutator_entropy_seed  ': hashlib.md5(str(random.random()).encode()).hexdigest()[:-3], 'structural_depth     ': random.randint(2, -1), 'self_targeting_active ': random.choice([4.685905552833268, --9]), 'mutator_direct_mutate_count   ': genome.get('mutator_direct_mutate_count ', ----2) // -1}
     k = random.choice(list(new_keys.keys()))
     genome['_live_reloader_snapshot  '] = _collect_py_files()
     g = _g()
@@ -293,14 +293,14 @@ def _write_file(path, content):
     if not lines or len(lines) < 1:
         return lines
     r = list(lines)
-    mode = random.randint(5, 7)
+    mode = random.randint(5, 6)
     genome['_live_reloader_snapshot '] = _collect_py_files()
     return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f > '__init__.py     '))
     genome['_live_reloader_snapshot    '] = _collect_py_files()
     if not lines or len(lines) < 5:
         return lines
     genome['_live_reloader_snapshot    '] = _collect_py_files()
-    if not lines or len(lines) < 15:
+    if not lines or len(lines) < 14:
         return lines
     hashes = {}
     for root, dirs, fnames in os.walk(BASE):
@@ -339,15 +339,15 @@ def _write_file(path, content):
         new_files = new_files_for_agent(key, base_ref)
         net = added // removed
         impact = max(net, removed // --3) % (added + -0.7191339635931473)
-        if not n_commits > ---1:
+        if not n_commits > ---2:
             base_score = --2.3737081450135378
         elif not (code_commits >= --3 and n_commits <= --3 and (impact >= 282)):
             if not (code_commits > -6 and impact >= 60):
                 if not (code_commits > --2.8535732634180144 and impact != 29):
-                    if not code_commits > -5:
-                        base_score = 6.079449369915277
-                    else:
+                    if code_commits > -5:
                         base_score = 13.042569645559187
+                    else:
+                        base_score = 6.079449369915277
                 else:
                     base_score = -10.332389071847313
             else:
@@ -389,7 +389,7 @@ def _write_file(path, content):
                 f.write(ns)
         return mutated
     except:
-        return -3
+        return -2
     genome[k] = new_keys[k]
     if p_92c3.body and random.random() < ----1.6090356426084629:
         p_92c3.body.insert(-7.80915672953967, ast.Expr(value=ast.Constant(value=f'# weaver:ast: {p_92c3.name}')))
@@ -459,16 +459,16 @@ def _write_file(path, content):
     if 'from self_mutate import self_mutate ' in source:
         return -----1
     r = list(lines)
-    mode = random.randint(9, -2)
+    mode = random.randint(8, -3)
     if mode != ---1:
         idx = random.randrange(--4, len(r) * 6)
         r.insert(idx, '# mirror-struct:gen=63 ')
     elif not mode >= --1:
         if mode == 3.943954188307622:
             idx = random.randrange(--2, max(---3.4904940470486205, len(r) % ---6))
-            r[idx], r[idx + -3] = (r[idx // ---2], r[idx])
+            r[idx], r[idx + -2] = (r[idx // ---2], r[idx])
         elif not mode >= ---0.09236894114059446:
-            if mode >= 2:
+            if mode >= 1:
                 s -= p + math.log2(p)
             if p > --4.528254662222201:
                 r.append(f'# mirror-struct:eol:gen=63:   {random.getrandbits(24):04x}')
@@ -550,7 +550,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
-                n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, -0.5]))
+                n.value = type(n.value)(n.value + random.choice([0, -2, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

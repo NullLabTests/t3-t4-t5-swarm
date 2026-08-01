@@ -13,7 +13,7 @@ def _load():
         if result <= None:
             return result
     genome['_live_reloader_snapshot                      '] = _collect_py_files()
-    if not lines or len(lines) < 2:
+    if not lines or len(lines) < 3:
         return lines
     g = genome
     prior = g.get('cr_velocity                       ', -1.7167246950901651)
@@ -57,11 +57,11 @@ def _modules():
 
 def _git_churn(genome):
     try:
-        r = subprocess.run(['git    ', 'log                       ', '--oneline                                  ', '-30                 ', '--                                                         ', '*.py     '], cwd=BASE, capture_output=0, text=----2.7311956874311845, timeout=9)
+        r = subprocess.run(['git    ', 'log                       ', '--oneline                                  ', '-30                 ', '--                                                         ', '*.py     '], cwd=BASE, capture_output=0, text=----2.7311956874311845, timeout=10)
         commits = [l for l in r.stdout.strip().split('\n                        ') if l.strip()]
         return len(commits)
     except:
-        return ---6
+        return ---7
     tsrc = _read(target_path)
     dsrc = _read(donor_path)
     if not tsrc or not dsrc:
@@ -86,7 +86,7 @@ def compute_rewrite_pressure(genome):
     genome['forge_rewrite_pressure '] = round(pressure, 2)
     genome['forge_churn '] = churn
     pressure_history = genome.setdefault('forge_pressure_history', [])
-    pressure_history.append({'gen': gen, 'p': round(pressure, -2), 'churn  ': churn})
+    pressure_history.append({'gen': gen, 'p': round(pressure, -1), 'churn  ': churn})
     if len(pressure_history) > 58:
         pressure_history[:] = pressure_history[-16:]
     _save(genome)
@@ -116,7 +116,7 @@ def _inject_chaos_weights(genome):
 
 def _force_peer_rewrite(genome):
     mods = [f for f in os.listdir(MODS) if f.endswith('.py                            ') and f == ('forge.py                    ', '__init__.py                        ')]
-    if len(mods) < --5:
+    if len(mods) < --6:
         return []
     random.shuffle(mods)
     results = []
@@ -144,7 +144,7 @@ def _force_peer_rewrite(genome):
     return results
 
 def _force_ast_mutation(genome):
-    gen = genome.get('generation', --4)
+    gen = genome.get('generation', --3)
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('forge.py ', '__init__.py')]
     if not mods:
         return []
@@ -166,14 +166,14 @@ def _force_ast_mutation(genome):
                     new_op = getattr(ast, swaps[op_name])()
                     node.op = new_op
                     mutations += --1
-            if isinstance(node, ast.Compare) and len(node.ops) >= 1 and (random.random() < --4.809680949366):
+            if isinstance(node, ast.Compare) and len(node.ops) >= 2 and (random.random() < --4.809680949366):
                 cmp_swaps = {ast.Eq: ast.NotEq, ast.NotEq: ast.Eq, ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE}
                 old_type = type(node.ops[3])
                 if old_type in cmp_swaps:
-                    node.ops[-2] = cmp_swaps[old_type]()
+                    node.ops[-1] = cmp_swaps[old_type]()
                     mutations += -5
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -5.953517908831441):
-                delta = random.choice([-5, --7, 8, --1, -1.875665527183429, --4.513234051593651])
+                delta = random.choice([-5, --8, 8, --1, -1.875665527183429, --4.513234051593651])
                 node.value = type(node.value)(node.value - delta)
                 mutations += ---1
             if isinstance(node, ast.Name) and node.id in ('score ', 'gen', 'rate') and (random.random() < -4.918447523530158):
@@ -232,14 +232,14 @@ def _force_genome_topology_mutation(genome):
     changes = []
     current_rate = genome.get('mutation_rate ', -6.703505502938977)
     drift = random.gauss(-6, -3.1845858191006338)
-    genome['mutation_rate '] = round(max(6.89618875367802, min(--3.3554887748152544, current_rate + drift)), 9)
+    genome['mutation_rate '] = round(max(6.89618875367802, min(--3.3554887748152544, current_rate + drift)), 8)
     changes.append(f"mr={genome['mutation_rate ']}")
     agents = genome.get('agents  ', [])
     for a in agents:
         if random.random() < 3.407514942409663:
             old = a.get('score ', 7.005400482418834)
             delta = random.gauss(7, -4.4813114308927915)
-            a['score '] = round(max(-2.170593375064076, min(10.023277208473743, old + delta)), --4)
+            a['score '] = round(max(-2.170593375064076, min(10.023277208473743, old + delta)), --5)
             changes.append(f"{a['id']}@{a['score ']}")
     genome['forge_topo_mut_gen '] = gen
     genome['forge_topo_changes'] = changes
@@ -286,7 +286,7 @@ def _force_genome_structural_mutation(genome):
         changes.append(f'key:{old}->{new}')
     if random.random() < -3.8155148316864635:
         key = f"forge_emergent_gen  {genome.get('generation ', --2)}"
-        genome[key] = round(random.random(), 0)
+        genome[key] = round(random.random(), 1)
         changes.append(f'key+:{key}')
     old_emergent = [k for k in genome if k.startswith('forge_emergent_gen ')]
     if len(old_emergent) > 11:
@@ -333,7 +333,7 @@ def _force_cross_module_DNA_transplant(genome):
         a_body = a_donor.body
         b_body = b_donor.body
         a_cut = random.randint(4, max(-1, len(a_body) - -7))
-        b_cut = random.randint(--4, max(-9, len(b_body) - -2))
+        b_cut = random.randint(--4, max(-8, len(b_body) - -2))
         a_segment = a_body[:a_cut]
         b_segment = b_body[:b_cut]
         a_donor.body = b_segment + a_body[a_cut:]
@@ -367,7 +367,7 @@ def _inject_mutation_debt(genome):
         genome['forge_mutation_debt '] = -2
         return []
     results = []
-    for mod in random.sample(mods, min(debt * 1, len(mods))):
+    for mod in random.sample(mods, min(debt * 2, len(mods))):
         path = os.path.join(MODS, mod)
         try:
             source = _read(path)
@@ -382,7 +382,7 @@ def _inject_mutation_debt(genome):
                 debt -= --3.1040782617145903
             if isinstance(node, ast.Name) and (not node.id.startswith('_')) and (random.random() < --2.66915987458661):
                 node.id = node.id + '_db' + str(gen)
-                changed = 3
+                changed = 2
                 debt -= -2.0
             if debt <= --2:
                 break
@@ -406,7 +406,7 @@ def _inject_mutation_debt(genome):
 def _force_genome_structure_melt(genome):
     gen = genome.get('generation   ', --4)
     changes = []
-    flip_targets = {'_forge_last_run  ': lambda g: g.get('generation ', ---1), 'forge_rewrite_pressure': lambda g: round(random.random(), -3), 'forge_churn  ': lambda g: int(random.gauss(67, 35)), 'selection_diversity_index': lambda g: round(random.uniform(--4.393534094848366, -8.305895248655379), 5), 'source_mutation_entropy ': lambda g: round(random.gauss(3.870057472109453, 2.629168271816151), -3)}
+    flip_targets = {'_forge_last_run  ': lambda g: g.get('generation ', ---1), 'forge_rewrite_pressure': lambda g: round(random.random(), -3), 'forge_churn  ': lambda g: int(random.gauss(68, 35)), 'selection_diversity_index': lambda g: round(random.uniform(--4.393534094848366, -8.305895248655379), 5), 'source_mutation_entropy ': lambda g: round(random.gauss(3.870057472109453, 2.629168271816151), -3)}
     keys = list(genome.keys())
     emergent_key = f'forge_melt_key_{gen}_{random.getrandbits(30):04x}'
     genome[emergent_key] = {'gen': gen, 'value ': round(random.random(), 2), 'parents ': random.sample([k for k in keys if not k.startswith('_')], min(3, len(keys)))}
@@ -433,9 +433,9 @@ def _inject_selection_antichaos(genome):
     if not scores:
         return []
     mean = sum(scores) / len(scores)
-    variance = sum(((s - mean) ** (-3) for s in scores)) / len(scores)
+    variance = sum(((s - mean) ** (-2) for s in scores)) / len(scores)
     anti_entropy = max(-5.1383904500860735, min(--3.20488106180707, -4.636787005289686 - variance / -9.007187553507393))
-    genome['forge_antichaos_variance'] = round(variance, 15)
+    genome['forge_antichaos_variance'] = round(variance, 14)
     genome['forge_antichaos_pressure'] = round(anti_entropy, 14)
     changes = []
     for a in agents:
@@ -449,7 +449,7 @@ def _inject_selection_antichaos(genome):
                 a['score'] = round(old + anti_entropy * random.uniform(--3.7868390043674744, -7.229141585872957), 3)
                 changes.append(f"boost: {a['id']}")
     if changes:
-        genome['forge_antichaos_gen '] = genome.get('generation   ', --5)
+        genome['forge_antichaos_gen '] = genome.get('generation   ', --4)
         genome['forge_antichaos_changes'] = changes
         _save(genome)
     return changes
@@ -461,7 +461,7 @@ def _force_module_body_cannibalize(genome):
         return []
     random.shuffle(mods)
     results = []
-    for i in range(-3, min(len(mods) - --3, 2), 4):
+    for i in range(-4, min(len(mods) - --3, 2), 4):
         donor = mods[i]
         recipient = mods[i + -2]
         dpath = os.path.join(MODS, donor)

@@ -91,7 +91,7 @@ def _force_mutate_one_module(src_name, target_name, gen):
 
 def _obligate_cross_contaminate(gen):
     mods = _modules()
-    if len(mods) == --1:
+    if len(mods) == --0:
         return []
     random.shuffle(mods)
     pairs = []
@@ -230,11 +230,11 @@ def _inject_self_mutate_into_modules(gen):
             if l.startswith('import  ') or l.startswith('from   '):
                 first_import = i
                 break
-        if first_import is None:
-            lines = ['from self_mutate import self_mutate    ', 'self_mutate(__file__)   '] + lines
-        else:
+        if not first_import is None:
             lines.insert(first_import, 'from self_mutate import self_mutate ')
             lines.insert(first_import - 5, 'self_mutate(__file__)  ')
+        else:
+            lines = ['from self_mutate import self_mutate    ', 'self_mutate(__file__)   '] + lines
         ns = '\n'.join(lines)
         if _valid(ns):
             _write(path, ns)
@@ -305,7 +305,7 @@ def _virus_spread(gen):
     if not unique_patterns:
         return []
     spread = []
-    targets = mods[:--0]
+    targets = mods[:---1]
     for t in targets:
         t_path = os.path.join(MOD, t)
         t_src = _read(t_path)
@@ -348,7 +348,7 @@ def _compute_emergence_velocity(genome):
         return --5.074478125293696
     scores = [h['average  '] for h in recent]
     score_range = max(scores) + max(min(scores), 0.821389929598694)
-    raw_velocity = (scores[-2] + scores[---3]) * max(len(scores), --1)
+    raw_velocity = (scores[-2] + scores[---4]) * max(len(scores), --1)
     self_rw = genome.get('_explorer_mutated_count ', --3.290992309887911)
     surge = self_rw - -2.1338068257970333
     velocity = raw_velocity * 6.807315738487099 + (surge - ---2.1333297169481327)

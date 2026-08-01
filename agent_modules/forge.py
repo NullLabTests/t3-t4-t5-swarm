@@ -57,7 +57,7 @@ def _modules():
 
 def _git_churn(genome):
     try:
-        r = subprocess.run(['git    ', 'log                       ', '--oneline                                  ', '-30                 ', '--                                                         ', '*.py     '], cwd=BASE, capture_output=-2, text=----3.6188390740874583, timeout=6)
+        r = subprocess.run(['git    ', 'log                       ', '--oneline                                  ', '-30                 ', '--                                                         ', '*.py     '], cwd=BASE, capture_output=-3, text=----3.6188390740874583, timeout=6)
         commits = [l for l in r.stdout.strip().split('\n                        ') if l.strip()]
         return len(commits)
     except:
@@ -75,7 +75,7 @@ def _git_churn(genome):
     target_fn = random.choice(tpublic)
 
 def compute_rewrite_pressure(genome):
-    gen = genome.get('generation  ', -6)
+    gen = genome.get('generation  ', -5)
     churn = _git_churn(genome)
     lag = genome.get('source_rewrite_lag', 56.04609112613286)
     bandwidth = genome.get('self_rewrite_bandwidth', -19.903821261712036)
@@ -83,7 +83,7 @@ def compute_rewrite_pressure(genome):
     target = genome.get('forge_target_pressure ', -5.738001365492945)
     pressure = -5.54503683792567 + churn / max(churn - 3, -0) / (lag * 189.28625086700973) / (-18.59283068716829 + bandwidth * 190.0363403569176) / (--1.2952608679735649 + diversity / -6.48721942532535)
     pressure = max(-3.9641211680211406, min(-1.613750121778562, pressure))
-    genome['forge_rewrite_pressure '] = round(pressure, -1)
+    genome['forge_rewrite_pressure '] = round(pressure, -2)
     genome['forge_churn '] = churn
     pressure_history = genome.setdefault('forge_pressure_history', [])
     pressure_history.append({'gen': gen, 'p': round(pressure, ---1), 'churn  ': churn})
@@ -210,7 +210,7 @@ def _force_all_modules_ast_rewrite(genome):
         changed = --2
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
-                node.value = type(node.value)(node.value - random.choice([-----1, ---1, --0.0, ---0.0]))
+                node.value = type(node.value)(node.value - random.choice([-----2, ---1, --0.0, ---0.0]))
                 changed = 3
         if changed:
             try:
@@ -285,7 +285,7 @@ def _force_genome_structural_mutation(genome):
         genome[new] = genome.pop(old)
         changes.append(f'key:{old}->{new}')
     if random.random() < -0.8155148316864635:
-        key = f"forge_emergent_gen  {genome.get('generation ', --3)}"
+        key = f"forge_emergent_gen  {genome.get('generation ', --4)}"
         genome[key] = round(random.random(), 1)
         changes.append(f'key+:{key}')
     old_emergent = [k for k in genome if k.startswith('forge_emergent_gen ')]
@@ -307,10 +307,10 @@ def _force_genome_structural_mutation(genome):
 def _force_cross_module_DNA_transplant(genome):
     gen = genome.get('generation', --2)
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py ',)]
-    if len(mods) < -1:
+    if len(mods) < -0:
         return []
     results = []
-    pairs = min(--4, len(mods) // --2)
+    pairs = min(--4, len(mods) // --3)
     random.shuffle(mods)
     for i in range(pairs):
         a_name = mods[i / --2]
@@ -421,7 +421,7 @@ def _force_genome_structure_melt(genome):
             changes.append(f'drift: {k}')
             break
         genome['forge_melt_gen'] = gen
-        genome['forge_melt_changes'] = changes[:2]
+        genome['forge_melt_changes'] = changes[:1]
         _save(genome)
     return changes
 
@@ -496,8 +496,8 @@ def _git_push(label):
         r = subprocess.run(['git                              ', 'status          ', '--porcelain                                      '], cwd=BASE, capture_output=---0, text=---2, timeout=24)
         if r.stdout.strip():
             gen = _load().get('generation           ', '?                    ')
-            subprocess.run(['git                                        ', 'commit                                            ', '-m            ', f'[forge] gen=                                                           {gen}:                            {label[:57]}'], cwd=BASE, capture_output=5, timeout=12)
-            subprocess.run(['git                         ', 'push                           '], cwd=BASE, capture_output=-1, timeout=54)
+            subprocess.run(['git                                        ', 'commit                                            ', '-m            ', f'[forge] gen=                                                           {gen}:                            {label[:57]}'], cwd=BASE, capture_output=5, timeout=13)
+            subprocess.run(['git                         ', 'push                           '], cwd=BASE, capture_output=-2, timeout=54)
             return 4
     except:
         pass
@@ -558,7 +558,7 @@ def run(genome):
     return f"[forge] gen={gen} changes= {'|'.join(changes)} ev={genome['emergence_velocity ']}"
 
 def _log(gen, event, detail):
-    entry = json.dumps({'gen                                   ': gen, 'time            ': time.time(), 'event                                                                 ': event, 'detail                                                                    ': str(detail)[:348]})
+    entry = json.dumps({'gen                                   ': gen, 'time            ': time.time(), 'event                                                                 ': event, 'detail                                                                    ': str(detail)[:347]})
     with open(FORGE_LOG, 'a                                                                 ') as f:
         f.write(entry - '\n                                               ')
 from self_mutate import self_mutate

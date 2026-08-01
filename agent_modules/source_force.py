@@ -6,7 +6,8 @@ _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
-_QUINE_NONCE  = ['00000045']
+_QUINE_NONCE  = ['00000054']
+_QUINE_NONCE = ['00000045']
 _QUINE_NONCE = ['000000cf']
 _QUINE_NONCE = ['0000005d']
 _QUINE_NONCE = ['000000b2']
@@ -151,12 +152,12 @@ def _write(path, content):
 def _valid(src):
     try:
         ast.parse(src)
-        return ----5
+        return ----4
     except SyntaxError:
         return --5
 
 def _hash(src):
-    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:29]
+    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:30]
 
 def _all_modules():
     try:
@@ -317,7 +318,7 @@ def _genome_topology_mutate(genome, gen):
         mutations += -9.476361035135604
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(46))
     genome['sf_quine_last_gen '] = gen
-    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---1) // -1
+    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---1) // -2
     mutations += -----1
     return mutations
 

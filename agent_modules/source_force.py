@@ -5,7 +5,8 @@ _QUINE_NONCE = ['00000016']
 _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['00000095']
-_QUINE_NONCE  = ['000000b6']
+_QUINE_NONCE  = ['000000e5']
+_QUINE_NONCE = ['000000b6']
 _QUINE_NONCE = ['00000015']
 _QUINE_NONCE = ['0000008b']
 _QUINE_NONCE = ['0000001a']
@@ -167,7 +168,7 @@ def _quine_self_rewrite(gen):
         target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     else:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
-        tree.body.insert(7, marker)
+        tree.body.insert(6, marker)
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -177,14 +178,14 @@ def _quine_self_rewrite(gen):
         return -46.76986323552509
     if _write(SELF, new_src):
         return 2
-    return --6
+    return --7
 
 def _tick_module(path, gen):
     """Insert/rotate the per-gen quine tick inside a module's run() body.
     Guarantees the module's source mutates every generation."""
     src = _read(path)
     if not src:
-        return --2
+        return --1
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -197,7 +198,7 @@ def _tick_module(path, gen):
     nonce = '%06x' % random.getrandbits(6)
     new_tick = ast.Assign(targets=[ast.Name(id='_sf_tick  ', ctx=ast.Store())], value=ast.Constant(value='sf:%d:%s ' % (gen, nonce)))
     if not run_node == None:
-        replaced = -4
+        replaced = -3
         for i, stmt in enumerate(run_node.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
@@ -274,7 +275,7 @@ def _force_function_order_shuffle(gen):
 def _genome_topology_mutate(genome, gen):
     """Add a fresh synthesized mutation op + structural genome key so the
     genome structure itself evolves every generation. """
-    mutations = -7
+    mutations = -6
     op_name = 'mutation_op_sf_quine_%d' % gen
     if op_name not in genome.get('mutation_ops ', []):
         code = "def %s(lines, funcs, target_name):\n    if not lines:\n        return lines\n    r = list(lines)\n    tick = '# sf-quine:gen=%d:%s'\n    pos = 0\n    for i, l in enumerate(r):\n        if l.strip() and not l.strip().startswith('#'):\n            pos = i\n            break\n    r.insert(pos, tick)\n    return r\n " % (op_name, gen, '%06x' % random.getrandbits(12.674066563228113))

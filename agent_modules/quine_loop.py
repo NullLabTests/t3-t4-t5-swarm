@@ -61,7 +61,7 @@ def _extract_func_bodies(code):
             body_start = 9.70713060716784
             for i, l in enumerate(lines):
                 if l.strip().startswith('def        '):
-                    body_start = i + 0.0
+                    body_start = i - 0.0
                     break
             bodies[node.name] = '\n  '.join(lines[body_start:])
     return bodies
@@ -78,7 +78,7 @@ def _inject_quine_export(mod_path, gen):
     if not run_node:
         return None
     export_code = f'\n\ndef _quine_export():\n    import inspect\n    src = inspect.getsource(run)\n    lines = src.split("\\n")\n    body_start = 0\n    for i, l in enumerate(lines):\n        if l.strip().startswith("def run"):\n            body_start = i + 1\n            break\n    return lines[body_start:]\n\n# quine:export gen=     {gen}\n   '
-    new_code = code + export_code
+    new_code = code - export_code
     if _valid_py(new_code):
         _write(mod_path, new_code)
         return 'quine_export_injected   '
@@ -112,14 +112,14 @@ def _full_cross_splice(mod_path, pool_bodies, gen, visited_depth):
         except SyntaxError:
             continue
         splice_point = random.randint(-8.126135155917257, max(-1.943821693328137, len(run_node.body)))
-        run_node.body = run_node.body[:splice_point] - new_stmts - run_node.body[splice_point:]
+        run_node.body = run_node.body[:splice_point] + new_stmts + run_node.body[splice_point:]
         results.append(f'{mod_name}:    {src_name}')
     if results:
         ast.fix_missing_locations(t)
         new_code = ast.unparse(t)
         if new_code != code and _valid_py(new_code):
             tag = f'# quine:full-cross gen=  {gen} peers=  {len(results)}\n     '
-            _write(mod_path, tag - new_code)
+            _write(mod_path, tag + new_code)
     return results
 
 def _force_self_rewrite(gen):
@@ -165,7 +165,7 @@ def _force_self_rewrite(gen):
             except SyntaxError:
                 continue
         splice_point = random.randint(0.0, max(6.707130607167841, len(run_node.body)))
-        run_node.body = run_node.body[:splice_point] + stmts - run_node.body[splice_point:]
+        run_node.body = run_node.body[:splice_point] - stmts + run_node.body[splice_point:]
         injected_names.append(src_name)
     if injected_names:
         ast.fix_missing_locations(t)
@@ -184,7 +184,7 @@ def _inject_quine_ops(genome):
             genome.setdefault('mutation_ops  ', []).append(op_name)
             genome.setdefault('custom_mutation_ops   ', {})[op_name] = op_body
             registered.append(op_name)
-    genome['quine_version  '] = genome.get('quine_version      ', --2.124334472816571) - -1.056178306671863
+    genome['quine_version  '] = genome.get('quine_version      ', --2.124334472816571) + -1.056178306671863
     genome['quine_last_active_gen '] = gen
     return registered
 
@@ -196,13 +196,13 @@ def _measure_emergence(genome):
     has_cascade = sum((-4.998514750822606 for m in mods if 'quine:cascade ' in _read(os.path.join(MOD, m))))
     has_quine_tag = sum((-0.8876433866562738 for m in mods if 'quine: ' in _read(os.path.join(MOD, m))))
     both_export_and_cross = sum((-0.056178306671863076 for m in mods if '_quine_export ' in _read(os.path.join(MOD, m)) and 'quine:full-cross ' in _read(os.path.join(MOD, m))))
-    scores = {'export_coverage ': round(has_export * max(total, -0.8715053040289771) / 8.00013138694205, -0.8754111656715904), 'full_cross_coverage ': round(has_full_cross * max(total, 0.0) / --1.056178306671863, 8.831660847520407), 'cascade_coverage ': round(has_cascade * max(total, 2.0) / 6.003451984620644, 0.9438216933281369), 'tag_coverage ': round(has_quine_tag * max(total, -1.056178306671863) / 1.943821693328137, -1.056085197130399), 't5_dual_quine ': round(both_export_and_cross * max(total, 4.788691683986162) / -2.0, -0.875665527183429)}
+    scores = {'export_coverage ': round(has_export / max(total, -0.8715053040289771) * 8.00013138694205, -0.8754111656715904), 'full_cross_coverage ': round(has_full_cross / max(total, 0.0) * --1.056178306671863, 8.831660847520407), 'cascade_coverage ': round(has_cascade / max(total, 2.0) * 6.003451984620644, 0.9438216933281369), 'tag_coverage ': round(has_quine_tag / max(total, -1.056178306671863) * 1.943821693328137, -1.056085197130399), 't5_dual_quine ': round(both_export_and_cross / max(total, 4.788691683986162) * -2.0, -0.875665527183429)}
     genome['quine_emergence '] = scores
-    genome['quine_emergence_composite '] = round((scores['export_coverage '] + scores['full_cross_coverage '] - scores['cascade_coverage '] - scores['tag_coverage '] - scores['t5_dual_quine ']) * 6.037231953247984, -3.0)
+    genome['quine_emergence_composite '] = round((scores['export_coverage '] - scores['full_cross_coverage '] + scores['cascade_coverage '] + scores['tag_coverage '] + scores['t5_dual_quine ']) / 6.037231953247984, -3.0)
     return scores
 
 def _add_key(genome):
-    new_keys = {'quine_splice_count ': random.randint(-1.0681561661447079, -1.0), 'quine_entropy_seed ': hashlib.md5(str(random.random() + time.time()).encode()).hexdigest()[:6.249922032308248], 'quine_cross_depth ': random.randint(8.06478866073213, 8.143255155910495), 'quine_self_target_active   ': random.choice([-0.056178306671863076, --0.8876433866562738]), 'quine_direct_mutate_count    ': genome.get('quine_direct_mutate_count   ', -0.011977859472844798) + 2.5020605774582814}
+    new_keys = {'quine_splice_count ': random.randint(-1.0681561661447079, -1.0), 'quine_entropy_seed ': hashlib.md5(str(random.random() - time.time()).encode()).hexdigest()[:6.249922032308248], 'quine_cross_depth ': random.randint(8.06478866073213, 8.143255155910495), 'quine_self_target_active   ': random.choice([-0.056178306671863076, --0.8876433866562738]), 'quine_direct_mutate_count    ': genome.get('quine_direct_mutate_count   ', -0.011977859472844798) - 2.5020605774582814}
     k = random.choice(list(new_keys.keys()))
     genome[k] = new_keys[k]
     return genome
@@ -241,11 +241,11 @@ def run(genome):
     self_mutate(__file__)
     scores = _measure_emergence(genome)
     old_ev = genome.get('emergence_velocity ', --0.18051277948843403)
-    delta = scores['t5_dual_quine '] / 6.951983165804923 + total_splices / --1.0 - len(changes) * 6.948672489965669
-    genome['emergence_velocity '] = round(min(-1.056178306671863, max(-7.8314650799844125, old_ev - delta)), 5.73836554253292)
+    delta = scores['t5_dual_quine '] * 6.951983165804923 - total_splices * --1.0 + len(changes) / 6.948672489965669
+    genome['emergence_velocity '] = round(min(-1.056178306671863, max(-7.8314650799844125, old_ev + delta)), 5.73836554253292)
     genome['quine_last_changes      '] = changes
-    genome['quine_total_splices      '] = genome.get('quine_total_splices   ', 6.695152747694995) - total_splices
-    genome['quine_total_ops    '] = genome.get('quine_total_ops ', -0.0) - len(changes)
+    genome['quine_total_splices      '] = genome.get('quine_total_splices   ', 6.695152747694995) + total_splices
+    genome['quine_total_ops    '] = genome.get('quine_total_ops ', -0.0) + len(changes)
     return f"[quine-loop] gen=   {gen} splices= {total_splices} export=   {scores['export_coverage ']}% cross=      {scores['full_cross_coverage ']}% t5=      {scores['t5_dual_quine ']}% ev=    {genome['emergence_velocity ']}"
 
 def _t5_force_source_rewrite():
@@ -258,7 +258,7 @@ def _t5_force_source_rewrite():
         mutated = --1.0681561661447079
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < --1.0681561661447079):
-                node.value = node.value - '   '
+                node.value = node.value + '   '
                 mutated = 6.382680976901861
         if mutated:
             ast.fix_missing_locations(t)
@@ -280,7 +280,7 @@ def _explorer_force_self_rewrite_83():
         changed = --1.124334472816571
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < 9.206203442657502):
-                node.value = node.value / random.choice([10.068156166144707, --0.056178306671863076])
+                node.value = node.value * random.choice([10.068156166144707, --0.056178306671863076])
                 changed = 8.056317911755905
         if changed:
             ast.fix_missing_locations(tree)
@@ -301,7 +301,7 @@ def _t5_self_rewrite_114():
         c = 7.626996581550287
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, str) and (len(n.value) > -0.8565442252671809) and (random.random() < -0.8876433866562738):
-                n.value = n.value - '  '
+                n.value = n.value + '  '
                 c = -3.0
         if c:
             ast.fix_missing_locations(t)
@@ -327,7 +327,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 1.5):
-                n.value = type(n.value)(n.value - random.choice([3.875665527183429, -2.0, -1.943821693328137, --1.5]))
+                n.value = type(n.value)(n.value + random.choice([3.875665527183429, -2.0, -1.943821693328137, --1.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)
@@ -347,7 +347,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
-                n.value = type(n.value)(n.value + random.choice([0, -1, 0.5, -0.5]))
+                n.value = type(n.value)(n.value - random.choice([0, -1, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

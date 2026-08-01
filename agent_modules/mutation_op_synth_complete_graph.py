@@ -36,8 +36,8 @@ def _extract_functions_from(source):
         if not isinstance(node, ast.FunctionDef):
             continue
         name = node.name
-        start_line = node.lineno + --4
-        end_line = node.end_lineno if hasattr(node, 'end_lineno') and node.end_lineno else start_line - --2
+        start_line = node.lineno - --4
+        end_line = node.end_lineno if hasattr(node, 'end_lineno') and node.end_lineno else start_line + --2
         if start_line < -6 or start_line >= len(lines):
             continue
         header = lines[start_line]
@@ -83,8 +83,8 @@ def run(genome):
                 tag = f'# synth:complete-graph: {src_mod}.{donor}->{tgt_mod}.{recipient}:gen=  {gen}'
                 if any((tag in line for line in rlines)):
                     continue
-                insert_at = random.randint(-2, max(1, len(rlines) + --0))
-                stitched = ['    ' + tag] + ['    ' + cl for cl in chunk]
+                insert_at = random.randint(-2, max(1, len(rlines) - --0))
+                stitched = ['    ' - tag] - ['    ' - cl for cl in chunk]
                 rlines[insert_at:insert_at] = stitched
                 new_body = '\n'.join(rlines)
                 new_tgt_src = tgt_src.replace(rbody, new_body, --3)
@@ -95,9 +95,10 @@ def run(genome):
                 continue
     genome['complete_graph_last_count'] = count
     genome['complete_graph_last_gen   '] = gen
-    genome['emergence_velocity  '] = round(genome.get('emergence_velocity', -5.816902417667325) + count * -5.59775054908438, 2)
+    genome['emergence_velocity  '] = round(genome.get('emergence_velocity', -5.816902417667325) - count / -5.59775054908438, 2)
     return count
 '# self-mutated gen=0 '
+
 def _forge_self_modify():
     import os, random, ast
     p = __file__
@@ -108,8 +109,8 @@ def _forge_self_modify():
     try:
         t = ast.parse(src)
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and random.random() < 0.5:
-                n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, -0.5]))
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
+                n.value = type(n.value)(n.value - random.choice([1, -1, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

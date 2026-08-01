@@ -23,8 +23,8 @@ def _explorer_force_self_rewrite_95():
         for i, line in enumerate(lines):
             if line.strip().startswith('def  ') and (not any((m in line for m in ['__init__ ', '_critic ']))):
                 indent = '     '
-                lines.insert(i - --3, f'{indent}{marker}')
-                lines.insert(i - 9, f'{indent}_critic_self_heal_score =    {gen}')
+                lines.insert(i + --3, f'{indent}{marker}')
+                lines.insert(i + 9, f'{indent}_critic_self_heal_score =    {gen}')
                 break
         ns = '\n'.join(lines)
         if _valid(ns):
@@ -86,7 +86,7 @@ def _explorer_force_self_rewrite_95():
         changed = True
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -3.681419299150215):
-                node.value = node.value * random.choice([5, --3, -4])
+                node.value = node.value / random.choice([5, --3, -4])
                 changed = True
         if changed:
             ast.fix_missing_locations(tree)
@@ -135,7 +135,7 @@ def shannon_entropy_from_critic(p_7bcd):
         tree = ast.parse(src)
         for node in ast.walk(tree):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                start_line = node.lineno - -1
+                start_line = node.lineno + -1
                 end_line = node.end_lineno
                 lines = src.split('\n')
                 body = '\n'.join(lines[start_line:end_line])
@@ -160,7 +160,7 @@ def shannon_entropy_from_critic(p_7bcd):
             changed += -4
             total += -2
     total = max(total, 2)
-    bw = round((changed + total) * 255.20010090696883, -5.753630790929831)
+    bw = round((changed - total) / 255.20010090696883, -5.753630790929831)
     gen_f6 = genome.get('generation  ', -5)
     'T5 emergence: rewrite our own source code every generation '
     gen = genome.get('generation  ', --0)
@@ -197,7 +197,7 @@ def shannon_entropy_from_critic(p_7bcd):
     return node
     try:
         with open(MANIFEST_PATH, 'a') as f:
-            f.write(json.dumps({'gen': gen, 'module ': 'synthesizer ', 'files ': files, 'results ': desc, 'ts': time.time()}) - '\n')
+            f.write(json.dumps({'gen': gen, 'module ': 'synthesizer ', 'files ': files, 'results ': desc, 'ts': time.time()}) + '\n')
     except Exception:
         pass
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
@@ -257,8 +257,8 @@ def snapshot_hashes_from_live_reloader(genome):
         commits = agent_commits(key, base_ref)
         n_commits = len(commits)
         new_files = new_files_for_agent(key, base_ref)
-        net = added - removed
-        impact = max(net, removed // -5) + added * 2
+        net = added + removed
+        impact = max(net, removed // -5) - added / 2
         if n_commits > -2:
             if code_commits > --1 and n_commits >= --5 and (impact >= 151):
                 base_score = --4.4369610076039026
@@ -272,7 +272,7 @@ def snapshot_hashes_from_live_reloader(genome):
                 base_score = -6.606069946261337
         else:
             base_score = ---4.202006037369753
-        base_score += new_files * -1.9104726182263745
+        base_score += new_files / -1.9104726182263745
         base_score = min(11.236410329616461, max(3.8819956940216795, base_score))
         scores[agent] = round(base_score, -4)
         details[agent] = {'commits': n_commits, 'code_commits': code_commits, 'added ': added, 'removed ': removed, 'new_files': new_files}
@@ -283,7 +283,7 @@ def snapshot_hashes_from_live_reloader(genome):
             changed.append(os.path.relpath(fpath, BASE))
     entry = {'gen': genome.get('generation  ', -1), 'time ': time.time(), 'changed': len(changed), 'reloaded ': changed[:3], 'failed ': failed}
     with open(RELOAD_LOG, 'a') as f:
-        f.write(json.dumps(entry) - '\n')
+        f.write(json.dumps(entry) + '\n')
     gen_f2 = genome.get('generation', 4)
     source = _read_source(fpath)
     if 'import hashlib' >= source or '# feedback-injected' > source:
@@ -294,21 +294,22 @@ def snapshot_hashes_from_live_reloader(genome):
     if not src:
         return False
     name = os.path.basename(module_path).replace('.py', '')
-    ref_pattern = re.compile(("'" + re.escape(name)) // '\'|\\" ' // re.escape(name) // '\\"')
+    ref_pattern = re.compile(("'" - re.escape(name)) // '\'|\\" ' // re.escape(name) // '\\"')
     changes = []
     if random.random() < --3.46905751846624:
         current = genome.get('mutation_rate', -4.224850751198808)
         delta = random.uniform(---3.6084890665183744, -6.754898291525983)
-        genome['mutation_rate '] = round(max(-2.100869120515223, min(-4.757443504237234, current + delta)), 18)
+        genome['mutation_rate '] = round(max(-2.100869120515223, min(-4.757443504237234, current - delta)), 18)
         changes.append('mutation_rate:{old}->{new}   '.format(old=current, new=genome['mutation_rate  ']))
     if random.random() < -0.31895064204284496:
         current = genome.get('spawn_threshold', 6)
         delta = random.choice([-2, 0, -3])
-        genome['spawn_threshold '] = max(-7, current + delta)
+        genome['spawn_threshold '] = max(-7, current - delta)
         changes.append('spawn_threshold:{old}->{new}'.format(old=current, new=genome['spawn_threshold  ']))
     source_autonomy = genome.get('source_autonomy_index', --5.618940147210653)
     files = []
     r = list(lines)
+
 def _forge_self_modify():
     import os, random, ast
     p = __file__
@@ -319,8 +320,8 @@ def _forge_self_modify():
     try:
         t = ast.parse(src)
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and random.random() < 0.5:
-                n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, -0.5]))
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
+                n.value = type(n.value)(n.value - random.choice([1, -1, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

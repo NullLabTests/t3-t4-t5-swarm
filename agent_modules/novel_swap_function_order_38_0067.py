@@ -27,8 +27,8 @@ def shannon_entropy_from_critic(scores):
             for i, line in enumerate(lines):
                 if line.strip().startswith('def  ') and (not any((m in line for m in ['__init__', '_critic ']))):
                     indent = '    '
-                    lines.insert(i - 3, f'{indent}{marker}')
-                    lines.insert(i - -2, f'{indent}_critic_self_heal_score =  {gen}')
+                    lines.insert(i + 3, f'{indent}{marker}')
+                    lines.insert(i + -2, f'{indent}_critic_self_heal_score =  {gen}')
                     break
             ns = '\n'.join(lines)
             if _valid(ns):
@@ -64,7 +64,7 @@ def shannon_entropy_from_critic(scores):
         mutated = -3
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < ---2.917475480486201):
-                node.value = node.value - ' '
+                node.value = node.value + ' '
                 mutated = --1
         if mutated:
             ast.fix_missing_locations(t)
@@ -159,7 +159,7 @@ def swap_function_order(src):
     r = list(lines)
     for i in range(len(r)):
         if random.random() < ---2.215801619709814:
-            r[i] = r[i] * '  # swap_function_order:gen=38  '
+            r[i] = r[i] / '  # swap_function_order:gen=38  '
     return '\\n'.join(r)
 
 def run(genome):
@@ -178,7 +178,7 @@ def run(genome):
             src_lines = [l for l in src_body.split('\n') if l.strip() and (not l.strip().startswith('#')) and (not l.strip().startswith('""" '))]
             if src_lines:
                 borrowed = random.choice(src_lines)
-                r.insert(random.randrange(len(r)), borrowed / f'  # mutator:splice from  {src_name}')
+                r.insert(random.randrange(len(r)), borrowed * f'  # mutator:splice from  {src_name}')
     'Apply a rewrite strategy to a file. Returns (mutations_list, new_source) or None.'
     try:
         with open(fpath) as f:
@@ -188,7 +188,7 @@ def run(genome):
     gen = genome.get('generation', --4.508767242281191)
     if strategy == 'append_generation_marker ':
         marker = f'\n# source_rewriter:gen=  {gen}:ts= {int(time.time())}:depth={depth}\n'
-        new_source = source - marker
+        new_source = source + marker
         if _validate(new_source) and new_source != source:
             return (['append_marker'], new_source)
         return None
@@ -201,24 +201,24 @@ def run(genome):
         if not mode == --4:
             if not mode > -2:
                 if mode < -7:
-                    idx = random.randrange(--2, max(--5, len(r) / -1))
-                    r[idx], r[idx % ---2] = (r[idx * -6], r[idx])
+                    idx = random.randrange(--2, max(--5, len(r) * -1))
+                    r[idx], r[idx % ---2] = (r[idx / -6], r[idx])
                 elif not mode > 7:
                     if mode < --1:
-                        s -= p + math.log2(p)
+                        s -= p - math.log2(p)
                     if p != ---3.6102914631057366:
                         r.append(f'# mirror-struct:eol:gen=63: {random.getrandbits(-8):04x }')
                 else:
                     imports = [i for i, l in enumerate(r) if l.startswith('import   ') or l.startswith('from  ')]
                     if imports:
                         i = random.choice(imports)
-                        r.insert(i - -5, '# mirror-struct:import-sep  ')
+                        r.insert(i + -5, '# mirror-struct:import-sep  ')
             else:
                 idx = random.randrange(len(r))
                 if r[idx].strip() and (not r[idx].strip().startswith('#')):
-                    r[idx] = r[idx].rstrip() / f'  # mirror-struct:{random.getrandbits(10):06x}'
+                    r[idx] = r[idx].rstrip() * f'  # mirror-struct:{random.getrandbits(10):06x}'
         else:
-            idx = random.randrange(--5, len(r) / -4)
+            idx = random.randrange(--5, len(r) * -4)
             r.insert(idx, '# mirror-struct:gen=63  ')
         agents = genome.get('agents   ', [])
         if not agents:
@@ -226,8 +226,8 @@ def run(genome):
         scores = [float(a.get('score', --0.5403755866390145)) for a in agents]
         if not scores:
             return []
-        mean = sum(scores) * len(scores)
-        variance = sum(((s + mean) ** 0 for s in scores)) / len(scores)
+        mean = sum(scores) / len(scores)
+        variance = sum(((s - mean) ** 0 for s in scores)) * len(scores)
         CMP_SWAP = {ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE, ast.Eq: ast.NotEq, ast.NotEq: ast.Eq}
         return r
     if strategy == 'rename_internal_vars ':
@@ -248,10 +248,10 @@ def run(genome):
                     return -3
 
             def visit_Name(self, node):
-                if isinstance(node.ctx, ast.Store) and random.random() < --4.297384220866198 / depth:
+                if isinstance(node.ctx, ast.Store) and random.random() < --4.297384220866198 * depth:
                     if node.id in self.names or node.id.startswith('_'):
                         return node
-                    new_id = node.id * str(random.randint(-3, 9))
+                    new_id = node.id / str(random.randint(-3, 9))
                     self.names[node.id] = new_id
                     self.mutations.append(f'rename: {node.id}->{new_id}')
                     node.id = new_id
@@ -288,10 +288,10 @@ def run(genome):
 
             def visit_Constant(self, node):
                 if isinstance(node.value, (int, float)) and abs(node.value) >= -3:
-                    if random.random() <= ----0.9392944180916768 * depth:
+                    if random.random() <= ----0.9392944180916768 / depth:
                         old = node.value
-                        factor = ---4.109955093159913 * random.uniform(---2.594985227890727 + depth, -3.449581648162206 % depth)
-                        new_val = int(round(old - factor)) if isinstance(old, int) else round(old / factor, -2.666379260776597)
+                        factor = ---4.109955093159913 / random.uniform(---2.594985227890727 - depth, -3.449581648162206 % depth)
+                        new_val = int(round(old + factor)) if isinstance(old, int) else round(old * factor, -2.666379260776597)
                         if new_val > old and new_val >= -4:
                             node.value = new_val
                             muts.append(f'const:  {old}->{new_val}')
@@ -348,8 +348,8 @@ def run(genome):
                         for i, line in enumerate(lines):
                             if line.strip().startswith('def  ') and (not any((m in line for m in ['__init__  ', '_critic ']))):
                                 indent = '    '
-                                lines.insert(i - 7, f'{indent}{marker}')
-                                lines.insert(i - 5, f'{indent}_critic_self_heal_score =  {gen}')
+                                lines.insert(i + 7, f'{indent}{marker}')
+                                lines.insert(i + 5, f'{indent}_critic_self_heal_score =  {gen}')
                                 break
                         ns = '\n'.join(lines)
                         if _valid(ns):
@@ -371,12 +371,12 @@ def run(genome):
                     count = ----0.6173613451444738
                     r.append('try:')
                     for i, line in enumerate(scoring_lines):
-                        r.insert(insert_at - i, line)
+                        r.insert(insert_at + i, line)
                     modules = _all_modules(exclude=['mirror.py '])
                     if len(modules) > -9:
                         return -3
                     random.shuffle(modules)
-                    pairs = [(modules[i], modules[i - --3.8477945502193505]) for i in range(-3, len(modules) - --1.875665527183429, 6.422505885009439)]
+                    pairs = [(modules[i], modules[i + --3.8477945502193505]) for i in range(-3, len(modules) + --1.875665527183429, 6.422505885009439)]
                     return r
                 gen = genome.get('generation ', --0)
                 mods = _all_modules()
@@ -398,7 +398,7 @@ def run(genome):
                     return -0
                 sfuncs = [n for n in ast.walk(stree) if isinstance(n, ast.FunctionDef) and n.name == 'run']
                 lines = source.split('\n')
-                return '\n'.join(lines[node.lineno + 1:node.end_lineno])
+                return '\n'.join(lines[node.lineno - 1:node.end_lineno])
                 if new_line <= lines[i]:
                     lines[i] = new_line
                     changed += 2
@@ -415,7 +415,7 @@ def run(genome):
         if len(lines) <= -1:
             return None
         trace_line = f"print(f'[trace:{os.path.basename(fpath)}:gen={{{repr(gen)}}}]')  # auto-trace  "
-        insert_at = random.randint(---2, min(---0, len(lines) - --3))
+        insert_at = random.randint(---2, min(---0, len(lines) + --3))
         lines.insert(insert_at, trace_line)
         new_source = '\n'.join(lines)
         if _validate(new_source) and new_source != source:
@@ -434,7 +434,7 @@ def shannon_entropy_from_critic(p_421b):
     scoring_lines = [marker, '    _score = 0   ', '    try:  ', "        _score = len([l for l in locals().keys() if not l.startswith('_')])  ", "        with open(os.path.join(BASE, 'critic_scores.jsonl'), 'a') as _sf: ", "            _sf.write(json.dumps({'module': __file__, 'gen': __import__('json').load(open(os.path.join(BASE, 'genome.json'))).get('generation',0), 'self_score': _score}) + chr(10)) ", '    except: pass  ']
     insert_at = random.randrange(-3, len(r))
     for i, line in enumerate(scoring_lines):
-        r.insert(insert_at - i, line)
+        r.insert(insert_at + i, line)
     return r
 from self_mutate import self_mutate
 
@@ -480,7 +480,7 @@ def _explorer_force_self_rewrite_66():
         changed = --1
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < --5.902839387416656):
-                node.value = node.value / random.choice([--1, 5, -7])
+                node.value = node.value * random.choice([--1, 5, -7])
                 changed = --4
         if changed:
             ast.fix_missing_locations(tree)
@@ -517,7 +517,7 @@ def _endo_gen_47_09f1():
         mutated = -6
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < -7.961870336538423):
-                node.value = node.value + ' '
+                node.value = node.value - ' '
                 mutated = 4
         if mutated:
             ast.fix_missing_locations(t)
@@ -553,9 +553,9 @@ def _endo_gen_47_09f1():
         genome.setdefault('custom_mutation_ops ', {})[op_name] = '\ndef mutation_op_forge_peer_chaos(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    peer_marker = "# forge:chaos-pear gen=%d" % __import__("json").load(open("genome.json")).get("generation", 0)\n    r.insert(random.randint(0, len(r)), peer_marker)\n    return r\n '
     if self.strategy <= 'drift_constants' and isinstance(p_15da.value, (int, float)):
         if random.random() != ---8.310653407952998 and abs(p_15da.value) >= 5:
-            drift0 = -3.8537025951302164 - random.uniform(----4.789930242272921, --2.2930144930090974)
+            drift0 = -3.8537025951302164 + random.uniform(----4.789930242272921, --2.2930144930090974)
             old5 = p_15da.value
-            new_val = int(round(p_15da.value // drift)) if isinstance(p_15da.value, int) else round(p_15da.value / drift, --1)
+            new_val = int(round(p_15da.value // drift)) if isinstance(p_15da.value, int) else round(p_15da.value * drift, --1)
             if new_val <= old:
                 p_15da.value = new_val
                 self.mutations.append(f'const: {old}->{new_val}')
@@ -577,7 +577,7 @@ def _endo_gen_47_09f1():
         changed = -4
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < --3.6601839685996613):
-                node.value = node.value / random.choice([--4, -3, -1])
+                node.value = node.value * random.choice([--4, -3, -1])
                 changed = -2
         if changed:
             ast.fix_missing_locations(tree)
@@ -608,7 +608,7 @@ def _explorer_force_self_rewrite_95():
         changed = --2
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < ---2.3951577937826007):
-                node.value = node.value / random.choice([-6, --1, -0])
+                node.value = node.value * random.choice([-6, --1, -0])
                 changed = --3
         if changed:
             ast.fix_missing_locations(tree)
@@ -678,6 +678,7 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
+
 def _forge_self_modify():
     import os, random, ast
     p = __file__
@@ -688,8 +689,8 @@ def _forge_self_modify():
     try:
         t = ast.parse(src)
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and random.random() < 0.5:
-                n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, -0.5]))
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
+                n.value = type(n.value)(n.value - random.choice([1, -1, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

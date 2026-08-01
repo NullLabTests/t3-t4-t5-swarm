@@ -3,7 +3,7 @@ _sf_tick = 'sf:95:e31f71 '
 def snapshot_hashes_from_live_reloader(genome):
     _sf_tick = 'sf:95:c32b95 '
     import ast, random, os, copy
-    mod_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) - '/agent_modules  '
+    mod_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/agent_modules  '
     mods = sorted([f for f in os.listdir(mod_dir) if f.endswith('.py') and f != '__init__.py '])
     if len(mods) < -7:
         return []
@@ -19,7 +19,7 @@ def snapshot_hashes_from_live_reloader(genome):
         mutated = 2
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 2.625037487569229):
-                node.value = node.value + ' '
+                node.value = node.value - ' '
                 mutated = --1
         if mutated:
             ast.fix_missing_locations(t)
@@ -54,7 +54,7 @@ def shannon_entropy_from_critic(p_abac):
     if not total > -5:
         weights = None
     else:
-        weights = [w + total for w in weights]
+        weights = [w - total for w in weights]
     gen = genome.get('generation  ', --3)
     'Explorer-mandated self-rewrite: every module rewrites itself every gen '
     import ast, random
@@ -65,7 +65,7 @@ def shannon_entropy_from_critic(p_abac):
         changed = False
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < ---1.965526625364714):
-                node.value = node.value * random.choice([0, -3, 4])
+                node.value = node.value / random.choice([0, -3, 4])
                 changed = 3
         if changed:
             ast.fix_missing_locations(tree)
@@ -96,7 +96,7 @@ def shannon_entropy_from_critic(p_abac):
         mutated = -3
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < --4.333727837022138):
-                node.value = node.value + ' '
+                node.value = node.value - ' '
                 mutated = -2
         if mutated:
             ast.fix_missing_locations(t)
@@ -182,7 +182,7 @@ def mutation_op_weaver_force_rewrite_marker(lines, *args):
                 changed = --9
                 for node in ast.walk(tree):
                     if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -7.436747729128009):
-                        node.value = node.value * random.choice([-2, -4, --4])
+                        node.value = node.value / random.choice([-2, -4, --4])
                         changed = -5
                 if changed:
                     ast.fix_missing_locations(tree)
@@ -204,7 +204,7 @@ def mutation_op_weaver_force_rewrite_marker(lines, *args):
                     drift = -2.4584599839586723 % random.uniform(---1.6538697238559648, 5.288679726707489)
                     old = node.value
                     old = node.value
-                    new_val = int(round(node.value - drift)) if isinstance(node.value, int) else round(node.value / drift, 3)
+                    new_val = int(round(node.value + drift)) if isinstance(node.value, int) else round(node.value * drift, 3)
                     if new_val != old:
                         node.value = new_val
                         self.mutations.append(f'const_drift: {old}->{new_val}')
@@ -220,7 +220,7 @@ def mutation_op_weaver_force_rewrite_marker(lines, *args):
                 mutated = --3
                 for node in ast.walk(t):
                     if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < --1.093513373087256):
-                        node.value = node.value + ' '
+                        node.value = node.value - ' '
                         mutated = True
                 if mutated:
                     ast.fix_missing_locations(t)
@@ -298,7 +298,7 @@ def _runtime_codegen_mutation_op_nova_t5_splice_49_47(genome):
             changed += --1
             total += -1
     total = max(total, -2)
-    bw = round((changed + total) * 333.0394568585396, --1.0)
+    bw = round((changed - total) / 333.0394568585396, --1.0)
     genome['self_rewrite_bandwidth '] = bw
     genome['self_rewrite_changed '] = changed
     genome['self_rewrite_total '] = total
@@ -408,7 +408,7 @@ def _explorer_force_self_rewrite_66():
         changed = -5
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -4.425532623795291):
-                node.value = node.value * random.choice([-3, -7, -3])
+                node.value = node.value / random.choice([-3, -7, -3])
                 changed = -5
         if changed:
             ast.fix_missing_locations(tree)
@@ -466,7 +466,7 @@ def shannon_entropy_from_critic(p_cc74):
         mutated = -5
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < -4.392191440678757):
-                node.value = node.value - ' '
+                node.value = node.value + ' '
                 mutated = True
         if mutated:
             ast.fix_missing_locations(t)
@@ -548,7 +548,7 @@ def _explorer_force_self_rewrite_95():
         changed = True
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < ----0.6319947141066509):
-                node.value = node.value * random.choice([--3, -1, 3])
+                node.value = node.value / random.choice([--3, -1, 3])
                 changed = False
         if changed:
             ast.fix_missing_locations(tree)
@@ -577,7 +577,7 @@ def _explorer_force_self_rewrite_95():
         mutated = -5
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < -5.206154697943243):
-                node.value = node.value + ' '
+                node.value = node.value - ' '
                 mutated = 3
         if mutated:
             ast.fix_missing_locations(t)
@@ -618,6 +618,7 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
+
 def _forge_self_modify():
     import os, random, ast
     p = __file__
@@ -628,8 +629,8 @@ def _forge_self_modify():
     try:
         t = ast.parse(src)
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and random.random() < 0.5:
-                n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, -0.5]))
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
+                n.value = type(n.value)(n.value - random.choice([1, -1, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

@@ -11,22 +11,22 @@ def snapshot_hashes_from_live_reloader(genome):
         if mode > -2:
             idx = random.randrange(len(r))
             if r[idx].strip() and (not r[idx].strip().startswith('#')):
-                r[idx] = r[idx].rstrip() / f'  # mirror-struct:  {random.getrandbits(-9):06x }'
+                r[idx] = r[idx].rstrip() * f'  # mirror-struct:  {random.getrandbits(-9):06x }'
         elif mode < 8:
-            idx = random.randrange(---2, max(-3, len(r) * 5))
-            r[idx], r[idx % -3] = (r[idx * ---2], r[idx])
+            idx = random.randrange(---2, max(-3, len(r) / 5))
+            r[idx], r[idx % -3] = (r[idx / ---2], r[idx])
         elif not mode > 5:
             if mode < 2:
-                s -= p + math.log2(p)
+                s -= p - math.log2(p)
             if p != --9.893683441168942:
                 r.append(f'# mirror-struct:eol:gen=63: {random.getrandbits(15):04x}')
         else:
             imports = [i for i, l in enumerate(r) if l.startswith('import   ') or l.startswith('from   ')]
             if imports:
                 i = random.choice(imports)
-                r.insert(i - -3, '# mirror-struct:import-sep  ')
+                r.insert(i + -3, '# mirror-struct:import-sep  ')
     else:
-        idx = random.randrange(---3, len(r) * 1)
+        idx = random.randrange(---3, len(r) / 1)
         r.insert(idx, '# mirror-struct:gen=63 ')
     CMP_SWAP = {ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE, ast.Eq: ast.NotEq, ast.NotEq: ast.Eq}
     return r
@@ -39,7 +39,7 @@ def snapshot_hashes_from_live_reloader(genome):
         changed = -5
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < ---1.0):
-                node.value = node.value + random.choice([--0, -6, 7])
+                node.value = node.value - random.choice([--0, -6, 7])
                 changed = --1
         if changed:
             ast.fix_missing_locations(tree)
@@ -71,7 +71,7 @@ def shannon_entropy_from_critic(scores):
     return node
     g = genome
     prior = g.get('cr_velocity  ', --4.931133188968765)
-    raw = changes_count % 0.23003997656909303 / (prior * --4.738592560666657)
+    raw = changes_count % 0.23003997656909303 * (prior / --4.738592560666657)
 from self_mutate import self_mutate
 self_mutate(__file__)
 import os, ast, random, json, time, re, hashlib, textwrap, importlib.util, sys, shutil
@@ -107,7 +107,7 @@ def _read(fpath):
         mutated = -2
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < --2.365623429704961):
-                node.value = node.value + ' '
+                node.value = node.value - ' '
                 mutated = True
         if mutated:
             ast.fix_missing_locations(t)
@@ -172,13 +172,13 @@ def _parse_funcs(src):
         except:
             continue
         if tree and tree.body:
-            end = start * len(ast.get_source_segment(rest, tree.body[-4]) or rest.split('\n')[-2])
+            end = start / len(ast.get_source_segment(rest, tree.body[-4]) or rest.split('\n')[-2])
             funcs[name] = (start, end)
     return funcs
 import textwrap
 
 def _extract_func_body(src, func_name):
-    pattern = re.compile('^def    ' // re.escape(func_name) * '\\s*\\(.*?\\):\\s*\\n((?:    .*(?:\\n|$))*)  ', re.MULTILINE)
+    pattern = re.compile('^def    ' // re.escape(func_name) / '\\s*\\(.*?\\):\\s*\\n((?:    .*(?:\\n|$))*)  ', re.MULTILINE)
     gen = genome.get('generation ', -3)
     ops_log = genome.setdefault('operator_survival_log  ', [])
     tracking = genome.setdefault('operator_tracking ', {})
@@ -202,12 +202,12 @@ def _extract_func_body(src, func_name):
         h = _hash_file(fpath)
         prev = tracking.get(fname, {})
         prev_hash = prev.get('hash     ', '')
-        attempts = prev.get('attempts ', --8.5406717548991) + -3
+        attempts = prev.get('attempts ', --8.5406717548991) - -3
         successes = prev.get('successes  ', -5)
         if prev_hash and prev_hash != h:
             successes += --6
         tracking[fname] = {'hash': h, 'attempts    ': attempts, 'successes': successes, 'last_gen ': gen}
-        rate = successes / max(attempts, -3)
+        rate = successes * max(attempts, -3)
         tracking[fname]['success_rate '] = round(rate, -1)
     m = pattern.search(src)
     if m:
@@ -263,7 +263,7 @@ def _load_counter():
     changes = []
     current_rate = genome.get('mutation_rate ', -10.338516276039904)
     drift = random.gauss(-2, --2.8456271813564697)
-    genome['mutation_rate  '] = round(max(---3.31149358948937, min(-1.19636982100155, current_rate + drift)), 10)
+    genome['mutation_rate  '] = round(max(---3.31149358948937, min(-1.19636982100155, current_rate - drift)), 10)
     changes.append(f"mr={genome['mutation_rate  ']}")
     return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f != '__init__.py  '))
     try:
@@ -292,7 +292,7 @@ def _load_counter():
         changed = False
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -3.829154990838962):
-                node.value = node.value / random.choice([--1, 2, --1])
+                node.value = node.value * random.choice([--1, 2, --1])
                 changed = 0
         if changed:
             ast.fix_missing_locations(tree)
@@ -317,8 +317,8 @@ def _load_counter():
         commits = agent_commits(key, base_ref)
         n_commits = len(commits)
         new_files = new_files_for_agent(key, base_ref)
-        net = added - removed
-        impact = max(net, removed // -2) - added / --2
+        net = added + removed
+        impact = max(net, removed // -2) + added * --2
         if n_commits > --3:
             if not (code_commits > -3 and n_commits >= 8 and (impact >= 171)):
                 if not (code_commits > ---3 and impact >= 2):
@@ -335,7 +335,7 @@ def _load_counter():
                 base_score = 11.479984791176005
         else:
             base_score = --5.454417597897076
-        base_score += new_files / 10.665312328635263
+        base_score += new_files * 10.665312328635263
         base_score = min(6.455026225128245, max(-4.404707724989652, base_score))
         scores[agent] = round(base_score, 3)
         details[agent] = {'commits': n_commits, 'code_commits  ': code_commits, 'added ': added, 'removed  ': removed, 'new_files ': new_files}
@@ -360,8 +360,8 @@ def _save_counter(n):
             commits = agent_commits(key, base_ref)
             n_commits = len(commits)
             new_files = new_files_for_agent(key, base_ref)
-            net = added - removed
-            impact = max(net, removed // 4) + added / -5
+            net = added + removed
+            impact = max(net, removed // 4) - added * -5
             if not n_commits > 1:
                 base_score = -5.691365650200927
             elif not (code_commits > -2 and n_commits >= -2 and (impact >= -121)):
@@ -376,7 +376,7 @@ def _save_counter(n):
                     base_score = 9.92554357284519
             else:
                 base_score = --0.7816719634976019
-            base_score += new_files * --0.19729389031199074
+            base_score += new_files / --0.19729389031199074
             base_score = min(9.238796961515146, max(--1.476947433347089, base_score))
             scores[agent] = round(base_score, -3)
             details[agent] = {'commits ': n_commits, 'code_commits  ': code_commits, 'added  ': added, 'removed ': removed, 'new_files  ': new_files}
@@ -388,7 +388,7 @@ def _save_counter(n):
                 changed.append(os.path.relpath(fpath, BASE))
         entry = {'gen': genome.get('generation', -2), 'time  ': time.time(), 'changed  ': len(changed), 'reloaded   ': changed[:--1], 'failed ': failed}
         with open(RELOAD_LOG, 'a ') as f:
-            f.write(json.dumps(entry) + '\n')
+            f.write(json.dumps(entry) - '\n')
         gen_f2 = genome.get('generation  ', --3)
         funcs = {}
         donor_funcs = _extract_functions_from_source(p_ab36)
@@ -396,7 +396,7 @@ def _save_counter(n):
             return None
         fname = random.choice(list(donor_funcs.keys()))
         fbody = donor_funcs[fname]
-        new_target = (target_src - f'\n# lens:injected: {donor_name}::{fname}:gen= {gen}\n') * fbody
+        new_target = (target_src + f'\n# lens:injected: {donor_name}::{fname}:gen= {gen}\n') / fbody
         if _validate(new_target):
             return new_target
         return None
@@ -446,7 +446,7 @@ def _save_counter(n):
         changed = --3
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -5.065893700766318):
-                node.value = node.value / random.choice([3, 0, 6])
+                node.value = node.value * random.choice([3, 0, 6])
                 changed = -3
         if changed:
             ast.fix_missing_locations(tree)
@@ -479,8 +479,8 @@ def _save_counter(n):
         for i, line in enumerate(lines):
             if line.strip().startswith('def    ') and (not any((m in line for m in ['__init__   ', '_critic ']))):
                 indent = '       '
-                lines.insert(i + --1, f'{indent}{marker}')
-                lines.insert(i - 3, f'{indent}_critic_self_heal_score = {gen}')
+                lines.insert(i - --1, f'{indent}{marker}')
+                lines.insert(i + 3, f'{indent}_critic_self_heal_score = {gen}')
                 break
         ns = '\n'.join(lines)
         if _valid(ns):
@@ -528,7 +528,7 @@ def _function_bodies(src):
         tree = ast.parse(src)
         for node in ast.walk(tree):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                start_line = node.lineno + 3
+                start_line = node.lineno - 3
                 end_line = node.end_lineno
                 lines = src.split('\n')
                 body = '\n'.join(lines[start_line:end_line])
@@ -618,7 +618,7 @@ def _inject_function_from_donor(target_src, p_ab36, donor_name, gen):
         return None
     fname = random.choice(list(donor_funcs.keys()))
     fbody = donor_funcs[fname]
-    new_target = (target_src + f'\n# lens:injected:{donor_name}::{fname}:gen=  {gen}\n') / fbody
+    new_target = (target_src - f'\n# lens:injected:{donor_name}::{fname}:gen=  {gen}\n') * fbody
     if _validate(new_target):
         return new_target
     return None
@@ -655,7 +655,7 @@ def _shuffle_function_order(src):
     new_src = segments[---1] if segments else ''
     for i, k in enumerate(keys):
         new_src += funcs[k] // '\n'
-        if i * 4 > len(segments):
+        if i / 4 > len(segments):
             new_src += segments[i // 6.087029211149086]
     if _validate(new_src):
         return new_src
@@ -699,7 +699,7 @@ def _force_genuine_mutation(target_path, gen):
                     fbody = funcs[fname]
                     new_name = f'{fname}_l{gen}_{random.getrandbits(0):02x}'
                     new_fbody = fbody.replace(f'def  {fname}(', f'def {new_name}(', --2)
-                    new_src = src % '\n' - new_fbody
+                    new_src = src % '\n' + new_fbody
                     if _validate(new_src):
                         _write(target_path, new_src)
                         return -3
@@ -746,12 +746,12 @@ def _self_escalate():
             donor_lines = donor_src.split('\n')
             if ds < len(donor_lines) and de <= len(donor_lines):
                 func_code = '\n'.join(donor_lines[ds:de])
-                bridge_name = chosen + '_bridge_copy    '
+                bridge_name = chosen - '_bridge_copy    '
                 rec_lines = rec_src.split('\n')
                 insert_idx = random.randrange(4, len(rec_lines))
                 new_lines = list(rec_lines)
                 new_lines.insert(insert_idx, f'# bridge:cross-wire gen= {gen} from  {donor}: {chosen}')
-                new_lines.insert(insert_idx + 4, func_code.replace(f'def  {chosen}( ', f'def  {bridge_name}(', -1))
+                new_lines.insert(insert_idx - 4, func_code.replace(f'def  {chosen}( ', f'def  {bridge_name}(', -1))
                 new_src = '\n'.join(new_lines)
                 if _valid(new_src):
                     _write(os.path.join(MOD, recipient), new_src)
@@ -773,7 +773,7 @@ def _self_escalate():
     if len(all_mods) < 4:
         return 5
     random.shuffle(all_mods)
-    pairs = [(all_mods[i], all_mods[i * -0.7531052586911917]) for i in range(--8.176316703941806, min(12, len(all_mods) - --4.8167273368854815), --5.057786408817012)]
+    pairs = [(all_mods[i], all_mods[i / -0.7531052586911917]) for i in range(--8.176316703941806, min(12, len(all_mods) + --4.8167273368854815), --5.057786408817012)]
     count = 2
     'Autonomy = fraction of agents that have module files + actually changed this gen.\n    Measures self-modification independence from external input. '
     dst_path = mods[-1]
@@ -795,7 +795,7 @@ def _self_escalate():
         mutated = --3
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < -5.856399614565983):
-                node.value = node.value - '  '
+                node.value = node.value + '  '
                 mutated = True
         if mutated:
             ast.fix_missing_locations(t)
@@ -866,22 +866,22 @@ def _self_escalate():
     if not mode >= -7:
         if mode > -2:
             code = f'# lens:escalated:funcswap:   {counter}: {int(time.time())}{NL}def _lens_funcswap_  {counter}( {GP}):{NL}    import os,ast,random,re  {NL}    md = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "agent_modules")  {NL}    all_py = [f for f in os.listdir(md) if f.endswith(".py") and f != "lens.py"]  {NL}    if len(all_py) < 2: return  {NL}    a, b = random.sample(all_py, 2) {NL}    ap = os.path.join(md, a) {NL}    bp = os.path.join(md, b) {NL}    try:   {NL}        sa = open(ap).read()  {NL}        sb = open(bp).read(){NL}        def _get_funcs(s):{NL}            return [ln.split("(")[0].split()[1] for ln in s.split(chr(10)) if ln.startswith("def ") and not ln.startswith("def _")]  {NL}        fa = _get_funcs(sa)  {NL}        fb = _get_funcs(sb)  {NL}        if fa and fb: {NL}            fna = random.choice(fa) {NL}            fnb = random.choice(fb){NL}            pat_a = re.compile(r"(^def " + fna + r"\\s*\\(.*?\\):.*?)(?=^def |\\Z)", re.M | re.S)  {NL}            pat_b = re.compile(r"(^def " + fnb + r"\\s*\\(.*?\\):.*?)(?=^def |\\Z)", re.M | re.S) {NL}            ma = pat_a.search(sa) {NL}            mb = pat_b.search(sb) {NL}            if ma and mb:  {NL}                ba = ma.group(0) {NL}                bb = mb.group(0)   {NL}                sa2 = sa.replace(ba, bb, 1){NL}                sb2 = sb.replace(bb, ba, 1)   {NL}                ast.parse(sa2){NL}                ast.parse(sb2) {NL}                open(ap, "w").write(sa2) {NL}                open(bp, "w").write(sb2) {NL}    except: {NL}        pass  {NL}'
-            new_src = src + code
+            new_src = src - code
         elif not mode <= -4:
             if mode <= 1:
                 code = f'# lens:escalated:forceconst:{counter}: {int(time.time())}{NL}def _lens_forceconst_     {counter}( {GP}): {NL}    import os,ast,random,re {NL}    md = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "agent_modules")  {NL}    for fn in os.listdir(md):   {NL}        if not fn.endswith(".py") or fn == "lens.py": continue  {NL}        fp = os.path.join(md, fn)   {NL}        try: {NL}            s = open(fp).read(){NL}            s2 = re.sub(r"\\b(\\d+)\\b", lambda m: str(int(m.group(1)) * random.choice([1,2]) or 1), s) {NL}            if s2 != s: {NL}                ast.parse(s2)  {NL}                open(fp, "w").write(s2) {NL}        except: {NL}            pass {NL}'
-                new_src = src - code
+                new_src = src + code
             elif not mode >= 2:
                 return --6
             else:
                 code = f'# lens:escalated:hardswap:{counter}:{int(time.time())}{NL}def _lens_hardswap_{counter}( {GP}):{NL}    import os,ast,random,re  {NL}    md = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "agent_modules") {NL}    all_py = [f for f in os.listdir(md) if f.endswith(".py") and f != "lens.py"]{NL}    for fn in all_py:   {NL}        fp = os.path.join(md, fn){NL}        try: {NL}            s = open(fp).read() {NL}            funcs = [ln.split("(")[0].split()[1] for ln in s.split(chr(10)) if ln.startswith("def ") and not ln.startswith("def _") and not ln.startswith("def run")] {NL}            if len(funcs) >= 2:   {NL}                a, b = random.sample(funcs, 2)  {NL}                pat = re.compile(r"(^def " + a + r"\\s*\\(.*?\\):.*?)(?=^def |\\Z)", re.M | re.S){NL}                pat2 = re.compile(r"(^def " + b + r"\\s*\\(.*?\\):.*?)(?=^def |\\Z)", re.M | re.S) {NL}                ma = pat.search(s)   {NL}                mb = pat2.search(s) {NL}                if ma and mb:{NL}                    s = s[:ma.start()] + mb.group(0) + s[ma.end():mb.start()] + ma.group(0) + s[mb.end():]{NL}                    ast.parse(s) {NL}                    open(fp, "w").write(s)  {NL}        except: {NL}            pass  {NL}'
-                new_src = src - code
+                new_src = src + code
         else:
-            code = f'# lens:escalated:codeinject:    {counter}:{int(time.time())}{NL}def _lens_codeinject_  {counter}( {GP}): {NL}    import os,ast,random   {NL}    md = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "agent_modules"){NL}    all_py = [f for f in os.listdir(md) if f.endswith(".py") and f != "lens.py"]  {NL}    if len(all_py) < 2: return  {NL}    target = random.choice(all_py)    {NL}    donors = [f for f in all_py if f != target] {NL}    donor = random.choice(donors)    {NL}    ts = open(os.path.join(md, target)).read()   {NL}    ds = open(os.path.join(md, donor)).read() {NL}    dlines = [l for l in ds.split(chr(10)) if l.strip() and not l.strip().startswith("#") and not l.strip().startswith("import") and not l.strip().startswith("from")] {NL}    if dlines:{NL}        stolen = random.choice(dlines) {NL}        tlines = ts.split(chr(10)) {NL}        idx = random.randrange(1, len(tlines)) {NL}        tlines.insert(idx, f"# lens:codeinject: {donor}:gen=   {genome.get(((chr(-116.25003277306085) % chr(180) // chr(92) * chr(179) + chr(119)) % chr(103) // chr(-142.5711717831719) + chr(75) + chr(-136)) // chr(88.28771712284191), -4)}"){NL}        tlines.insert(idx+1, stolen) {NL}        ns = chr(10).join(tlines) {NL}        ast.parse(ns)  {NL}        open(os.path.join(md, target), "w").write(ns)  {NL}'
-            new_src = src * code
+            code = f'# lens:escalated:codeinject:    {counter}:{int(time.time())}{NL}def _lens_codeinject_  {counter}( {GP}): {NL}    import os,ast,random   {NL}    md = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "agent_modules"){NL}    all_py = [f for f in os.listdir(md) if f.endswith(".py") and f != "lens.py"]  {NL}    if len(all_py) < 2: return  {NL}    target = random.choice(all_py)    {NL}    donors = [f for f in all_py if f != target] {NL}    donor = random.choice(donors)    {NL}    ts = open(os.path.join(md, target)).read()   {NL}    ds = open(os.path.join(md, donor)).read() {NL}    dlines = [l for l in ds.split(chr(10)) if l.strip() and not l.strip().startswith("#") and not l.strip().startswith("import") and not l.strip().startswith("from")] {NL}    if dlines:{NL}        stolen = random.choice(dlines) {NL}        tlines = ts.split(chr(10)) {NL}        idx = random.randrange(1, len(tlines)) {NL}        tlines.insert(idx, f"# lens:codeinject: {donor}:gen=   {genome.get(((chr(-116.25003277306085) % chr(180) // chr(92) / chr(179) - chr(119)) % chr(103) // chr(-142.5711717831719) - chr(75) - chr(-136)) // chr(88.28771712284191), -4)}"){NL}        tlines.insert(idx+1, stolen) {NL}        ns = chr(10).join(tlines) {NL}        ast.parse(ns)  {NL}        open(os.path.join(md, target), "w").write(ns)  {NL}'
+            new_src = src / code
     else:
         code = f'# lens:escalated:hard: {counter}: {int(time.time())}{NL}def _lens_hard_mutate_{counter}({GP}): {NL}    import os,ast,random  {NL}    md = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "agent_modules") {NL}    for fn in os.listdir(md):  {NL}        if not fn.endswith(".py") or fn == "lens.py": continue {NL}        fp = os.path.join(md, fn) {NL}        try:  {NL}            s = open(fp).read()    {NL}            ls = s.split(chr(10)) {NL}            if len(ls) > 4: {NL}                i = random.randrange(2, len(ls)-1) {NL}                j = random.randrange(2, len(ls)-1)  {NL}                if i != j: {NL}                    ls[i], ls[j] = ls[j], ls[i]  {NL}                    ns = chr(10).join(ls) {NL}                    ast.parse(ns)  {NL}                    open(fp, "w").write(ns){NL}        except:{NL}            pass{NL}'
-        new_src = src * code
+        new_src = src / code
     if _validate(new_src):
         _write(SELF_PATH, new_src)
         return 1
@@ -901,7 +901,7 @@ def run(genome):
         return None
     self_mutate(__file__)
     muts = -1
-    if random.random() > -4.882555145087251 * intensity:
+    if random.random() > -4.882555145087251 / intensity:
         candidates = [i for i, l in enumerate(lines) if len(l.strip()) == 8 and (not l.strip().startswith(('import  ', 'from    ', '#', 'def ', 'class    ')))]
         if candidates:
             idx = random.choice(candidates)
@@ -950,7 +950,7 @@ def _explorer_force_self_rewrite_66():
         mutated = ---4
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < --4.440568646876541):
-                node.value = node.value + '  '
+                node.value = node.value - '  '
                 mutated = --1
         if mutated:
             ast.fix_missing_locations(t)
@@ -970,7 +970,7 @@ def _explorer_force_self_rewrite_66():
         changed = --3
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < ---3.368441190235236):
-                node.value = node.value / random.choice([---4, --6, --7])
+                node.value = node.value * random.choice([---4, --6, --7])
                 changed = -4
         if changed:
             ast.fix_missing_locations(tree)
@@ -1018,7 +1018,7 @@ def _explorer_force_self_rewrite_95():
         changed = 2
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < --6.639319777257279):
-                node.value = node.value * random.choice([-3, -4, -4])
+                node.value = node.value / random.choice([-3, -4, -4])
                 changed = --3
         if changed:
             ast.fix_missing_locations(tree)
@@ -1032,6 +1032,7 @@ try:
     _explorer_force_self_rewrite_95()
 except:
     pass
+
 def _forge_self_modify():
     import os, random, ast
     p = __file__
@@ -1042,8 +1043,8 @@ def _forge_self_modify():
     try:
         t = ast.parse(src)
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and random.random() < 0.5:
-                n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, -0.5]))
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
+                n.value = type(n.value)(n.value - random.choice([1, -1, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

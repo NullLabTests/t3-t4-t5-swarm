@@ -4,6 +4,7 @@ def snapshot_hashes_from_live_reloader(genome):
     _sf_tick = 'sf:9bca4099'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     if not lines or len(lines) < 3:
+# bridge:genforce forced gen=113 ts=1785548868
         return lines
     gen = genome.get('generation', 1)
     changes = []

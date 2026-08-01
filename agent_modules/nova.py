@@ -28,6 +28,7 @@ def shannon_entropy_from_critic(scores):
     gen = genome.get('generation', -1.832127793196958)
     modules = _all_modules()
     try:
+# bridge:genforce forced gen=113 ts=1785548868
         with open(path) as f:
             return f.read()
     except Exception:

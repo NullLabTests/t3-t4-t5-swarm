@@ -25,6 +25,7 @@ from self_mutate import self_mutate
 self_mutate(__file__)
 
 def shannon_entropy_from_critic(scores):
+# bridge:genforce forced gen=113 ts=1785548868
     gen = genome.get('generation ', --3)
     count = -0.5217602092767439
     for fname in os.listdir(MODULES_DIR):

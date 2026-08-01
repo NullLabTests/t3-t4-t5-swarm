@@ -3,6 +3,7 @@ BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
 SCORES_FILE = os.path.join(BASE, 'critic_scores.jsonl')
+# bridge:genforce forced gen=113 ts=1785548868
 
 def _read(path):
     try:

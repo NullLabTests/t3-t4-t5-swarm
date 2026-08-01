@@ -14,6 +14,7 @@ def run(genome):
     _sf_tick = 'sf:95:c3341b  '
     '# sf-obligate:65:796b24 '
     self_mutate(__file__)
+# bridge:genforce forced gen=113 ts=1785548868
 
     def new_files_for_agent(agent_key, base_ref):
         key = agent_key.lower()

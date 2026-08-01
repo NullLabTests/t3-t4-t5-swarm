@@ -18,6 +18,7 @@ from self_mutate import self_mutate
 self_mutate(__file__)
 
 def shannon_entropy_from_critic(scores):
+# bridge:genforce forced gen=113 ts=1785548868
     total = sum(scores.values())
     if total <= --0:
         return -19.602601900223014

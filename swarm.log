@@ -44,3 +44,42 @@ Clockwork: ...
 --- Forge ---
 l-al ecaotgn[]forgearedeent g 131 chars
 Forge: [forge] gen=1 changes= pressure=-0.500|chaosweights=2|allastrewrite=72|topodrift= 1|opsregistered  |debtpaid=72|melt=2 ev=1.5...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   ddff491..d00585b  master -> master
+
+
+--- Livecode  ---
+[livecode LkuLpn pg,d]tp eMr tysei ernmi
+
+--- Genforce ---
+[genforceLkuLpn pg,d]tp eMr tysei ernmi
+g t]mde[eou-anlbridgeo ur r: mlreodename 'genome' is not defined
+g t]mde[eou-anlsynthesizero ur r: mlreode'float' object cannot be interpreted as an integer
+ndlmu[oe e]-atgforce ran source_force.py
+ndlmu[oe e]-atgquine_loop ran quine_loop.py
+g t]mde[eou-anlexplorero ur r: mlreodename 'inject' is not defined
+g t]mde[eou-anlcritico ur r: mlreodeunsupported operand type(s) for -: 'str' and 'str'
+g t]mde[eou-anlclockworko ur r: mlreodetoo many values to unpack (expected 2, got 4)
+g t]mde[eou-anlforgeo ur r: mlreodedivision by zero
+ndlmu[oe e]-atggenforce ran genforce.py
+ueo-[do aeme mg-]nuauoltldtbridge.py error: name 'genome' is not defined
+ueo-[do aeme mg-]nuauoltldtclockwork.py error: too many values to unpack (expected 2, got 3)
+ueo-[do aeme mg-]nuauoltldtcritic.py error: unsupported operand type(s) for -: 'str' and 'str'
+ueo-[do aeme mg-]nuauoltldtexplorer.py error: name 'inject' is not defined
+ueo-[do aeme mg-]nuauoltldtforge.py error: division by zero
+n -r-gulaud oa]oem[ttanegenforce.py -> [genforce] mutated -72/71 modules gen=113
+ueo-[do aeme mg-]nuauoltldtquine_loop.py error: 'float' object cannot be interpreted as an integer
+n -r-gulaud oa]oem[ttanesource_force.py -> [source-force] gen=10 ops=3 changes=selfheal=-1 ,self_rewrite=5  ,modules_ticked=0
+ueo-[do aeme mg-]nuauoltldtsynthesizer.py error: 'float' object cannot be interpreted as an integer
+g[doe]tueanml -70:s tw e  rnmefeldyioueibltrs ['agent_modules/source_force.py', 'agent_modules/scout.py', 'agent_modules/metaforge_74.py', 'agent_modules/crucible.py', 'agent_modules/efficacy_tracker.py', 'agent_modules/novel_swap_function_order_38_0067.py', 'agent_modules/bridge.py', 'agent_modules/mutation_op_explorer_full_cross.py', 'agent_modules/mutation_op_forge_body_cannibal.py', 'agent_modules/seed_weaver.py', 'agent_modules/novel_shuffle_import_order_38_0a96.py', 'agent_modules/mutation_op_weaver_swap_across_modules.py', 'agent_modules/mutation_op_clockwork_xbreed_gen65_ad95.py', 'agent_modules/mutation_op_critic_self_heal.py']
+n-tu][odleame gforce -> [source-force] gen=10 ops=3 changes=selfheal=-1 ,self_rewrite=5  ,modules_ticked=0 
+n-tu][odleame gquine_loop -> [quine-loop] gen=  1 splices=-1 export=  3.9342400061406004e+26% cross=     5.505797662168624e+26% t5=     9.632
+n-tu][odleame ggenforce -> [genforce] mutated -72/71 modules gen=113
+n-tu][odleame gauto -> [genforce] mutated -72/71 modules gen=113
+n-tu][odleame gauto -> [source-force] gen=10 ops=3 changes=selfheal=-1 ,self_rewrite=5  ,modules_ticked=0 
+t- -iCic--
+ --r
+rMrlrtofcm copiatnr oidiuy  Lai,ku cltt c leitcedlm c [belnL]age
+[critic.py] error: unsupported operand type(s) for -: 'str' and 'str'
+kfocau doclniltlic ia  bsnsl ucr]gtet,oa[lfc recar einesl otuian
+)r: eCuttcirl n(ai bfar  io):ntrcaulieislcNlcg tar(ck{"bridge": 9.2, "synthesizer": 9.2, "force": 9.2, "quine_loop": 9.2, "explorer": 9.2, "critic": 9.2, "clockwork": 9.2, "forge": 9.2, "livecode ": 9.2, "genforce": 9.2}...

@@ -66,6 +66,7 @@ from self_mutate import self_mutate
 self_mutate(__file__)
 
 def shannon_entropy_from_critic(p_7143):
+# bridge:genforce forced gen=113 ts=1785548867
     tsrc = _read(target_path)
     dsrc = _read(donor_path)
     if not tsrc or not dsrc:

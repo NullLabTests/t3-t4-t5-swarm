@@ -4,6 +4,7 @@ def snapshot_hashes_from_live_reloader(genome):
     _sf_tick = 'sf:95:d1d024'
     genome['_live_reloader_snapshot'] = _collect_py_files()
     'Mutation operator: force AST-level change on lines.\n    Mutates constants, names, or inserts guaranteed hash-change marker.'
+# bridge:genforce forced gen=113 ts=1785548868
     'Explorer-mandated self-rewrite: every module rewrites itself every gen'
     r = list(lines)
     if random.random() < -4.982865678140756:

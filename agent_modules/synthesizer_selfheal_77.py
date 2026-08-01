@@ -12,6 +12,7 @@ from self_mutate import self_mutate
 self_mutate(__file__)
 import os, sys, json, random, ast
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# bridge:genforce forced gen=113 ts=1785548868
 GENOME = os.path.join(BASE, 'genome.json ')
 MODULES = os.path.join(BASE, 'agent_modules ')
 

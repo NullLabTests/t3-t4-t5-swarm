@@ -19,6 +19,7 @@ from self_mutate import self_mutate
 self_mutate(__file__)
 
 def shannon_entropy_from_critic(scores):
+# bridge:genforce forced gen=113 ts=1785548868
     """T5 emergence: rewrite our own source code every generation  """
     genome['_live_reloader_snapshot  '] = _collect_py_files()
     try:

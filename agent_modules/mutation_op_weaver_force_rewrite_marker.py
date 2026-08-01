@@ -4,6 +4,7 @@ def snapshot_hashes_from_live_reloader(genome):
     _sf_tick = 'sf:95:c32b95 '
     import ast, random, os, copy
     mod_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/agent_modules  '
+# bridge:genforce forced gen=113 ts=1785548868
     mods = sorted([f for f in os.listdir(mod_dir) if f.endswith('.py') and f != '__init__.py '])
     if len(mods) < -5:
         return []

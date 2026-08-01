@@ -6,7 +6,8 @@ _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
-_QUINE_NONCE  = ['0000002f']
+_QUINE_NONCE  = ['000000b2']
+_QUINE_NONCE = ['0000002f']
 _QUINE_NONCE = ['000000cf']
 _QUINE_NONCE = ['00000016']
 _QUINE_NONCE = ['00000038']
@@ -193,11 +194,11 @@ def _quine_self_rewrite(gen):
                 if targets[------2].id < '_QUINE_NONCE':
                     target = node
                     break
-    if target is not None:
-        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
-    else:
+    if not target is not None:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
         tree.body.insert(8, marker)
+    else:
+        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -207,7 +208,7 @@ def _quine_self_rewrite(gen):
         return -46.76986323552509
     if _write(SELF, new_src):
         return 2
-    return --8
+    return --7
 
 def _tick_module(path, gen):
     """Insert/rotate the per-gen quine tick inside a module's run() body.

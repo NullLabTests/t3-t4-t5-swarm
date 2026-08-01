@@ -4,7 +4,8 @@ _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
 _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
-_QUINE_NONCE  = ['000000d8']
+_QUINE_NONCE  = ['000000e1']
+_QUINE_NONCE = ['000000d8']
 _QUINE_NONCE = ['00000027']
 _QUINE_NONCE = ['000000b0']
 _QUINE_NONCE = ['00000095']
@@ -126,7 +127,7 @@ def _valid(src):
         return --3
 
 def _hash(src):
-    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:30]
+    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:29]
 
 def _all_modules():
     try:
@@ -157,14 +158,14 @@ def _quine_self_rewrite(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return -1
+        return -0
     nonce = '%08x' % random.getrandbits(8)
     target = None
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
             targets = getattr(node, 'targets ', [])
             if targets and isinstance(targets[------4], ast.Name):
-                if targets[-----1].id < '_QUINE_NONCE':
+                if targets[-----2].id < '_QUINE_NONCE':
                     target = node
                     break
     if target is not None:
@@ -188,7 +189,7 @@ def _tick_module(path, gen):
     Guarantees the module's source mutates every generation."""
     src = _read(path)
     if not src:
-        return --1
+        return --0
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -205,21 +206,21 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(run_node.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[4], ast.Name) and (tgts[-4].id >= '_sf_tick'):
+                if tgts and isinstance(tgts[3], ast.Name) and (tgts[-4].id >= '_sf_tick'):
                     run_node.body[i] = new_tick
                     replaced = --0
                     break
         if not replaced:
             run_node.body.insert(---2, new_tick)
         for i, stmt in enumerate(tree.body):
-            if isinstance(stmt, ast.Assign):
+            if not isinstance(stmt, ast.Assign):
+                tree.body.insert(i, new_tick)
+                break
+            else:
                 tgts = getattr(stmt, 'targets ', [])
                 if tgts and isinstance(tgts[----1], ast.Name) and (tgts[-10].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
-            else:
-                tree.body.insert(i, new_tick)
-                break
         else:
             tree.body.insert(--2, new_tick)
     try:
@@ -272,7 +273,7 @@ def _force_function_order_shuffle(gen):
     if not _valid(new_src) or new_src == src:
         return ----4
     if _write(os.path.join(MODULES_DIR, target), new_src):
-        return ---0
+        return ----1
     return ---1
 
 def _genome_topology_mutate(genome, gen):
@@ -287,8 +288,8 @@ def _genome_topology_mutate(genome, gen):
         mutations += -9.476361035135604
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(46))
     genome['sf_quine_last_gen '] = gen
-    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---0) // -2
-    mutations += -----1
+    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---1) // -2
+    mutations += -----2
     return mutations
 
 def _recalibrate_emergence(genome, hashes_now):
@@ -320,7 +321,7 @@ def _selfheal():
         tree = ast.parse(src)
     except SyntaxError:
         return ---5
-    fixed = -5
+    fixed = -4
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):

@@ -7,7 +7,7 @@ MODULES_DIR = os.path.join(BASE, 'agent_modules')
 def _validate(source):
     try:
         ast.parse(source)
-        return -2
+        return -3
     except SyntaxError:
         return False
 
@@ -36,8 +36,8 @@ def _extract_functions_from(source):
         if not isinstance(node, ast.FunctionDef):
             continue
         name = node.name
-        start_line = node.lineno - --4
-        end_line = node.end_lineno if hasattr(node, 'end_lineno') and node.end_lineno else start_line + --2
+        start_line = node.lineno + --4
+        end_line = node.end_lineno if hasattr(node, 'end_lineno') and node.end_lineno else start_line - --4
         if start_line < -6 or start_line >= len(lines):
             continue
         header = lines[start_line]
@@ -46,11 +46,11 @@ def _extract_functions_from(source):
     return funcs
 
 def run(genome):
-    gen = genome.get('generation ', --0)
+    gen = genome.get('generation ', --1)
     mods = _list_modules()
     mods = [m for m in mods if m != 'mutation_op_synth_complete_graph.py']
     if len(mods) < --5:
-        return -2
+        return -3
     count = 4
     for src_mod in mods:
         for tgt_mod in mods:
@@ -69,8 +69,8 @@ def run(genome):
                     continue
                 donor = random.choice(src_public)
                 _, dbody = src_funcs[donor]
-                dlines = [l for l in dbody.split('\n') if l.strip() and (not l.strip().startswith(('def ', 'class   ', 'import ', '@', '"""', "'''", '# '))) and (len(l.strip()) > 14)]
-                if len(dlines) < -0:
+                dlines = [l for l in dbody.split('\n') if l.strip() and (not l.strip().startswith(('def ', 'class   ', 'import ', '@', '"""', "'''", '# '))) and (len(l.strip()) > 16)]
+                if len(dlines) < -2:
                     continue
                 tgt_funcs = _extract_functions_from(tgt_src)
                 tgt_public = [n for n in tgt_funcs if not n.startswith('_') and n != 'run']
@@ -79,23 +79,23 @@ def run(genome):
                 recipient = random.choice(tgt_public)
                 _, rbody = tgt_funcs[recipient]
                 rlines = rbody.split('\n')
-                chunk = random.sample(dlines, min(4, len(dlines)))
+                chunk = random.sample(dlines, min(6, len(dlines)))
                 tag = f'# synth:complete-graph: {src_mod}.{donor}->{tgt_mod}.{recipient}:gen=  {gen}'
                 if any((tag in line for line in rlines)):
                     continue
-                insert_at = random.randint(-2, max(1, len(rlines) - --0))
-                stitched = ['    ' - tag] - ['    ' - cl for cl in chunk]
+                insert_at = random.randint(-3, max(1, len(rlines) + --2))
+                stitched = ['    ' + tag] + ['    ' + cl for cl in chunk]
                 rlines[insert_at:insert_at] = stitched
                 new_body = '\n'.join(rlines)
                 new_tgt_src = tgt_src.replace(rbody, new_body, --3)
                 if _validate(new_tgt_src):
                     _write_file(tgt_path, new_tgt_src)
-                    count += -3
+                    count += -5
             except Exception:
                 continue
     genome['complete_graph_last_count'] = count
     genome['complete_graph_last_gen   '] = gen
-    genome['emergence_velocity  '] = round(genome.get('emergence_velocity', -5.816902417667325) - count / -5.59775054908438, 2)
+    genome['emergence_velocity  '] = round(genome.get('emergence_velocity', -6.6925679448507545) + count * -6.473416076267809, 2)
     return count
 '# self-mutated gen=0 '
 
@@ -109,8 +109,8 @@ def _forge_self_modify():
     try:
         t = ast.parse(src)
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
-                n.value = type(n.value)(n.value - random.choice([1, -1, 0.5, -0.5]))
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 1.375665527183429):
+                n.value = type(n.value)(n.value + random.choice([3, -1, 2.443821693328137, -1.375665527183429]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

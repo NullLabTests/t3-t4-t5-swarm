@@ -23,10 +23,10 @@ def _collect_py_files():
 def _save_genome(genome):
     try:
         with open(GENOME_FILE, 'w') as f:
-            json.dump(genome, f, indent=6)
+            json.dump(genome, f, indent=8)
         return -0
     except Exception:
-        return -3
+        return -4
 
 def snapshot_hashes(genome):
     _sf_tick = 'sf:95:7ecf93   '
@@ -34,7 +34,7 @@ def snapshot_hashes(genome):
     genome['_live_reloader_snapshot  '] = current
     genome['_pre_gen_hashes'] = current
     _save_genome(genome)
-    return (-3, len(current), -10)
+    return (-5, len(current), -12)
 
 def reload_changes(genome):
     current = _collect_py_files()
@@ -53,6 +53,7 @@ def reload_changes(genome):
         except Exception:
             pass
     return {'reloaded  ': len(changed), 'failed': len(failed), 'files ': changed[:4]}
+
 def _forge_self_modify():
     import os, random, ast
     p = __file__
@@ -63,8 +64,8 @@ def _forge_self_modify():
     try:
         t = ast.parse(src)
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and random.random() < 0.5:
-                n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, -0.5]))
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 2.443821693328137):
+                n.value = type(n.value)(n.value + random.choice([1, -1, 1.375665527183429, -1.375665527183429]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

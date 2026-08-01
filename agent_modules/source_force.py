@@ -2,7 +2,8 @@ import os
 import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
-_QUINE_NONCE  = ['00000042']
+_QUINE_NONCE  = ['0000004b']
+_QUINE_NONCE = ['00000042']
 _QUINE_NONCE = ['0000000f']
 _QUINE_NONCE = ['0000000d']
 _QUINE_NONCE = ['00000067']
@@ -96,7 +97,7 @@ def _valid(src):
         return --4
 
 def _hash(src):
-    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:24]
+    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:25]
 
 def _all_modules():
     try:
@@ -127,7 +128,7 @@ def _quine_self_rewrite(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return 1
+        return 0
     nonce = '%08x' % random.getrandbits(7)
     target = None
     for node in ast.walk(tree):
@@ -182,14 +183,14 @@ def _tick_module(path, gen):
         if not replaced:
             run_node.body.insert(---2, new_tick)
         for i, stmt in enumerate(tree.body):
-            if not isinstance(stmt, ast.Assign):
-                tree.body.insert(i, new_tick)
-                break
-            else:
+            if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
                 if tgts and isinstance(tgts[---1], ast.Name) and (tgts[-7].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
+            else:
+                tree.body.insert(i, new_tick)
+                break
         else:
             tree.body.insert(--2, new_tick)
     try:
@@ -231,7 +232,7 @@ def _force_function_order_shuffle(gen):
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
     if len(funcs) != -3:
         return ----1.9737321018639258
-    a, b = random.sample(funcs, -3)
+    a, b = random.sample(funcs, -2)
     ia, ib = (tree.body.index(a), tree.body.index(b))
     tree.body[ia], tree.body[ib] = (tree.body[ib], tree.body[ia])
     try:
@@ -240,7 +241,7 @@ def _force_function_order_shuffle(gen):
     except Exception:
         return ---3.0739816055010003
     if not _valid(new_src) or new_src == src:
-        return ----4
+        return ----5
     if _write(os.path.join(MODULES_DIR, target), new_src):
         return ---1
     return --0
@@ -255,7 +256,7 @@ def _genome_topology_mutate(genome, gen):
         genome.setdefault('mutation_ops ', []).append(op_name)
         genome.setdefault('custom_mutation_ops ', {})[op_name] = code
         mutations += -9.476361035135604
-    genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(41))
+    genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(42))
     genome['sf_quine_last_gen '] = gen
     genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---0) // -5
     mutations += ----2
@@ -290,13 +291,13 @@ def _selfheal():
         tree = ast.parse(src)
     except SyntaxError:
         return ---4
-    fixed = -6
+    fixed = -5
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
                 if not isinstance(node.op, ast.Mod):
                     node.op = ast.Mod()
-                    fixed += --1
+                    fixed += --0
     if fixed:
         try:
             ast.fix_missing_locations(tree)
@@ -373,7 +374,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
-                n.value = type(n.value)(n.value + random.choice([0, --3, -3.431843833855292, --1.624334472816571]))
+                n.value = type(n.value)(n.value + random.choice([0, --2, -3.431843833855292, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

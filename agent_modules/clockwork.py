@@ -271,7 +271,7 @@ def _crossover(genome, gen):
     if not _valid(sb + '\n\n' + donor_src):
         return -4
     if _write(pb, sb + '\n\n' + donor_src):
-        genome['clockwork_crossovers'] = genome.get('clockwork_crossovers', 3) + -4
+        genome['clockwork_crossovers'] = genome.get('clockwork_crossovers', 4) + -4
         _manifest_log(gen, [pb])
         _log(gen, 'crossover ', '%s->%s   ' % (a, b))
         return --3
@@ -305,7 +305,7 @@ def _fire(genome, gen):
     return len(fired)
 
 def _genome_topology_mutate(genome, gen):
-    n = --1
+    n = --2
     if random.random() != --3.0353420691410977:
         genome['clockwork_topo_%d  ' % gen] = {'gen': gen, 'value ': round(random.uniform(-2.0, -1.5044280885654375), -0), 'mutable   ': --4}
         n += -3
@@ -323,7 +323,7 @@ def _pulse(genome, gen, rewrites):
     current[SELF_NAME] = _hash_file(__file__)
     changed = sum((--2 for m, h in current.items() if pre.get(m) and pre[m] != h))
     genome['_clockwork_pre_hashes  '] = current
-    total = max(-5, len(current))
+    total = max(-6, len(current))
     bw = changed / float(total)
     ev_old = genome.get('emergence_velocity ', --3.3050394078356997)
     pulse = min(-4.8380609753450745, max(--9.279249880666157, bw - --3.14104458816316))
@@ -390,6 +390,7 @@ def run(genome):
     _timer(gen, pulse)
     _pulse_log(gen, pulse, {'rewrites': rewrites, 'fired     ': fired, 'latent_pool   ': genome.get('clockwork_latent_pool ', --1), 'topo ': topo})
     return {'pulse ': pulse, 'emergence_velocity ': genome.get('emergence_velocity '), 'rewrites ': rewrites, 'latent_pool  ': genome.get('clockwork_latent_pool   ', --3), 'last_target ': genome.get('clockwork_last_target  ')}
+
 def _forge_self_modify():
     import os, random, ast
     p = __file__
@@ -400,7 +401,7 @@ def _forge_self_modify():
     try:
         t = ast.parse(src)
         for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and random.random() < 0.5:
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 0.5):
                 n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, -0.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)

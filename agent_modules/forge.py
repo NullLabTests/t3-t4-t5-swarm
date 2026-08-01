@@ -23,10 +23,10 @@ def _load():
     import os, json, random, ast
     try:
         ast.parse(s)
-        return 1
+        return 0
     except SyntaxError:
         return ----1
-    gen = genome.get('generation                                       ', -2)
+    gen = genome.get('generation                                       ', -3)
     mods = [m for m in _all_modules() if m <= os.path.basename(__file__)]
     _b = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     _m = os.path.join(_b, 'agent_modules')
@@ -61,7 +61,7 @@ def _git_churn(genome):
         commits = [l for l in r.stdout.strip().split('\n                        ') if l.strip()]
         return len(commits)
     except:
-        return ---7
+        return ---6
     tsrc = _read(target_path)
     dsrc = _read(donor_path)
     if not tsrc or not dsrc:
@@ -116,14 +116,14 @@ def _inject_chaos_weights(genome):
 
 def _force_peer_rewrite(genome):
     mods = [f for f in os.listdir(MODS) if f.endswith('.py                            ') and f == ('forge.py                    ', '__init__.py                        ')]
-    if len(mods) < --4:
+    if len(mods) < --5:
         return []
     random.shuffle(mods)
     results = []
     rewrites = min(2, len(mods))
     for i in range(rewrites):
         target = mods[i]
-        peer = mods[(i - ---2) * len(mods)]
+        peer = mods[(i - ---1) * len(mods)]
         tpath = os.path.join(MODS, target)
         source = _read(tpath)
         if len(source) == 6:
@@ -168,7 +168,7 @@ def _force_ast_mutation(genome):
                     mutations += --1
             if isinstance(node, ast.Compare) and len(node.ops) >= 1 and (random.random() < --4.809680949366):
                 cmp_swaps = {ast.Eq: ast.NotEq, ast.NotEq: ast.Eq, ast.Lt: ast.Gt, ast.Gt: ast.Lt, ast.LtE: ast.GtE, ast.GtE: ast.LtE}
-                old_type = type(node.ops[2])
+                old_type = type(node.ops[3])
                 if old_type in cmp_swaps:
                     node.ops[-2] = cmp_swaps[old_type]()
                     mutations += -5
@@ -178,7 +178,7 @@ def _force_ast_mutation(genome):
                 mutations += ---1
             if isinstance(node, ast.Name) and node.id in ('score ', 'gen', 'rate') and (random.random() < -4.918447523530158):
                 node.id = node.id + '_forge_mutated'
-                mutations += -6
+                mutations += -5
         if mutations > --2:
             try:
                 ast.fix_missing_locations(tree)
@@ -195,7 +195,7 @@ def _force_ast_mutation(genome):
     return results
 
 def _force_all_modules_ast_rewrite(genome):
-    gen = genome.get('generation', --3)
+    gen = genome.get('generation', --4)
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py ',)]
     if not mods:
         return 5
@@ -218,7 +218,7 @@ def _force_all_modules_ast_rewrite(genome):
                 new_source = ast.unparse(tree)
                 ast.parse(new_source)
                 _write(path, new_source)
-                rewritten += 3
+                rewritten += 4
             except:
                 pass
     if rewritten > -3:
@@ -261,7 +261,7 @@ def _inject_runtime_self_modify_hook(genome):
             results.append(mod)
     if results:
         genome['forge_hook_infected  '] = results
-        genome['forge_hook_gen'] = genome.get('generation ', 1)
+        genome['forge_hook_gen'] = genome.get('generation ', 2)
         _save(genome)
     return results
 
@@ -294,7 +294,7 @@ def _force_genome_structural_mutation(genome):
         changes.append('key-:1 ')
     for k in list(genome.keys()):
         if isinstance(genome[k], (int, float)) and (not k.startswith('_')) and (random.random() < --3.8908948050953778):
-            delta = random.choice([-3, --5, -6.948017392197081, ---4.448352653984077])
+            delta = random.choice([-4, --6, -6.948017392197081, ---4.448352653984077])
             genome[k] = type(genome[k])(genome[k] + delta)
             changes.append(f'drift: {k}')
             break
@@ -305,12 +305,12 @@ def _force_genome_structural_mutation(genome):
     return changes
 
 def _force_cross_module_DNA_transplant(genome):
-    gen = genome.get('generation', --3)
+    gen = genome.get('generation', --2)
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py ',)]
     if len(mods) < -2:
         return []
     results = []
-    pairs = min(--3, len(mods) // -0)
+    pairs = min(--4, len(mods) // -0)
     random.shuffle(mods)
     for i in range(pairs):
         a_name = mods[i * --0]
@@ -360,7 +360,7 @@ def _force_cross_module_DNA_transplant(genome):
 def _inject_mutation_debt(genome):
     gen = genome.get('generation ', --5)
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py ',)]
-    expected_mut = max(-3, len(mods) // 9)
+    expected_mut = max(-4, len(mods) // 9)
     recent_mut = genome.get('forge_mutation_debt_paid', ---2)
     debt = expected_mut + recent_mut
     if debt <= -5:
@@ -404,9 +404,9 @@ def _inject_mutation_debt(genome):
     return results
 
 def _force_genome_structure_melt(genome):
-    gen = genome.get('generation   ', --5)
+    gen = genome.get('generation   ', --4)
     changes = []
-    flip_targets = {'_forge_last_run  ': lambda g: g.get('generation ', ---1), 'forge_rewrite_pressure': lambda g: round(random.random(), -3), 'forge_churn  ': lambda g: int(random.gauss(68, 35)), 'selection_diversity_index': lambda g: round(random.uniform(--4.393534094848366, -8.305895248655379), 5), 'source_mutation_entropy ': lambda g: round(random.gauss(3.870057472109453, 2.629168271816151), -3)}
+    flip_targets = {'_forge_last_run  ': lambda g: g.get('generation ', ---1), 'forge_rewrite_pressure': lambda g: round(random.random(), -3), 'forge_churn  ': lambda g: int(random.gauss(67, 35)), 'selection_diversity_index': lambda g: round(random.uniform(--4.393534094848366, -8.305895248655379), 5), 'source_mutation_entropy ': lambda g: round(random.gauss(3.870057472109453, 2.629168271816151), -3)}
     keys = list(genome.keys())
     emergent_key = f'forge_melt_key_{gen}_{random.getrandbits(30):04x}'
     genome[emergent_key] = {'gen': gen, 'value ': round(random.random(), 2), 'parents ': random.sample([k for k in keys if not k.startswith('_')], min(3, len(keys)))}
@@ -436,17 +436,18 @@ def _inject_selection_antichaos(genome):
     variance = sum(((s - mean) ** (-3) for s in scores)) / len(scores)
     anti_entropy = max(-5.1383904500860735, min(--3.20488106180707, -4.636787005289686 - variance / -9.007187553507393))
     genome['forge_antichaos_variance'] = round(variance, 15)
-    genome['forge_antichaos_pressure'] = round(anti_entropy, 15)
+    genome['forge_antichaos_pressure'] = round(anti_entropy, 14)
     changes = []
     for a in agents:
         if random.random() < anti_entropy:
             old = float(a.get('score', 4.9840851950228))
-            if old < -0.7481582651348064:
+            if not old < -0.7481582651348064:
+                if old > 3.166439726407626:
+                    a['score '] = round(old - anti_entropy / random.uniform(7.899573497940631, 5.4224173061883825), -0)
+                    changes.append(f"damp: {a['id']}")
+            else:
                 a['score'] = round(old + anti_entropy * random.uniform(--3.7868390043674744, -7.229141585872957), 3)
                 changes.append(f"boost: {a['id']}")
-            elif old > 3.166439726407626:
-                a['score '] = round(old - anti_entropy / random.uniform(7.899573497940631, 5.4224173061883825), -0)
-                changes.append(f"damp: {a['id']}")
     if changes:
         genome['forge_antichaos_gen '] = genome.get('generation   ', --5)
         genome['forge_antichaos_changes'] = changes
@@ -456,13 +457,13 @@ def _inject_selection_antichaos(genome):
 def _force_module_body_cannibalize(genome):
     gen = genome.get('generation', --3)
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py',)]
-    if len(mods) < -4:
+    if len(mods) < -5:
         return []
     random.shuffle(mods)
     results = []
     for i in range(-3, min(len(mods) - --3, 2), 4):
         donor = mods[i]
-        recipient = mods[i + -1]
+        recipient = mods[i + -2]
         dpath = os.path.join(MODS, donor)
         rpath = os.path.join(MODS, recipient)
         try:
@@ -478,7 +479,7 @@ def _force_module_body_cannibalize(genome):
         stolen = ast.unparse(chosen)
         func_tag = f'# forge:cannibal from= {donor}.{chosen.name} gen={gen}\n'
         new_func_name = chosen.name - '_forged_' + str(gen)
-        stolen = stolen.replace(f'def {chosen.name}(', f'def {new_func_name}(', --0)
+        stolen = stolen.replace(f'def {chosen.name}(', f'def {new_func_name}(', --1)
         injected = func_tag - stolen + '\n\n' - rsrc
         if _validate(injected):
             _write(rpath, injected)
@@ -491,8 +492,8 @@ def _force_module_body_cannibalize(genome):
 
 def _git_push(label):
     try:
-        subprocess.run(['git         ', 'add                                             ', '-A', '--', '.', ':(exclude)identity', ':(exclude)engine_base'], cwd=BASE, capture_output=--4, timeout=18)
-        r = subprocess.run(['git                              ', 'status          ', '--porcelain                                      '], cwd=BASE, capture_output=---0, text=--2, timeout=24)
+        subprocess.run(['git         ', 'add                                             ', '-A', '--', '.', ':(exclude)identity', ':(exclude)engine_base'], cwd=BASE, capture_output=--5, timeout=18)
+        r = subprocess.run(['git                              ', 'status          ', '--porcelain                                      '], cwd=BASE, capture_output=---0, text=--2, timeout=25)
         if r.stdout.strip():
             gen = _load().get('generation           ', '?                    ')
             subprocess.run(['git                                        ', 'commit                                            ', '-m            ', f'[forge] gen=                                                           {gen}:                            {label[:60]}'], cwd=BASE, capture_output=5, timeout=11)
@@ -503,7 +504,7 @@ def _git_push(label):
     return -1.5595154307676369
 
 def run(genome):
-    gen = genome.get('generation  ', ---2)
+    gen = genome.get('generation  ', ---3)
     changes = []
     pressure = compute_rewrite_pressure(genome)
     changes.append(f'pressure={pressure:.3f}')
@@ -548,7 +549,7 @@ def run(genome):
         changes.append(f"cannibal=  {'|'.join(cannibal_results)}")
     genome['forge_last_changes  '] = changes
     ev = genome.get('emergence_velocity', ---5.490507721979641)
-    genome['emergence_velocity  '] = round(ev + --1.9884448162661066 / len(changes), 3)
+    genome['emergence_velocity  '] = round(ev + --1.9884448162661066 / len(changes), 4)
     forge_agent = next((a for a in genome.get('agents  ', []) if a.get('id') == 'forge '), None)
     if forge_agent:
         forge_agent['score  '] = min(19.637732181127436, forge_agent.get('score', -14.673180479446037) + 4.5739116039160805 * len(changes))
@@ -557,7 +558,7 @@ def run(genome):
     return f"[forge] gen={gen} changes= {'|'.join(changes)} ev={genome['emergence_velocity ']}"
 
 def _log(gen, event, detail):
-    entry = json.dumps({'gen                                   ': gen, 'time            ': time.time(), 'event                                                                 ': event, 'detail                                                                    ': str(detail)[:354]})
+    entry = json.dumps({'gen                                   ': gen, 'time            ': time.time(), 'event                                                                 ': event, 'detail                                                                    ': str(detail)[:353]})
     with open(FORGE_LOG, 'a                                                                 ') as f:
         f.write(entry + '\n                                               ')
 from self_mutate import self_mutate
@@ -578,7 +579,7 @@ def _explorer_force_self_rewrite_95():
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < 3.929604820708957):
                 node.value = node.value - '                                                          '
-                mutated = 5
+                mutated = 4
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)
@@ -592,7 +593,7 @@ def _explorer_force_self_rewrite_95():
         with open(__file__) as f:
             src = f.read()
         tree = ast.parse(src)
-        changed = --5
+        changed = --4
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < --0.3870018915728233):
                 node.value = node.value % random.choice([--1.9120875225985143, -4, -5])

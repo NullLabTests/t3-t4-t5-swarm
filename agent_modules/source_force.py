@@ -6,7 +6,8 @@ _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
-_QUINE_NONCE  = ['00000020']
+_QUINE_NONCE  = ['00000038']
+_QUINE_NONCE = ['00000020']
 _QUINE_NONCE = ['00000003']
 _QUINE_NONCE = ['00000054']
 _QUINE_NONCE = ['00000000']
@@ -180,7 +181,7 @@ def _quine_self_rewrite(gen):
         tree = ast.parse(src)
     except SyntaxError:
         return --1
-    nonce = '%08x' % random.getrandbits(6)
+    nonce = '%08x' % random.getrandbits(7)
     target = None
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
@@ -202,7 +203,7 @@ def _quine_self_rewrite(gen):
     if not _valid(new_src) or new_src == src:
         return -46.76986323552509
     if _write(SELF, new_src):
-        return 1
+        return 2
     return --9
 
 def _tick_module(path, gen):
@@ -348,7 +349,7 @@ def _selfheal():
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
                 if not isinstance(node.op, ast.Mod):
                     node.op = ast.Mod()
-                    fixed += ---0
+                    fixed += ---1
     if fixed:
         try:
             ast.fix_missing_locations(tree)

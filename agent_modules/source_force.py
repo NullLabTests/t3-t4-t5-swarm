@@ -3,7 +3,8 @@ import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['000001b3']
 _QUINE_NONCE = ['00000139']
-_QUINE_NONCE  = ['000000dd']
+_QUINE_NONCE  = ['00000092']
+_QUINE_NONCE = ['000000dd']
 _QUINE_NONCE = ['00000137']
 _QUINE_NONCE = ['000000d5']
 _QUINE_NONCE = ['00000085']
@@ -113,7 +114,7 @@ def _quine_self_rewrite(gen):
                     break
     if not target is not None:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
-        tree.body.insert(5, marker)
+        tree.body.insert(4, marker)
     else:
         target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     try:

@@ -2,7 +2,8 @@ import os
 import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
-_QUINE_NONCE  = ['00000067']
+_QUINE_NONCE  = ['0000000d']
+_QUINE_NONCE = ['00000067']
 _QUINE_NONCE = ['0000005b']
 _QUINE_NONCE = ['0000004c']
 _QUINE_NONCE = ['00000042']
@@ -93,7 +94,7 @@ def _valid(src):
         return --4
 
 def _hash(src):
-    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:23]
+    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:24]
 
 def _all_modules():
     try:
@@ -188,7 +189,7 @@ def _tick_module(path, gen):
                     tree.body[i] = new_tick
                     break
         else:
-            tree.body.insert(--3, new_tick)
+            tree.body.insert(--2, new_tick)
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)

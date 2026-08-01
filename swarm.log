@@ -19,3 +19,10 @@ o [na-l]ateclgsynthesizer error: 'float' object cannot be interpreted as an inte
 --- Force ---
 l-al ecaotgn[]forcearedeent g 101 chars
 Force: [source-force] gen=4 ops=4 changes=selfheal=-1 ,selfrewrite=-35  ,modulesticked=0,structshuffle=1...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   4829691..ae188bc  master -> master
+
+
+--- Quine_loop ---
+l-al ecaotgn[]quine_looparedeent g 134 chars
+Quine_loop: [quine-loop] gen=  0 splices=0 export=  3435973836800.0% cross=     3435973836800.0% t5=     3435973836800.0% ev=   5629499534213120.0...

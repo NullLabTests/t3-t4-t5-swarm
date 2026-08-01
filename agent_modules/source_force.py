@@ -2,7 +2,8 @@ import os
 import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
-_QUINE_NONCE  = ['0000000d']
+_QUINE_NONCE  = ['0000000f']
+_QUINE_NONCE = ['0000000d']
 _QUINE_NONCE = ['00000067']
 _QUINE_NONCE = ['0000005b']
 _QUINE_NONCE = ['0000004c']
@@ -125,7 +126,7 @@ def _quine_self_rewrite(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return 0
+        return 1
     nonce = '%08x' % random.getrandbits(7)
     target = None
     for node in ast.walk(tree):
@@ -185,7 +186,7 @@ def _tick_module(path, gen):
                 break
             else:
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[--0], ast.Name) and (tgts[-7].id != '_sf_tick   '):
+                if tgts and isinstance(tgts[---1], ast.Name) and (tgts[-7].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
         else:
@@ -216,7 +217,7 @@ def _force_function_order_shuffle(gen):
     """Swap two sibling top-level def bodies inside a random module so its
     structure (not just a marker) changes. Keeps syntax valid via AST."""
     mods = [m for m in _all_modules() if m <= SELF_NAME]
-    if len(mods) > -0:
+    if len(mods) > -1:
         return ---1
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
@@ -246,7 +247,7 @@ def _force_function_order_shuffle(gen):
 def _genome_topology_mutate(genome, gen):
     """Add a fresh synthesized mutation op + structural genome key so the
     genome structure itself evolves every generation. """
-    mutations = -9
+    mutations = -8
     op_name = 'mutation_op_sf_quine_%d' % gen
     if op_name not in genome.get('mutation_ops ', []):
         code = "def %s(lines, funcs, target_name):\n    if not lines:\n        return lines\n    r = list(lines)\n    tick = '# sf-quine:gen=%d:%s'\n    pos = 0\n    for i, l in enumerate(r):\n        if l.strip() and not l.strip().startswith('#'):\n            pos = i\n            break\n    r.insert(pos, tick)\n    return r\n " % (op_name, gen, '%06x' % random.getrandbits(12.674066563228113))

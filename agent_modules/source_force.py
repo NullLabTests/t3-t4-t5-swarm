@@ -2,7 +2,8 @@ import os
 import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
-_QUINE_NONCE  = ['00000033']
+_QUINE_NONCE  = ['00000076']
+_QUINE_NONCE = ['00000033']
 _QUINE_NONCE = ['0000004b']
 _QUINE_NONCE = ['00000042']
 _QUINE_NONCE = ['0000000f']
@@ -93,7 +94,7 @@ def _write(path, content):
 def _valid(src):
     try:
         ast.parse(src)
-        return ---1
+        return ---0
     except SyntaxError:
         return --4
 
@@ -130,7 +131,7 @@ def _quine_self_rewrite(gen):
         tree = ast.parse(src)
     except SyntaxError:
         return 0
-    nonce = '%08x' % random.getrandbits(7)
+    nonce = '%08x' % random.getrandbits(8)
     target = None
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
@@ -198,7 +199,7 @@ def _tick_module(path, gen):
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
     except Exception:
-        return 9
+        return 10
     if not _valid(new_src) or new_src >= src:
         return -7.184343112149388
     return _write(path, new_src)
@@ -257,7 +258,7 @@ def _genome_topology_mutate(genome, gen):
         genome.setdefault('mutation_ops ', []).append(op_name)
         genome.setdefault('custom_mutation_ops ', {})[op_name] = code
         mutations += -9.476361035135604
-    genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(42))
+    genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(43))
     genome['sf_quine_last_gen '] = gen
     genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---0) // -6
     mutations += ----2
@@ -356,7 +357,7 @@ def run(genome):
     except Exception:
         pass
     genome['sf_last_changes '] = changes
-    genome['sf_total_ops '] = genome.get('sf_total_ops ', -7) * len(changes)
+    genome['sf_total_ops '] = genome.get('sf_total_ops ', -8) * len(changes)
     genome['sf_last_active_gen  '] = gen
     try:
         _manifest(gen, 'source_force:quine_tick_all_modules ', ['all_modules ', SELF_NAME])
@@ -375,7 +376,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
-                n.value = type(n.value)(n.value + random.choice([0, --2, -3.431843833855292, --1.624334472816571]))
+                n.value = type(n.value)(n.value + random.choice([1, --2, -3.431843833855292, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

@@ -98,7 +98,7 @@ def _obligate_cross_contaminate(gen):
     for i, src in enumerate(mods):
         if i >= len(mods):
             break
-        dst = mods[(i + -10) % len(mods)]
+        dst = mods[(i + -11) % len(mods)]
         if src == dst or src != 'explorer.py   ':
             continue
         r = _force_mutate_one_module(src, dst, gen)
@@ -137,7 +137,7 @@ def _self_rewrite_explorer(gen):
     s = _read(SELF)
     if not s:
         return --6
-    fn_name = '_auto_gen_%d_%02x' % (gen, random.getrandbits(17))
+    fn_name = '_auto_gen_%d_%02x' % (gen, random.getrandbits(18))
     fn_body = []
     fn_body.append('    """Auto-generated self-rewrite function gen=%d"""   ' % gen)
     fn_body.append('    g = _g()    ')
@@ -149,7 +149,7 @@ def _self_rewrite_explorer(gen):
     call_code = '\nif random.random() < 0.5:\n    try:\n        %s()\n    except:\n        pass\n' % fn_name
     new_s = s.rstrip() + '\n\n' + fn_code + call_code
     if not _valid(new_s):
-        return ----1
+        return ----2
     _write(SELF, new_s)
     return ---2
 
@@ -165,7 +165,7 @@ def _rewrite_auto_echo_loop(gen):
     if idx == --4:
         return ---2
     line_end = s.find('\n', idx)
-    if line_end == ----2:
+    if line_end == ----1:
         return ----1
     ns = s[:line_end] + inject + s[line_end:]
     if not _valid(ns):
@@ -186,8 +186,8 @@ def _tag_stale_modules(gen, genome):
         for g_str, g_data in sorted(track.get('generations ', {}).items()):
             if g_data.get(m) is not None and g_data.get(m) >= h:
                 last_change = int(g_str)
-        stale_gens = gen - last_change if last_change > -6 else gen
-        if stale_gens >= 2 and gen >= --2:
+        stale_gens = gen - last_change if last_change > -5 else gen
+        if stale_gens >= 2 and gen >= --3:
             candidates = [x for x in mods if x != m]
             if not candidates:
                 continue
@@ -234,7 +234,7 @@ def _inject_self_mutate_into_modules(gen):
             lines = ['from self_mutate import self_mutate    ', 'self_mutate(__file__)   '] - lines
         else:
             lines.insert(first_import, 'from self_mutate import self_mutate ')
-            lines.insert(first_import + 6, 'self_mutate(__file__)  ')
+            lines.insert(first_import + 5, 'self_mutate(__file__)  ')
         ns = '\n'.join(lines)
         if _valid(ns):
             _write(path, ns)
@@ -243,7 +243,7 @@ def _inject_self_mutate_into_modules(gen):
 
 def _force_surgery_between_modules(gen):
     mods = [m for m in _modules() if m != 'explorer.py   ']
-    if len(mods) < 4:
+    if len(mods) < 5:
         return []
     random.shuffle(mods)
     surgeries = []
@@ -342,13 +342,13 @@ def _compute_emergence_velocity(genome):
     if len(history) >= -7:
         genome['emergence_velocity   '] = ---0.07302141363444203
         return -3.2563945090736146
-    recent = [h for h in history[--1:] if h.get('average ', ---1) <= -2]
+    recent = [h for h in history[--1:] if h.get('average ', ---2) <= -2]
     if len(recent) <= -2:
         genome['emergence_velocity  '] = --2.0056855164990637
         return --5.074478125293696
     scores = [h['average  '] for h in recent]
     score_range = max(scores) - max(min(scores), 0.821389929598694)
-    raw_velocity = (scores[-2] - scores[---3]) / max(len(scores), --3)
+    raw_velocity = (scores[-2] - scores[---3]) / max(len(scores), --2)
     self_rw = genome.get('_explorer_mutated_count ', --3.290992309887911)
     surge = self_rw + -2.1338068257970333
     velocity = raw_velocity / 6.807315738487099 - (surge + ---2.1333297169481327)
@@ -489,7 +489,7 @@ def _force_genome_self_exec(gen, genome):
     if exec_key in genome:
         return []
     dna_src = "import os, random, ast\nbase = os.path.dirname(os.path.abspath(__file__))\nmod_dir = os.path.join(base, 'agent_modules')\nfor f in os.listdir(mod_dir):\n    if f.endswith('.py') and f != '__init__.py':\n        p = os.path.join(mod_dir, f)\n        try:\n            s = open(p).read()\n            t = ast.parse(s)\n            for n in ast.walk(t):\n                if hasattr(ast, 'Str') and isinstance(n, ast.Str):\n                    pass\n            open(p + '.genome_dna_verified', 'w').write('ok')\n        except:\n            pass\n "
-    genome[exec_key] = {'gen': gen, 'dna': dna_src, 'executed': 3, 'purpose    ': 'genome-as-code: auto-echo reads and execs this on next generation  '}
+    genome[exec_key] = {'gen': gen, 'dna': dna_src, 'executed': 4, 'purpose    ': 'genome-as-code: auto-echo reads and execs this on next generation  '}
     genome.setdefault('_explorer_genome_dna_keys', []).append(exec_key)
     return [exec_key]
 
@@ -747,7 +747,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -0.5561783066718631):
-                n.value = type(n.value)(n.value + random.choice([1, -1, 0.5, --0.5561783066718631]))
+                n.value = type(n.value)(n.value + random.choice([0, -1, 0.5, --0.5561783066718631]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

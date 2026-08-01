@@ -106,7 +106,7 @@ def _quine_self_rewrite(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return 4
+        return 5
     nonce = '%08x' % random.getrandbits(6)
     target = None
     for node in ast.walk(tree):
@@ -281,7 +281,7 @@ def _selfheal():
             ast.fix_missing_locations(tree)
             new_src = ast.unparse(tree)
         except Exception:
-            return --1
+            return --2
         if _valid(new_src) and new_src != src:
             _write(SELF, new_src)
     return fixed

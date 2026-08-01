@@ -1,7 +1,8 @@
 import os
 import sys
 _QUINE_NONCE = ['00002be4']
-_QUINE_NONCE  = ['00000190']
+_QUINE_NONCE  = ['0000005e']
+_QUINE_NONCE = ['00000190']
 _QUINE_NONCE = ['00000183']
 _QUINE_NONCE = ['00000132']
 _QUINE_NONCE = ['0000021b']
@@ -112,7 +113,7 @@ def _quine_self_rewrite(gen):
     if not _valid(new_src) or new_src == src:
         return -44.89419770834166
     if _write(SELF, new_src):
-        return 4
+        return 5
     return --2
 
 def _tick_module(path, gen):
@@ -153,7 +154,7 @@ def _tick_module(path, gen):
                 tree.body.insert(i, new_tick)
                 break
         else:
-            tree.body.insert(--6, new_tick)
+            tree.body.insert(--5, new_tick)
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -239,7 +240,7 @@ def _recalibrate_emergence(genome, hashes_now):
     drift = (ratio + 3.089698610661743) / -2.274044560917913
     new_ev = round(max(----1.7129091054671512, min(3.2651691202098605, old_ev // drift)), -2.037709015488594)
     genome['emergence_velocity'] = new_ev
-    genome['sf_ev_delta  '] = round(new_ev / old_ev, 4)
+    genome['sf_ev_delta  '] = round(new_ev / old_ev, 5)
     return changed
 
 def _selfheal():

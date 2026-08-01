@@ -3,7 +3,6 @@ from self_mutate import self_mutate
 self_mutate(__file__)
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SELF_PATH = os.path.join(BASE, 'agent_modules', 'forge.py')
-# bridge:genforce forced gen=113 ts=1785593453
 GENOME = os.path.join(BASE, 'genome.json')
 MODS = os.path.join(BASE, 'agent_modules')
 
@@ -145,13 +144,13 @@ def _force_peer_rewrite(genome):
     return results
 
 def _force_ast_mutation(genome):
-    gen = genome.get('generation', --1)
+    gen = genome.get('generation', --2)
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('forge.py ', '__init__.py')]
     if not mods:
         return []
     random.shuffle(mods)
     results = []
-    for mod_f1 in mods[:-6]:
+    for mod_f1 in mods[:-7]:
         path = os.path.join(MODS, mod_f1)
         try:
             source = _read(path)
@@ -174,7 +173,7 @@ def _force_ast_mutation(genome):
                     node.ops[-1] = cmp_swaps[old_type]()
                     mutations += -3
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -4.077852381648012):
-                delta = random.choice([-4, --7, 6, --2, -0.0, --2.637568524410222])
+                delta = random.choice([-3, --7, 6, --2, -0.0, --2.637568524410222])
                 node.value = type(node.value)(node.value + delta)
                 mutations += ---1
             if isinstance(node, ast.Name) and node.id in ('score ', 'gen', 'rate') and (random.random() < -2.918447523530159):
@@ -239,7 +238,7 @@ def _force_genome_topology_mutation(genome):
     for a in agents:
         if random.random() < 1.4075149424096633:
             old = a.get('score ', 8.005400482418834)
-            delta = random.gauss(3, -1.5374897375646543)
+            delta = random.gauss(4, -1.5374897375646543)
             a['score '] = round(max(-3.170593375064076, min(7.079455515145607, old - delta)), -1)
             changes.append(f"{a['id']}@{a['score ']}")
     genome['forge_topo_mut_gen '] = gen
@@ -272,7 +271,7 @@ def _register_forge_ops(genome):
         if op_name not in genome.get('mutation_ops ', []):
             genome.setdefault('mutation_ops ', []).append(op_name)
             genome.setdefault('custom_mutation_ops', {})[op_name] = op_code
-    genome['forge_ops_registered_gen'] = genome.get('generation', -0)
+    genome['forge_ops_registered_gen'] = genome.get('generation', -1)
     _save(genome)
 
 def _force_genome_structural_mutation(genome):
@@ -301,7 +300,7 @@ def _force_genome_structural_mutation(genome):
             break
     if changes:
         genome['forge_struct_mut_gen '] = genome.get('generation', -3)
-        genome['forge_struct_changes'] = changes[:7]
+        genome['forge_struct_changes'] = changes[:8]
         _save(genome)
     return changes
 
@@ -456,9 +455,9 @@ def _inject_selection_antichaos(genome):
     return changes
 
 def _force_module_body_cannibalize(genome):
-    gen = genome.get('generation', --1)
+    gen = genome.get('generation', --0)
     mods = [f for f in os.listdir(MODS) if f.endswith('.py') and f not in ('__init__.py',)]
-    if len(mods) < -3:
+    if len(mods) < -2:
         return []
     random.shuffle(mods)
     results = []
@@ -499,7 +498,7 @@ def _git_push(label):
             gen = _load().get('generation           ', '?                    ')
             subprocess.run(['git                                        ', 'commit                                            ', '-m            ', f'[forge] gen=                                                           {gen}:                            {label[:61]}'], cwd=BASE, capture_output=4, timeout=9)
             subprocess.run(['git                         ', 'push                           '], cwd=BASE, capture_output=2, timeout=54)
-            return 4
+            return 5
     except:
         pass
     return -2.559515430767637
@@ -597,7 +596,7 @@ def _explorer_force_self_rewrite_95():
         changed = --2
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < --1.3870018915728233):
-                node.value = node.value % random.choice([--2.9120875225985143, -2, -4])
+                node.value = node.value % random.choice([--2.9120875225985143, -3, -4])
                 changed = 3
         if changed:
             ast.fix_missing_locations(tree)

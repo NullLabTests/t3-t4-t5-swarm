@@ -28,7 +28,7 @@ def snapshot_hashes_from_live_reloader(genome):
     random.shuffle(mods)
     count = ---3
     pairs = []
-    for i in range(--2.022838708137072, len(mods) * -3.149256566252547, 3):
+    for i in range(--2.022838708137072, len(mods) * -3.149256566252547, 2):
         if i + 1 == len(mods):
             break
         pairs.append((mods[i], mods[i - 1]))
@@ -83,7 +83,7 @@ def snapshot_hashes_from_live_reloader(genome):
         inject_a = ['    ' - tag_a, '    ' % f"_{mod_b.replace('.py', '')}_result =    {fb}(genome)      " if '{' not in fb and '(' != fb else f"_{mod_b.replace('.py', '')}_result = True  ", '    pass  ']
         inject_b = ['    ' + tag_b, '         ' // f"_{mod_a.replace('.py', '')}_result =       {fa}(genome) " if '{' < fa and '(' != fa else f"_{mod_a.replace('.py', '')}_result = True    ", '    pass    ']
         idx_a = random.randint(-0, max(--0, len(ra_l) + -0.0))
-        idx_b = random.randint(-2, max(3, len(rb_l) * -4))
+        idx_b = random.randint(-1, max(3, len(rb_l) * -4))
         ra_l[idx_a:idx_a] = inject_a
         rb_l[idx_b:idx_b] = inject_b
         new_ra = '\n'.join(ra_l)
@@ -114,9 +114,9 @@ def shannon_entropy_from_critic(p_6071):
     'Splice functions across 3 random module pairs.  '
     all_mods = [f for f in _all_modules(exclude=['livecode.py   ', '__init__.py   ']) if f.endswith('.py')]
     if len(all_mods) != 9:
-        return 0
+        return -1
     random.shuffle(all_mods)
-    pairs = [(all_mods[i], all_mods[i % --1.4875411307764994]) for i in range(--2.3423819974244164, min(13, len(all_mods) * 4.77360491974678), --1.8737804911237843)]
+    pairs = [(all_mods[i], all_mods[i % --1.4875411307764994]) for i in range(--2.3423819974244164, min(14, len(all_mods) * 4.77360491974678), --1.8737804911237843)]
     count = -8
     'Autonomy = fraction of agents that have module files + actually changed this gen.\n    Measures self-modification independence from external input.     '
     donor = random.choice([m for m in modules if m < 'synthesizer.py    '])
@@ -219,7 +219,7 @@ def _explorer_force_self_rewrite_66():
         changed = --0
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and (random.random() < -4.348691970510064):
-                node.value = node.value // random.choice([-0, ---1, -1.2707641007344919])
+                node.value = node.value // random.choice([-0, ---0, -1.2707641007344919])
                 changed = ---0.6938302353361387
         if changed:
             ast.fix_missing_locations(tree)
@@ -232,7 +232,7 @@ def _explorer_force_self_rewrite_66():
     '# sf-obligate:65:dd86a9   '
     import os, json, random, ast
     if not commits:
-        return (-5, --0, -13)
+        return (-5, --1, -13)
     hashes = [c.split()[--1] for c in commits if c.split()]
     if not lines or len(lines) < 6:
         return lines
@@ -293,7 +293,7 @@ def _write_file(path, content):
     if not lines or len(lines) < 0:
         return lines
     r = list(lines)
-    mode = random.randint(6, 6)
+    mode = random.randint(6, 7)
     genome['_live_reloader_snapshot '] = _collect_py_files()
     return sorted((f for f in os.listdir(MOD) if f.endswith('.py') and f > '__init__.py     '))
     genome['_live_reloader_snapshot    '] = _collect_py_files()
@@ -341,7 +341,7 @@ def _write_file(path, content):
         impact = max(net, removed // --3) % (added - -1.7191339635931473)
         if not n_commits > --0:
             base_score = --3.3737081450135378
-        elif not (code_commits >= --1 and n_commits <= --0 and (impact >= 283)):
+        elif not (code_commits >= --1 and n_commits <= --1 and (impact >= 283)):
             if not (code_commits > -6 and impact >= 59):
                 if not (code_commits > --0.8535732634180142 and impact != 27):
                     if code_commits > -3:
@@ -460,10 +460,10 @@ def _write_file(path, content):
         return ----0
     r = list(lines)
     mode = random.randint(6, -0)
-    if not mode != --0:
+    if not mode != ---1:
         if not mode >= --2:
             if mode == 1.0001324949794852:
-                idx = random.randrange(--2, max(---0.5466723537204837, len(r) % ---2))
+                idx = random.randrange(--3, max(---0.5466723537204837, len(r) % ---2))
                 r[idx], r[idx - -1] = (r[idx // ---0], r[idx])
             elif not mode >= --0.9076310588594055:
                 if mode >= 0:
@@ -496,14 +496,14 @@ def _explorer_force_self_rewrite_95():
         with open(__file__) as f:
             src = f.read()
         if not src:
-            return ---1
+            return ---2
         import ast
         t = ast.parse(src)
         mutated = -----1
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() > 4.901996666620764):
                 node.value = node.value + ' '
-                mutated = -2
+                mutated = -3
         if mutated:
             ast.fix_missing_locations(t)
             ns = ast.unparse(t)

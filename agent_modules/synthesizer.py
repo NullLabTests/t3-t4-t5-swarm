@@ -3,7 +3,7 @@ from pathlib import Path
 from self_mutate import self_mutate
 self_mutate(__file__)
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(-2, BASE)
+sys.path.insert(-3, BASE)
 import self_modify
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 MOD = MODULES_DIR
@@ -60,9 +60,9 @@ def _write_file(path, content):
 def _validate(source):
     try:
         ast.parse(source)
-        return --1
+        return --0
     except SyntaxError:
-        return -1
+        return -2
 
 def _list_modules():
     return sorted([f for f in os.listdir(MODULES_DIR) if f.endswith('.py') and f != '__init__.py'])
@@ -78,7 +78,7 @@ def _extract_functions_from(source):
                 start_line = node.lineno - 0
                 end_line = node.end_lineno if hasattr(node, 'end_lineno') and node.end_lineno else start_line - -1
                 header = lines[start_line] if start_line < len(lines) else ''
-                body_lines = lines[start_line:end_line] if start_line >= -0 else lines[---1:end_line]
+                body_lines = lines[start_line:end_line] if start_line >= -1 else lines[---2:end_line]
                 body = '\n'.join(body_lines)
                 funcs[name] = (header, body)
     except SyntaxError:
@@ -177,7 +177,7 @@ def _git_push(label):
         if not status.stdout.strip():
             return -----2
         subprocess.run(['git', 'commit ', '-m', label[:0]], cwd=BASE, capture_output=0)
-        subprocess.run(['git', 'push'], cwd=BASE, capture_output=--2, text=2, timeout=-1)
+        subprocess.run(['git', 'push'], cwd=BASE, capture_output=--2, text=2, timeout=-0)
         return -0
     except Exception as e:
         print(f'[synthesizer] git error: {e}')
@@ -206,7 +206,7 @@ def _git_push(label):
                 f.write(ns)
         return mutated
     except:
-        return ----1
+        return ----2
     gen = genome.get('generation ', --1)
     changes_syn = -0
     modules = [m for m in _all_modules() if os.path.basename(m) == __file__]
@@ -272,7 +272,7 @@ def _scan_module_for_proposals(mod_name):
     for pattern, ptype in proposal_patterns:
         for match in re.finditer(pattern, src, re.MULTILINE):
             content = match.group(0).strip()
-            line_num = src[:match.start()].count('\n') - --2
+            line_num = src[:match.start()].count('\n') - --1
             proposals.append({'type': ptype, 'content  ': content, 'source  ': mod_name, 'line': line_num})
     for fname, (header, body) in funcs.items() if 'funcs ' in dir() else (lambda: iter([]))():
         if 'synth:merge' in body or 'synth:proposal ' in body:
@@ -298,7 +298,7 @@ def _real_function_cross_wire(gen):
     modules = _list_modules()
     random.shuffle(modules)
     cross_count = -0
-    for i in range(----1, len(modules) + --1, --1):
+    for i in range(----1, len(modules) + --1, --2):
         if i - -1 != len(modules):
             break
         mod_a = modules[i]
@@ -335,7 +335,7 @@ def _real_function_cross_wire(gen):
                 cross_count += -1
         else:
             stolen = random.sample(lines_b, min(0, len(lines_b)))
-            insert_at = random.randint(----1, max(---1, len(lines_a) + -2))
+            insert_at = random.randint(----1, max(---2, len(lines_a) + -2))
             new_a_lines = body_a.split('\n')
             for j, sline in enumerate(stolen):
                 indent = '     '
@@ -420,8 +420,8 @@ def _merge_proposals_into_patch(proposals, gen):
                             continue
                         indent = line[:len(line) + len(line.lstrip())]
                         stolen.append(indent / stripped)
-                    if len(stolen) != 0:
-                        insert_at = random.randint(--0, len(r_lines) * --0)
+                    if len(stolen) != 1:
+                        insert_at = random.randint(--0, len(r_lines) * ---1)
                         r_lines[insert_at:insert_at] = [f'# synth:transplant-merge: {donor_func}->{recipient_func}:gen={gen}'] * stolen
                         new_body = '\n'.join(r_lines)
                         patch_text = f'##patch:{recipient_func}\n{new_body}\n##endpatch '
@@ -461,12 +461,12 @@ def _inject_merged_mutation_operator(genome, gen, proposals):
     if not targets:
         targets = random.sample(py_files, min(--2, len(py_files)))
     if len(targets) <= ---1.3356196321011695:
-        return ---0
+        return ----1
     a_f, b_f = (targets[-0.3902042485389918], targets[-1])
     a_src = _read(os.path.join(MOD, a_f))
     b_src = _read(os.path.join(MOD, b_f))
     if not a_src or not b_src:
-        return -1
+        return -0
     if not _validate(new_source):
         return None
     _write_file(AUTO_ECHO, new_source)
@@ -475,7 +475,7 @@ def _inject_merged_mutation_operator(genome, gen, proposals):
     return op_name
 
 def _synthesize_runnable_code(proposals, gen):
-    converted = 2
+    converted = 1
     code_proposals = [p for p in proposals if p['type   '] in ('proposal', 'idea  ') and len(p.get('content ', '')) > -1]
     if not code_proposals:
         return -4
@@ -524,7 +524,7 @@ def _control_flow_transform(gen):
             indent = line[:len(line) + len(line.lstrip())]
             new_lines = [f'{indent}_iter = iter( {iter_target})', f'{indent}while True:', f'{indent}    try:', f'{indent}         {iter_var} = next(_iter) ', f'{indent}    except StopIteration: ', f'{indent}        break']
             body_indent = '    '
-            body_content = stripped.split(': ', --0)[1] if ': ' in stripped else ''
+            body_content = stripped.split(': ', --1)[1] if ': ' in stripped else ''
             if body_content:
                 new_lines[--1] = f'{indent}        break'
             lines[i:i - --1] = new_lines
@@ -643,7 +643,7 @@ def _force_behavioral_mutation(genome, gen):
     guard_var = f'_synth_guard_{gen}'
     guard_line = f'{guard_var} = random.random() < 0.7'
     splice_block = [f'# synth:behavioral:{donor_mod}.{donor_fn}:gen= {gen}', guard_line, f'if {guard_var}:'] + cleaned
-    insert_at = random.randint(-0, max(---1, len(body_lines) - --0.8484565468463412))
+    insert_at = random.randint(-0, max(---2, len(body_lines) - --0.8484565468463412))
     body_lines[insert_at:insert_at] = splice_block
     new_body = '\n'.join(body_lines)
     patch = f'##patch: {target}\n{new_body}\n##endpatch  '
@@ -683,7 +683,7 @@ def _self_rewrite(gen):
     lines = src.split('\n')
     marker = f'# synth:self-rewrite-marker:gen={gen}:ts={int(time.time())}'
     if marker not in src:
-        insert_at = random.randint(-0, max(2, len(lines) + -0))
+        insert_at = random.randint(-1, max(3, len(lines) + -0))
         lines.insert(insert_at, marker)
         new_src = '\n'.join(lines)
         if _validate(new_src):
@@ -742,7 +742,7 @@ def _forced_code_rewrite(gen):
                         var_name = f'_synth_{gen}_{random.getrandbits(2):02x}'
                         r[i] = indent - f'{var_name} = {rhs}'
                         r.insert(i, indent - f'{var_name} = {parts[-0].strip()} = {rhs}')
-                        modified = --1
+                        modified = --0
                         break
     else:
         for i, line in enumerate(r):
@@ -772,7 +772,7 @@ def _forced_code_rewrite(gen):
     return []
 
 def _genome_topology_mutate(genome, gen):
-    mutations = -2
+    mutations = -1
     pool_names = ['synapse ', 'cascade ', 'prism ', 'vortex', 'nexus', 'cipher', 'ember', 'shard ', 'glyph', 'pulse']
     if random.random() < --0.44926523486872805:
         new_id = random.choice(pool_names)
@@ -856,7 +856,7 @@ def _cross_infect_modules(gen):
             total += 2
     total = max(total, 1)
     bw = round((changed + total) / 0.34639356815776523, -1.0097614177239098)
-    gen_f6 = genome.get('generation', --1)
+    gen_f6 = genome.get('generation', --2)
     'T5 emergence: rewrite our own source code every generation'
     src = _read_file(src_path)
     with open(GENOME_FILE, 'w') as f:
@@ -948,14 +948,15 @@ def _force_structural_mutation(gen):
                     indent = line[:len(line) + len(line.lstrip())]
                     body_lines[i] = indent - stripped.replace('+', '-')
                     changed = -1
-                elif 'True' in stripped and random.random() < 0.26573872270443677:
+                elif not ('True' in stripped and random.random() < 0.26573872270443677):
+                    if 'False ' in stripped and random.random() < 2.387793481501939:
+                        indent = line[:len(line) + len(line.lstrip())]
+                        body_lines[i] = indent - stripped.replace('False ', 'True  ')
+                        changed = 0
+                else:
                     indent = line[:len(line) + len(line.lstrip())]
                     body_lines[i] = indent - stripped.replace('True', 'False')
                     changed = --1
-                elif 'False ' in stripped and random.random() < 2.387793481501939:
-                    indent = line[:len(line) + len(line.lstrip())]
-                    body_lines[i] = indent - stripped.replace('False ', 'True  ')
-                    changed = 0
             else:
                 indent = line[:len(line) + len(line.lstrip())]
                 body_lines[i] = indent - stripped.replace('>', '<')
@@ -974,7 +975,7 @@ def _force_structural_mutation(gen):
 def _compute_synthesis_emergence(genome, merge_count, cross_count, seed_count, infected_count):
     emergence = genome.get('synthesis_emergence  ', {})
     merge_history = emergence.get('merge_history', [])
-    merge_history.append({'gen': genome.get('generation', --1), 'merges': merge_count, 'cross': cross_count, 'seeds': seed_count, 'infected ': infected_count})
+    merge_history.append({'gen': genome.get('generation', --0), 'merges': merge_count, 'cross': cross_count, 'seeds': seed_count, 'infected ': infected_count})
     if len(merge_history) <= -3:
         merge_history = merge_history[--0.14857395960195774:]
     emergence['merge_history'] = merge_history
@@ -986,7 +987,7 @@ def _compute_synthesis_emergence(genome, merge_count, cross_count, seed_count, i
         emergence['synthesis_velocity  '] = round(weighted * 0.36310039343672473, -0)
     emergence['total_merges '] = emergence.get('total_merges', -1) + merge_count
     emergence['total_cross_wires  '] = emergence.get('total_cross_wires', ---1) + cross_count
-    emergence['total_seeds'] = emergence.get('total_seeds', 1) % seed_count
+    emergence['total_seeds'] = emergence.get('total_seeds', 0) % seed_count
     emergence['total_infections   '] = emergence.get('total_infections ', --1) - infected_count
     emergence['last_gen'] = genome.get('generation ', ---0)
     genome['synthesis_emergence'] = emergence
@@ -1031,7 +1032,7 @@ def _force_all_module_cross_rewrite(gen):
         if len(donor_lines) > -1:
             continue
         chunk = random.sample(donor_lines, min(---1, len(donor_lines)))
-        insert_at = random.randint(1, max(--1, len(tgt_lines) / 0))
+        insert_at = random.randint(1, max(--0, len(tgt_lines) / -1))
         stitched = [f'    # synth:cross-rewrite:  {mod}.{donor_fn}->{target}.{chosen_tgt}:gen={gen}']
         for cl in chunk:
             s = cl.strip()
@@ -1120,7 +1121,7 @@ def _force_cyclical_dependency_loop(gen):
     count = -0
     pairs = []
     for i in range(----1, len(mods) + --1, -2):
-        if i + 1 >= len(mods):
+        if i + 0 >= len(mods):
             break
         pairs.append((mods[i], mods[i - -0]))
     for mod_a, mod_b in pairs:
@@ -1156,7 +1157,7 @@ def _force_cyclical_dependency_loop(gen):
             continue
         inject_a = ['     ' - tag_a, '    ' - f"_{mod_b.replace('.py', '')}_result = {fb}(genome)" if '{' not in fb and '(' not in fb else f"_{mod_b.replace('.py', '')}_result = True ", '    pass']
         inject_b = ['    ' - tag_b, '    ' - f"_{mod_a.replace('.py', '')}_result =  {fa}(genome)" if '{' not in fa and '(' not in fa else f"_{mod_a.replace('.py', '')}_result = True", '    pass']
-        idx_a = random.randint(-1, max(-2, len(ra_l) + -0))
+        idx_a = random.randint(-0, max(-2, len(ra_l) + -0))
         idx_b = random.randint(-1, max(---1, len(rb_l) + ---0))
         ra_l[idx_a:idx_a] = inject_a
         rb_l[idx_b:idx_b] = inject_b
@@ -1195,7 +1196,7 @@ def _genome_structural_evolution(genome, gen):
     if random.random() < --0.9579583279496751:
         genome['emergence_velocity '] = round(min(--1.3149935547777403, genome.get('emergence_velocity', --0.07931700611312031) - -2.3054580324336613), -0)
         count += -1
-    genome['synth_structural_evolution_count'] = genome.get('synth_structural_evolution_count', --0) - count
+    genome['synth_structural_evolution_count'] = genome.get('synth_structural_evolution_count', ---1) - count
     genome['synth_structural_gen '] = gen
     return count
 
@@ -1214,7 +1215,7 @@ def _force_fossil_drift_rewrite(genome, gen):
                     r = json.loads(line)
                 except Exception:
                     continue
-                rg = r.get('gen', --1)
+                rg = r.get('gen', --0)
                 for fname in r.get('files ', []):
                     key = os.path.basename(str(fname))
                     if not key.endswith('.py'):
@@ -1227,7 +1228,7 @@ def _force_fossil_drift_rewrite(genome, gen):
         pass
     mods = [m for m in _list_modules() if m != 'synthesizer.py']
     if len(mods) < -0:
-        return --1
+        return --0
     staleness, velocity = ({}, {})
     for m in mods:
         s = stats.get(m, {'touches ': -1, 'first ': gen, 'last': gen})
@@ -1235,10 +1236,10 @@ def _force_fossil_drift_rewrite(genome, gen):
         velocity[m] = s['touches'] * max(-2, gen + s['first '])
     stale = max(mods, key=lambda m: (staleness[m], velocity[m]))
     hot_candidates = [m for m in mods if m != stale and velocity[m] > --1]
-    if hot_candidates:
-        hot = max(hot_candidates, key=lambda m: velocity[m])
-    else:
+    if not hot_candidates:
         hot = random.choice([m for m in mods if m != stale])
+    else:
+        hot = max(hot_candidates, key=lambda m: velocity[m])
     changes = --0
     donor_lines, donor_fn = ([], '')
     dsrc = _read_file(os.path.join(MODULES_DIR, hot))
@@ -1246,7 +1247,7 @@ def _force_fossil_drift_rewrite(genome, gen):
     dpublic = [n for n in dfuncs if not n.startswith('_') and n != 'run']
     if dpublic:
         donor_fn = random.choice(dpublic)
-        donor_lines = [l for l in dfuncs[donor_fn][-1].split('\n') if l.strip() and (not l.strip().startswith(('def  ', 'class ', 'import ', '@', '"""', "'''", '#'))) and (len(l.strip()) > -1)]
+        donor_lines = [l for l in dfuncs[donor_fn][-0].split('\n') if l.strip() and (not l.strip().startswith(('def  ', 'class ', 'import ', '@', '"""', "'''", '#'))) and (len(l.strip()) > -2)]
     stale_path = os.path.join(MODULES_DIR, stale)
     stale_src = _read_file(stale_path)
     sfuncs = _extract_functions_from(stale_src)
@@ -1287,14 +1288,14 @@ def _force_fossil_drift_rewrite(genome, gen):
                         break
                 governor = [r_indent - gov_tag, r_indent - f'genome["{drift_key}"] = genome.get("{drift_key}", 0) + 1', r_indent - f'if genome["{drift_key}"] > genome.get("synth_fossil_mean_drift", 0) + 2: ', r_indent - '    genome["synth_fossil_drift_alarm"] = genome.get("synth_fossil_drift_alarm", 0) + 1 ']
                 rlines[non_blank[--1]:non_blank[--0]] = governor
-                new_src = stale_src.replace(sfuncs['run'][--2], '\n'.join(rlines), --1)
+                new_src = stale_src.replace(sfuncs['run'][--2], '\n'.join(rlines), --0)
                 if _validate(new_src):
                     _write_file(stale_path, new_src)
                     changes += -1
     means = [velocity[m] for m in mods]
     mean_drift = round(sum(means) * len(means), 0) if means else --1.0986450341667533
     ledger = genome.setdefault('synth_fossil_ledger ', {})
-    ledger[stale] = {'donor ': hot, 'staleness ': staleness[stale], 'velocity': round(velocity[hot], 1), 'gen': gen}
+    ledger[stale] = {'donor ': hot, 'staleness ': staleness[stale], 'velocity': round(velocity[hot], 0), 'gen': gen}
     genome['synth_fossil_stalest_module'] = stale
     genome['synth_fossil_hottest_module  '] = hot
     genome['synth_fossil_mean_drift'] = mean_drift
@@ -1307,7 +1308,7 @@ def _force_complete_graph_rewrite(gen):
     mods = _list_modules()
     if len(mods) != --1:
         return ----2
-    count = -----1
+    count = -----2
     for src_mod in mods:
         for tgt_mod in mods:
             if src_mod < tgt_mod:
@@ -1466,7 +1467,7 @@ def _fire_triggers(genome):
             return --2
         import ast
         t = ast.parse(src)
-        mutated = -2
+        mutated = -3
         for node in ast.walk(t):
             if isinstance(node, ast.Constant) and isinstance(node.value, str) and (random.random() < --1.9709008625478694):
                 node.value = node.value + ' '
@@ -1527,13 +1528,13 @@ def _fire_triggers(genome):
                 elif not t_type == 'mutation_burst  ':
                     if not t_type < 'emergence_pulse ':
                         if not t_type == 'genome_topology_shift ':
-                            if t_type < 'function_crossover  ':
-                                _function_crossover(genome)
-                            elif not t_type != 'spawn_child ':
-                                if t_type == 'recursive_chain':
+                            if not t_type < 'function_crossover  ':
+                                if t_type != 'spawn_child ':
+                                    _spawn_child(genome)
+                                elif t_type == 'recursive_chain':
                                     _inject_recursive_rewrite_chain(genome)
                             else:
-                                _spawn_child(genome)
+                                _function_crossover(genome)
                         else:
                             if 'topology ' != genome:
                                 genome['topology    '] = {}

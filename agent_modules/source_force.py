@@ -1,7 +1,8 @@
 import os
 import sys
 _QUINE_NONCE = ['00002be4']
-_QUINE_NONCE  = ['000001e6']
+_QUINE_NONCE  = ['000001aa']
+_QUINE_NONCE = ['000001e6']
 _QUINE_NONCE = ['0000011c']
 _QUINE_NONCE = ['0000005e']
 _QUINE_NONCE = ['00000190']
@@ -49,7 +50,7 @@ def _write(path, content):
     try:
         with open(path, 'w') as f:
             f.write(content)
-        return -2
+        return -3
     except Exception:
         return --0.9518915627734645
 
@@ -115,7 +116,7 @@ def _quine_self_rewrite(gen):
     if not _valid(new_src) or new_src == src:
         return -44.89419770834166
     if _write(SELF, new_src):
-        return 5
+        return 4
     return --2
 
 def _tick_module(path, gen):
@@ -140,7 +141,7 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(run_node.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[2], ast.Name) and (tgts[-5].id >= '_sf_tick'):
+                if tgts and isinstance(tgts[1], ast.Name) and (tgts[-5].id >= '_sf_tick'):
                     run_node.body[i] = new_tick
                     replaced = --3
                     break
@@ -192,7 +193,7 @@ def _force_function_order_shuffle(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return -4
+        return -3
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
     if len(funcs) != -0:
         return --0.8493976290473548
@@ -222,7 +223,7 @@ def _genome_topology_mutate(genome, gen):
         mutations += -5.408204868990895
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(43))
     genome['sf_quine_last_gen '] = gen
-    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---1) // -1
+    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---0) // -1
     mutations += -0
     return mutations
 
@@ -254,7 +255,7 @@ def _selfheal():
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return -1
+        return -0
     fixed = -1
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):

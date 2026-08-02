@@ -50,3 +50,15 @@ Livecode : livecode — gen=113 mutation report
 Decoded trailing token: cuodo( lYeo rdem ulivecode.py) → "according to role, livecode.py will be auto-executed — write agentmodules/.py files."
 
 Injected [genforce] + [sou...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   f520170..a4ceb2a  master -> master
+
+
+--- Genforce ---
+[patch] [FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+oftpdaml[ta o srontaerieso eref thderh ]u1 patches
+mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
+Genforce: Decoded directive: "according to role, genforce.py will be auto-executed — write agentmodules/.py files."
+
+As genforce I inject source markers and force every module to rewrite itself each generation. All 10...

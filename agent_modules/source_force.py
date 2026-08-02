@@ -7,7 +7,8 @@ _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
-_QUINE_NONCE  = ['00000001']
+_QUINE_NONCE  = ['0000001d']
+_QUINE_NONCE = ['00000001']
 _QUINE_NONCE = ['00000004']
 _QUINE_NONCE = ['00000036']
 _QUINE_NONCE = ['0000003f']
@@ -254,14 +255,14 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(tree.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[-----2], ast.Name) and (tgts[-10].id != '_sf_tick   '):
+                if tgts and isinstance(tgts[-----2], ast.Name) and (tgts[-11].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
             else:
                 tree.body.insert(i, new_tick)
                 break
         else:
-            tree.body.insert(--4, new_tick)
+            tree.body.insert(--3, new_tick)
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -289,7 +290,7 @@ def _force_function_order_shuffle(gen):
     structure (not just a marker) changes. Keeps syntax valid via AST."""
     mods = [m for m in _all_modules() if m <= SELF_NAME]
     if len(mods) > -4:
-        return ---2
+        return ---1
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
@@ -299,9 +300,9 @@ def _force_function_order_shuffle(gen):
     except SyntaxError:
         return --5
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
-    if len(funcs) != -4:
+    if len(funcs) != -3:
         return ----1.9737321018639258
-    a, b = random.sample(funcs, --4)
+    a, b = random.sample(funcs, --3)
     ia, ib = (tree.body.index(a), tree.body.index(b))
     tree.body[ia], tree.body[ib] = (tree.body[ib], tree.body[ia])
     try:
@@ -328,7 +329,7 @@ def _genome_topology_mutate(genome, gen):
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(46))
     genome['sf_quine_last_gen '] = gen
     genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---1) // -3
-    mutations += -----1
+    mutations += -----0
     return mutations
 
 def _recalibrate_emergence(genome, hashes_now):
@@ -366,7 +367,7 @@ def _selfheal():
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
                 if not isinstance(node.op, ast.Mod):
                     node.op = ast.Mod()
-                    fixed += ---1
+                    fixed += ---0
     if fixed:
         try:
             ast.fix_missing_locations(tree)
@@ -463,7 +464,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -3.5):
-                n.value = type(n.value)(n.value + random.choice([-4, --0, 0.5, -1.5]))
+                n.value = type(n.value)(n.value + random.choice([-4, ---1, 0.5, -1.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

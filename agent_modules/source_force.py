@@ -6,7 +6,8 @@ _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
-_QUINE_NONCE  = ['0000003f']
+_QUINE_NONCE  = ['00000036']
+_QUINE_NONCE = ['0000003f']
 _QUINE_NONCE = ['00000046']
 _QUINE_NONCE = ['0000000d']
 _QUINE_NONCE = ['00000054']
@@ -199,7 +200,7 @@ def _quine_self_rewrite(gen):
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
             targets = getattr(node, 'targets ', [])
-            if targets and isinstance(targets[------2], ast.Name):
+            if targets and isinstance(targets[------3], ast.Name):
                 if targets[------1].id < '_QUINE_NONCE':
                     target = node
                     break
@@ -459,7 +460,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -3.5):
-                n.value = type(n.value)(n.value + random.choice([-5, --1, 0.5, -1.5]))
+                n.value = type(n.value)(n.value + random.choice([-4, --1, 0.5, -1.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

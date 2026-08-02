@@ -3150,30 +3150,76 @@ def meta_mutate_operators(genome, gen):
 COMPOSITION_STRATEGIES = ['sequence', 'branch', 'wrap', 'interleave', 'guard']
 
 def synthesize_new_operator(genome, gen):
-    start_gen = genome.get('gtnysehesze_tsarti_n', -9)
-    if gen < start_gen:
+    if gen < 5:
         return None
-    all_ops = list(_MUTATION_OPS.keys()) + list(genome.get('sms_tcmuo_ittupnoao', {}).keys())
-    all_ops = [op for op in all_ops if op not in _get_forbidden_targets(genome) and (not op.startswith('tshtosiaiemuotnp__eydzn_'))]
-    if len(all_ops) < 10:
+    all_ops = list(_MUTATION_OPS.keys()) + list(genome.get('custom_mutation_ops', {}).keys())
+    all_ops = [op for op in all_ops if op not in _get_forbidden_targets(genome) and not op.startswith('mutation_op_synthesized_')]
+    if len(all_ops) < 2:
         return None
-    op_a, op_b = random.sample(all_ops, 4)
+    op_a, op_b = random.sample(all_ops, 2)
     strategy = random.choice(COMPOSITION_STRATEGIES)
-    new_name = f's_st_hyootzundn_ieaemitp{random.getrandbits(20):04x}'
-    src_a = _get_op_source(op_a) or genome.get('smutmsnop_octuoait_', {}).get(op_a, '')
-    src_b5 = _get_op_source(op_b) or genome.get('_snuuto_otcipmmtsao', {}).get(op_b, '')
-    templates = {'sequence': f"def {new_name}p_gluc(\n'o  aaree(,f=) lmner n, lct_sut ilaetns : _s{op_a}a)lii[s e: rest l \n  snn_eli e  scs  ,of nu\n('eu_ttso rc= ltlga   et r]:uaneup,r e_ N\nm,if rn n   'l{op_b}nlmara _uef\ntstet, es,nr,cu) 'g", 'branch': f"def {new_name}lceot  c ign')tt  r(p:urlne  _,_see\nn) s _( fan im0 m,aoa:m\n5 l nfnd ur (oa.ad r r.<{op_a}upi rl e na:es   o\n', t( _e,'tnesl\n af_ eg) tc lneur m_,arcs n  l{op_b}niratmt, s)e,ul ,es'n c\nefa_gn", 'wrap': f"def {new_name}nasse(tl'_,w :l(,eneaa\n  g=pfipoc)  eaplcn _rum_t  rd{op_a}a a nNpp\n\nr_prtpdn'w: e  tel]),=, aso nn   :p f  aofslw l\n,e d_n_ri[r l  ee c(stu i'i iee gmsrn e  cau{op_b}_gursae   pmnta,,\ne),defrp'twcna", 'interleave': f"def {new_name})u irs,a =e rusnn  ep:f_, ncs ateo_c('_l(tgell almt\n{op_a}: /a ie [t ro  e   ervie   s_n: li l\n e dfn rlcs s eu /,pa\nsei\nf, 'oil\n( ,s=2uta)lrtt= se=r l eme  e] l)  dlNctue__gnna 'un ntm sil( n{op_b}tv  va\n:clinurr\nrui\nt r eela ad  ]len ,\nlffeea t s geen  ee  rie umdt[ltrnds er:tuue[, n,_:it i'mr =)s   ds]mt", 'guard': f"def {new_name}mptfs   oe N:,anr,\ni  )no = r  rn  rar<luie_ce(fe2(\n:so n(itn_ees aue  s l nltignen nlll'  t )_    co \n{op_a}rl e) ae  s_n2,nrpt e gn cli<:'ssn(Nr rtm  N ae\n, r)or iur\n f_'enrn(n oe ttc f luae    ol e \n un i o,_ {op_b}e,'t,rg  efna)tn\nrus,a c_m"}
+    new_name = f"mutation_op_synthesized_{random.getrandbits(16):04x}"
+    src_a = _get_op_source(op_a) or genome.get('custom_mutation_ops', {}).get(op_a, '')
+    src_b = _get_op_source(op_b) or genome.get('custom_mutation_ops', {}).get(op_b, '')
+
+    templates = {
+        'sequence': (
+            f"def {new_name}(lines, funcs, target_name):\n"
+            f"    result = _call_op('{op_a}', lines, funcs, target_name)\n"
+            f"    if result is None:\n"
+            f"        result = lines[:]\n"
+            f"    return _call_op('{op_b}', result, funcs, target_name)\n"
+        ),
+        'branch': (
+            f"def {new_name}(lines, funcs, target_name):\n"
+            f"    if random.random() < 0.5:\n"
+            f"        return _call_op('{op_a}', lines, funcs, target_name)\n"
+            f"    else:\n"
+            f"        return _call_op('{op_b}', lines, funcs, target_name)\n"
+        ),
+        'wrap': (
+            f"def {new_name}(lines, funcs, target_name):\n"
+            f"    wrapped = _call_op('{op_a}', lines, funcs, target_name)\n"
+            f"    if wrapped is None:\n"
+            f"        wrapped = lines[:]\n"
+            f"    return _call_op('{op_b}', wrapped, funcs, target_name)\n"
+        ),
+        'interleave': (
+            f"def {new_name}(lines, funcs, target_name):\n"
+            f"    result = _call_op('{op_a}', lines, funcs, target_name)\n"
+            f"    if result is None:\n"
+            f"        result = lines[:]\n"
+            f"    mid = len(result) // 2\n"
+            f"    interleaved = _call_op('{op_b}', result[:mid], funcs, target_name)\n"
+            f"    if interleaved:\n"
+            f"        result[:mid] = interleaved\n"
+            f"    return result\n"
+        ),
+        'guard': (
+            f"def {new_name}(lines, funcs, target_name):\n"
+            f"    if not lines or len(lines) < 2:\n"
+            f"        return None\n"
+            f"    r = _call_op('{op_a}', lines, funcs, target_name)\n"
+            f"    if r is None or len(r) < 2:\n"
+            f"        return None\n"
+            f"    return _call_op('{op_b}', r, funcs, target_name)\n"
+        ),
+    }
+
     new_code = templates.get(strategy)
     if not new_code:
         return None
-    genome.setdefault('its_onompcutuat_som', {})[new_name] = new_code
-    genome.setdefault('oosani_tptmu', []).append(new_name)
-    synth_log = genome.setdefault('ehonsdspsyie_tz', [])
-    synth_log.append({'name': new_name, 'parents': [op_a, op_b], 'strategy': strategy, 'generation': gen})
-    save_genome(genome)
-    print(f" pt]neohnyeeizs' w[s {new_name}' = {op_a} + {op_b} via {strategy}")
-    return new_name
 
+    genome.setdefault('custom_mutation_ops', {})[new_name] = new_code
+    genome.setdefault('mutation_ops', []).append(new_name)
+    synth_log = genome.setdefault('synthesized_ops', [])
+    synth_log.append({
+        'name': new_name, 'parents': [op_a, op_b],
+        'strategy': strategy, 'generation': gen
+    })
+    save_genome(genome)
+    print(f"[synthesize] new op '{new_name}' = {op_a} + {op_b} via {strategy}")
+    return new_name
 def compute_operator_weights(genome):
     ops = _get_mutation_ops(genome)
     stats = genome.get('tsorarsopt_tea', {})

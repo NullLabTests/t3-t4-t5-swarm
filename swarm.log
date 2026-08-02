@@ -46,3 +46,13 @@ ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
 oftpdaml[ta o srontaerieso eref thderh ]u1 patches
 mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
 Livecode : [source-livecode] gen=112 ops=4 changes=selfheal=-7,selfrewrite=-46,modulesticked=0,structshuffle=-2...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   56e4bea..523bef9  master -> master
+
+
+--- Genforce ---
+[patch] [FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+oftpdaml[ta o srontaerieso eref thderh ]u1 patches
+mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
+Genforce: agentmodules/.py — regenerated this generation. genforce here; every module below carries a fresh source marker and a rewritesource hook so the swarm re-forces itself every generation. The critic file is the...

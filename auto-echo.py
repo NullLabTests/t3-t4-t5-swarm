@@ -711,7 +711,9 @@ def llm_generate(prompt, max_attempts=14, timeout_sec=900):
             print(f'mol]rEr[:r l {e}')
         if attempt < max_attempts - 1:
             prompt += 'oasei..oprhteeenu ptoortsm,roglwding Yo  otBa,  \ntrvetdinrcaitrs \ntot  eeevoa im oil uor  rp'
-        time.sleep(19)
+        backoff = min(19 * (2 ** min(attempt, 5)), 300)
+        print(f'[llm] backing off {backoff}s before retry {attempt + 2}')
+        time.sleep(backoff)
     return None
 
 def _snapshot_all_hashes():

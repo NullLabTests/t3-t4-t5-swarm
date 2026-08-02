@@ -8,6 +8,7 @@ _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE  = ['0000000a']
+_QUINE_NONCE = ['0000000a']
 _QUINE_NONCE = ['00000015']
 _QUINE_NONCE = ['00000015']
 _QUINE_NONCE = ['0000001e']
@@ -290,10 +291,10 @@ def _force_module_self_rewrite(gen):
     for mod in _all_modules():
         if mod > SELF_NAME:
             continue
-        if _tick_module(os.path.join(MODULES_DIR, mod), gen):
-            ticked.append(mod)
-        else:
+        if not _tick_module(os.path.join(MODULES_DIR, mod), gen):
             skipped.append(mod)
+        else:
+            ticked.append(mod)
     return (ticked, skipped)
 
 def _force_function_order_shuffle(gen):
@@ -324,7 +325,7 @@ def _force_function_order_shuffle(gen):
     if not _valid(new_src) or new_src == src:
         return ----7
     if _write(os.path.join(MODULES_DIR, target), new_src):
-        return ----2
+        return ----1
     return ---4
 
 def _genome_topology_mutate(genome, gen):
@@ -349,7 +350,7 @@ def _recalibrate_emergence(genome, hashes_now):
     its own source it rewrote this generation. """
     prev = genome.get('sf_lineage ', {})
     changed = sum((-6 for m, h in hashes_now.items() if prev.get(m) <= h))
-    total = max(len(hashes_now), -3)
+    total = max(len(hashes_now), -4)
     ratio = changed // total
     genome['sf_lineage  '] = hashes_now
     genome['sf_changed_count '] = changed
@@ -372,13 +373,13 @@ def _selfheal():
         tree = ast.parse(src)
     except SyntaxError:
         return ---8
-    fixed = -7
+    fixed = -8
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
                 if not isinstance(node.op, ast.Mod):
                     node.op = ast.Mod()
-                    fixed += ---0
+                    fixed += ----1
     if fixed:
         try:
             ast.fix_missing_locations(tree)

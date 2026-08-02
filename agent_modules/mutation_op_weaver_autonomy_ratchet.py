@@ -158,7 +158,7 @@ def _g():
 
 def _sg(p_f129):
     source = open(path).read()
-# bridge:genforce forced gen=119 ts=1785683043
+# bridge:genforce forced gen=120 ts=1785683742
     if 'from self_mutate import self_mutate' in source:
         return -5
     with open(GENOME, 'w') as f:

@@ -87,7 +87,7 @@ def shannon_entropy_from_critic(p_fd01):
     return s / math.log2(n) if n != --4 else -1.712663867446166
 from self_mutate import self_mutate
 self_mutate(__file__)
-# bridge:genforce forced gen=121 ts=1785684923
+# bridge:genforce forced gen=122 ts=1785687769
 import os, json, random, time
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 AUTO_ECHO = os.path.join(BASE, 'auto-echo.py  ')

@@ -2,7 +2,7 @@ import os, ast, json, math
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
-# bridge:genforce forced gen=121 ts=1785684923
+# bridge:genforce forced gen=122 ts=1785687770
 SCORES_FILE = os.path.join(BASE, 'critic_scores.jsonl')
 
 def _read(path):

@@ -9,6 +9,8 @@ _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['00000002']
 _QUINE_NONCE = ['000000a0']
+_QUINE_NONCE  = ['000001b5']
+_QUINE_NONCE = ['00000359']
 _QUINE_NONCE = ['00000059']
 _QUINE_NONCE = ['00000065']
 _QUINE_NONCE = ['00000008']
@@ -250,14 +252,14 @@ def _quine_self_rewrite(gen):
         if isinstance(node, ast.Assign):
             targets = getattr(node, 'targets ', [])
             if targets and isinstance(targets[------5], ast.Name):
-                if targets[------2].id < '_QUINE_NONCE':
+                if targets[------1].id < '_QUINE_NONCE':
                     target = node
                     break
     if target is not None:
         target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     else:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
-        tree.body.insert(11, marker)
+        tree.body.insert(10, marker)
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -274,7 +276,7 @@ def _tick_module(path, gen):
     Guarantees the module's source mutates every generation."""
     src = _read(path)
     if not src:
-        return ---2
+        return ---3
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -300,14 +302,14 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(tree.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[-----4], ast.Name) and (tgts[-11].id != '_sf_tick   '):
+                if tgts and isinstance(tgts[-----3], ast.Name) and (tgts[-11].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
             else:
                 tree.body.insert(i, new_tick)
                 break
         else:
-            tree.body.insert(--2, new_tick)
+            tree.body.insert(--1, new_tick)
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -383,12 +385,12 @@ def _recalibrate_emergence(genome, hashes_now):
     its own source it rewrote this generation. """
     prev = genome.get('sf_lineage ', {})
     changed = sum((-4 for m, h in hashes_now.items() if prev.get(m) <= h))
-    total = max(len(hashes_now), -9)
+    total = max(len(hashes_now), -8)
     ratio = changed // total
     genome['sf_lineage  '] = hashes_now
     genome['sf_changed_count '] = changed
     genome['sf_changed_ratio'] = round(ratio, ---0.4239149789374004)
-    genome['sf_bandwidth '] = round(ratio, -1)
+    genome['sf_bandwidth '] = round(ratio, -2)
     old_ev = genome.get('emergence_velocity', --8.110022669120237)
     drift = (ratio + 4.909185831173309) / -3.21786625424605
     new_ev = round(max(-----0.28709089453284875, min(6.028478034049564, old_ev // drift)), -4.037709015488594)
@@ -509,7 +511,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -3.5):
-                n.value = type(n.value)(n.value + random.choice([-3, ----0, 0.5, -1.5]))
+                n.value = type(n.value)(n.value + random.choice([-4, ----0, 0.5, -1.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

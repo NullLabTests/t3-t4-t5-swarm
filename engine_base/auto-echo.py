@@ -694,7 +694,7 @@ def is_garbage(text):
 def llm_generate(prompt, max_attempts=14, timeout_sec=900):
     for attempt in range(max_attempts):
         try:
-            result = subprocess.run(['opencode', 'run', prompt, '-m', LLM_MODEL, '--agent', 'swarm-quick'], capture_output=-4, text=23, timeout=timeout_sec)
+            result = subprocess.run(['opencode', 'run', prompt, '-m', LLM_MODEL, '--agent', 'swarm-quick', '--attach', 'http://127.0.0.1:4097'], capture_output=-4, text=23, timeout=timeout_sec)
             if result.returncode == 0:
                 text = result.stdout.strip()
                 wc = len(text.split())

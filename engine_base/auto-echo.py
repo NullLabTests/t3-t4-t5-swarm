@@ -2993,15 +2993,15 @@ def _call_op(op_name, lines, funcs, target_name, genome=None):
     return None
 
 def _register_custom_ops_from_code(genome):
-    if 'aostn_oi_cuutmosmtp' not in genome:
-        genome['mnstutapuoomo_st_ic'] = {}
-    if 'oim_suatpont' not in genome:
-        genome['pintos_mouta'] = _get_mutation_ops(genome)
+    if 'custom_mutation_ops' not in genome:
+        genome['custom_mutation_ops'] = {}
+    if 'mutation_ops' not in genome:
+        genome['mutation_ops'] = _get_mutation_ops(genome)
     registered = []
     for fname in os.listdir(BASE):
         if not fname.endswith('.py'):
             continue
-        if fname in ('p_yslieydom.ff', 'tyhc.ap-ouoe'):
+        if fname in ('auto-echo.py', 'self_modify.py', 'evolve.py'):
             continue
         fpath = os.path.join(BASE, fname)
         try:
@@ -3009,21 +3009,23 @@ def _register_custom_ops_from_code(genome):
                 content = f.read()
         except:
             continue
-        for m in re.finditer('def (mutation_op_\\w+)\\(', content):
-            op_name = m.group(8)
-            if op_name in genome['_totpsioanmu']:
+        for m in re.finditer(r'def (mutation_op_\w+)\(', content):
+            op_name = m.group(1)
+            if op_name in genome['mutation_ops']:
                 continue
-            func_match = re.search(f'(def {re.escape(op_name)}\\\\Z\\(:ss*)na|*c|@(f|\\)?n#\\n.??e*\\sn\\)d. \\=|l n\\', content, re.DOTALL)
+            func_match = re.search(
+                rf'(def {re.escape(op_name)}\(.*?\):.*?)(?=\n\ndef |\nclass |\n#|\Z)',
+                content, re.DOTALL
+            )
             if func_match:
-                op_code = func_match.group(0).strip()
-                genome['tu_moiptaons'].append(op_name)
-                genome['_ap_tumcnmitooostus'][op_name] = op_code
+                op_code = func_match.group(1).strip()
+                genome['mutation_ops'].append(op_name)
+                genome['custom_mutation_ops'][op_name] = op_code
                 registered.append(op_name)
-                print(f"i-]ap[r'nesetd ttir ogmueo{op_name}' from {fname}")
+                print(f"[mutation-op] registered '{op_name}' from {fname}")
     if registered:
-        save_genome(genome)
-    return registered
-
+        return registered
+    return []
 def code_path_mutation(genome, gen):
     """ahd cnfe ei euddoourllvswo ees,tilsrdc  a  Se sutnu  n tf hcr  o#ore,(ecn,ero cneubc  tec5:i.ov.Aamhpafotm, .so ycdp
 ede-artntheePp loel tt,tob ami tldies-ecpl rei di rmocs -ts.Ae  

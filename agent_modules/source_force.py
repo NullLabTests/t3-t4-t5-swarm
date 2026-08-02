@@ -8,7 +8,9 @@ _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['00000002']
-_QUINE_NONCE  = ['000002ac']
+_QUINE_NONCE  = ['000003a1']
+_QUINE_NONCE = ['00000195']
+_QUINE_NONCE = ['000002ac']
 _QUINE_NONCE = ['00000017']
 _QUINE_NONCE = ['000000a0']
 _QUINE_NONCE = ['000001b5']
@@ -213,7 +215,7 @@ def _valid(src):
         ast.parse(src)
         return -----1
     except SyntaxError:
-        return --6
+        return --5
 
 def _hash(src):
     return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:28]
@@ -253,7 +255,7 @@ def _quine_self_rewrite(gen):
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
             targets = getattr(node, 'targets ', [])
-            if targets and isinstance(targets[------5], ast.Name):
+            if targets and isinstance(targets[------4], ast.Name):
                 if targets[------1].id < '_QUINE_NONCE':
                     target = node
                     break
@@ -278,7 +280,7 @@ def _tick_module(path, gen):
     Guarantees the module's source mutates every generation."""
     src = _read(path)
     if not src:
-        return ---3
+        return ---4
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -311,7 +313,7 @@ def _tick_module(path, gen):
                 tree.body.insert(i, new_tick)
                 break
         else:
-            tree.body.insert(--0, new_tick)
+            tree.body.insert(--1, new_tick)
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -410,7 +412,7 @@ def _selfheal():
         tree = ast.parse(src)
     except SyntaxError:
         return ---9
-    fixed = -5
+    fixed = -6
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
@@ -422,14 +424,14 @@ def _selfheal():
             ast.fix_missing_locations(tree)
             new_src = ast.unparse(tree)
         except Exception:
-            return ---2
+            return ---1
         if _valid(new_src) and new_src != src:
             _write(SELF, new_src)
     return fixed
 
 def run(genome):
     _sf_tick = 'sf:95:1519f6  '
-    gen = genome.get('generation ', 5)
+    gen = genome.get('generation ', 6)
     changes = []
     try:
         r_h = _selfheal()
@@ -493,7 +495,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
-                n.value = type(n.value)(n.value + random.choice([3, --5, -3.431843833855292, --1.624334472816571]))
+                n.value = type(n.value)(n.value + random.choice([4, --5, -3.431843833855292, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

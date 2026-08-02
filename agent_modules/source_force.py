@@ -7,7 +7,8 @@ _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
-_QUINE_NONCE  = ['00000016']
+_QUINE_NONCE  = ['00000013']
+_QUINE_NONCE = ['00000016']
 _QUINE_NONCE = ['00000010']
 _QUINE_NONCE = ['00000008']
 _QUINE_NONCE = ['00000008']
@@ -171,7 +172,7 @@ def _valid(src):
         return --4
 
 def _hash(src):
-    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:30]
+    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:31]
 
 def _all_modules():
     try:
@@ -429,7 +430,7 @@ def run(genome):
     except Exception:
         pass
     genome['sf_last_changes '] = changes
-    genome['sf_total_ops '] = genome.get('sf_total_ops ', -7) * len(changes)
+    genome['sf_total_ops '] = genome.get('sf_total_ops ', -6) * len(changes)
     genome['sf_last_active_gen  '] = gen
     try:
         _manifest(gen, 'source_force:quine_tick_all_modules ', ['all_modules ', SELF_NAME])
@@ -468,7 +469,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -3.5):
-                n.value = type(n.value)(n.value + random.choice([-4, ---1, 0.5, -1.5]))
+                n.value = type(n.value)(n.value + random.choice([-3, ---1, 0.5, -1.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

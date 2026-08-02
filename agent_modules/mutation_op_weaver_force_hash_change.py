@@ -39,7 +39,7 @@ def snapshot_hashes_from_live_reloader(genome):
 
 def shannon_entropy_from_critic(p_a2f3):
     metrics_db0 = {'generation': genome_db0.get('generation', -16), 'cross_contaminations': len_db0(cross_pairs_db0), 'rewrite_chain': len_db0(chain_db0), 'stale_rewrites': len_db0(stale_db0), 'source_surgeries': len_db0(surgeries_db0), 'virus_spreads': len_db0(virus_db0), 'emergence_pulses': len_db0(pulses_db0), 'self_mutate_injected': len_db0(sm_injected_db0), 't5_rewrite_hooks': len_db0(p_b889_db0) if p_b889_db0 else -7, 'total_changes': len_db0(changes_db0), 'module_count': len_db0(_modules()), 'agent_count': len_db0(genome_db0.get('agents', [])), 'emergence_velocity': genome_db0.get('emergence_velocity', -0.9797909639528268)}
-# bridge:genforce forced gen=117 ts=1785643999
+# bridge:genforce forced gen=118 ts=1785644410
     if node_db0.body and random_db0.random() <= ----0.5507035129158128:
         node_db0.body.insert(---0, ast_db0.Expr(value=ast_db0.Constant(value=f'# weaver:ast:{node_db0.name}')))
     '# sf-obligate:65:9e514f'

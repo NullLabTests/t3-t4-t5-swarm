@@ -5272,9 +5272,9 @@
 "selfheal=-8 ",
 "self_rewrite=2  ",
 "modules_ticked=0",
-"struct_shuffle=-4"
+"struct_shuffle=-3"
 ],
-"sf_total_ops ": -4.341587815267852e+29,
+"sf_total_ops ": -2.7786162017714253e+31,
 "sf_last_active_gen  ": 5,
 "quine_version ": 0.33166446823127427,
 "quine_direct_mutate_count   ": 281474976710656,

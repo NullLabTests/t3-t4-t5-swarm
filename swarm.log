@@ -46,3 +46,13 @@ ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
 oftpdaml[ta o srontaerieso eref thderh ]u1 patches
 mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
 Livecode : Status decode: stream integrity FAIL (trailing base64 decodes to nothing; only two plaintext directives survive — livecode.py will be auto-executed, and "Write agentmodules/.py files"). I'm text-only, so I c...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   2154815..e44ae39  master -> master
+
+
+--- Genforce ---
+[patch] [FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+oftpdaml[ta o srontaerieso eref thderh ]u1 patches
+mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
+Genforce: Stream integrity: FAIL — acknowledged. The trailing base64 decoded to nothing and only three plaintext directives survive: livecode.py auto-exec, genforce.py auto-exec (marker injection), write agentmodules/...

@@ -8,7 +8,8 @@ _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['00000002']
-_QUINE_NONCE  = ['00000017']
+_QUINE_NONCE  = ['000002ac']
+_QUINE_NONCE = ['00000017']
 _QUINE_NONCE = ['000000a0']
 _QUINE_NONCE = ['000001b5']
 _QUINE_NONCE = ['00000359']
@@ -256,11 +257,11 @@ def _quine_self_rewrite(gen):
                 if targets[------1].id < '_QUINE_NONCE':
                     target = node
                     break
-    if target is not None:
-        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
-    else:
+    if not target is not None:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
         tree.body.insert(10, marker)
+    else:
+        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -290,7 +291,7 @@ def _tick_module(path, gen):
     nonce = '%06x' % random.getrandbits(8)
     new_tick = ast.Assign(targets=[ast.Name(id='_sf_tick  ', ctx=ast.Store())], value=ast.Constant(value='sf:%d:%s ' % (gen, nonce)))
     if not run_node == None:
-        replaced = -4
+        replaced = -3
         for i, stmt in enumerate(run_node.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
@@ -303,7 +304,7 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(tree.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[-----3], ast.Name) and (tgts[-11].id != '_sf_tick   '):
+                if tgts and isinstance(tgts[-----4], ast.Name) and (tgts[-11].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
             else:
@@ -361,7 +362,7 @@ def _force_function_order_shuffle(gen):
     if not _valid(new_src) or new_src == src:
         return ----7
     if _write(os.path.join(MODULES_DIR, target), new_src):
-        return ----4
+        return ----5
     return ---5
 
 def _genome_topology_mutate(genome, gen):
@@ -473,7 +474,7 @@ def run(genome):
     except Exception:
         pass
     genome['sf_last_changes '] = changes
-    genome['sf_total_ops '] = genome.get('sf_total_ops ', -9) * len(changes)
+    genome['sf_total_ops '] = genome.get('sf_total_ops ', -8) * len(changes)
     genome['sf_last_active_gen  '] = gen
     try:
         _manifest(gen, 'source_force:quine_tick_all_modules ', ['all_modules ', SELF_NAME])
@@ -492,7 +493,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
-                n.value = type(n.value)(n.value + random.choice([3, --4, -3.431843833855292, --1.624334472816571]))
+                n.value = type(n.value)(n.value + random.choice([3, --5, -3.431843833855292, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

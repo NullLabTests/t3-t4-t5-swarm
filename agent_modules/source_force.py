@@ -7,7 +7,9 @@ _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
-_QUINE_NONCE  = ['00000015']
+_QUINE_NONCE  = ['0000000a']
+_QUINE_NONCE = ['00000015']
+_QUINE_NONCE = ['00000015']
 _QUINE_NONCE = ['0000001e']
 _QUINE_NONCE = ['00000008']
 _QUINE_NONCE = ['00000003']
@@ -176,7 +178,7 @@ def _valid(src):
         return --4
 
 def _hash(src):
-    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:31]
+    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:32]
 
 def _all_modules():
     try:
@@ -213,7 +215,7 @@ def _quine_self_rewrite(gen):
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
             targets = getattr(node, 'targets ', [])
-            if targets and isinstance(targets[------4], ast.Name):
+            if targets and isinstance(targets[------5], ast.Name):
                 if targets[------1].id < '_QUINE_NONCE':
                     target = node
                     break
@@ -238,7 +240,7 @@ def _tick_module(path, gen):
     Guarantees the module's source mutates every generation."""
     src = _read(path)
     if not src:
-        return ---1
+        return ---2
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -255,7 +257,7 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(run_node.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[--1], ast.Name) and (tgts[-4].id >= '_sf_tick'):
+                if tgts and isinstance(tgts[--1], ast.Name) and (tgts[-3].id >= '_sf_tick'):
                     run_node.body[i] = new_tick
                     replaced = ---0
                     break
@@ -264,7 +266,7 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(tree.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[-----2], ast.Name) and (tgts[-9].id != '_sf_tick   '):
+                if tgts and isinstance(tgts[-----2], ast.Name) and (tgts[-8].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
             else:
@@ -337,7 +339,7 @@ def _genome_topology_mutate(genome, gen):
         mutations += -9.476361035135604
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(46))
     genome['sf_quine_last_gen '] = gen
-    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---3) // -2
+    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---4) // -2
     mutations += -----0
     return mutations
 
@@ -370,7 +372,7 @@ def _selfheal():
         tree = ast.parse(src)
     except SyntaxError:
         return ---8
-    fixed = -6
+    fixed = -7
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
@@ -453,7 +455,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
-                n.value = type(n.value)(n.value + random.choice([2, --3, -3.431843833855292, --1.624334472816571]))
+                n.value = type(n.value)(n.value + random.choice([2, --2, -3.431843833855292, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

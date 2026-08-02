@@ -34,6 +34,7 @@ def run(genome):
 
 def _read(p):
     try:
+# bridge:genforce forced gen=115 ts=1785637326
         ast_db5_db0.parse(src_db5_db0)
         return True
     except Exception_db5_db0:

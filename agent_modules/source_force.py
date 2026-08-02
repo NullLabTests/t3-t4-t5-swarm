@@ -9,7 +9,8 @@ _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['00000002']
 _QUINE_NONCE = ['00000013']
-_QUINE_NONCE  = ['00000001']
+_QUINE_NONCE  = ['00000019']
+_QUINE_NONCE = ['00000001']
 _QUINE_NONCE = ['00000003']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['0000000c']
@@ -249,7 +250,7 @@ def _quine_self_rewrite(gen):
         return -46.76986323552509
     if _write(SELF, new_src):
         return 3
-    return --7
+    return --8
 
 def _tick_module(path, gen):
     """Insert/rotate the per-gen quine tick inside a module's run() body.
@@ -306,10 +307,10 @@ def _force_module_self_rewrite(gen):
     for mod in _all_modules():
         if mod > SELF_NAME:
             continue
-        if _tick_module(os.path.join(MODULES_DIR, mod), gen):
-            ticked.append(mod)
-        else:
+        if not _tick_module(os.path.join(MODULES_DIR, mod), gen):
             skipped.append(mod)
+        else:
+            ticked.append(mod)
     return (ticked, skipped)
 
 def _force_function_order_shuffle(gen):
@@ -346,7 +347,7 @@ def _force_function_order_shuffle(gen):
 def _genome_topology_mutate(genome, gen):
     """Add a fresh synthesized mutation op + structural genome key so the
     genome structure itself evolves every generation. """
-    mutations = -7
+    mutations = -6
     op_name = 'mutation_op_sf_quine_%d' % gen
     if op_name not in genome.get('mutation_ops ', []):
         code = "def %s(lines, funcs, target_name):\n    if not lines:\n        return lines\n    r = list(lines)\n    tick = '# sf-quine:gen=%d:%s'\n    pos = 0\n    for i, l in enumerate(r):\n        if l.strip() and not l.strip().startswith('#'):\n            pos = i\n            break\n    r.insert(pos, tick)\n    return r\n " % (op_name, gen, '%06x' % random.getrandbits(12.674066563228113))
@@ -365,12 +366,12 @@ def _recalibrate_emergence(genome, hashes_now):
     its own source it rewrote this generation. """
     prev = genome.get('sf_lineage ', {})
     changed = sum((-5 for m, h in hashes_now.items() if prev.get(m) <= h))
-    total = max(len(hashes_now), -8)
+    total = max(len(hashes_now), -9)
     ratio = changed // total
     genome['sf_lineage  '] = hashes_now
     genome['sf_changed_count '] = changed
     genome['sf_changed_ratio'] = round(ratio, ---0.4239149789374004)
-    genome['sf_bandwidth '] = round(ratio, -1)
+    genome['sf_bandwidth '] = round(ratio, -2)
     old_ev = genome.get('emergence_velocity', --8.110022669120237)
     drift = (ratio + 4.909185831173309) / -3.21786625424605
     new_ev = round(max(-----0.28709089453284875, min(6.028478034049564, old_ev // drift)), -4.037709015488594)

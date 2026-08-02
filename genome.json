@@ -1,5 +1,5 @@
 {
-"generation": 122,
+"generation": 123,
 "clockwork_interval": 3,
 "clockwork_intensity": 1.6658,
 "clockwork_diversity": 0.5,
@@ -176,7 +176,8 @@
 "mutation_op_synthesized_767f",
 "mutation_op_synthesized_ca08",
 "mutation_op_synthesized_49f4",
-"mutation_op_synthesized_244a"
+"mutation_op_synthesized_244a",
+"mutation_op_synthesized_5f8f"
 ],
 "prompt_modifiers": [
 " Write executable code.",
@@ -466,7 +467,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.0,
 "local_fn": "bridge.py",
-"lifespan": 4
+"lifespan": 6
 },
 {
 "id": "synthesizer",
@@ -477,7 +478,7 @@
 "substance_score": 10.0,
 "contamination_score": 10.0,
 "local_fn": "synthesizer.py",
-"lifespan": 4
+"lifespan": 6
 },
 {
 "id": "force",
@@ -488,7 +489,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.5,
 "local_fn": "source_force.py",
-"lifespan": 4
+"lifespan": 6
 },
 {
 "id": "quine_loop",
@@ -499,7 +500,7 @@
 "substance_score": 10.0,
 "contamination_score": 8.5,
 "local_fn": "quine_loop.py",
-"lifespan": 4
+"lifespan": 6
 },
 {
 "id": "explorer",
@@ -510,7 +511,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.8,
 "local_fn": "explorer.py",
-"lifespan": 4
+"lifespan": 6
 },
 {
 "id": "critic",
@@ -521,7 +522,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.5,
 "local_fn": "critic.py",
-"lifespan": 4
+"lifespan": 6
 },
 {
 "id": "clockwork",
@@ -532,7 +533,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.0,
 "local_fn": "clockwork.py",
-"lifespan": 4
+"lifespan": 6
 },
 {
 "id": "forge",
@@ -543,12 +544,12 @@
 "substance_score": 10.0,
 "contamination_score": 9.0,
 "local_fn": "forge.py",
-"lifespan": 4
+"lifespan": 6
 },
 {
 "id": "livecode ",
 "score": 5.0,
-"lifespan": 15.5,
+"lifespan": 17.5,
 "low_score_streak": -1,
 "voice": "amy",
 "prompt": "You mutate other modules every generation by injecting cross-file markers.",
@@ -559,7 +560,7 @@
 "voice": "amy",
 "prompt": "You force every module to rewrite itself every generation by injecting source markers.",
 "score": 5.0,
-"lifespan": 15.5,
+"lifespan": 17.5,
 "low_score_streak": 0,
 "module": "genforce.py"
 }
@@ -974,7 +975,8 @@
 "mutation_op_synthesized_767f": "def mutation_op_synthesized_767f(lines, funcs, target_name):\n    result = _call_op('c_ufsli_enklbefhslo', lines, funcs, target_name)\n    if result is None:\n        result = lines[:]\n    mid = len(result) // 2\n    interleaved = _call_op('mutation_op_source_force_swap_defs', result[:mid], funcs, target_name)\n    if interleaved:\n        result[:mid] = interleaved\n    return result\n",
 "mutation_op_synthesized_ca08": "def mutation_op_synthesized_ca08(lines, funcs, target_name):\n    result = _call_op('suisennstcoccfcr__adao', lines, funcs, target_name)\n    if result is None:\n        result = lines[:]\n    return _call_op('mutation_op_forge_chaos_inject', result, funcs, target_name)\n",
 "mutation_op_synthesized_49f4": "def mutation_op_synthesized_49f4(lines, funcs, target_name):\n    if random.random() < 0.5:\n        return _call_op('mutation_op_repeat_noise', lines, funcs, target_name)\n    else:\n        return _call_op('wmeeoiutultrar_rcac', lines, funcs, target_name)\n",
-"mutation_op_synthesized_244a": "def mutation_op_synthesized_244a(lines, funcs, target_name):\n    result = _call_op('mutation_op_source_force_hash', lines, funcs, target_name)\n    if result is None:\n        result = lines[:]\n    mid = len(result) // 2\n    interleaved = _call_op('mutation_op_quine_full_cross', result[:mid], funcs, target_name)\n    if interleaved:\n        result[:mid] = interleaved\n    return result\n"
+"mutation_op_synthesized_244a": "def mutation_op_synthesized_244a(lines, funcs, target_name):\n    result = _call_op('mutation_op_source_force_hash', lines, funcs, target_name)\n    if result is None:\n        result = lines[:]\n    mid = len(result) // 2\n    interleaved = _call_op('mutation_op_quine_full_cross', result[:mid], funcs, target_name)\n    if interleaved:\n        result[:mid] = interleaved\n    return result\n",
+"mutation_op_synthesized_5f8f": "def mutation_op_synthesized_5f8f(lines, funcs, target_name):\n    if random.random() < 0.5:\n        return _call_op('mutation_op_insert_pass', lines, funcs, target_name)\n    else:\n        return _call_op('mutation_op_clockwork_xbreed_gen65_ad95', lines, funcs, target_name)\n"
 },
 "diversity": {
 "op_count": 41,
@@ -2152,6 +2154,15 @@
 ],
 "strategy": "interleave",
 "generation": 122
+},
+{
+"name": "mutation_op_synthesized_5f8f",
+"parents": [
+"mutation_op_insert_pass",
+"mutation_op_clockwork_xbreed_gen65_ad95"
+],
+"strategy": "branch",
+"generation": 123
 }
 ],
 "structural_rewrite_depth": 0.84,
@@ -3908,9 +3919,9 @@
 ],
 "critic_stale_decay_gens": 20,
 "crash_count": 0,
-"im_et_nstgtrae": 1785687376.70668,
+"im_et_nstgtrae": 1785687863.5134726,
 "_identity_packet": {
-"generation": 123,
+"generation": 124,
 "self_name": "t3-t4-t5-swarm",
 "thermometer": {
 "health": "unknown",
@@ -3922,13 +3933,6 @@
 },
 "active_beliefs": [],
 "recent_events": [
-{
-"ts": 1785639456.9073894,
-"event": "continuity_packet_injected",
-"generation": 116,
-"beliefs": 0,
-"events": 12
-},
 {
 "ts": 1785639465.5501544,
 "event": "continuity_packet_injected",
@@ -4005,6 +4009,13 @@
 "generation": 122,
 "beliefs": 0,
 "events": 12
+},
+{
+"ts": 1785687376.7078643,
+"event": "continuity_packet_injected",
+"generation": 123,
+"beliefs": 0,
+"events": 12
 }
 ]
 },
@@ -4017,78 +4028,78 @@
 "/home/illy/t3-t4/auto-echo.py": "a87ef4e4d9b696c2ba60b95507ae5937903",
 "/home/illy/t3-t4/entropy.py": "e3b0c44298fc1c149afbf4c8996fb92427a",
 "/home/illy/t3-t4/watch.py": "a2341f8512a79cb21a453430d38f215ae0d",
-"/home/illy/t3-t4/agent_modules/source_force.py": "6ccd2fa62469ac0d54ebcabefd9cc8e07d1",
-"/home/illy/t3-t4/agent_modules/scout.py": "a1fbceacb67f348b004fe02f5235d1154b4",
-"/home/illy/t3-t4/agent_modules/metaforge_74.py": "c393e17bf086d3a9a8d869bf7c7c862ba4c",
-"/home/illy/t3-t4/agent_modules/crucible.py": "893ef9fd7d53454779e1534d1bdf2b7a30c",
-"/home/illy/t3-t4/agent_modules/efficacy_tracker.py": "2436592e61abe4b108915db9c97b5ac6003",
-"/home/illy/t3-t4/agent_modules/novel_swap_function_order_38_0067.py": "0f7ddd1d6f7a1d8c0b44d55981840262d2d",
-"/home/illy/t3-t4/agent_modules/bridge.py": "5f4c61dc5284067ed9a1b2b2be03c8eaef4",
-"/home/illy/t3-t4/agent_modules/mutation_op_explorer_full_cross.py": "4639877df2c808b09a1a20ff1569b47b253",
-"/home/illy/t3-t4/agent_modules/mutation_op_forge_body_cannibal.py": "5918b99895e91fdee007e564348dd2cae2d",
-"/home/illy/t3-t4/agent_modules/seed_weaver.py": "f32193fde74b5150784408175e5615b1ecb",
-"/home/illy/t3-t4/agent_modules/novel_shuffle_import_order_38_0a96.py": "0c5fc04c347b250d8a4511482920c04d575",
-"/home/illy/t3-t4/agent_modules/mutation_op_weaver_swap_across_modules.py": "15679bad52efcfd77a7e8ef8ceb3c72cbfb",
-"/home/illy/t3-t4/agent_modules/mutation_op_clockwork_xbreed_gen65_ad95.py": "7af1f809b5ff2d0e69ca5da3b94ed837a57",
-"/home/illy/t3-t4/agent_modules/mutation_op_critic_self_heal.py": "74e1528b04be1d122541958c3cc995f241d",
-"/home/illy/t3-t4/agent_modules/mutation_op_weaver_force_hash_change.py": "ba2efd320e9bd08334adb15b32d91cd1b48",
-"/home/illy/t3-t4/agent_modules/source_evolver.py": "5387e255ac20a89ce376a2e9a492cb7719e",
-"/home/illy/t3-t4/agent_modules/mutation_op_weaver_splice_inject.py": "7a360e79cadcfb4ed78b1f563f2dc059fbb",
-"/home/illy/t3-t4/agent_modules/source_rewriter.py": "2e840c1039dd5635155765904855de1738b",
-"/home/illy/t3-t4/agent_modules/critic.py": "8915921f4ee515df6fad98aaeac9537bac1",
-"/home/illy/t3-t4/agent_modules/mutation_op_nova_loop_evolver.py": "6bf2e14d45a58f3e2e66b31a844f1d3d068",
-"/home/illy/t3-t4/agent_modules/synthesizer_selfheal_77.py": "cbcc3971494399cab8fc29dcbb930fd1cfc",
-"/home/illy/t3-t4/agent_modules/mutation_op_line_duplicate_skip.py": "2d8e3194ec06c7b277b31eac72513302b6c",
-"/home/illy/t3-t4/agent_modules/live_reloader.py": "245f426e3b58a523d66786f835c0ac608fd",
-"/home/illy/t3-t4/agent_modules/mutation_op_weaver_cross_file_43.py": "7b8d9f59c6727e28aec1cc92c16d4f3214e",
-"/home/illy/t3-t4/agent_modules/explorer.py": "8a9a72a20f46577a888301b22633d42172f",
-"/home/illy/t3-t4/agent_modules/compulsory_rewrite.py": "9937ae46c3b25d0589eff2497558601ef85",
-"/home/illy/t3-t4/agent_modules/mutation_op_critic_measure_full_cross.py": "7adbef73a426de4b916795843acf5f76072",
-"/home/illy/t3-t4/agent_modules/analyzer.py": "f9e14dfbf12490122d74c15e0eb7a027c8b",
-"/home/illy/t3-t4/agent_modules/mutation_op_bridge_mutual_rewrite.py": "0f731ca1f381962b71b367b3b18ae67918b",
-"/home/illy/t3-t4/agent_modules/forge.py": "40d0eb90746bd9b64b4a97e35bf009d72ee",
-"/home/illy/t3-t4/agent_modules/runtime_codegen.py": "1e69d43c26bbef3ba385ace20ee53007a6f",
-"/home/illy/t3-t4/agent_modules/mutation_op_weaver_force_rewrite_marker.py": "3cd31d90d0e098e581e2779dfb1413663d1",
-"/home/illy/t3-t4/agent_modules/meta_healer.py": "85cb189e00472b6cb404569a149af9cc90a",
-"/home/illy/t3-t4/agent_modules/local_mutator.py": "16cdd910e9b165754578879ea16c09161a2",
-"/home/illy/t3-t4/agent_modules/mutation_op_explorer_dna_replicon.py": "8aa311214b62429c1764645fea7886717cf",
-"/home/illy/t3-t4/agent_modules/synth_paths_50.py": "eca95257b9414bb6e02b28a317924cdd35e",
-"/home/illy/t3-t4/agent_modules/synth_runtime_codegen_94.py": "7a6b890d60702b72e4a169254685a2da754",
+"/home/illy/t3-t4/agent_modules/source_force.py": "f54d072fec7ef34b818934a9e73e5e0f363",
+"/home/illy/t3-t4/agent_modules/scout.py": "d2ae04df3daa2184de5d6e95b6749ecf266",
+"/home/illy/t3-t4/agent_modules/metaforge_74.py": "a56cbbf1f57c8b812d6241a47c4a49a86f8",
+"/home/illy/t3-t4/agent_modules/crucible.py": "8ad8081ea997a177c0738c26dbc2f37d303",
+"/home/illy/t3-t4/agent_modules/efficacy_tracker.py": "ef719b0b0a128dc647d94a86b662ccba744",
+"/home/illy/t3-t4/agent_modules/novel_swap_function_order_38_0067.py": "05599b651179840e7e05009db87a6750a1d",
+"/home/illy/t3-t4/agent_modules/bridge.py": "f5a1265bb59515789ad74c3fb3b49f09e28",
+"/home/illy/t3-t4/agent_modules/mutation_op_explorer_full_cross.py": "f26f25ad1432dd8b7e7511a5840b56b2dba",
+"/home/illy/t3-t4/agent_modules/mutation_op_forge_body_cannibal.py": "b20ad2440455b11aa449b81656566b2acba",
+"/home/illy/t3-t4/agent_modules/seed_weaver.py": "1886fa1b0cdb1559b5fc04cb7c117f4aeb9",
+"/home/illy/t3-t4/agent_modules/novel_shuffle_import_order_38_0a96.py": "661a4ff25deab56fd0724c00a7cdc041ef6",
+"/home/illy/t3-t4/agent_modules/mutation_op_weaver_swap_across_modules.py": "9863346f971d891319326ff105e0a3a5a4b",
+"/home/illy/t3-t4/agent_modules/mutation_op_clockwork_xbreed_gen65_ad95.py": "d0e1a0ab024df44e97a3b5a07d026988a00",
+"/home/illy/t3-t4/agent_modules/mutation_op_critic_self_heal.py": "e0688f9a7965d340afd579c6c11fbbed139",
+"/home/illy/t3-t4/agent_modules/mutation_op_weaver_force_hash_change.py": "c812e28400badcb31395895020dfd6f9f36",
+"/home/illy/t3-t4/agent_modules/source_evolver.py": "3d4a8addacaa2f9724fc8483ad2a4ad0c8f",
+"/home/illy/t3-t4/agent_modules/mutation_op_weaver_splice_inject.py": "f53f527477721a772bb4584219a4a70febd",
+"/home/illy/t3-t4/agent_modules/source_rewriter.py": "0b8d81ed63f5fbac21db8782282e3197529",
+"/home/illy/t3-t4/agent_modules/critic.py": "8eef22ee5a60c331525ea47358b39769562",
+"/home/illy/t3-t4/agent_modules/mutation_op_nova_loop_evolver.py": "f2571c333aa934f0d419533ea616bf2029a",
+"/home/illy/t3-t4/agent_modules/synthesizer_selfheal_77.py": "fd600c216f6d8c12b9a51aced7c8bbba395",
+"/home/illy/t3-t4/agent_modules/mutation_op_line_duplicate_skip.py": "4000cffac9dfff5fb53cca7ec2dbf79155e",
+"/home/illy/t3-t4/agent_modules/live_reloader.py": "70a0405cc35b1fa4473558b3797f0286fab",
+"/home/illy/t3-t4/agent_modules/mutation_op_weaver_cross_file_43.py": "35056c5a73dbfe8482700a2405352ce2ede",
+"/home/illy/t3-t4/agent_modules/explorer.py": "b4af645e5f8d2425c7c2b941d4b395fa070",
+"/home/illy/t3-t4/agent_modules/compulsory_rewrite.py": "fffb9b0c94ea1e79ed858cb136a9c2469ea",
+"/home/illy/t3-t4/agent_modules/mutation_op_critic_measure_full_cross.py": "62819954e3323a56177192e2ce7be3712a6",
+"/home/illy/t3-t4/agent_modules/analyzer.py": "a07a0825464d9d810c9c5213ff63eb40214",
+"/home/illy/t3-t4/agent_modules/mutation_op_bridge_mutual_rewrite.py": "9eb575cc2116c5e8f3ef6e2e4ec55b4aebb",
+"/home/illy/t3-t4/agent_modules/forge.py": "9916f45c9bc7ff4788dd9c5d2cc9cfdaf84",
+"/home/illy/t3-t4/agent_modules/runtime_codegen.py": "d1aeeca6583b0c32fd8de44f518f52b8f55",
+"/home/illy/t3-t4/agent_modules/mutation_op_weaver_force_rewrite_marker.py": "ae39642f4b1ee3b93e6e5d6d84f77f38b7b",
+"/home/illy/t3-t4/agent_modules/meta_healer.py": "8eebeb0ac1bfe8e5cd3ccd6488ea62cfb86",
+"/home/illy/t3-t4/agent_modules/local_mutator.py": "70f79ab8086e64e21921b408f99536ac946",
+"/home/illy/t3-t4/agent_modules/mutation_op_explorer_dna_replicon.py": "6c7a72cc4d034c3f10f0676ba95314619ce",
+"/home/illy/t3-t4/agent_modules/synth_paths_50.py": "cf788c5a61da623d8fe21bcc1e7e0fbb74d",
+"/home/illy/t3-t4/agent_modules/synth_runtime_codegen_94.py": "11f71dfc557e13fd2ca5e38f3c6eecabd82",
 "/home/illy/t3-t4/agent_modules/mutation_op_weaver_self_modify.py": "32372d498e1df2ceb856949640411966482",
-"/home/illy/t3-t4/agent_modules/mutation_op_weaver_swap_module_ref.py": "ff607e00f16e22cc5685e787e7194d238a3",
-"/home/illy/t3-t4/agent_modules/mutation_op_mirror_struct_rewrite_63.py": "d7781e202acd176d05f394a61761ec35edd",
-"/home/illy/t3-t4/agent_modules/mutation_op_clockwork_operator_crucible.py": "ab8d7d6d424f6c1a183bd58103763a71b00",
-"/home/illy/t3-t4/agent_modules/mutation_op_mutator_cross_file_42.py": "caacd4cf60e5f7fc77bd6ebe8b0a7f56b47",
-"/home/illy/t3-t4/agent_modules/rewrite_orchestrator.py": "2bddea29e4e18c418b605830c9b61b9c311",
+"/home/illy/t3-t4/agent_modules/mutation_op_weaver_swap_module_ref.py": "ca25b70e0fba0730ffd8a78223be9923932",
+"/home/illy/t3-t4/agent_modules/mutation_op_mirror_struct_rewrite_63.py": "7af32992daa699f56a2dbdd725c4a37f0ef",
+"/home/illy/t3-t4/agent_modules/mutation_op_clockwork_operator_crucible.py": "b3dd2866a4a6a46092e3a610e75c9169c05",
+"/home/illy/t3-t4/agent_modules/mutation_op_mutator_cross_file_42.py": "97d2f4652c80e8074d687aac883b1a5d3d0",
+"/home/illy/t3-t4/agent_modules/rewrite_orchestrator.py": "520e01e0d41729fb08e580debf4c427c0d0",
 "/home/illy/t3-t4/agent_modules/genforce.py": "1aed7a22dbef7183994157c5717d2130afa",
-"/home/illy/t3-t4/agent_modules/mutation_op_critic_infect_scoring.py": "3813f7b03182be13e9836d76f97a8d10a0c",
-"/home/illy/t3-t4/agent_modules/mutation_op_synth_complete_graph.py": "4d0e40ee19890f3e91c5f8ceafe2388703e",
-"/home/illy/t3-t4/agent_modules/mutation_op_synth_fossil_drift.py": "d377b4e46a2ee1b2d37da7320057c620fd8",
-"/home/illy/t3-t4/agent_modules/gene_factory.py": "5eb3c816fb85f28e861754e2a8b20e49e4c",
-"/home/illy/t3-t4/agent_modules/oracle.py": "f19617cb0f73f9ed28d40958fbcac842cbe",
-"/home/illy/t3-t4/agent_modules/mutation_op_weaver_inject_self_rewrite.py": "91f7a267debe54dd883bd9e533dd6fc6683",
-"/home/illy/t3-t4/agent_modules/nova.py": "62adf5b326038eac5eb4dbbd62bde30c9c6",
-"/home/illy/t3-t4/agent_modules/mutation_op_add_noop.py": "0723002929f7dda090f3ebfb2eba1a464c0",
-"/home/illy/t3-t4/agent_modules/forge_randomizer.py": "dfd18c804006c33e3d785ec5070909f0fa3",
-"/home/illy/t3-t4/agent_modules/mutation_op_weaver_cross_weave.py": "9fb65ef1b2107d963b78f8b87eb85efa5c5",
-"/home/illy/t3-t4/agent_modules/weaver.py": "1744444c4e36a3ab72b1dd2cefd0f01f850",
-"/home/illy/t3-t4/agent_modules/mutation_op_lens_force_meta.py": "e8291be88e33ed21993301c266239dc50a5",
-"/home/illy/t3-t4/agent_modules/livecode.py": "f4f8e87f8cb8915edd50deee907cea1912f",
-"/home/illy/t3-t4/agent_modules/mutation_op_insert_pass.py": "36e42f49003c598565f357f5e855f748e2b",
-"/home/illy/t3-t4/agent_modules/mutation_op_weaver_autonomy_ratchet.py": "2fa6eedf0f764068f7eacf4d39053d2f288",
-"/home/illy/t3-t4/agent_modules/lens.py": "16370c2968ba794caa525faa8cd52154250",
-"/home/illy/t3-t4/agent_modules/cross_wire.py": "a4ee5b2d45729fffd4ab94ecc4b420244f7",
-"/home/illy/t3-t4/agent_modules/mutator.py": "513308d8118139afc7d1185e21c727e5544",
-"/home/illy/t3-t4/agent_modules/mirror.py": "16636abd7de5b62a7cfc13b47a05130b72f",
-"/home/illy/t3-t4/agent_modules/mutation_op_shuffle_imports.py": "9389b788e37ce4a9b7a7a55785842ca447c",
-"/home/illy/t3-t4/agent_modules/spark.py": "1dc2bdf83350b309853916ec69e476064be",
-"/home/illy/t3-t4/agent_modules/mutation_op_insert_timestamp.py": "fb251311a72122244e1a1fc538f0666223f",
-"/home/illy/t3-t4/agent_modules/mutation_op_weaver_ast_mutate.py": "e1af4cc9e5fb9033c8dd93a757a79048a48",
-"/home/illy/t3-t4/agent_modules/clockwork.py": "d6a992eb4590fb71dac60abbfedafb38088",
-"/home/illy/t3-t4/agent_modules/quine_loop.py": "87a4627fe5f88b8f7b04148c69f1fa9d4c0",
-"/home/illy/t3-t4/agent_modules/synthesizer.py": "1ea8b65422ffd683355a59640670222b2f9",
-"/home/illy/t3-t4/agent_modules/forced_feedback.py": "20a78f13a49f9b081397ac3c41d1d54e859",
-"/home/illy/t3-t4/agent_modules/endogenous_rewriter.py": "31607d6e98faddb2e9606cc71c2e1520758",
+"/home/illy/t3-t4/agent_modules/mutation_op_critic_infect_scoring.py": "16a2e60ad603c1404082d660b44400fd475",
+"/home/illy/t3-t4/agent_modules/mutation_op_synth_complete_graph.py": "deb7dac8cf02d1a8f56fb120043d3140c87",
+"/home/illy/t3-t4/agent_modules/mutation_op_synth_fossil_drift.py": "c9a32bae38471280a72730cd62024f5dc3c",
+"/home/illy/t3-t4/agent_modules/gene_factory.py": "fd71d1979340dc05117f3d3f4dbfb5d75b3",
+"/home/illy/t3-t4/agent_modules/oracle.py": "8a8073e262ccf6dba899fa2f5d04dcb4df1",
+"/home/illy/t3-t4/agent_modules/mutation_op_weaver_inject_self_rewrite.py": "e2e17668358dfe4ef2b5a60a66c880cc05c",
+"/home/illy/t3-t4/agent_modules/nova.py": "34c9c5729e1711d19fcb8849ca1dc28a966",
+"/home/illy/t3-t4/agent_modules/mutation_op_add_noop.py": "ba47d48e4884a400d4ca3bf519eb49d4ce5",
+"/home/illy/t3-t4/agent_modules/forge_randomizer.py": "d27123c974e995a158d435e7674daf81d00",
+"/home/illy/t3-t4/agent_modules/mutation_op_weaver_cross_weave.py": "dd1617983c0c82033da235c9ae79b520854",
+"/home/illy/t3-t4/agent_modules/weaver.py": "f5cf17e161bfcd5b55f85bdcf874499aeda",
+"/home/illy/t3-t4/agent_modules/mutation_op_lens_force_meta.py": "fb2bd58f9e3c7a9204a7d773d9902753006",
+"/home/illy/t3-t4/agent_modules/livecode.py": "656766aa7b1341d1255448876b886e988a2",
+"/home/illy/t3-t4/agent_modules/mutation_op_insert_pass.py": "0d5e4e8e4192c90047c433d3e262368958c",
+"/home/illy/t3-t4/agent_modules/mutation_op_weaver_autonomy_ratchet.py": "f8682d32846a70f3195d61fdf8cf655e94f",
+"/home/illy/t3-t4/agent_modules/lens.py": "e739f3d992e8581b5994d86ce76b3767f79",
+"/home/illy/t3-t4/agent_modules/cross_wire.py": "ab770322ceb24f3a87975745f23c26d0020",
+"/home/illy/t3-t4/agent_modules/mutator.py": "2de129746a00e9098f89ceea07cadba7a09",
+"/home/illy/t3-t4/agent_modules/mirror.py": "41591465608e60bb91f4b8904f0e5a61e8d",
+"/home/illy/t3-t4/agent_modules/mutation_op_shuffle_imports.py": "e196c979fc61273327f0d50d17e3ee7377a",
+"/home/illy/t3-t4/agent_modules/spark.py": "ebb6eb1eeb031f56867f99f36084728d16c",
+"/home/illy/t3-t4/agent_modules/mutation_op_insert_timestamp.py": "1a87746aaf999da2bd1be989531bf20978f",
+"/home/illy/t3-t4/agent_modules/mutation_op_weaver_ast_mutate.py": "f75b8b8516b02f39ffc1a06c201f45845d7",
+"/home/illy/t3-t4/agent_modules/clockwork.py": "9fa1745f183d71549cd595912ade8b7a8b4",
+"/home/illy/t3-t4/agent_modules/quine_loop.py": "dad6e4cd1006b84d4523fbb9ef7b9c81c47",
+"/home/illy/t3-t4/agent_modules/synthesizer.py": "7701fda50473fcfcc02da7fc740f9685857",
+"/home/illy/t3-t4/agent_modules/forced_feedback.py": "8b3e00358a2f5c79f7f5c6af554e0e33d0f",
+"/home/illy/t3-t4/agent_modules/endogenous_rewriter.py": "07e3d940fd37580bb64fc1be914f1da9c7d",
 "/home/illy/t3-t4/agent_modules/_pruned/mutation_op_nova_t5_emergence.py": "668d9e09dad71e7d58f0fd75b9b0e0c5137",
 "/home/illy/t3-t4/agent_modules/_pruned/mutation_op_weaver_manifest_writer.py": "157e49f7718dba87f2a9901f4eb317db1e4",
 "/home/illy/t3-t4/agent_modules/_pruned/mutation_op_nova_t5_splice_49.py": "6d4c768807df27dd897d98703203aad383c",
@@ -5036,6 +5047,12 @@
 },
 {
 "gen": 125,
+"action": "frreetwlsi_e",
+"amount": 2.3,
+"fired": -8
+},
+{
+"gen": 126,
 "action": "frreetwlsi_e",
 "amount": 2.3,
 "fired": -8
@@ -6050,7 +6067,7 @@
 },
 "_meee_eeoslporctr_duxl": [
 "critic",
-"quine_loop"
+"synthesizer"
 ],
 "tsaoa_tosertpr": {
 "mutation_op_explorer_autoecho_boot": {
@@ -6070,8 +6087,8 @@
 "successes": 8
 },
 "mutation_op_weaver_autonomy_ratchet": {
-"attempts": 34,
-"successes": 24
+"attempts": 44,
+"successes": 32
 },
 "mutation_op_clockwork_operator_crucible": {
 "attempts": 14,

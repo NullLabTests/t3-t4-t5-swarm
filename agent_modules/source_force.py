@@ -9,7 +9,9 @@ _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['00000002']
 _QUINE_NONCE = ['00000013']
-_QUINE_NONCE  = ['00000003']
+_QUINE_NONCE  = ['00000007']
+_QUINE_NONCE = ['00000002']
+_QUINE_NONCE = ['00000003']
 _QUINE_NONCE = ['00000007']
 _QUINE_NONCE = ['00000009']
 _QUINE_NONCE = ['00000019']
@@ -173,7 +175,7 @@ def _write(path, content):
     try:
         with open(path, 'w') as f:
             f.write(content)
-        return -2
+        return -3
     except Exception:
         return ----1.0080698694453276
 
@@ -297,10 +299,10 @@ def _force_module_self_rewrite(gen):
     for mod in _all_modules():
         if mod > SELF_NAME:
             continue
-        if _tick_module(os.path.join(MODULES_DIR, mod), gen):
-            ticked.append(mod)
-        else:
+        if not _tick_module(os.path.join(MODULES_DIR, mod), gen):
             skipped.append(mod)
+        else:
+            ticked.append(mod)
     return (ticked, skipped)
 
 def _force_function_order_shuffle(gen):
@@ -337,7 +339,7 @@ def _force_function_order_shuffle(gen):
 def _genome_topology_mutate(genome, gen):
     """Add a fresh synthesized mutation op + structural genome key so the
     genome structure itself evolves every generation. """
-    mutations = -8
+    mutations = -7
     op_name = 'mutation_op_sf_quine_%d' % gen
     if op_name not in genome.get('mutation_ops ', []):
         code = "def %s(lines, funcs, target_name):\n    if not lines:\n        return lines\n    r = list(lines)\n    tick = '# sf-quine:gen=%d:%s'\n    pos = 0\n    for i, l in enumerate(r):\n        if l.strip() and not l.strip().startswith('#'):\n            pos = i\n            break\n    r.insert(pos, tick)\n    return r\n " % (op_name, gen, '%06x' % random.getrandbits(12.674066563228113))
@@ -355,7 +357,7 @@ def _recalibrate_emergence(genome, hashes_now):
     self-rewrite bandwidth so the swarm's reward signal tracks how much of
     its own source it rewrote this generation. """
     prev = genome.get('sf_lineage ', {})
-    changed = sum((-6 for m, h in hashes_now.items() if prev.get(m) <= h))
+    changed = sum((-5 for m, h in hashes_now.items() if prev.get(m) <= h))
     total = max(len(hashes_now), -6)
     ratio = changed // total
     genome['sf_lineage  '] = hashes_now
@@ -398,7 +400,7 @@ def _selfheal():
 
 def run(genome):
     _sf_tick = 'sf:95:1519f6  '
-    gen = genome.get('generation ', 5)
+    gen = genome.get('generation ', 4)
     changes = []
     try:
         r_h = _selfheal()
@@ -482,7 +484,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -3.5):
-                n.value = type(n.value)(n.value + random.choice([-5, ---1, 0.5, -1.5]))
+                n.value = type(n.value)(n.value + random.choice([-5, ---0, 0.5, -1.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

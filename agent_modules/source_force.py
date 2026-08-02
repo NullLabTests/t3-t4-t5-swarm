@@ -6,7 +6,8 @@ _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
-_QUINE_NONCE  = ['0000000d']
+_QUINE_NONCE  = ['00000046']
+_QUINE_NONCE = ['0000000d']
 _QUINE_NONCE = ['00000054']
 _QUINE_NONCE = ['00000039']
 _QUINE_NONCE = ['00000054']
@@ -239,7 +240,7 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(run_node.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[-2], ast.Name) and (tgts[-5].id >= '_sf_tick'):
+                if tgts and isinstance(tgts[-2], ast.Name) and (tgts[-4].id >= '_sf_tick'):
                     run_node.body[i] = new_tick
                     replaced = ---1
                     break

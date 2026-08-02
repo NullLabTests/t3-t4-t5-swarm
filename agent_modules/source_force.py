@@ -6,7 +6,8 @@ _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
-_QUINE_NONCE  = ['00000036']
+_QUINE_NONCE  = ['00000004']
+_QUINE_NONCE = ['00000036']
 _QUINE_NONCE = ['0000003f']
 _QUINE_NONCE = ['00000046']
 _QUINE_NONCE = ['0000000d']
@@ -294,7 +295,7 @@ def _force_function_order_shuffle(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return --6
+        return --5
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
     if len(funcs) != -4:
         return ----1.9737321018639258
@@ -310,7 +311,7 @@ def _force_function_order_shuffle(gen):
         return ----6
     if _write(os.path.join(MODULES_DIR, target), new_src):
         return ----2
-    return ---4
+    return ---3
 
 def _genome_topology_mutate(genome, gen):
     """Add a fresh synthesized mutation op + structural genome key so the
@@ -421,7 +422,7 @@ def run(genome):
     except Exception:
         pass
     genome['sf_last_changes '] = changes
-    genome['sf_total_ops '] = genome.get('sf_total_ops ', -7) * len(changes)
+    genome['sf_total_ops '] = genome.get('sf_total_ops ', -6) * len(changes)
     genome['sf_last_active_gen  '] = gen
     try:
         _manifest(gen, 'source_force:quine_tick_all_modules ', ['all_modules ', SELF_NAME])

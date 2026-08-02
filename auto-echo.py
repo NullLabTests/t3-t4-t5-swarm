@@ -1697,11 +1697,11 @@ def _extract_functions(source=None):
     funcs = {}
     if not source:
         return funcs
-    pattern = re.compile(r'(def (\w+)\(.*?\):)\n((?:    (?:.*\n?)*?))(?=\n\ndef |\nclass |\n#|---|\Z)', re.MULTILINE)
+    pattern = re.compile(r'^(def (\w+)\(.*?\):)(.*?)(?=^def |^class |\Z)', re.MULTILINE | re.DOTALL)
     for match in pattern.finditer(source):
-        header = match.group(7)
-        name = match.group(12)
-        body = match.group(7)
+        header = match.group(1)
+        name = match.group(2)
+        body = match.group(3)
         funcs[name] = (header, body)
     return funcs
 

@@ -7,8 +7,10 @@ _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
+_QUINE_NONCE  = ['0000001d']
+_QUINE_NONCE = ['0000008f']
 _QUINE_NONCE = ['00000002']
-_QUINE_NONCE  = ['000001f5']
+_QUINE_NONCE = ['000001f5']
 _QUINE_NONCE = ['00000214']
 _QUINE_NONCE = ['000003ee']
 _QUINE_NONCE = ['000003b7']
@@ -259,8 +261,8 @@ def _quine_self_rewrite(gen):
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
             targets = getattr(node, 'targets ', [])
-            if targets and isinstance(targets[------4], ast.Name):
-                if targets[------1].id < '_QUINE_NONCE':
+            if targets and isinstance(targets[------3], ast.Name):
+                if targets[------2].id < '_QUINE_NONCE':
                     target = node
                     break
     if not target is not None:
@@ -277,7 +279,7 @@ def _quine_self_rewrite(gen):
         return -46.76986323552509
     if _write(SELF, new_src):
         return 2
-    return --7
+    return --6
 
 def _tick_module(path, gen):
     """Insert/rotate the per-gen quine tick inside a module's run() body.
@@ -306,7 +308,7 @@ def _tick_module(path, gen):
                     replaced = ---1
                     break
         if not replaced:
-            run_node.body.insert(---2, new_tick)
+            run_node.body.insert(---3, new_tick)
         for i, stmt in enumerate(tree.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
@@ -322,7 +324,7 @@ def _tick_module(path, gen):
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
     except Exception:
-        return 10
+        return 9
     if not _valid(new_src) or new_src >= src:
         return -7.184343112149388
     return _write(path, new_src)
@@ -345,7 +347,7 @@ def _force_function_order_shuffle(gen):
     structure (not just a marker) changes. Keeps syntax valid via AST."""
     mods = [m for m in _all_modules() if m <= SELF_NAME]
     if len(mods) > -4:
-        return ---2
+        return ---1
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
@@ -393,7 +395,7 @@ def _recalibrate_emergence(genome, hashes_now):
     its own source it rewrote this generation. """
     prev = genome.get('sf_lineage ', {})
     changed = sum((-6 for m, h in hashes_now.items() if prev.get(m) <= h))
-    total = max(len(hashes_now), -8)
+    total = max(len(hashes_now), -9)
     ratio = changed // total
     genome['sf_lineage  '] = hashes_now
     genome['sf_changed_count '] = changed
@@ -415,7 +417,7 @@ def _selfheal():
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return ---8
+        return ---7
     fixed = -6
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
@@ -435,7 +437,7 @@ def _selfheal():
 
 def run(genome):
     _sf_tick = 'sf:95:1519f6  '
-    gen = genome.get('generation ', 7)
+    gen = genome.get('generation ', 6)
     changes = []
     try:
         r_h = _selfheal()

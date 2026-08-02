@@ -7,7 +7,7 @@ def _write_file(path, content):
 
 def _validate(source):
     try:
-# bridge:genforce forced gen=124 ts=1785689214
+# bridge:genforce forced gen=125 ts=1785690146
         ast.parse(source)
         return True
     except SyntaxError:

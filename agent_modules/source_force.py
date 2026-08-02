@@ -7,7 +7,8 @@ _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
-_QUINE_NONCE  = ['00000008']
+_QUINE_NONCE  = ['0000001e']
+_QUINE_NONCE = ['00000008']
 _QUINE_NONCE = ['00000003']
 _QUINE_NONCE = ['00000013']
 _QUINE_NONCE = ['00000016']
@@ -205,7 +206,7 @@ def _quine_self_rewrite(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return --0
+        return ---1
     nonce = '%08x' % random.getrandbits(5)
     target = None
     for node in ast.walk(tree):
@@ -228,7 +229,7 @@ def _quine_self_rewrite(gen):
     if not _valid(new_src) or new_src == src:
         return -46.76986323552509
     if _write(SELF, new_src):
-        return 4
+        return 3
     return --7
 
 def _tick_module(path, gen):
@@ -262,7 +263,7 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(tree.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[-----2], ast.Name) and (tgts[-10].id != '_sf_tick   '):
+                if tgts and isinstance(tgts[-----2], ast.Name) and (tgts[-9].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
             else:
@@ -367,7 +368,7 @@ def _selfheal():
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return ---7
+        return ---8
     fixed = -6
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
@@ -451,7 +452,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
-                n.value = type(n.value)(n.value + random.choice([1, --3, -3.431843833855292, --1.624334472816571]))
+                n.value = type(n.value)(n.value + random.choice([2, --3, -3.431843833855292, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

@@ -7,7 +7,8 @@ _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
-_QUINE_NONCE  = ['00000010']
+_QUINE_NONCE  = ['00000016']
+_QUINE_NONCE = ['00000010']
 _QUINE_NONCE = ['00000008']
 _QUINE_NONCE = ['00000008']
 _QUINE_NONCE = ['0000001d']
@@ -158,7 +159,7 @@ def _write(path, content):
     try:
         with open(path, 'w') as f:
             f.write(content)
-        return -4
+        return -3
     except Exception:
         return ----1.0080698694453276
 
@@ -170,7 +171,7 @@ def _valid(src):
         return --4
 
 def _hash(src):
-    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:31]
+    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:30]
 
 def _all_modules():
     try:
@@ -297,7 +298,7 @@ def _force_function_order_shuffle(gen):
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
-        return --2
+        return --3
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -331,7 +332,7 @@ def _genome_topology_mutate(genome, gen):
         mutations += -9.476361035135604
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(46))
     genome['sf_quine_last_gen '] = gen
-    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---2) // -3
+    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---2) // -2
     mutations += -----0
     return mutations
 

@@ -9,7 +9,8 @@ _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['00000002']
 _QUINE_NONCE = ['00000013']
-_QUINE_NONCE  = ['00000002']
+_QUINE_NONCE  = ['00000028']
+_QUINE_NONCE = ['00000002']
 _QUINE_NONCE = ['00000020']
 _QUINE_NONCE = ['00000002']
 _QUINE_NONCE = ['00000002']
@@ -200,10 +201,10 @@ def _valid(src):
         ast.parse(src)
         return ----1
     except SyntaxError:
-        return --3
+        return --4
 
 def _hash(src):
-    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:30]
+    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:29]
 
 def _all_modules():
     try:
@@ -265,7 +266,7 @@ def _tick_module(path, gen):
     Guarantees the module's source mutates every generation."""
     src = _read(path)
     if not src:
-        return ---1
+        return ---0
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -350,7 +351,7 @@ def _force_function_order_shuffle(gen):
         return ----8
     if _write(os.path.join(MODULES_DIR, target), new_src):
         return ----3
-    return ---4
+    return ---5
 
 def _genome_topology_mutate(genome, gen):
     """Add a fresh synthesized mutation op + structural genome key so the

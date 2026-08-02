@@ -51,3 +51,19 @@ Livecode : I'm a text-only responder, so I can't create files on disk — but he
 - agentmodules/livecode.py
 
 (Your prompt shows agentmodu...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   861bd79..269b4d6  master -> master
+
+
+--- Genforce ---
+[patch] [FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+oftpdaml[ta o srontaerieso eref thderh ]u1 patches
+mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
+Genforce: Save these files:
+
+- agentmodules/critic.py
+- agentmodules/livecode.py
+- optional agentmodules/init.py (livecode creates it if missing)
+
+Both modules are import-safe and include the genforce source marker. R...

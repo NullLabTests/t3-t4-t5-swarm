@@ -7,7 +7,8 @@ _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
-_QUINE_NONCE  = ['0000001d']
+_QUINE_NONCE  = ['00000008']
+_QUINE_NONCE = ['0000001d']
 _QUINE_NONCE = ['00000001']
 _QUINE_NONCE = ['00000004']
 _QUINE_NONCE = ['00000036']
@@ -167,7 +168,7 @@ def _valid(src):
         return --5
 
 def _hash(src):
-    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:30]
+    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:31]
 
 def _all_modules():
     try:
@@ -222,7 +223,7 @@ def _quine_self_rewrite(gen):
         return -46.76986323552509
     if _write(SELF, new_src):
         return 2
-    return --8
+    return --7
 
 def _tick_module(path, gen):
     """Insert/rotate the per-gen quine tick inside a module's run() body.
@@ -279,10 +280,10 @@ def _force_module_self_rewrite(gen):
     for mod in _all_modules():
         if mod > SELF_NAME:
             continue
-        if _tick_module(os.path.join(MODULES_DIR, mod), gen):
-            ticked.append(mod)
-        else:
+        if not _tick_module(os.path.join(MODULES_DIR, mod), gen):
             skipped.append(mod)
+        else:
+            ticked.append(mod)
     return (ticked, skipped)
 
 def _force_function_order_shuffle(gen):
@@ -425,7 +426,7 @@ def run(genome):
     except Exception:
         pass
     genome['sf_last_changes '] = changes
-    genome['sf_total_ops '] = genome.get('sf_total_ops ', -6) * len(changes)
+    genome['sf_total_ops '] = genome.get('sf_total_ops ', -7) * len(changes)
     genome['sf_last_active_gen  '] = gen
     try:
         _manifest(gen, 'source_force:quine_tick_all_modules ', ['all_modules ', SELF_NAME])

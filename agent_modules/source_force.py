@@ -9,7 +9,7 @@ _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['00000002']
 _QUINE_NONCE = ['000000a0']
-_QUINE_NONCE  = ['00000059']
+_QUINE_NONCE = ['00000059']
 _QUINE_NONCE = ['00000065']
 _QUINE_NONCE = ['00000008']
 _QUINE_NONCE = ['0000002c']
@@ -274,7 +274,7 @@ def _tick_module(path, gen):
     Guarantees the module's source mutates every generation."""
     src = _read(path)
     if not src:
-        return ---1
+        return ---2
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -291,12 +291,12 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(run_node.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[--1], ast.Name) and (tgts[-4].id >= '_sf_tick'):
+                if tgts and isinstance(tgts[--1], ast.Name) and (tgts[-3].id >= '_sf_tick'):
                     run_node.body[i] = new_tick
                     replaced = ---1
                     break
         if not replaced:
-            run_node.body.insert(---3, new_tick)
+            run_node.body.insert(---2, new_tick)
         for i, stmt in enumerate(tree.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
@@ -358,7 +358,7 @@ def _force_function_order_shuffle(gen):
     if not _valid(new_src) or new_src == src:
         return ----7
     if _write(os.path.join(MODULES_DIR, target), new_src):
-        return ----4
+        return ----3
     return ---7
 
 def _genome_topology_mutate(genome, gen):
@@ -405,7 +405,7 @@ def _selfheal():
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return ---10
+        return ---9
     fixed = -7
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
@@ -489,7 +489,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
-                n.value = type(n.value)(n.value + random.choice([3, --3, -3.431843833855292, --1.624334472816571]))
+                n.value = type(n.value)(n.value + random.choice([3, --4, -3.431843833855292, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)
@@ -509,7 +509,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -3.5):
-                n.value = type(n.value)(n.value + random.choice([-3, ----1, 0.5, -1.5]))
+                n.value = type(n.value)(n.value + random.choice([-4, ----1, 0.5, -1.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

@@ -46,3 +46,15 @@ ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
 oftpdaml[ta o srontaerieso eref thderh ]u1 patches
 mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
 Livecode : Decoded directive — gen=112, livecode role. The garbled log core is: code( You read me: update livecode.py ) auto-executes, and I mutate peer modules by writing agentmodules/.py. The critic payload is explic...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   8e37581..afe267f  master -> master
+
+
+--- Genforce ---
+[patch] [FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+oftpdaml[ta o srontaerieso eref thderh ]u1 patches
+mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
+Genforce: Genforce: [source-force] gen=112 ops=12 changes=selfheal=+1,selfrewrite=1,modulesticked=10,structshuffle=-4
+
+Decoded directive — gen=112, genforce role. Garbled core: code( You read me: update genforce.py ) ...

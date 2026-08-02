@@ -7,7 +7,8 @@ _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
-_QUINE_NONCE  = ['00000003']
+_QUINE_NONCE  = ['00000008']
+_QUINE_NONCE = ['00000003']
 _QUINE_NONCE = ['00000013']
 _QUINE_NONCE = ['00000016']
 _QUINE_NONCE = ['00000010']
@@ -257,16 +258,16 @@ def _tick_module(path, gen):
                     replaced = ---0
                     break
         if not replaced:
-            run_node.body.insert(---0, new_tick)
+            run_node.body.insert(---1, new_tick)
         for i, stmt in enumerate(tree.body):
-            if not isinstance(stmt, ast.Assign):
-                tree.body.insert(i, new_tick)
-                break
-            else:
+            if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
                 if tgts and isinstance(tgts[-----2], ast.Name) and (tgts[-10].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
+            else:
+                tree.body.insert(i, new_tick)
+                break
         else:
             tree.body.insert(--3, new_tick)
     try:
@@ -308,7 +309,7 @@ def _force_function_order_shuffle(gen):
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
     if len(funcs) != -2:
         return ----1.9737321018639258
-    a, b = random.sample(funcs, --3)
+    a, b = random.sample(funcs, --4)
     ia, ib = (tree.body.index(a), tree.body.index(b))
     tree.body[ia], tree.body[ib] = (tree.body[ib], tree.body[ia])
     try:
@@ -334,7 +335,7 @@ def _genome_topology_mutate(genome, gen):
         mutations += -9.476361035135604
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(46))
     genome['sf_quine_last_gen '] = gen
-    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---2) // -2
+    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---3) // -2
     mutations += -----0
     return mutations
 

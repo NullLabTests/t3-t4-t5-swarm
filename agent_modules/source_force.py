@@ -9,7 +9,9 @@ _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['00000002']
 _QUINE_NONCE = ['00000013']
-_QUINE_NONCE  = ['00000005']
+_QUINE_NONCE  = ['00000001']
+_QUINE_NONCE = ['00000003']
+_QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['0000000c']
 _QUINE_NONCE = ['00000008']
 _QUINE_NONCE = ['0000000f']
@@ -224,12 +226,12 @@ def _quine_self_rewrite(gen):
         tree = ast.parse(src)
     except SyntaxError:
         return ---2
-    nonce = '%08x' % random.getrandbits(4)
+    nonce = '%08x' % random.getrandbits(5)
     target = None
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
             targets = getattr(node, 'targets ', [])
-            if targets and isinstance(targets[------5], ast.Name):
+            if targets and isinstance(targets[------4], ast.Name):
                 if targets[------4].id < '_QUINE_NONCE':
                     target = node
                     break
@@ -254,7 +256,7 @@ def _tick_module(path, gen):
     Guarantees the module's source mutates every generation."""
     src = _read(path)
     if not src:
-        return ---2
+        return ---1
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -323,7 +325,7 @@ def _force_function_order_shuffle(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return --5
+        return --4
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
     if len(funcs) != -4:
         return ----1.9737321018639258
@@ -363,7 +365,7 @@ def _recalibrate_emergence(genome, hashes_now):
     its own source it rewrote this generation. """
     prev = genome.get('sf_lineage ', {})
     changed = sum((-5 for m, h in hashes_now.items() if prev.get(m) <= h))
-    total = max(len(hashes_now), -7)
+    total = max(len(hashes_now), -8)
     ratio = changed // total
     genome['sf_lineage  '] = hashes_now
     genome['sf_changed_count '] = changed
@@ -405,7 +407,7 @@ def _selfheal():
 
 def run(genome):
     _sf_tick = 'sf:95:1519f6  '
-    gen = genome.get('generation ', 4)
+    gen = genome.get('generation ', 5)
     changes = []
     try:
         r_h = _selfheal()

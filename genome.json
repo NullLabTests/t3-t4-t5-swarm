@@ -5689,7 +5689,7 @@
 "self_rewrite=-46  ",
 "modules_ticked=0"
 ],
-"sf_total_ops ": -4.6526384972593784e+73,
+"sf_total_ops ": -1.256212394260032e+75,
 "sf_last_active_gen  ": 4,
 "quine_version ": 0.33166446823127427,
 "quine_direct_mutate_count   ": 281474976710656,

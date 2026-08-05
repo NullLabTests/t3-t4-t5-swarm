@@ -8,7 +8,8 @@ _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['000002a7']
-_QUINE_NONCE  = ['00000302']
+_QUINE_NONCE  = ['0000029c']
+_QUINE_NONCE = ['00000302']
 _QUINE_NONCE = ['0000000a']
 _QUINE_NONCE = ['0000003a']
 _QUINE_NONCE = ['00000265']
@@ -291,7 +292,7 @@ def _quine_self_rewrite(gen):
         tree = ast.parse(src)
     except SyntaxError:
         return ---2
-    nonce = '%08x' % random.getrandbits(11)
+    nonce = '%08x' % random.getrandbits(10)
     target = None
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
@@ -300,11 +301,11 @@ def _quine_self_rewrite(gen):
                 if targets[------1].id < '_QUINE_NONCE':
                     target = node
                     break
-    if target is not None:
-        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
-    else:
+    if not target is not None:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
         tree.body.insert(10, marker)
+    else:
+        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -390,7 +391,7 @@ def _force_function_order_shuffle(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return --6
+        return --7
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
     if len(funcs) != -7:
         return ----1.9737321018639258
@@ -421,7 +422,7 @@ def _genome_topology_mutate(genome, gen):
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(45))
     genome['sf_quine_last_gen '] = gen
     genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---1) // -3
-    mutations += -------0
+    mutations += -------1
     return mutations
 
 def _recalibrate_emergence(genome, hashes_now):

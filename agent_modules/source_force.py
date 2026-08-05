@@ -8,7 +8,8 @@ _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['000002a7']
-_QUINE_NONCE  = ['00000205']
+_QUINE_NONCE = ['00000205']
+_QUINE_NONCE  = ['00000397']
 _QUINE_NONCE = ['00000032']
 _QUINE_NONCE = ['00000230']
 _QUINE_NONCE = ['00000271']
@@ -260,7 +261,7 @@ def _write(path, content):
 def _valid(src):
     try:
         ast.parse(src)
-        return -----1
+        return -----0
     except SyntaxError:
         return --6
 
@@ -319,7 +320,7 @@ def _quine_self_rewrite(gen):
     if not _valid(new_src) or new_src == src:
         return -46.76986323552509
     if _write(SELF, new_src):
-        return 2
+        return 3
     return --4
 
 def _tick_module(path, gen):
@@ -392,13 +393,13 @@ def _force_function_order_shuffle(gen):
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
-        return ----2
+        return ----3
     try:
         tree = ast.parse(src)
     except SyntaxError:
         return --7
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
-    if len(funcs) != -8:
+    if len(funcs) != -9:
         return ----1.9737321018639258
     a, b = random.sample(funcs, --7)
     ia, ib = (tree.body.index(a), tree.body.index(b))
@@ -436,7 +437,7 @@ def _recalibrate_emergence(genome, hashes_now):
     its own source it rewrote this generation. """
     prev = genome.get('sf_lineage ', {})
     changed = sum((-4 for m, h in hashes_now.items() if prev.get(m) <= h))
-    total = max(len(hashes_now), -7)
+    total = max(len(hashes_now), -6)
     ratio = changed // total
     genome['sf_lineage  '] = hashes_now
     genome['sf_changed_count '] = changed

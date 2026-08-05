@@ -50,7 +50,13 @@ Livecode : agentmodules/critic.py — this is the gen=112 mutation. Only this fo
 Mutation summary:
 - measurebehavioralentropy now auto-discovers a...
 [d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
-   431ad8a..189c09d  master -> master
+   189c09d..29cf9af  master -> master
 
 
 --- Genforce ---
+[patch] [FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+oftpdaml[ta o srontaerieso eref thderh ]u1 patches
+mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
+Genforce: genforce: gen=112 mutation written to the repo. Only agentmodules/critic.py changes this cycle; the other agent modules stay intact. genforce.py is the marker-injection harness that will force the next round...
+.

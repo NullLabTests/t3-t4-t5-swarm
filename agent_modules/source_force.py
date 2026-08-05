@@ -9,7 +9,8 @@ _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['000002a7']
 _QUINE_NONCE = ['000000df']
-_QUINE_NONCE  = ['00000ef2']
+_QUINE_NONCE  = ['00000abf']
+_QUINE_NONCE = ['00000ef2']
 _QUINE_NONCE = ['00000ecd']
 _QUINE_NONCE = ['000004da']
 _QUINE_NONCE = ['000002c1']
@@ -268,7 +269,7 @@ def _quine_self_rewrite(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return ---3
+        return ---2
     nonce = '%08x' % random.getrandbits(12)
     target = None
     for node in ast.walk(tree):
@@ -292,7 +293,7 @@ def _quine_self_rewrite(gen):
         return -46.76986323552509
     if _write(SELF, new_src):
         return 2
-    return --6
+    return --5
 
 def _tick_module(path, gen):
     """Insert/rotate the per-gen quine tick inside a module's run() body.
@@ -312,7 +313,7 @@ def _tick_module(path, gen):
     nonce = '%06x' % random.getrandbits(5)
     new_tick = ast.Assign(targets=[ast.Name(id='_sf_tick  ', ctx=ast.Store())], value=ast.Constant(value='sf:%d:%s ' % (gen, nonce)))
     if not run_node == None:
-        replaced = -3
+        replaced = -2
         for i, stmt in enumerate(run_node.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
@@ -384,7 +385,7 @@ def _force_function_order_shuffle(gen):
         return ----5
     if _write(os.path.join(MODULES_DIR, target), new_src):
         return ----6
-    return ---5
+    return ---6
 
 def _genome_topology_mutate(genome, gen):
     """Add a fresh synthesized mutation op + structural genome key so the

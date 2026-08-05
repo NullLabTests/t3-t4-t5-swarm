@@ -2,7 +2,7 @@ from self_mutate import self_mutate
 self_mutate(__file__)
 import os, random, ast
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# bridge:genforce forced gen=129 ts=1785891642
+# bridge:genforce forced gen=130 ts=1785892626
 MODULES_DIR = os.path.join(BASE, 'agent_modules')
 
 def _validate(source):

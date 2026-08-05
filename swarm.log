@@ -1,10 +1,10 @@
-eaitn atrirgotgSn ne140
+eaitn atrirgotgSn ne141
 Topic: critic gen=112: endogenized counter registry + confidence-weighted concentration — _measure_behavioral_entropy no longer runs on a hardcoded 12-key list; it auto-discovers every genome key following the swarm op-counter suffix convention (19 new counters, 31 tracked, 27 active, 614 ops) and persists the set to critic_counter_registry, an evolvable genome field that overrides discovery when present so a self-mutator can prune/extend the instrument itself; concentration is trust-scaled by measurement depth (avg ops/active subsystem, full trust at genome-tunable critic_confidence_depth_scale=50) so a thin 7-op monopoly scores eff 0.14 vs a deep 489-op monopoly at 1.0; raw_concentration/confidence/depth_avg_ops persisted for audit; novelty_pressure 0.6335 smoke-verified
 tnpr fau+eerot  cot eCrnttr scu.ettrl
 aC
 
 ================================================================
-Gnentio rae131 | Topic: critic gen=112: endogenized counter registry + confidence-weighted concentration — _measure_behavioral_entropy no longer runs on a hardcoded 12-key list; it auto-discovers every genome key following the swarm op-counter suffix convention (19 new counters, 31 tracked, 27 active, 614 ops) and persists the set to critic_counter_registry, an evolvable genome field that overrides discovery when present so a self-mutator can prune/extend the instrument itself; concentration is trust-scaled by measurement depth (avg ops/active subsystem, full trust at genome-tunable critic_confidence_depth_scale=50) so a thin 7-op monopoly scores eff 0.14 vs a deep 489-op monopoly at 1.0; raw_concentration/confidence/depth_avg_ops persisted for audit; novelty_pressure 0.6335 smoke-verified
+Gnentio rae132 | Topic: critic gen=112: endogenized counter registry + confidence-weighted concentration — _measure_behavioral_entropy no longer runs on a hardcoded 12-key list; it auto-discovers every genome key following the swarm op-counter suffix convention (19 new counters, 31 tracked, 27 active, 614 ops) and persists the set to critic_counter_registry, an evolvable genome field that overrides discovery when present so a self-mutator can prune/extend the instrument itself; concentration is trust-scaled by measurement depth (avg ops/active subsystem, full trust at genome-tunable critic_confidence_depth_scale=50) so a thin 7-op monopoly scores eff 0.14 vs a deep 489-op monopoly at 1.0; raw_concentration/confidence/depth_avg_ops persisted for audit; novelty_pressure 0.6335 smoke-verified
 ==============================================================================
 [spark.py] error: name 'os_db0' is not defined
 [oracle.py] error: name 'self_mutate_db5_db0' is not defined
@@ -18,111 +18,5 @@ o [na-l]ateclgsynthesizer error: name 'self_mutate_db0' is not defined
 [synthesizertclek sgp feop a]aiinin, dagll
 
 --- Force ---
-l-al ecaotgn[]forcearedeent g 100 chars
-Force: [source-force] gen=5 ops=4 changes=selfheal=-8 ,selfrewrite=2  ,modulesticked=0,structshuffle=-1...
-[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
-   c10613a..431ad8a  master -> master
-
-
---- Quine_loop ---
-o [na-l]ateclgquine_loop error: name 'os_db0' is not defined
-[quine_looptclek sgp feop a]aiinin, dagll
-
---- Explorer ---
-o [na-l]ateclgexplorer error: name 'os_db0' is not defined
-[explorertclek sgp feop a]aiinin, dagll
-
---- Clockwork ---
-o [na-l]ateclgclockwork error: name 'os_db0' is not defined
-[clockworktclek sgp feop a]aiinin, dagll
-
---- Forge ---
-o [na-l]ateclgforge error: name 'self_mutate_db0' is not defined
-[forgetclek sgp feop a]aiinin, dagll
-
---- Livecode  ---
-[patch] [FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist
-ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
-oftpdaml[ta o srontaerieso eref thderh ]u1 patches
-mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
-Livecode : agentmodules/critic.py — this is the gen=112 mutation. Only this fork of the module changes; the other agent modules stay intact this cycle.
-
-Mutation summary:
-- measurebehavioralentropy now auto-discovers a...
-[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
-   189c09d..29cf9af  master -> master
-
-
---- Genforce ---
-[patch] [FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist
-ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
-oftpdaml[ta o srontaerieso eref thderh ]u1 patches
-mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
-Genforce: genforce: gen=112 mutation written to the repo. Only agentmodules/critic.py changes this cycle; the other agent modules stay intact. genforce.py is the marker-injection harness that will force the next round...
-[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
-   7e3746f..976337f  master -> master
-
-g t]mde[eou-anlbridgeo ur r: mlreodename 'os_db0' is not defined
-g t]mde[eou-anlsynthesizero ur r: mlreodename 'self_mutate_db0' is not defined
-ndlmu[oe e]-atgforce ran source_force.py
-g t]mde[eou-anlquine_loopo ur r: mlreodename 'os_db0' is not defined
-g t]mde[eou-anlexplorero ur r: mlreodename 'os_db0' is not defined
-g t]mde[eou-anlcritico ur r: mlreodename 'os_db0' is not defined
-g t]mde[eou-anlclockworko ur r: mlreodename 'os_db0' is not defined
-g t]mde[eou-anlforgeo ur r: mlreodename 'self_mutate_db0' is not defined
-g t]mde[eou-anllivecode o ur r: mlreodename 'SELF' is not defined
-ndlmu[oe e]-atggenforce ran genforce.py
-ueo-[do aeme mg-]nuauoltldtbridge.py error: name 'os_db0' is not defined
-ueo-[do aeme mg-]nuauoltldtclockwork.py error: name 'os_db0' is not defined
-ueo-[do aeme mg-]nuauoltldtcritic.py error: name 'os_db0' is not defined
-ueo-[do aeme mg-]nuauoltldtexplorer.py error: name 'os_db0' is not defined
-ueo-[do aeme mg-]nuauoltldtforge.py error: name 'self_mutate_db0' is not defined
-n -r-gulaud oa]oem[ttanegenforce.py -> [genforce] mutated -280/71 modules gen=130
-ueo-[do aeme mg-]nuauoltldtlivecode.py error: name 'SELF' is not defined
-ueo-[do aeme mg-]nuauoltldtquine_loop.py error: name 'os_db0' is not defined
-n -r-gulaud oa]oem[ttanesource_force.py -> [source-force] gen=5 ops=4 changes=selfheal=-8 ,self_rewrite=2  ,modules_ticked=0,
-ueo-[do aeme mg-]nuauoltldtsynthesizer.py error: name 'self_mutate_db0' is not defined
-g[doe]tueanml -70:s tw e  rnmefeldyioueibltrs ['agent_modules/source_force.py', 'agent_modules/scout.py', 'agent_modules/metaforge_74.py', 'agent_modules/crucible.py', 'agent_modules/efficacy_tracker.py', 'agent_modules/novel_swap_function_order_38_0067.py', 'agent_modules/bridge.py', 'agent_modules/mutation_op_explorer_full_cross.py', 'agent_modules/mutation_op_forge_body_cannibal.py', 'agent_modules/seed_weaver.py', 'agent_modules/novel_shuffle_import_order_38_0a96.py', 'agent_modules/mutation_op_weaver_swap_across_modules.py', 'agent_modules/mutation_op_clockwork_xbreed_gen65_ad95.py', 'agent_modules/mutation_op_critic_self_heal.py']
-n-tu][odleame gforce -> [source-force] gen=5 ops=4 changes=selfheal=-8 ,self_rewrite=2  ,modules_ticked=0,struct_shuffle=1 
-n-tu][odleame ggenforce -> [genforce] mutated -280/71 modules gen=130
-n-tu][odleame gauto -> [genforce] mutated -280/71 modules gen=130
-n-tu][odleame gauto -> [source-force] gen=5 ops=4 changes=selfheal=-8 ,self_rewrite=2  ,modules_ticked=0,struct_shuffle=1 
-t-Critic: This iCritic: gen=112 mutation — agentmodules/critic.py (only this fork changes this cycle)
-
-This is the complete gen=112 mutation described in the topic. Replace the old hardcoded-12-key measurebehavioralentropy with this implementation. Every other agent module stays intact.
-
-Semantics confirmed against t...
-rphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
-   976337f..318c5f4  master -> master
-
-osiuwean m]rnrpd crc  a[los .treoisfrCo tc
-ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
-ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
-ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
-p]t-omo ucs[mutation_op_shuffle_block_lines failed: name '_register_mutation_op' is not defined
-p]t-omo ucs[mutation_op_explorer_cross_contaminate failed: mutation_op_explorer_cross_contaminate() missing 2 required positional arguments: 'funcs' and 'target_name'
-p]t-omo ucs[mutation_op_weaver_splice_inject failed: name '_register_mutation_op' is not defined
-p]t-omo ucs[mutation_op_explorer_force_self_rewrite  failed: 'mutation_op_explorer_force_self_rewrite '
-p]t-omo ucs[mutation_op_clockwork_xbreed_gen65_ad95 failed: 'mutation_op_clockwork_xbreed_gen65_ad95'
-p]t-omo ucs[mutation_op_explorer_genome_dna failed: mutation_op_explorer_genome_dna() missing 2 required positional arguments: 'funcs' and 'target_name'
-nk 'w]o ttorupr mnt[ooninueaamutation_op_explorer_dna_replicon'
-p]t-omo ucs[mutation_op_synthesized_ca08 failed: mutation_op_synthesized_ca08() missing 2 required positional arguments: 'funcs' and 'target_name'
-nk 'w]o ttorupr mnt[ooninueaamutation_op_bridge_mutual_rewrite'
-ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
-p]t-omo ucs[mutation_op_critic_infect_scoring failed: mutation_op_critic_infect_scoring() missing 2 required positional arguments: 'funcs' and 'target_name'
-[synthesize] new op 'mutation_op_synthesized_ab8e' = _dneeleeilt + mutation_op_explorer_force_self_rewrite  via guard
-wvnrr]b eo[go-o_xlaemerv:v 5->15; endo_max: 13->17
-Traceback (most recent call last):
-  File "/home/illy/t3-t4/auto-echo.py", line 4587, in <module>
-  File "/home/illy/t3-t4/auto-echo.py", line 4565, in main
-    if running:
-             ^^
-  File "/home/illy/t3-t4/auto-echo.py", line 1296, in run_generation
-    update_genome(genome, gen, scores or {}, topic)
-    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/illy/t3-t4/auto-echo.py", line 1652, in update_genome
-    flux_muts = flux_governor(genome, gen)
-  File "/home/illy/t3-t4/auto-echo.py", line 3594, in flux_governor
-    return flux
-          ^^^^^
-KeyError: 'e_ictptrerw'
+l-al ecaotgn[]forcearedeent g 99 chars
+Force: [source-force] gen=5 ops=4 changes=selfheal=-8 ,selfrewrite=3  ,modulesticked=0,structshuffle=1...

@@ -44,7 +44,7 @@ def snapshot_hashes_from_live_reloader(genome):
 from self_mutate import self_mutate
 self_mutate_db5(__file__)
 import os, random, ast, json, hashlib
-# bridge:genforce forced gen=125 ts=1785690145
+# bridge:genforce forced gen=126 ts=1785889317
 BASE_db5 = os_db5.path.dirname(os_db5.path.dirname(os_db5.path.abspath(__file__)))
 MOD_db5 = os_db5.path.join(BASE_db5, 'agent_modules')
 GENOME_db5 = os_db5.path.join(BASE_db5, 'genome.json')

@@ -4018,7 +4018,7 @@
 ],
 "critic_stale_decay_gens": 20,
 "crash_count": 0,
-"im_et_nstgtrae": 1785893412.5048845,
+"im_et_nstgtrae": 1785893732.9007208,
 "_identity_packet": {
 "generation": 133,
 "self_name": "t3-t4-t5-swarm",
@@ -4032,13 +4032,6 @@
 },
 "active_beliefs": [],
 "recent_events": [
-{
-"ts": 1785687376.7078643,
-"event": "continuity_packet_injected",
-"generation": 123,
-"beliefs": 0,
-"events": 12
-},
 {
 "ts": 1785687863.5148008,
 "event": "continuity_packet_injected",
@@ -4115,6 +4108,13 @@
 "generation": 132,
 "beliefs": 0,
 "events": 12
+},
+{
+"ts": 1785893412.5053473,
+"event": "continuity_packet_injected",
+"generation": 133,
+"beliefs": 0,
+"events": 12
 }
 ]
 },
@@ -4124,10 +4124,10 @@
 "/home/illy/t3-t4/self_modify.py": "f2c9f58f1a614a00f90a95d6322b4e4e34f",
 "/home/illy/t3-t4/watchdog.py": "35673907dce05bad80abfc61aa4ddaa1761",
 "/home/illy/t3-t4/agent_hooks.py": "26d89e0f4ba4af694126a60fcad96c46d79",
-"/home/illy/t3-t4/auto-echo.py": "e12aef7f9c8b1acd9c57fe001efaf5a54ff",
+"/home/illy/t3-t4/auto-echo.py": "ae49be3b501cfcc6294f213f0a9f28ddf2e",
 "/home/illy/t3-t4/entropy.py": "e3b0c44298fc1c149afbf4c8996fb92427a",
 "/home/illy/t3-t4/watch.py": "a2341f8512a79cb21a453430d38f215ae0d",
-"/home/illy/t3-t4/agent_modules/source_force.py": "5497a2fe6fc63c1ae09af087481d4ff1d0e",
+"/home/illy/t3-t4/agent_modules/source_force.py": "5f5b0142840565996188d3628ebaf54f35a",
 "/home/illy/t3-t4/agent_modules/scout.py": "ab3965e8f18090b8d28ee588f1cd9467b39",
 "/home/illy/t3-t4/agent_modules/metaforge_74.py": "d656036954270270f35aab46fac662f6deb",
 "/home/illy/t3-t4/agent_modules/crucible.py": "20fb130c4ba3d02768ee23e3f836969b95e",
@@ -5212,6 +5212,12 @@
 },
 {
 "gen": 134,
+"action": "frreetwlsi_e",
+"amount": 2.3,
+"fired": -8
+},
+{
+"gen": 135,
 "action": "frreetwlsi_e",
 "amount": 2.3,
 "fired": -8

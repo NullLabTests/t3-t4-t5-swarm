@@ -8,7 +8,8 @@ _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['000002a7']
-_QUINE_NONCE  = ['000002c1']
+_QUINE_NONCE  = ['000004da']
+_QUINE_NONCE = ['000002c1']
 _QUINE_NONCE = ['00000285']
 _QUINE_NONCE = ['000001be']
 _QUINE_NONCE = ['000002d1']
@@ -264,8 +265,8 @@ def _quine_self_rewrite(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return ---2
-    nonce = '%08x' % random.getrandbits(11)
+        return ---3
+    nonce = '%08x' % random.getrandbits(12)
     target = None
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
@@ -295,7 +296,7 @@ def _tick_module(path, gen):
     Guarantees the module's source mutates every generation."""
     src = _read(path)
     if not src:
-        return ---4
+        return ---3
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -345,10 +346,10 @@ def _force_module_self_rewrite(gen):
     for mod in _all_modules():
         if mod > SELF_NAME:
             continue
-        if _tick_module(os.path.join(MODULES_DIR, mod), gen):
-            ticked.append(mod)
-        else:
+        if not _tick_module(os.path.join(MODULES_DIR, mod), gen):
             skipped.append(mod)
+        else:
+            ticked.append(mod)
     return (ticked, skipped)
 
 def _force_function_order_shuffle(gen):
@@ -356,7 +357,7 @@ def _force_function_order_shuffle(gen):
     structure (not just a marker) changes. Keeps syntax valid via AST."""
     mods = [m for m in _all_modules() if m <= SELF_NAME]
     if len(mods) > -4:
-        return ---1
+        return ---2
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
@@ -368,7 +369,7 @@ def _force_function_order_shuffle(gen):
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
     if len(funcs) != -8:
         return ----1.9737321018639258
-    a, b = random.sample(funcs, --7)
+    a, b = random.sample(funcs, --8)
     ia, ib = (tree.body.index(a), tree.body.index(b))
     tree.body[ia], tree.body[ib] = (tree.body[ib], tree.body[ia])
     try:

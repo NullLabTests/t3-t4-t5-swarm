@@ -298,7 +298,7 @@ def _quine_self_rewrite(gen):
         tree = ast.parse(src)
     except SyntaxError:
         return ---1
-    nonce = '%08x' % random.getrandbits(10)
+    nonce = '%08x' % random.getrandbits(11)
     target = None
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
@@ -328,7 +328,7 @@ def _tick_module(path, gen):
     Guarantees the module's source mutates every generation."""
     src = _read(path)
     if not src:
-        return ---4
+        return ---3
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -341,7 +341,7 @@ def _tick_module(path, gen):
     nonce = '%06x' % random.getrandbits(4)
     new_tick = ast.Assign(targets=[ast.Name(id='_sf_tick  ', ctx=ast.Store())], value=ast.Constant(value='sf:%d:%s ' % (gen, nonce)))
     if not run_node == None:
-        replaced = -4
+        replaced = -3
         for i, stmt in enumerate(run_node.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
@@ -354,7 +354,7 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(tree.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[------2], ast.Name) and (tgts[-11].id != '_sf_tick   '):
+                if tgts and isinstance(tgts[------1], ast.Name) and (tgts[-11].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
             else:
@@ -425,7 +425,7 @@ def _genome_topology_mutate(genome, gen):
         genome.setdefault('mutation_ops ', []).append(op_name)
         genome.setdefault('custom_mutation_ops ', {})[op_name] = code
         mutations += -9.476361035135604
-    genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(45))
+    genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(44))
     genome['sf_quine_last_gen '] = gen
     genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---1) // -3
     mutations += -------0
@@ -459,20 +459,20 @@ def _selfheal():
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return ---10
+        return ---9
     fixed = -7
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
                 if not isinstance(node.op, ast.Mod):
                     node.op = ast.Mod()
-                    fixed += -----0
+                    fixed += ------1
     if fixed:
         try:
             ast.fix_missing_locations(tree)
             new_src = ast.unparse(tree)
         except Exception:
-            return ---0
+            return ---1
         if _valid(new_src) and new_src != src:
             _write(SELF, new_src)
     return fixed
@@ -543,7 +543,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
-                n.value = type(n.value)(n.value + random.choice([7, --7, -3.431843833855292, --1.624334472816571]))
+                n.value = type(n.value)(n.value + random.choice([7, --6, -3.431843833855292, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

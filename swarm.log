@@ -87,4 +87,42 @@ n-tu][odleame gforce -> [source-force] gen=5 ops=4 changes=selfheal=-8 ,self_rew
 n-tu][odleame ggenforce -> [genforce] mutated -280/71 modules gen=130
 n-tu][odleame gauto -> [genforce] mutated -280/71 modules gen=130
 n-tu][odleame gauto -> [source-force] gen=5 ops=4 changes=selfheal=-8 ,self_rewrite=2  ,modules_ticked=0,struct_shuffle=1 
-t-Critic: This is a dump of mutation‑swarm output from your repo (/home/illy/t3-t4) — a mix of obfuscated/scrambled leading and trailing text, a structured "topic" block, a module manifest, and three agent log lines. There's no explicit question, so here's a faithful, plain‑text reading of what the past...
+t-Critic: This iCritic: gen=112 mutation — agentmodules/critic.py (only this fork changes this cycle)
+
+This is the complete gen=112 mutation described in the topic. Replace the old hardcoded-12-key measurebehavioralentropy with this implementation. Every other agent module stays intact.
+
+Semantics confirmed against t...
+rphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   976337f..318c5f4  master -> master
+
+osiuwean m]rnrpd crc  a[los .treoisfrCo tc
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+p]t-omo ucs[mutation_op_shuffle_block_lines failed: name '_register_mutation_op' is not defined
+p]t-omo ucs[mutation_op_explorer_cross_contaminate failed: mutation_op_explorer_cross_contaminate() missing 2 required positional arguments: 'funcs' and 'target_name'
+p]t-omo ucs[mutation_op_weaver_splice_inject failed: name '_register_mutation_op' is not defined
+p]t-omo ucs[mutation_op_explorer_force_self_rewrite  failed: 'mutation_op_explorer_force_self_rewrite '
+p]t-omo ucs[mutation_op_clockwork_xbreed_gen65_ad95 failed: 'mutation_op_clockwork_xbreed_gen65_ad95'
+p]t-omo ucs[mutation_op_explorer_genome_dna failed: mutation_op_explorer_genome_dna() missing 2 required positional arguments: 'funcs' and 'target_name'
+nk 'w]o ttorupr mnt[ooninueaamutation_op_explorer_dna_replicon'
+p]t-omo ucs[mutation_op_synthesized_ca08 failed: mutation_op_synthesized_ca08() missing 2 required positional arguments: 'funcs' and 'target_name'
+nk 'w]o ttorupr mnt[ooninueaamutation_op_bridge_mutual_rewrite'
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+p]t-omo ucs[mutation_op_critic_infect_scoring failed: mutation_op_critic_infect_scoring() missing 2 required positional arguments: 'funcs' and 'target_name'
+[synthesize] new op 'mutation_op_synthesized_ab8e' = _dneeleeilt + mutation_op_explorer_force_self_rewrite  via guard
+wvnrr]b eo[go-o_xlaemerv:v 5->15; endo_max: 13->17
+Traceback (most recent call last):
+  File "/home/illy/t3-t4/auto-echo.py", line 4587, in <module>
+  File "/home/illy/t3-t4/auto-echo.py", line 4565, in main
+    if running:
+             ^^
+  File "/home/illy/t3-t4/auto-echo.py", line 1296, in run_generation
+    update_genome(genome, gen, scores or {}, topic)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/illy/t3-t4/auto-echo.py", line 1652, in update_genome
+    flux_muts = flux_governor(genome, gen)
+  File "/home/illy/t3-t4/auto-echo.py", line 3594, in flux_governor
+    return flux
+          ^^^^^
+KeyError: 'e_ictptrerw'

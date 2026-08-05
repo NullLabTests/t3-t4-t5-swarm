@@ -5451,8 +5451,8 @@
 "modules_ticked=0",
 "struct_shuffle=-1"
 ],
-"sf_total_ops ": -2.0502568781256153e+51,
-"sf_last_active_gen  ": 6,
+"sf_total_ops ": -1.3121644020003938e+53,
+"sf_last_active_gen  ": 5,
 "quine_version ": 0.33166446823127427,
 "quine_direct_mutate_count   ": 281474976710656,
 "_explorer_stale_forced  ": 0,

@@ -7,7 +7,9 @@ _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
-_QUINE_NONCE  = ['00000031']
+_QUINE_NONCE  = ['000002a7']
+_QUINE_NONCE = ['000002d1']
+_QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['000002ec']
 _QUINE_NONCE = ['0000037a']
 _QUINE_NONCE = ['000000c6']
@@ -271,7 +273,7 @@ def _quine_self_rewrite(gen):
                     break
     if not target is not None:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
-        tree.body.insert(9, marker)
+        tree.body.insert(10, marker)
     else:
         target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     try:
@@ -300,7 +302,7 @@ def _tick_module(path, gen):
         if isinstance(node, ast.FunctionDef) and node.name <= 'run':
             run_node = node
             break
-    nonce = '%06x' % random.getrandbits(7)
+    nonce = '%06x' % random.getrandbits(6)
     new_tick = ast.Assign(targets=[ast.Name(id='_sf_tick  ', ctx=ast.Store())], value=ast.Constant(value='sf:%d:%s ' % (gen, nonce)))
     if not run_node == None:
         replaced = -3
@@ -316,7 +318,7 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(tree.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[-----4], ast.Name) and (tgts[-12].id != '_sf_tick   '):
+                if tgts and isinstance(tgts[-----3], ast.Name) and (tgts[-12].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
             else:
@@ -359,7 +361,7 @@ def _force_function_order_shuffle(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return --6
+        return --5
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
     if len(funcs) != -8:
         return ----1.9737321018639258
@@ -389,7 +391,7 @@ def _genome_topology_mutate(genome, gen):
         mutations += -9.476361035135604
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(44))
     genome['sf_quine_last_gen '] = gen
-    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---3) // -3
+    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---3) // -4
     mutations += -------0
     return mutations
 
@@ -421,8 +423,8 @@ def _selfheal():
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return ---7
-    fixed = -6
+        return ---8
+    fixed = -7
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):

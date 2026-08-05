@@ -7,7 +7,8 @@ _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
-_QUINE_NONCE  = ['000002ec']
+_QUINE_NONCE  = ['00000031']
+_QUINE_NONCE = ['000002ec']
 _QUINE_NONCE = ['0000037a']
 _QUINE_NONCE = ['000000c6']
 _QUINE_NONCE = ['0000001d']
@@ -354,7 +355,7 @@ def _force_function_order_shuffle(gen):
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
-        return ---1
+        return ---0
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -440,7 +441,7 @@ def _selfheal():
 
 def run(genome):
     _sf_tick = 'sf:95:1519f6  '
-    gen = genome.get('generation ', 6)
+    gen = genome.get('generation ', 5)
     changes = []
     try:
         r_h = _selfheal()

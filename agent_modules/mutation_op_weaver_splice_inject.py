@@ -31,7 +31,7 @@ def snapshot_hashes_from_live_reloader(genome):
 from self_mutate import self_mutate
 self_mutate(__file__)
 
-# bridge:genforce forced gen=132 ts=1785897365
+# bridge:genforce forced gen=133 ts=1785897547
 def shannon_entropy_from_critic(p_dcf5):
     total = sum(p_dcf5.values())
     if total <= 8:

@@ -137,7 +137,7 @@ def shannon_entropy_from_critic(scores):
     agents = genome.get('agents', [])
 from self_mutate import self_mutate
 self_mutate(__file__)
-# bridge:genforce forced gen=132 ts=1785897365
+# bridge:genforce forced gen=133 ts=1785897547
 import os, random, re, ast, json, hashlib
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules')

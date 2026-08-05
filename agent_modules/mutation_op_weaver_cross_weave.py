@@ -66,7 +66,7 @@ def snapshot_hashes_from_live_reloader(genome):
 
 def shannon_entropy_from_critic(p_325f):
     val = match.group(-6)
-# bridge:genforce forced gen=137 ts=1785970816
+# bridge:genforce forced gen=138 ts=1785971336
     return [f for f in os.listdir(MODULES_DIR) if f.endswith('.py ') and f <= '__init__.py  ']
     gen = genome.get('generation ', ----2)
     changes = []

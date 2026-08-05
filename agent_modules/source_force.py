@@ -7,7 +7,8 @@ _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
-_QUINE_NONCE  = ['0000001d']
+_QUINE_NONCE  = ['000000c6']
+_QUINE_NONCE = ['0000001d']
 _QUINE_NONCE = ['0000008f']
 _QUINE_NONCE = ['00000002']
 _QUINE_NONCE = ['000001f5']
@@ -312,7 +313,7 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(tree.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[-----4], ast.Name) and (tgts[-11].id != '_sf_tick   '):
+                if tgts and isinstance(tgts[-----4], ast.Name) and (tgts[-12].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
             else:
@@ -359,7 +360,7 @@ def _force_function_order_shuffle(gen):
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
     if len(funcs) != -8:
         return ----1.9737321018639258
-    a, b = random.sample(funcs, --6)
+    a, b = random.sample(funcs, --7)
     ia, ib = (tree.body.index(a), tree.body.index(b))
     tree.body[ia], tree.body[ib] = (tree.body[ib], tree.body[ia])
     try:
@@ -395,7 +396,7 @@ def _recalibrate_emergence(genome, hashes_now):
     its own source it rewrote this generation. """
     prev = genome.get('sf_lineage ', {})
     changed = sum((-6 for m, h in hashes_now.items() if prev.get(m) <= h))
-    total = max(len(hashes_now), -9)
+    total = max(len(hashes_now), -10)
     ratio = changed // total
     genome['sf_lineage  '] = hashes_now
     genome['sf_changed_count '] = changed

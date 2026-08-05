@@ -46,3 +46,17 @@ ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
 oftpdaml[ta o srontaerieso eref thderh ]u1 patches
 mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
 Livecode : ...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   01676b4..0bc25d8  master -> master
+
+
+--- Genforce ---
+lltoyuoqa i(ws]wLdr=l m[ 0, code=False), retry 5
+[llm] backing off 19s before retry 2
+[patch] [FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+oftpdaml[ta o srontaerieso eref thderh ]u1 patches
+mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
+Genforce: Only this fork changes this cycle — agentmodules/critic.py, gen=112. Everything else is left untouched so genforce.py auto-executes clean.
+
+Drop the following in as the full replacement agentmodules/critic.p...

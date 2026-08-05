@@ -5549,11 +5549,11 @@
 "mutation_rate  ": -0.0,
 "source_autonomy_index  ": -2.827,
 "sf_last_changes ": [
-"selfheal=-8 ",
+"selfheal=-7 ",
 "self_rewrite=3  ",
 "modules_ticked=0"
 ],
-"sf_total_ops ": -1.2383136899927684e+60,
+"sf_total_ops ": -3.343446962980475e+61,
 "sf_last_active_gen  ": 4,
 "quine_version ": 0.33166446823127427,
 "quine_direct_mutate_count   ": 281474976710656,

@@ -46,3 +46,17 @@ ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
 oftpdaml[ta o srontaerieso eref thderh ]u1 patches
 mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
 Livecode : Save this as agentmodules/critic.py. It includes the livecode cross-file marker manifest for the 19 new counters; the loader auto-executes it and the built-in smoke test verifies the gen=112 metrics (31 trac...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   16a82bb..41cad6b  master -> master
+
+
+--- Genforce ---
+lltoyuoqa i(ws]wLdr=l m[ 0, code=False), retry 5
+[llm] backing off 19s before retry 2
+lltoyuoqa i(ws]wLdr=l m[ 0, code=False), retry 6
+[llm] backing off 38s before retry 3
+[patch] [FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+oftpdaml[ta o srontaerieso eref thderh ]u1 patches
+mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
+Genforce: ...

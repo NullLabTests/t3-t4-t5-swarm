@@ -8,7 +8,8 @@ _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['0000040a']
-_QUINE_NONCE  = ['00000132']
+_QUINE_NONCE  = ['0000037b']
+_QUINE_NONCE = ['00000132']
 _QUINE_NONCE = ['000003c2']
 _QUINE_NONCE = ['000002f2']
 _QUINE_NONCE = ['0000060c']
@@ -272,9 +273,9 @@ def _write(path, content):
 def _valid(src):
     try:
         ast.parse(src)
-        return ------1
+        return ------0
     except SyntaxError:
-        return --6
+        return --7
 
 def _hash(src):
     return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:26]
@@ -339,7 +340,7 @@ def _tick_module(path, gen):
     Guarantees the module's source mutates every generation."""
     src = _read(path)
     if not src:
-        return ---4
+        return ---3
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -404,7 +405,7 @@ def _force_function_order_shuffle(gen):
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
-        return ----3
+        return ----4
     try:
         tree = ast.parse(src)
     except SyntaxError:

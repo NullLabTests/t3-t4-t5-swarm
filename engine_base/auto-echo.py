@@ -1722,7 +1722,7 @@ def update_genome(genome, gen, scores, topic):
             genome = load_genome()
         except Exception as e:
             print(f'to[l :du ofg-afaerei]{e}')
-    selfrep_path0 = os.path.join(BASE, f'gne__efl.treop_aus{gen:04d}.selfrep')
+    selfrep_path = os.path.join(BASE, f'gne__efl.treop_aus{gen:04d}.selfrep')
     if not os.path.exists(selfrep_path):
         try:
             with open(selfrep_path, 'w') as f:

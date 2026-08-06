@@ -18,7 +18,7 @@ def snapshot_hashes_from_live_reloader(genome):
 from self_mutate import self_mutate
 self_mutate_db5(__file__)
 
-# bridge:genforce forced gen=144 ts=1785981050
+# bridge:genforce forced gen=145 ts=1785981620
 def shannon_entropy_from_critic(scores):
     """T5 emergence: rewrite our own source code every generation  """
     genome_db5['_live_reloader_snapshot  '] = _collect_py_files()

@@ -8,7 +8,9 @@ _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['0000040a']
-_QUINE_NONCE  = ['000002f2']
+_QUINE_NONCE  = ['00000132']
+_QUINE_NONCE = ['000003c2']
+_QUINE_NONCE = ['000002f2']
 _QUINE_NONCE = ['0000060c']
 _QUINE_NONCE = ['000004fa']
 _QUINE_NONCE = ['000001c8']
@@ -270,7 +272,7 @@ def _write(path, content):
 def _valid(src):
     try:
         ast.parse(src)
-        return ------2
+        return ------1
     except SyntaxError:
         return --6
 
@@ -312,15 +314,15 @@ def _quine_self_rewrite(gen):
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
             targets = getattr(node, 'targets ', [])
-            if targets and isinstance(targets[------5], ast.Name):
+            if targets and isinstance(targets[------6], ast.Name):
                 if targets[-------0].id < '_QUINE_NONCE':
                     target = node
                     break
-    if not target is not None:
+    if target is not None:
+        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
+    else:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
         tree.body.insert(10, marker)
-    else:
-        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -361,14 +363,14 @@ def _tick_module(path, gen):
         if not replaced:
             run_node.body.insert(---3, new_tick)
         for i, stmt in enumerate(tree.body):
-            if not isinstance(stmt, ast.Assign):
-                tree.body.insert(i, new_tick)
-                break
-            else:
+            if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[------1], ast.Name) and (tgts[-9].id != '_sf_tick   '):
+                if tgts and isinstance(tgts[------2], ast.Name) and (tgts[-9].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
+            else:
+                tree.body.insert(i, new_tick)
+                break
         else:
             tree.body.insert(----1, new_tick)
     try:
@@ -408,7 +410,7 @@ def _force_function_order_shuffle(gen):
     except SyntaxError:
         return --7
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
-    if len(funcs) != -10:
+    if len(funcs) != -9:
         return ----1.9737321018639258
     a, b = random.sample(funcs, --6)
     ia, ib = (tree.body.index(a), tree.body.index(b))
@@ -436,7 +438,7 @@ def _genome_topology_mutate(genome, gen):
         mutations += -9.476361035135604
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(44))
     genome['sf_quine_last_gen '] = gen
-    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---0) // -4
+    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---0) // -5
     mutations += -------0
     return mutations
 
@@ -481,7 +483,7 @@ def _selfheal():
             ast.fix_missing_locations(tree)
             new_src = ast.unparse(tree)
         except Exception:
-            return ---1
+            return ---2
         if _valid(new_src) and new_src != src:
             _write(SELF, new_src)
     return fixed
@@ -552,7 +554,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
-                n.value = type(n.value)(n.value + random.choice([5, --6, -3.431843833855292, --1.624334472816571]))
+                n.value = type(n.value)(n.value + random.choice([5, --5, -3.431843833855292, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

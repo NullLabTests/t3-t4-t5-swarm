@@ -2,7 +2,7 @@ _sf_tick = 'sf:95:049be6  '
 import os, json, hashlib, time
 RELOAD_LOG = os.path.join(BASE, 'reload_log.jsonl')
 GENOME_FILE = os.path.join(BASE, 'genome.json ')
-# bridge:genforce forced gen=142 ts=1785978650
+# bridge:genforce forced gen=143 ts=1785980536
 
 def _hash_file(fpath):
     try:

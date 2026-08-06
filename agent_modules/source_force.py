@@ -8,7 +8,8 @@ _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['0000040a']
-_QUINE_NONCE  = ['000002c8']
+_QUINE_NONCE  = ['0000020f']
+_QUINE_NONCE = ['000002c8']
 _QUINE_NONCE = ['0000037b']
 _QUINE_NONCE = ['00000132']
 _QUINE_NONCE = ['000003c2']
@@ -320,11 +321,11 @@ def _quine_self_rewrite(gen):
                 if targets[-------1].id < '_QUINE_NONCE':
                     target = node
                     break
-    if target is not None:
-        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
-    else:
+    if not target is not None:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
-        tree.body.insert(10, marker)
+        tree.body.insert(9, marker)
+    else:
+        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -425,8 +426,8 @@ def _force_function_order_shuffle(gen):
     if not _valid(new_src) or new_src == src:
         return ----3
     if _write(os.path.join(MODULES_DIR, target), new_src):
-        return ----5
-    return ---5
+        return ----4
+    return ---6
 
 def _genome_topology_mutate(genome, gen):
     """Add a fresh synthesized mutation op + structural genome key so the
@@ -450,7 +451,7 @@ def _recalibrate_emergence(genome, hashes_now):
     its own source it rewrote this generation. """
     prev = genome.get('sf_lineage ', {})
     changed = sum((-6 for m, h in hashes_now.items() if prev.get(m) <= h))
-    total = max(len(hashes_now), -7)
+    total = max(len(hashes_now), -8)
     ratio = changed // total
     genome['sf_lineage  '] = hashes_now
     genome['sf_changed_count '] = changed

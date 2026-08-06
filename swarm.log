@@ -1,10 +1,10 @@
-eaitn atrirgotgSn ne157
+eaitn atrirgotgSn ne158
 Topic: critic gen=112: endogenized counter registry + confidence-weighted concentration — _measure_behavioral_entropy no longer runs on a hardcoded 12-key list; it auto-discovers every genome key following the swarm op-counter suffix convention (19 new counters, 31 tracked, 27 active, 614 ops) and persists the set to critic_counter_registry, an evolvable genome field that overrides discovery when present so a self-mutator can prune/extend the instrument itself; concentration is trust-scaled by measurement depth (avg ops/active subsystem, full trust at genome-tunable critic_confidence_depth_scale=50) so a thin 7-op monopoly scores eff 0.14 vs a deep 489-op monopoly at 1.0; raw_concentration/confidence/depth_avg_ops persisted for audit; novelty_pressure 0.6335 smoke-verified
 tnpr fau+eerot  cot eCrnttr scu.ettrl
 aC
 
 ================================================================
-Griteo enna148 | Topic: critic gen=112: endogenized counter registry + confidence-weighted concentration — _measure_behavioral_entropy no longer runs on a hardcoded 12-key list; it auto-discovers every genome key following the swarm op-counter suffix convention (19 new counters, 31 tracked, 27 active, 614 ops) and persists the set to critic_counter_registry, an evolvable genome field that overrides discovery when present so a self-mutator can prune/extend the instrument itself; concentration is trust-scaled by measurement depth (avg ops/active subsystem, full trust at genome-tunable critic_confidence_depth_scale=50) so a thin 7-op monopoly scores eff 0.14 vs a deep 489-op monopoly at 1.0; raw_concentration/confidence/depth_avg_ops persisted for audit; novelty_pressure 0.6335 smoke-verified
+Griteo enna149 | Topic: critic gen=112: endogenized counter registry + confidence-weighted concentration — _measure_behavioral_entropy no longer runs on a hardcoded 12-key list; it auto-discovers every genome key following the swarm op-counter suffix convention (19 new counters, 31 tracked, 27 active, 614 ops) and persists the set to critic_counter_registry, an evolvable genome field that overrides discovery when present so a self-mutator can prune/extend the instrument itself; concentration is trust-scaled by measurement depth (avg ops/active subsystem, full trust at genome-tunable critic_confidence_depth_scale=50) so a thin 7-op monopoly scores eff 0.14 vs a deep 489-op monopoly at 1.0; raw_concentration/confidence/depth_avg_ops persisted for audit; novelty_pressure 0.6335 smoke-verified
 ==============================================================================
 [spark.py] error: name 'os_db0' is not defined
 [oracle.py] error: name 'self_mutate_db5_db0' is not defined
@@ -20,51 +20,3 @@ o [na-l]ateclgsynthesizer error: name 'self_mutate_db0' is not defined
 --- Force ---
 l-al ecaotgn[]forcearedeent g 100 hrcas
 Force: [source-force] gen=5 ops=4 changes=selfheal=-4 ,selfrewrite=2  ,modulesticked=0,structshuffle=-1...
-egrt  ihs ud]:tps[rTo github.com:NullLabTests/t3-t4-t5-swarm.git
-   f5edf4a..2743563  master -> master
-
-
---- Quine_loop ---
-o [na-l]ateclgquine_loop error: name 'os_db0' is not defined
-[quine_looptclek sgp feop a]aiinin, dagll
-
---- Explorer ---
-o [na-l]ateclgexplorer error: name 'os_db0' is not defined
-[explorertclek sgp feop a]aiinin, dagll
-
---- Clockwork ---
-o [na-l]ateclgclockwork error: name 'os_db0' is not defined
-[clockworktclek sgp feop a]aiinin, dagll
-
---- Forge ---
-o [na-l]ateclgforge error: name 'self_mutate_db0' is not defined
-[forgetclek sgp feop a]aiinin, dagll
-
---- Livecode  ---
-[patch] [FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist
-ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
-oftpdaml[ta o srontaerieso eref thderh ]u1 patches
-mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
-Livecode : Here are the agentmodules/.py files for critic gen=112 (endogenized counter registry + confidence-weighted concentration). Drop them in place — livecode.py will pick them up, and critic.py contains a smokete...
-egrt  ihs ud]:tps[rTo github.com:NullLabTests/t3-t4-t5-swarm.git
-   2743563..21e8468  master -> master
-
-
---- Genforce ---
-[patch] [FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist
-ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
-oftpdaml[ta o srontaerieso eref thderh ]u1 patches
-mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
-Genforce: Here is the agentmodules/.py payload for critic gen=112. Drop these in place; livecode.py will pick them up, auto-execute genforce.py, and every module gets its source marker rewritten.
-
----
-
-agentmodules/cr...
-egrt  ihs ud]:tps[rTo github.com:NullLabTests/t3-t4-t5-swarm.git
-   21e8468..922adbe  master -> master
-
-t- -iCic--
- --r
-Critic: I can’t do that as written. I’m text-only here — no filesystem, no shell — so I can’t “drop” agentmodules/critic.py, genforce.py, or livecode.py into place, and I won’t pretend to run or auto-execute anything.
-
-The paste is also largely corrupted/incomplete: the readable part is the gen=112 de...

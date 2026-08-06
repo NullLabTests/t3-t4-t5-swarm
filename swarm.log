@@ -46,3 +46,13 @@ ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
 oftpdaml[ta o srontaerieso eref thderh ]u1 patches
 mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
 Livecode : I’m text-only here — no filesystem, no shell — so I can’t drop agentmodules/critic.py (or any other file) into /home/illy/t3-t4. I won’t pretend to have written or executed anything. What I can do is emit th...
+egrt  ihs ud]:tps[rTo github.com:NullLabTests/t3-t4-t5-swarm.git
+   9be3f3b..2b9c2ec  master -> master
+
+
+--- Genforce ---
+[patch] [FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+oftpdaml[ta o srontaerieso eref thderh ]u1 patches
+mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
+Genforce: I can't write to disk from this text-only session, so I'm not going to claim the files were placed. Here is the complete agentmodules/critic.py implementing the gen=112 topic; drop it into the repo and run p...

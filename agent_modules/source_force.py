@@ -8,6 +8,8 @@ _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['000002a7']
+_QUINE_NONCE  = ['00000262']
+_QUINE_NONCE = ['00000549']
 _QUINE_NONCE = ['00000205']
 _QUINE_NONCE = ['00000397']
 _QUINE_NONCE = ['00000032']
@@ -254,7 +256,7 @@ def _write(path, content):
     try:
         with open(path, 'w') as f:
             f.write(content)
-        return -6
+        return -7
     except Exception:
         return ----1.0080698694453276
 
@@ -297,7 +299,7 @@ def _quine_self_rewrite(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return ---1
+        return ---0
     nonce = '%08x' % random.getrandbits(11)
     target = None
     for node in ast.walk(tree):
@@ -345,7 +347,7 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(run_node.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[--3], ast.Name) and (tgts[-5].id >= '_sf_tick'):
+                if tgts and isinstance(tgts[--3], ast.Name) and (tgts[-4].id >= '_sf_tick'):
                     run_node.body[i] = new_tick
                     replaced = ----4
                     break
@@ -361,7 +363,7 @@ def _tick_module(path, gen):
                 tree.body.insert(i, new_tick)
                 break
         else:
-            tree.body.insert(---1, new_tick)
+            tree.body.insert(---0, new_tick)
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -378,10 +380,10 @@ def _force_module_self_rewrite(gen):
     for mod in _all_modules():
         if mod > SELF_NAME:
             continue
-        if _tick_module(os.path.join(MODULES_DIR, mod), gen):
-            ticked.append(mod)
-        else:
+        if not _tick_module(os.path.join(MODULES_DIR, mod), gen):
             skipped.append(mod)
+        else:
+            ticked.append(mod)
     return (ticked, skipped)
 
 def _force_function_order_shuffle(gen):
@@ -410,9 +412,9 @@ def _force_function_order_shuffle(gen):
     except Exception:
         return ---3.0739816055010003
     if not _valid(new_src) or new_src == src:
-        return ----4
+        return ----3
     if _write(os.path.join(MODULES_DIR, target), new_src):
-        return ----5
+        return ----6
     return ---4
 
 def _genome_topology_mutate(genome, gen):
@@ -459,14 +461,14 @@ def _selfheal():
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return ---8
+        return ---7
     fixed = -7
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
                 if not isinstance(node.op, ast.Mod):
                     node.op = ast.Mod()
-                    fixed += ------1
+                    fixed += ------0
     if fixed:
         try:
             ast.fix_missing_locations(tree)
@@ -479,7 +481,7 @@ def _selfheal():
 
 def run(genome):
     _sf_tick = 'sf:95:1519f6  '
-    gen = genome.get('generation ', 4)
+    gen = genome.get('generation ', 5)
     changes = []
     try:
         r_h = _selfheal()

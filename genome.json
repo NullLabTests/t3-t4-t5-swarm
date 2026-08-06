@@ -5720,11 +5720,12 @@
 "source_autonomy_index  ": -2.827,
 "sf_last_changes ": [
 "selfheal=-7 ",
-"self_rewrite=-46  ",
-"modules_ticked=0"
+"self_rewrite=3  ",
+"modules_ticked=0",
+"struct_shuffle=1"
 ],
-"sf_total_ops ": -3.3917734645020866e+76,
-"sf_last_active_gen  ": 4,
+"sf_total_ops ": -1.6280512629610017e+78,
+"sf_last_active_gen  ": 5,
 "quine_version ": 0.33166446823127427,
 "quine_direct_mutate_count   ": 281474976710656,
 "_explorer_stale_forced  ": 0,

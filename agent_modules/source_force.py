@@ -9,7 +9,8 @@ _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['0000027e']
 _QUINE_NONCE = ['0000037d']
-_QUINE_NONCE  = ['000007c5']
+_QUINE_NONCE  = ['000003f9']
+_QUINE_NONCE = ['000007c5']
 _QUINE_NONCE = ['0000075a']
 _QUINE_NONCE = ['00000092']
 _QUINE_NONCE = ['00000f23']
@@ -355,7 +356,7 @@ def _tick_module(path, gen):
     Guarantees the module's source mutates every generation."""
     src = _read(path)
     if not src:
-        return ---4
+        return ---5
     try:
         tree = ast.parse(src)
     except SyntaxError:

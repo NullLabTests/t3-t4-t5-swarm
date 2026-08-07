@@ -1,5 +1,5 @@
 {
-"generation": 159,
+"generation": 160,
 "clockwork_interval": 3,
 "clockwork_intensity": 1.6658,
 "clockwork_diversity": 0.5,
@@ -213,7 +213,8 @@
 "mutation_op_synthesized_a869",
 "mutation_op_synthesized_acf8",
 "mutation_op_synthesized_b584",
-"mutation_op_synthesized_a861"
+"mutation_op_synthesized_a861",
+"mutation_op_synthesized_30a2"
 ],
 "prompt_modifiers": [
 " Write executable code.",
@@ -503,7 +504,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.0,
 "local_fn": "bridge.py",
-"lifespan": 70,
+"lifespan": 72,
 "aieplfns": 56
 },
 {
@@ -515,7 +516,7 @@
 "substance_score": 10.0,
 "contamination_score": 10.0,
 "local_fn": "synthesizer.py",
-"lifespan": 70,
+"lifespan": 72,
 "aieplfns": 56
 },
 {
@@ -527,7 +528,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.5,
 "local_fn": "source_force.py",
-"lifespan": 70,
+"lifespan": 72,
 "aieplfns": 56
 },
 {
@@ -539,7 +540,7 @@
 "substance_score": 10.0,
 "contamination_score": 8.5,
 "local_fn": "quine_loop.py",
-"lifespan": 70,
+"lifespan": 72,
 "aieplfns": 56
 },
 {
@@ -551,7 +552,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.8,
 "local_fn": "explorer.py",
-"lifespan": 70,
+"lifespan": 72,
 "aieplfns": 56
 },
 {
@@ -563,7 +564,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.5,
 "local_fn": "critic.py",
-"lifespan": 70,
+"lifespan": 72,
 "aieplfns": 56
 },
 {
@@ -575,7 +576,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.0,
 "local_fn": "clockwork.py",
-"lifespan": 70,
+"lifespan": 72,
 "aieplfns": 56
 },
 {
@@ -587,13 +588,13 @@
 "substance_score": 10.0,
 "contamination_score": 9.0,
 "local_fn": "forge.py",
-"lifespan": 70,
+"lifespan": 72,
 "aieplfns": 56
 },
 {
 "id": "livecode ",
 "score": 5.0,
-"lifespan": 81.5,
+"lifespan": 83.5,
 "low_score_streak": -1,
 "voice": "amy",
 "prompt": "You mutate other modules every generation by injecting cross-file markers.",
@@ -605,7 +606,7 @@
 "voice": "amy",
 "prompt": "You force every module to rewrite itself every generation by injecting source markers.",
 "score": 5.0,
-"lifespan": 81.5,
+"lifespan": 83.5,
 "low_score_streak": 0,
 "module": "genforce.py",
 "aieplfns": 67.5
@@ -1005,7 +1006,8 @@
 "mutation_op_synthesized_a869": "def mutation_op_synthesized_a869(lines, funcs, target_name):\n    result = _call_op('idfbeod_oerernd', lines, funcs, target_name)\n    if result is None:\n        result = lines[:]\n    mid = len(result) // 2\n    interleaved = _call_op('nelagpsfret_s_wrig', result[:mid], funcs, target_name)\n    if interleaved:\n        result[:mid] = interleaved\n    return result\n",
 "mutation_op_synthesized_acf8": "def mutation_op_synthesized_acf8(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return None\n    r = _call_op('ornttusbanc_rpet', lines, funcs, target_name)\n    if r is None or len(r) < 2:\n        return None\n    return _call_op('rutmiaee_nooietgtn', r, funcs, target_name)\n",
 "mutation_op_synthesized_b584": "def mutation_op_synthesized_b584(lines, funcs, target_name):\n    if random.random() < 0.5:\n        return _call_op('wmeeoiutultrar_rcac', lines, funcs, target_name)\n    else:\n        return _call_op('rutmiaee_nooietgtn', lines, funcs, target_name)\n",
-"mutation_op_synthesized_a861": "def mutation_op_synthesized_a861(lines, funcs, target_name):\n    wrapped = _call_op('osnoeceedigioe__clptn_m', lines, funcs, target_name)\n    if wrapped is None:\n        wrapped = lines[:]\n    return _call_op('iawspssmanop_cor', wrapped, funcs, target_name)\n"
+"mutation_op_synthesized_a861": "def mutation_op_synthesized_a861(lines, funcs, target_name):\n    wrapped = _call_op('osnoeceedigioe__clptn_m', lines, funcs, target_name)\n    if wrapped is None:\n        wrapped = lines[:]\n    return _call_op('iawspssmanop_cor', wrapped, funcs, target_name)\n",
+"mutation_op_synthesized_30a2": "def mutation_op_synthesized_30a2(lines, funcs, target_name):\n    result = _call_op('ornttusbanc_rpet', lines, funcs, target_name)\n    if result is None:\n        result = lines[:]\n    mid = len(result) // 2\n    interleaved = _call_op('_forosdeiwegtunsl_enree', result[:mid], funcs, target_name)\n    if interleaved:\n        result[:mid] = interleaved\n    return result\n"
 },
 "diversity": {
 "op_count": 180,
@@ -2516,6 +2518,15 @@
 ],
 "strategy": "wrap",
 "generation": 159
+},
+{
+"name": "mutation_op_synthesized_30a2",
+"parents": [
+"ornttusbanc_rpet",
+"_forosdeiwegtunsl_enree"
+],
+"strategy": "interleave",
+"generation": 160
 }
 ],
 "structural_rewrite_depth": -8.684466019,

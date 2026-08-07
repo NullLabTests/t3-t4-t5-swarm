@@ -1,5 +1,5 @@
 {
-"generation": 156,
+"generation": 157,
 "clockwork_interval": 3,
 "clockwork_intensity": 1.6658,
 "clockwork_diversity": 0.5,
@@ -210,7 +210,8 @@
 "mutation_op_synthesized_72e9",
 "mutation_op_synthesized_4503",
 "mutation_op_synthesized_a900",
-"mutation_op_synthesized_a869"
+"mutation_op_synthesized_a869",
+"mutation_op_synthesized_acf8"
 ],
 "prompt_modifiers": [
 " Write executable code.",
@@ -500,7 +501,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.0,
 "local_fn": "bridge.py",
-"lifespan": 64,
+"lifespan": 66,
 "aieplfns": 56
 },
 {
@@ -512,7 +513,7 @@
 "substance_score": 10.0,
 "contamination_score": 10.0,
 "local_fn": "synthesizer.py",
-"lifespan": 64,
+"lifespan": 66,
 "aieplfns": 56
 },
 {
@@ -524,7 +525,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.5,
 "local_fn": "source_force.py",
-"lifespan": 64,
+"lifespan": 66,
 "aieplfns": 56
 },
 {
@@ -536,7 +537,7 @@
 "substance_score": 10.0,
 "contamination_score": 8.5,
 "local_fn": "quine_loop.py",
-"lifespan": 64,
+"lifespan": 66,
 "aieplfns": 56
 },
 {
@@ -548,7 +549,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.8,
 "local_fn": "explorer.py",
-"lifespan": 64,
+"lifespan": 66,
 "aieplfns": 56
 },
 {
@@ -560,7 +561,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.5,
 "local_fn": "critic.py",
-"lifespan": 64,
+"lifespan": 66,
 "aieplfns": 56
 },
 {
@@ -572,7 +573,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.0,
 "local_fn": "clockwork.py",
-"lifespan": 64,
+"lifespan": 66,
 "aieplfns": 56
 },
 {
@@ -584,13 +585,13 @@
 "substance_score": 10.0,
 "contamination_score": 9.0,
 "local_fn": "forge.py",
-"lifespan": 64,
+"lifespan": 66,
 "aieplfns": 56
 },
 {
 "id": "livecode ",
 "score": 5.0,
-"lifespan": 75.5,
+"lifespan": 77.5,
 "low_score_streak": -1,
 "voice": "amy",
 "prompt": "You mutate other modules every generation by injecting cross-file markers.",
@@ -602,7 +603,7 @@
 "voice": "amy",
 "prompt": "You force every module to rewrite itself every generation by injecting source markers.",
 "score": 5.0,
-"lifespan": 75.5,
+"lifespan": 77.5,
 "low_score_streak": 0,
 "module": "genforce.py",
 "aieplfns": 67.5
@@ -978,7 +979,8 @@
 "mutation_op_synthesized_72e9": "def mutation_op_synthesized_72e9(lines, funcs, target_name):\n    result = _call_op('tnv_slle_onoeiieceeosv', lines, funcs, target_name)\n    if result is None:\n        result = lines[:]\n    mid = len(result) // 2\n    interleaved = _call_op('rure_nciuspot_cdte', result[:mid], funcs, target_name)\n    if interleaved:\n        result[:mid] = interleaved\n    return result\n",
 "mutation_op_synthesized_4503": "def mutation_op_synthesized_4503(lines, funcs, target_name):\n    result = _call_op('en_chksotrio_ecjuo', lines, funcs, target_name)\n    if result is None:\n        result = lines[:]\n    return _call_op('turwtadra_f_erneleeiseg', result, funcs, target_name)\n",
 "mutation_op_synthesized_a900": "def mutation_op_synthesized_a900(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return None\n    r = _call_op('wmeeoiutultrar_rcac', lines, funcs, target_name)\n    if r is None or len(r) < 2:\n        return None\n    return _call_op('nosits_tnpeomiuzhadeyt__4bf9', r, funcs, target_name)\n",
-"mutation_op_synthesized_a869": "def mutation_op_synthesized_a869(lines, funcs, target_name):\n    result = _call_op('idfbeod_oerernd', lines, funcs, target_name)\n    if result is None:\n        result = lines[:]\n    mid = len(result) // 2\n    interleaved = _call_op('nelagpsfret_s_wrig', result[:mid], funcs, target_name)\n    if interleaved:\n        result[:mid] = interleaved\n    return result\n"
+"mutation_op_synthesized_a869": "def mutation_op_synthesized_a869(lines, funcs, target_name):\n    result = _call_op('idfbeod_oerernd', lines, funcs, target_name)\n    if result is None:\n        result = lines[:]\n    mid = len(result) // 2\n    interleaved = _call_op('nelagpsfret_s_wrig', result[:mid], funcs, target_name)\n    if interleaved:\n        result[:mid] = interleaved\n    return result\n",
+"mutation_op_synthesized_acf8": "def mutation_op_synthesized_acf8(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return None\n    r = _call_op('ornttusbanc_rpet', lines, funcs, target_name)\n    if r is None or len(r) < 2:\n        return None\n    return _call_op('rutmiaee_nooietgtn', r, funcs, target_name)\n"
 },
 "diversity": {
 "op_count": 177,
@@ -2462,6 +2464,15 @@
 ],
 "strategy": "interleave",
 "generation": 156
+},
+{
+"name": "mutation_op_synthesized_acf8",
+"parents": [
+"ornttusbanc_rpet",
+"rutmiaee_nooietgtn"
+],
+"strategy": "guard",
+"generation": 157
 }
 ],
 "structural_rewrite_depth": -8.22815534,
@@ -6595,7 +6606,7 @@
 },
 "_meee_eeoslporctr_duxl": [
 "critic",
-"force"
+"forge"
 ],
 "tsaoa_tosertpr": {
 "mutation_op_explorer_autoecho_boot": {

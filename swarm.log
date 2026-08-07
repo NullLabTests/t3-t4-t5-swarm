@@ -518,3 +518,17 @@ ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
 oftpdaml[ta o srontaerieso eref thderh ]u1 patches
 mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
 Livecode : As livecode I’ve reconstructed the four Critic gen=112 module files. The auto-executed entry point is genforce.py (it rewrites its siblings’ generation stamps), and the livecode pass injects idempotent cross...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   ef809d8..916c13a  master -> master
+
+
+--- Bridgeg rr( enntueem t27/11) ---
+o [na-l]ateclgbridge error: name 'os_db0' is not defined
+[bridgetclek sgp feop a]aiinin, dagll
+
+--- Livecode g rr( enntueem t28/11) ---
+[patch] [FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+oftpdaml[ta o srontaerieso eref thderh ]u1 patches
+mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
+Livecode : Accepted: the triage note stands (the preamble bytes before Topic: are irrecoverable as a literal payload; the Topic: line is authoritative). I’m reconstructing the agentmodules/ set for critic gen=112 with ...

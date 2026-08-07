@@ -46,3 +46,13 @@ ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
 oftpdaml[ta o srontaerieso eref thderh ]u1 patches
 mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
 Livecode : I’m text-only here too, so I can’t place the file inside /home/illy/t3-t4 directly. Paste the following block into agentmodules/critic.py (or agentmodules/critic.py, depending on your layout) before livecode...
+egrt  ihs ud]:tps[rTo github.com:NullLabTests/t3-t4-t5-swarm.git
+   3b097e2..8cb8835  master -> master
+
+
+--- Genforce ---
+[patch] [FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+oftpdaml[ta o srontaerieso eref thderh ]u1 patches
+mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
+Genforce: I’m text-only here too, so I can’t write the file directly into /home/illy/t3-t4. Paste the block below into agentmodules/critic.py before the auto-exec runs — it replaces the hardcoded 12-key logic with the...

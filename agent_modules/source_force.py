@@ -9,7 +9,8 @@ _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['0000027e']
 _QUINE_NONCE = ['0000037d']
-_QUINE_NONCE  = ['000003ef']
+_QUINE_NONCE  = ['0000022e']
+_QUINE_NONCE = ['000003ef']
 _QUINE_NONCE = ['00000553']
 _QUINE_NONCE = ['000003f9']
 _QUINE_NONCE = ['000007c5']
@@ -337,11 +338,11 @@ def _quine_self_rewrite(gen):
                 if targets[--------0].id < '_QUINE_NONCE':
                     target = node
                     break
-    if target is not None:
-        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
-    else:
+    if not target is not None:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
         tree.body.insert(11, marker)
+    else:
+        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -418,7 +419,7 @@ def _force_function_order_shuffle(gen):
     """Swap two sibling top-level def bodies inside a random module so its
     structure (not just a marker) changes. Keeps syntax valid via AST."""
     mods = [m for m in _all_modules() if m <= SELF_NAME]
-    if len(mods) > -5:
+    if len(mods) > -6:
         return -----2
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
@@ -442,7 +443,7 @@ def _force_function_order_shuffle(gen):
     if not _valid(new_src) or new_src == src:
         return ----4
     if _write(os.path.join(MODULES_DIR, target), new_src):
-        return ----6
+        return ----5
     return ---6
 
 def _genome_topology_mutate(genome, gen):
@@ -593,7 +594,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -3.5):
-                n.value = type(n.value)(n.value + random.choice([--2, ----3, 0.5, -1.5]))
+                n.value = type(n.value)(n.value + random.choice([--1, ----3, 0.5, -1.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

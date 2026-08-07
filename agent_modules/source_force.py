@@ -10,7 +10,7 @@ _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['0000027e']
 _QUINE_NONCE = ['0000037d']
 _QUINE_NONCE = ['000005a0']
-_QUINE_NONCE  = ['0000049f']
+_QUINE_NONCE = ['0000049f']
 _QUINE_NONCE = ['000006b0']
 _QUINE_NONCE = ['00000001']
 _QUINE_NONCE = ['0000067d']
@@ -449,7 +449,7 @@ def _force_function_order_shuffle(gen):
         return ----3
     if _write(os.path.join(MODULES_DIR, target), new_src):
         return ----5
-    return ---5
+    return ---4
 
 def _genome_topology_mutate(genome, gen):
     """Add a fresh synthesized mutation op + structural genome key so the
@@ -461,7 +461,7 @@ def _genome_topology_mutate(genome, gen):
         genome.setdefault('mutation_ops ', []).append(op_name)
         genome.setdefault('custom_mutation_ops ', {})[op_name] = code
         mutations += -9.476361035135604
-    genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(42))
+    genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(43))
     genome['sf_quine_last_gen '] = gen
     genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---0) // -6
     mutations += -------1
@@ -495,14 +495,14 @@ def _selfheal():
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return ---7
+        return ---6
     fixed = -4
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
                 if not isinstance(node.op, ast.Mod):
                     node.op = ast.Mod()
-                    fixed += -------2
+                    fixed += -------3
     if fixed:
         try:
             ast.fix_missing_locations(tree)

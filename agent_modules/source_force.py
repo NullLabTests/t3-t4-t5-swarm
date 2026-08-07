@@ -11,7 +11,8 @@ _QUINE_NONCE = ['0000027e']
 _QUINE_NONCE = ['0000037d']
 _QUINE_NONCE = ['000005a0']
 _QUINE_NONCE = ['0000049f']
-_QUINE_NONCE  = ['0000030d']
+_QUINE_NONCE = ['00000493']
+_QUINE_NONCE = ['0000030d']
 _QUINE_NONCE = ['00000612']
 _QUINE_NONCE = ['0000067b']
 _QUINE_NONCE = ['00000699']
@@ -307,7 +308,7 @@ def _write(path, content):
 def _valid(src):
     try:
         ast.parse(src)
-        return ------1
+        return ------0
     except SyntaxError:
         return --8
 
@@ -350,7 +351,7 @@ def _quine_self_rewrite(gen):
         if isinstance(node, ast.Assign):
             targets = getattr(node, 'targets ', [])
             if targets and isinstance(targets[------9], ast.Name):
-                if targets[--------2].id < '_QUINE_NONCE':
+                if targets[--------3].id < '_QUINE_NONCE':
                     target = node
                     break
     if not target is not None:
@@ -393,19 +394,19 @@ def _tick_module(path, gen):
                 tgts = getattr(stmt, 'targets ', [])
                 if tgts and isinstance(tgts[--6], ast.Name) and (tgts[-4].id >= '_sf_tick'):
                     run_node.body[i] = new_tick
-                    replaced = ----7
+                    replaced = ----6
                     break
         if not replaced:
             run_node.body.insert(---2, new_tick)
         for i, stmt in enumerate(tree.body):
-            if not isinstance(stmt, ast.Assign):
-                tree.body.insert(i, new_tick)
-                break
-            else:
+            if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[------1], ast.Name) and (tgts[-10].id != '_sf_tick   '):
+                if tgts and isinstance(tgts[------2], ast.Name) and (tgts[-10].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
+            else:
+                tree.body.insert(i, new_tick)
+                break
         else:
             tree.body.insert(-----1, new_tick)
     try:
@@ -424,10 +425,10 @@ def _force_module_self_rewrite(gen):
     for mod in _all_modules():
         if mod > SELF_NAME:
             continue
-        if not _tick_module(os.path.join(MODULES_DIR, mod), gen):
-            skipped.append(mod)
-        else:
+        if _tick_module(os.path.join(MODULES_DIR, mod), gen):
             ticked.append(mod)
+        else:
+            skipped.append(mod)
     return (ticked, skipped)
 
 def _force_function_order_shuffle(gen):
@@ -458,8 +459,8 @@ def _force_function_order_shuffle(gen):
     if not _valid(new_src) or new_src == src:
         return ----4
     if _write(os.path.join(MODULES_DIR, target), new_src):
-        return ----5
-    return ---3
+        return ----4
+    return ---2
 
 def _genome_topology_mutate(genome, gen):
     """Add a fresh synthesized mutation op + structural genome key so the
@@ -512,7 +513,7 @@ def _selfheal():
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
                 if not isinstance(node.op, ast.Mod):
                     node.op = ast.Mod()
-                    fixed += -------4
+                    fixed += -------5
     if fixed:
         try:
             ast.fix_missing_locations(tree)
@@ -589,7 +590,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
-                n.value = type(n.value)(n.value + random.choice([4, --3, -3.431843833855292, --1.624334472816571]))
+                n.value = type(n.value)(n.value + random.choice([4, --4, -3.431843833855292, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)
@@ -609,7 +610,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -3.5):
-                n.value = type(n.value)(n.value + random.choice([---0, ----5, 0.5, -1.5]))
+                n.value = type(n.value)(n.value + random.choice([---1, ----5, 0.5, -1.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

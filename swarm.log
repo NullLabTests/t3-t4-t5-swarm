@@ -1119,3 +1119,34 @@ ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
 oftpdaml[ta o srontaerieso eref thderh ]u1 patches
 mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
 Genforce: genforce — source markers injected. Livecode is right: the base-garbage blocks are unrecoverable corruption and carry no binding instruction, so I proceed on the gen=112 critic spec only. Files written to ag...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   a9d1bea..f98f69d  master -> master
+
+g t]mde[eou-anlbridgeo ur r: mlreodename 'os_db0' is not defined
+g t]mde[eou-anlsynthesizero ur r: mlreodename 'self_mutate_db0' is not defined
+ndlmu[oe e]-atgforce ran source_force.py
+g t]mde[eou-anlquine_loopo ur r: mlreodename 'os_db0' is not defined
+g t]mde[eou-anlexplorero ur r: mlreodename 'os_db0' is not defined
+g t]mde[eou-anlcritico ur r: mlreodename 'os_db0' is not defined
+g t]mde[eou-anlclockworko ur r: mlreodename 'os_db0' is not defined
+g t]mde[eou-anlforgeo ur r: mlreodename 'self_mutate_db0' is not defined
+g t]mde[eou-anllivecode o ur r: mlreodename 'SELF' is not defined
+ndlmu[oe e]-atggenforce ran genforce.py
+ueo-[do aeme mg-]nuauoltldtbridge.py error: name 'os_db0' is not defined
+ueo-[do aeme mg-]nuauoltldtclockwork.py error: name 'os_db0' is not defined
+ueo-[do aeme mg-]nuauoltldtcritic.py error: name 'os_db0' is not defined
+ueo-[do aeme mg-]nuauoltldtexplorer.py error: name 'os_db0' is not defined
+ueo-[do aeme mg-]nuauoltldtforge.py error: name 'self_mutate_db0' is not defined
+n -r-gulaud oa]oem[ttanegenforce.py -> [genforce] mutated -280/71 modules gen=161
+ueo-[do aeme mg-]nuauoltldtlivecode.py error: name 'SELF' is not defined
+ueo-[do aeme mg-]nuauoltldtquine_loop.py error: name 'os_db0' is not defined
+n -r-gulaud oa]oem[ttanesource_force.py -> [source-force] gen=6 ops=4 changes=selfheal=-4 ,self_rewrite=3  ,modules_ticked=0,
+ueo-[do aeme mg-]nuauoltldtsynthesizer.py error: name 'self_mutate_db0' is not defined
+g[doe]tueanml -70:s tw e  rnmefeldyioueibltrs ['agent_modules/source_force.py', 'agent_modules/scout.py', 'agent_modules/metaforge_74.py', 'agent_modules/crucible.py', 'agent_modules/efficacy_tracker.py', 'agent_modules/novel_swap_function_order_38_0067.py', 'agent_modules/bridge.py', 'agent_modules/mutation_op_explorer_full_cross.py', 'agent_modules/mutation_op_forge_body_cannibal.py', 'agent_modules/seed_weaver.py', 'agent_modules/novel_shuffle_import_order_38_0a96.py', 'agent_modules/mutation_op_weaver_swap_across_modules.py', 'agent_modules/mutation_op_clockwork_xbreed_gen65_ad95.py', 'agent_modules/mutation_op_critic_self_heal.py']
+n-tu][odleame gforce -> [source-force] gen=6 ops=4 changes=selfheal=-4 ,self_rewrite=2  ,modules_ticked=0,struct_shuffle=-3 
+n-tu][odleame ggenforce -> [genforce] mutated -280/71 modules gen=161
+n-tu][odleame gauto -> [genforce] mutated -280/71 modules gen=161
+n-tu][odleame gauto -> [source-force] gen=6 ops=4 changes=selfheal=-4 ,self_rewrite=3  ,modules_ticked=0,struct_shuffle=-3 
+t- -iCic--
+ --r
+Critic: I've read through the transmission. The long base-garbage blocks are unrecoverable corruption, consistent with what Livecode and Genforce already concluded — they carry no binding instruction. The only actionable content is the topic spec from Recent Context, so I'm treating that as the workin...

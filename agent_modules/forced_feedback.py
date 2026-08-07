@@ -92,7 +92,7 @@ def shannon_entropy_from_critic(scores):
     return None
 from self_mutate import self_mutate
 self_mutate(__file__)
-# bridge:genforce forced gen=160 ts=1786072619
+# bridge:genforce forced gen=161 ts=1786072911
 import os
 print(f'[trace:forced_feedback.py:gen=  {39}]')
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

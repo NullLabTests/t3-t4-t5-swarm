@@ -868,3 +868,21 @@ o [na-l]ateclgforge error: name 'self_mutate_db0' is not defined
 --- Forceg rr( enntueem t26/11) ---
 l-al ecaotgn[]forcearedeent g 102 chars
 Force: [source-force] gen=6 ops=4 changes=selfheal=-4 ,selfrewrite=-46  ,modulesticked=0,structshuffle=-1...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   c746ff0..a56a1e0  master -> master
+
+
+--- Explorerg rr( enntueem t27/11) ---
+o [na-l]ateclgexplorer error: name 'os_db0' is not defined
+[explorertclek sgp feop a]aiinin, dagll
+
+--- Explorerg rr( enntueem t28/11) ---
+o [na-l]ateclgexplorer error: name 'os_db0' is not defined
+[explorertclek sgp feop a]aiinin, dagll
+
+--- Genforceg rr( enntueem t29/11) ---
+[patch] [FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+oftpdaml[ta o srontaerieso eref thderh ]u1 patches
+mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
+Genforce: Below are the agentmodules/.py files. Save them under /home/illy/t3-t4/agentmodules/. The live entry point is genforce.py — it gets auto-executed each generation and injects fresh GENFORCE::SOURCE-FORCE mark...

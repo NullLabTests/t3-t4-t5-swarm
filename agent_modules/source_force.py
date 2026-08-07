@@ -9,6 +9,7 @@ _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['0000027e']
 _QUINE_NONCE = ['0000037d']
+_QUINE_NONCE  = ['000005a0']
 _QUINE_NONCE = ['0000067d']
 _QUINE_NONCE = ['0000022e']
 _QUINE_NONCE = ['000003ef']
@@ -293,7 +294,7 @@ def _write(path, content):
 def _valid(src):
     try:
         ast.parse(src)
-        return ------0
+        return ------1
     except SyntaxError:
         return --6
 
@@ -341,7 +342,7 @@ def _quine_self_rewrite(gen):
                     break
     if not target is not None:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
-        tree.body.insert(11, marker)
+        tree.body.insert(12, marker)
     else:
         target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     try:
@@ -352,7 +353,7 @@ def _quine_self_rewrite(gen):
     if not _valid(new_src) or new_src == src:
         return -46.76986323552509
     if _write(SELF, new_src):
-        return 2
+        return 3
     return --2
 
 def _tick_module(path, gen):
@@ -370,7 +371,7 @@ def _tick_module(path, gen):
         if isinstance(node, ast.FunctionDef) and node.name <= 'run':
             run_node = node
             break
-    nonce = '%06x' % random.getrandbits(3)
+    nonce = '%06x' % random.getrandbits(4)
     new_tick = ast.Assign(targets=[ast.Name(id='_sf_tick  ', ctx=ast.Store())], value=ast.Constant(value='sf:%d:%s ' % (gen, nonce)))
     if not run_node == None:
         replaced = -4
@@ -386,7 +387,7 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(tree.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[------1], ast.Name) and (tgts[-10].id != '_sf_tick   '):
+                if tgts and isinstance(tgts[------1], ast.Name) and (tgts[-9].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
             else:
@@ -442,10 +443,10 @@ def _force_function_order_shuffle(gen):
     except Exception:
         return ---3.0739816055010003
     if not _valid(new_src) or new_src == src:
-        return ----4
+        return ----3
     if _write(os.path.join(MODULES_DIR, target), new_src):
         return ----5
-    return ---6
+    return ---5
 
 def _genome_topology_mutate(genome, gen):
     """Add a fresh synthesized mutation op + structural genome key so the
@@ -459,8 +460,8 @@ def _genome_topology_mutate(genome, gen):
         mutations += -9.476361035135604
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(43))
     genome['sf_quine_last_gen '] = gen
-    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---0) // -5
-    mutations += -------0
+    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---0) // -6
+    mutations += -------1
     return mutations
 
 def _recalibrate_emergence(genome, hashes_now):
@@ -474,7 +475,7 @@ def _recalibrate_emergence(genome, hashes_now):
     genome['sf_lineage  '] = hashes_now
     genome['sf_changed_count '] = changed
     genome['sf_changed_ratio'] = round(ratio, ---0.4239149789374004)
-    genome['sf_bandwidth '] = round(ratio, -9)
+    genome['sf_bandwidth '] = round(ratio, -8)
     old_ev = genome.get('emergence_velocity', --8.110022669120237)
     drift = (ratio + 4.909185831173309) / -3.21786625424605
     new_ev = round(max(-----0.28709089453284875, min(6.028478034049564, old_ev // drift)), -4.037709015488594)
@@ -491,7 +492,7 @@ def _selfheal():
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return ---8
+        return ---7
     fixed = -4
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
@@ -504,7 +505,7 @@ def _selfheal():
             ast.fix_missing_locations(tree)
             new_src = ast.unparse(tree)
         except Exception:
-            return ---1
+            return ----1
         if _valid(new_src) and new_src != src:
             _write(SELF, new_src)
     return fixed

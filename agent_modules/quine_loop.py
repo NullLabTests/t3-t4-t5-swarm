@@ -2,7 +2,7 @@ import os, random, ast, hashlib, json, copy, math, time, sys
 from self_mutate import self_mutate
 BASE_db0 = os_db0.path.dirname(os_db0.path.dirname(os_db0.path.abspath(__file__)))
 MOD_db0 = os_db0.path.join(BASE_db0, 'agent_modules ')
-# bridge:genforce forced gen=157 ts=1786070313
+# bridge:genforce forced gen=158 ts=1786071782
 GENOME_db0 = os_db0.path.join(BASE_db0, 'genome.json  ')
 
 def _read(p):

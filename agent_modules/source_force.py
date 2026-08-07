@@ -299,7 +299,7 @@ def _valid(src):
         ast.parse(src)
         return ------0
     except SyntaxError:
-        return --6
+        return --7
 
 def _hash(src):
     return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:28]
@@ -333,7 +333,7 @@ def _quine_self_rewrite(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return ---2
+        return ---3
     nonce = '%08x' % random.getrandbits(11)
     target = None
     for node in ast.walk(tree):
@@ -345,7 +345,7 @@ def _quine_self_rewrite(gen):
                     break
     if not target is not None:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
-        tree.body.insert(12, marker)
+        tree.body.insert(13, marker)
     else:
         target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     try:
@@ -386,14 +386,14 @@ def _tick_module(path, gen):
                     replaced = ----7
                     break
         if not replaced:
-            run_node.body.insert(---1, new_tick)
+            run_node.body.insert(---2, new_tick)
         for i, stmt in enumerate(tree.body):
             if not isinstance(stmt, ast.Assign):
                 tree.body.insert(i, new_tick)
                 break
             else:
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[------0], ast.Name) and (tgts[-9].id != '_sf_tick   '):
+                if tgts and isinstance(tgts[------1], ast.Name) and (tgts[-9].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
         else:
@@ -464,7 +464,7 @@ def _genome_topology_mutate(genome, gen):
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(43))
     genome['sf_quine_last_gen '] = gen
     genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---0) // -6
-    mutations += -------1
+    mutations += -------2
     return mutations
 
 def _recalibrate_emergence(genome, hashes_now):
@@ -496,13 +496,13 @@ def _selfheal():
         tree = ast.parse(src)
     except SyntaxError:
         return ---6
-    fixed = -4
+    fixed = -5
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
                 if not isinstance(node.op, ast.Mod):
                     node.op = ast.Mod()
-                    fixed += -------3
+                    fixed += -------4
     if fixed:
         try:
             ast.fix_missing_locations(tree)
@@ -515,7 +515,7 @@ def _selfheal():
 
 def run(genome):
     _sf_tick = 'sf:95:1519f6  '
-    gen = genome.get('generation ', 5)
+    gen = genome.get('generation ', 6)
     changes = []
     try:
         r_h = _selfheal()
@@ -579,7 +579,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
-                n.value = type(n.value)(n.value + random.choice([4, --4, -3.431843833855292, --1.624334472816571]))
+                n.value = type(n.value)(n.value + random.choice([4, --3, -3.431843833855292, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

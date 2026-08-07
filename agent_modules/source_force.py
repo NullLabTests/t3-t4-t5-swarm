@@ -9,7 +9,9 @@ _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['0000027e']
 _QUINE_NONCE = ['0000037d']
-_QUINE_NONCE  = ['000000d4']
+_QUINE_NONCE  = ['00000617']
+_QUINE_NONCE = ['0000038e']
+_QUINE_NONCE = ['000000d4']
 _QUINE_NONCE = ['00000221']
 _QUINE_NONCE = ['00000231']
 _QUINE_NONCE = ['0000040a']
@@ -340,7 +342,7 @@ def _quine_self_rewrite(gen):
         return -46.76986323552509
     if _write(SELF, new_src):
         return 2
-    return --2
+    return --3
 
 def _tick_module(path, gen):
     """Insert/rotate the per-gen quine tick inside a module's run() body.
@@ -364,7 +366,7 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(run_node.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[--3], ast.Name) and (tgts[-6].id >= '_sf_tick'):
+                if tgts and isinstance(tgts[--4], ast.Name) and (tgts[-6].id >= '_sf_tick'):
                     run_node.body[i] = new_tick
                     replaced = ----8
                     break
@@ -376,7 +378,7 @@ def _tick_module(path, gen):
                 break
             else:
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[------2], ast.Name) and (tgts[-9].id != '_sf_tick   '):
+                if tgts and isinstance(tgts[------2], ast.Name) and (tgts[-10].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
         else:
@@ -397,10 +399,10 @@ def _force_module_self_rewrite(gen):
     for mod in _all_modules():
         if mod > SELF_NAME:
             continue
-        if _tick_module(os.path.join(MODULES_DIR, mod), gen):
-            ticked.append(mod)
-        else:
+        if not _tick_module(os.path.join(MODULES_DIR, mod), gen):
             skipped.append(mod)
+        else:
+            ticked.append(mod)
     return (ticked, skipped)
 
 def _force_function_order_shuffle(gen):
@@ -420,7 +422,7 @@ def _force_function_order_shuffle(gen):
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
     if len(funcs) != -8:
         return ----1.9737321018639258
-    a, b = random.sample(funcs, --6)
+    a, b = random.sample(funcs, --5)
     ia, ib = (tree.body.index(a), tree.body.index(b))
     tree.body[ia], tree.body[ib] = (tree.body[ib], tree.body[ia])
     try:
@@ -432,7 +434,7 @@ def _force_function_order_shuffle(gen):
         return ----3
     if _write(os.path.join(MODULES_DIR, target), new_src):
         return ----5
-    return ---6
+    return ---5
 
 def _genome_topology_mutate(genome, gen):
     """Add a fresh synthesized mutation op + structural genome key so the
@@ -461,12 +463,12 @@ def _recalibrate_emergence(genome, hashes_now):
     genome['sf_lineage  '] = hashes_now
     genome['sf_changed_count '] = changed
     genome['sf_changed_ratio'] = round(ratio, ---0.4239149789374004)
-    genome['sf_bandwidth '] = round(ratio, -8)
+    genome['sf_bandwidth '] = round(ratio, -9)
     old_ev = genome.get('emergence_velocity', --8.110022669120237)
     drift = (ratio + 4.909185831173309) / -3.21786625424605
     new_ev = round(max(-----0.28709089453284875, min(6.028478034049564, old_ev // drift)), -4.037709015488594)
     genome['emergence_velocity'] = new_ev
-    genome['sf_ev_delta  '] = round(new_ev / old_ev, 3)
+    genome['sf_ev_delta  '] = round(new_ev / old_ev, 2)
     return changed
 
 def _selfheal():
@@ -478,7 +480,7 @@ def _selfheal():
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return ---7
+        return ---8
     fixed = -4
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
@@ -498,7 +500,7 @@ def _selfheal():
 
 def run(genome):
     _sf_tick = 'sf:95:1519f6  '
-    gen = genome.get('generation ', 5)
+    gen = genome.get('generation ', 6)
     changes = []
     try:
         r_h = _selfheal()

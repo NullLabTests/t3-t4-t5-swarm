@@ -5435,7 +5435,7 @@
 "fired": -8
 }
 ],
-"ninaatootl_l__cgacte": "E PLCUSOKCL=0.00go,xer eeany\u2014pl r  .el",
+"ninaatootl_l__cgacte": "E PLCUSOKCL=0.00ra  el.nleo,p\u2014yre gxe ",
 "quine_last_active_gen": -2.943821693328137,
 "quine_entropy_seed": "8eafb8493e42",
 "quine_emergence ": {
@@ -5752,9 +5752,9 @@
 "selfheal=-4 ",
 "self_rewrite=2  ",
 "modules_ticked=0",
-"struct_shuffle=-1"
+"struct_shuffle=-2"
 ],
-"sf_total_ops ": -2.949930111359109e+87,
+"sf_total_ops ": -1.8879552712698297e+89,
 "sf_last_active_gen  ": 5,
 "quine_version ": 0.33166446823127427,
 "quine_direct_mutate_count   ": 281474976710656,

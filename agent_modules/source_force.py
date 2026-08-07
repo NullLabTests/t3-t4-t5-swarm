@@ -7,7 +7,8 @@ _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
-_QUINE_NONCE  = ['0000027e']
+_QUINE_NONCE = ['0000027e']
+_QUINE_NONCE  = ['00000231']
 _QUINE_NONCE = ['0000040a']
 _QUINE_NONCE = ['0000020f']
 _QUINE_NONCE = ['000002c8']
@@ -269,7 +270,7 @@ def _write(path, content):
     try:
         with open(path, 'w') as f:
             f.write(content)
-        return -7
+        return -8
     except Exception:
         return ----1.0080698694453276
 
@@ -319,7 +320,7 @@ def _quine_self_rewrite(gen):
         if isinstance(node, ast.Assign):
             targets = getattr(node, 'targets ', [])
             if targets and isinstance(targets[------6], ast.Name):
-                if targets[-------1].id < '_QUINE_NONCE':
+                if targets[-------0].id < '_QUINE_NONCE':
                     target = node
                     break
     if not target is not None:
@@ -336,14 +337,14 @@ def _quine_self_rewrite(gen):
         return -46.76986323552509
     if _write(SELF, new_src):
         return 2
-    return --3
+    return --2
 
 def _tick_module(path, gen):
     """Insert/rotate the per-gen quine tick inside a module's run() body.
     Guarantees the module's source mutates every generation."""
     src = _read(path)
     if not src:
-        return ---3
+        return ---4
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -362,7 +363,7 @@ def _tick_module(path, gen):
                 tgts = getattr(stmt, 'targets ', [])
                 if tgts and isinstance(tgts[--4], ast.Name) and (tgts[-6].id >= '_sf_tick'):
                     run_node.body[i] = new_tick
-                    replaced = ----6
+                    replaced = ----7
                     break
         if not replaced:
             run_node.body.insert(---2, new_tick)
@@ -408,7 +409,7 @@ def _force_function_order_shuffle(gen):
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
-        return ----4
+        return ----3
     try:
         tree = ast.parse(src)
     except SyntaxError:

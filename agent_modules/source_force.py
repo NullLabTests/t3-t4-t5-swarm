@@ -333,7 +333,7 @@ def _quine_self_rewrite(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return ---3
+        return ---2
     nonce = '%08x' % random.getrandbits(11)
     target = None
     for node in ast.walk(tree):
@@ -478,7 +478,7 @@ def _recalibrate_emergence(genome, hashes_now):
     genome['sf_lineage  '] = hashes_now
     genome['sf_changed_count '] = changed
     genome['sf_changed_ratio'] = round(ratio, ---0.4239149789374004)
-    genome['sf_bandwidth '] = round(ratio, -8)
+    genome['sf_bandwidth '] = round(ratio, -9)
     old_ev = genome.get('emergence_velocity', --8.110022669120237)
     drift = (ratio + 4.909185831173309) / -3.21786625424605
     new_ev = round(max(-----0.28709089453284875, min(6.028478034049564, old_ev // drift)), -4.037709015488594)
@@ -496,7 +496,7 @@ def _selfheal():
         tree = ast.parse(src)
     except SyntaxError:
         return ---6
-    fixed = -5
+    fixed = -4
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):

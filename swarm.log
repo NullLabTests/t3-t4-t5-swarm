@@ -845,3 +845,26 @@ o [na-l]ateclgbridge error: name 'os_db0' is not defined
 --- Forceg rr( enntueem t21/11) ---
 l-al ecaotgn[]forcearedeent g 102 chars
 Force: [source-force] gen=6 ops=4 changes=selfheal=-5 ,selfrewrite=-46  ,modulesticked=0,structshuffle=-1...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   8cf87ce..c746ff0  master -> master
+
+
+--- Quine_loopg rr( enntueem t22/11) ---
+o [na-l]ateclgquine_loop error: name 'os_db0' is not defined
+[quine_looptclek sgp feop a]aiinin, dagll
+
+--- Explorerg rr( enntueem t23/11) ---
+o [na-l]ateclgexplorer error: name 'os_db0' is not defined
+[explorertclek sgp feop a]aiinin, dagll
+
+--- Clockworkg rr( enntueem t24/11) ---
+o [na-l]ateclgclockwork error: name 'os_db0' is not defined
+[clockworktclek sgp feop a]aiinin, dagll
+
+--- Forgeg rr( enntueem t25/11) ---
+o [na-l]ateclgforge error: name 'self_mutate_db0' is not defined
+[forgetclek sgp feop a]aiinin, dagll
+
+--- Forceg rr( enntueem t26/11) ---
+l-al ecaotgn[]forcearedeent g 102 chars
+Force: [source-force] gen=6 ops=4 changes=selfheal=-4 ,selfrewrite=-46  ,modulesticked=0,structshuffle=-1...

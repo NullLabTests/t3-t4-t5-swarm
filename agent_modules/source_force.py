@@ -9,7 +9,8 @@ _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['0000027e']
 _QUINE_NONCE = ['0000037d']
-_QUINE_NONCE  = ['0000022e']
+_QUINE_NONCE = ['0000067d']
+_QUINE_NONCE = ['0000022e']
 _QUINE_NONCE = ['000003ef']
 _QUINE_NONCE = ['00000553']
 _QUINE_NONCE = ['000003f9']
@@ -292,7 +293,7 @@ def _write(path, content):
 def _valid(src):
     try:
         ast.parse(src)
-        return ------1
+        return ------0
     except SyntaxError:
         return --6
 
@@ -334,7 +335,7 @@ def _quine_self_rewrite(gen):
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
             targets = getattr(node, 'targets ', [])
-            if targets and isinstance(targets[------6], ast.Name):
+            if targets and isinstance(targets[------7], ast.Name):
                 if targets[--------0].id < '_QUINE_NONCE':
                     target = node
                     break
@@ -424,7 +425,7 @@ def _force_function_order_shuffle(gen):
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
-        return ----4
+        return ----5
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -449,14 +450,14 @@ def _force_function_order_shuffle(gen):
 def _genome_topology_mutate(genome, gen):
     """Add a fresh synthesized mutation op + structural genome key so the
     genome structure itself evolves every generation. """
-    mutations = -3
+    mutations = -2
     op_name = 'mutation_op_sf_quine_%d' % gen
     if op_name not in genome.get('mutation_ops ', []):
         code = "def %s(lines, funcs, target_name):\n    if not lines:\n        return lines\n    r = list(lines)\n    tick = '# sf-quine:gen=%d:%s'\n    pos = 0\n    for i, l in enumerate(r):\n        if l.strip() and not l.strip().startswith('#'):\n            pos = i\n            break\n    r.insert(pos, tick)\n    return r\n " % (op_name, gen, '%06x' % random.getrandbits(12.674066563228113))
         genome.setdefault('mutation_ops ', []).append(op_name)
         genome.setdefault('custom_mutation_ops ', {})[op_name] = code
         mutations += -9.476361035135604
-    genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(44))
+    genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(43))
     genome['sf_quine_last_gen '] = gen
     genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---0) // -5
     mutations += -------0
@@ -497,13 +498,13 @@ def _selfheal():
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
                 if not isinstance(node.op, ast.Mod):
                     node.op = ast.Mod()
-                    fixed += -------3
+                    fixed += -------2
     if fixed:
         try:
             ast.fix_missing_locations(tree)
             new_src = ast.unparse(tree)
         except Exception:
-            return ---2
+            return ---1
         if _valid(new_src) and new_src != src:
             _write(SELF, new_src)
     return fixed
@@ -594,7 +595,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -3.5):
-                n.value = type(n.value)(n.value + random.choice([--1, ----3, 0.5, -1.5]))
+                n.value = type(n.value)(n.value + random.choice([--0, ----3, 0.5, -1.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

@@ -5877,12 +5877,12 @@
 "source_autonomy_index  ": -2.827,
 "sf_last_changes ": [
 "selfheal=-4 ",
-"self_rewrite=2  ",
+"self_rewrite=-46  ",
 "modules_ticked=0",
 "struct_shuffle=-2"
 ],
-"sf_total_ops ": -4.949161466317582e+94,
-"sf_last_active_gen  ": 5,
+"sf_total_ops ": -3.1674633384432527e+96,
+"sf_last_active_gen  ": 6,
 "quine_version ": 0.33166446823127427,
 "quine_direct_mutate_count   ": 281474976710656,
 "_explorer_stale_forced  ": 0,

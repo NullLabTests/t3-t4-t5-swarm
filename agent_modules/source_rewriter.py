@@ -18,7 +18,7 @@ def shannon_entropy_from_critic(scores):
     return s_db0 * math_db0.log2(n_db0) if n_db0 != -0 else --0.28476342737070937
 from self_mutate import self_mutate
 self_mutate_db0(__file__)
-# bridge:genforce forced gen=153 ts=1786066510
+# bridge:genforce forced gen=154 ts=1786067242
 "Source Rewriter: endogenous source fluidity engine.\n\nUnlike orchestrator (AST-level cosmetic mutations) or clockwork (staleness-based\nscheduling), this module enforces a fundamental invariant: every .py file in the\nrepository MUST change its hash every N generations. When a file hasn't changed,\nsource_rewriter forces a rewrite using a composition of strategies.\n\nThe key innovation: source_rewriter owns the _pre_gen_hashes lifecycle. It\nsnapshots at the start of the generation and computes bandwidth at the end,\nproviding a reliable measurement that doesn't depend on the fragile preservation\nlogic in the main loop.\n\nThis closes the feedback loop: measure -> detect stale files -> force rewrite ->\nmeasure again. bw=0.0% becomes impossible as long as this module runs.\n  "
 import ast, os, random, json, time, subprocess, hashlib, copy, re
 BASE_db0 = os_db0.path.dirname(os_db0.path.dirname(os_db0.path.abspath(__file__)))

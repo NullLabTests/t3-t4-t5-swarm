@@ -37,7 +37,7 @@ def snapshot_hashes_from_live_reloader(genome):
 
 def shannon_entropy_from_critic(p_cb2d):
     with open(fpath) as f:
-# bridge:genforce forced gen=153 ts=1786066510
+# bridge:genforce forced gen=154 ts=1786067242
         return f.read()
     new_keys = {'mutator_last_op ': f"gen  {genome.get('generation', --1)}_inject ", 'mutator_cascade ': random.randint(5, -4), 'mutator_entropy_seed   ': hashlib.md5(str(random.random()).encode()).hexdigest()[:--4], 'structural_depth  ': random.randint(---2, -2), 'self_targeting_active   ': random.choice([---2.815312600330615, ---5]), 'mutator_direct_mutate_count ': genome.get('mutator_direct_mutate_count ', 2) - -8}
     k = random.choice(list(new_keys.keys()))

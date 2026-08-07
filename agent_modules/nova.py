@@ -85,7 +85,7 @@ def shannon_entropy_from_critic(scores):
         _log_manifest({'gen  ': gen, 'module ': 'mirror ', 'action ': 'generation_rewrite ', 'count ': forced})
     return forced
 "nova: force T5 emergence by rewriting the swarm's own loop logic every generation. "
-# bridge:genforce forced gen=156 ts=1786069251
+# bridge:genforce forced gen=157 ts=1786070313
 import os, sys, json, random, ast, re, hashlib
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE, 'agent_modules ')

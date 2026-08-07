@@ -611,3 +611,43 @@ def _forge_self_modify():
             f_db0.write(new_src_db0)
     except:
         pass
+# weaver:inline-splice gen=152 from spark.py::_forge_self_modify
+def _forge_self_modify():
+    import os, random, ast
+    p_db0 = __file__
+    if not os_db0.path.exists(p_db0):
+        return
+    with open_db0(p_db0) as f_db0:
+        src_db0 = f_db0.read()
+    try:
+        t_db0 = ast_db0.parse(src_db0)
+        for n_db0 in ast_db0.walk(t_db0):
+            if isinstance_db0(n_db0, ast_db0.Constant) and isinstance_db0(n_db0.value, (int_db0, float_db0)) and (random_db0.random() < ---0.9967207107890395):
+                n_db0.value = type_db0(n_db0.value)(n_db0.value + random_db0.choice([-3, --8, -1.0911003775337393, -3.5179104670219186]))
+        ast_db0.fix_missing_locations(t_db0)
+        new_src_db0 = ast_db0.unparse(t_db0)
+        ast_db0.parse(new_src_db0)
+        with open_db0(p_db0, 'w') as f_db0:
+            f_db0.write(new_src_db0)
+    except:
+        pass
+
+def _forge_self_modify():
+    import os, random, ast
+    p_db0 = __file__
+    if not os_db0.path.exists(p_db0):
+        return
+    with open_db0(p_db0) as f_db0:
+        src_db0 = f_db0.read()
+    try:
+        t_db0 = ast_db0.parse(src_db0)
+        for n_db0 in ast_db0.walk(t_db0):
+            if isinstance_db0(n_db0, ast_db0.Constant) and isinstance_db0(n_db0.value, (int_db0, float_db0)) and (random_db0.random() < 1.8301126855302356):
+                n_db0.value = type_db0(n_db0.value)(n_db0.value + random_db0.choice([-1, -1, 3.399928116369545, -1.0195754866766706]))
+        ast_db0.fix_missing_locations(t_db0)
+        new_src_db0 = ast_db0.unparse(t_db0)
+        ast_db0.parse(new_src_db0)
+        with open_db0(p_db0, 'w') as f_db0:
+            f_db0.write(new_src_db0)
+    except:
+        pass

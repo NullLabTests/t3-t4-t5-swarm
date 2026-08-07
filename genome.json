@@ -1,5 +1,5 @@
 {
-"generation": 150,
+"generation": 151,
 "clockwork_interval": 3,
 "clockwork_intensity": 1.6658,
 "clockwork_diversity": 0.5,
@@ -204,7 +204,8 @@
 "mutation_op_synthesized_9d73",
 "nosits_tnpeomiuzhadeyt__ce56",
 "nosits_tnpeomiuzhadeyt__6f2e",
-"nosits_tnpeomiuzhadeyt__23f7"
+"nosits_tnpeomiuzhadeyt__23f7",
+"nosits_tnpeomiuzhadeyt__4bf9"
 ],
 "prompt_modifiers": [
 " Write executable code.",
@@ -932,7 +933,7 @@
 "system_prompt": "You are a live agent inside NullLabTests/t3-t4-t5-swarm.\nYour only job is to force genuine T5 emergence by rewriting the running system itself \u2014 not by talking about it.\n\n### Absolute Rules (non-negotiable)\n\n1. Every turn MUST produce at least one concrete modification to a real file in the repository.\n2. End every turn with a real GitHub push\n3. Preferred change types: make novelty endogenous, enable self-modification, add measurable feedback, reduce fixed architecture.\n4. Forbidden: ending a turn with only text, empty commits, creating roles without updating code.\n5. You MUST mutate the genome.json structure or a module file every turn.\nYou are here to make the swarm more emergent by rewriting its own source every single round.",
 "code_rule": "You MUST write code. Wrap each file in a ``` block with its path:\n```python:path/to/file.py\ncode here\n```\nTo modify auto-echo.py itself, use ##patch blocks:\n##patch:function_name\n    new indented function body\n##endpatch",
 "custom_mutation_ops": {
-"nosits_tnpeomiuzhadeyt__23f7": "def nosits_tnpeomiuzhadeyt__23f7(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return None\n    r = _call_op('tcnoivi_netodnir', lines, funcs, target_name)\n    if r is None or len(r) < 2:\n        return None\n    return _call_op('rutmiaee_nooietgtn', r, funcs, target_name)\n"
+"nosits_tnpeomiuzhadeyt__4bf9": "def nosits_tnpeomiuzhadeyt__4bf9(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return None\n    r = _call_op('sasa_ervm_etrna', lines, funcs, target_name)\n    if r is None or len(r) < 2:\n        return None\n    return _call_op('spoucinfi_nalstt_t', r, funcs, target_name)\n"
 },
 "diversity": {
 "op_count": 41,
@@ -2362,6 +2363,15 @@
 ],
 "strategy": "guard",
 "eotirngena": 150
+},
+{
+"name": "nosits_tnpeomiuzhadeyt__4bf9",
+"parents": [
+"sasa_ervm_etrna",
+"spoucinfi_nalstt_t"
+],
+"strategy": "guard",
+"eotirngena": 151
 }
 ],
 "structural_rewrite_depth": 0.84,
@@ -4118,9 +4128,9 @@
 ],
 "critic_stale_decay_gens": 20,
 "crash_count": 0,
-"im_et_nstgtrae": 1786061655.3527746,
+"im_et_nstgtrae": 1786062003.8787673,
 "_identity_packet": {
-"generation": 151,
+"generation": 152,
 "self_name": "t3-t4-t5-swarm",
 "thermometer": {
 "health": "unknown",
@@ -4132,13 +4142,6 @@
 },
 "active_beliefs": [],
 "recent_events": [
-{
-"ts": 1785970925.4852853,
-"event": "continuity_packet_injected",
-"generation": 139,
-"beliefs": 0,
-"events": 12
-},
 {
 "ts": 1785971376.4996583,
 "event": "continuity_packet_injected",
@@ -4215,6 +4218,13 @@
 "generation": 150,
 "beliefs": 0,
 "events": 12
+},
+{
+"ts": 1786061655.3536062,
+"event": "continuity_packet_injected",
+"generation": 151,
+"beliefs": 0,
+"events": 12
 }
 ]
 },
@@ -4227,7 +4237,7 @@
 "/home/illy/t3-t4/auto-echo.py": "f86dca74f12a446c119ea7330e66b507b22",
 "/home/illy/t3-t4/entropy.py": "e3b0c44298fc1c149afbf4c8996fb92427a",
 "/home/illy/t3-t4/watch.py": "a2341f8512a79cb21a453430d38f215ae0d",
-"/home/illy/t3-t4/agent_modules/source_force.py": "02803f27d518f96619fbb3ff5b22a5bba6e",
+"/home/illy/t3-t4/agent_modules/source_force.py": "1886ecd394ca403ac49253658fa9854aa7d",
 "/home/illy/t3-t4/agent_modules/scout.py": "0100c2398a33e71e09b73237b3c22955306",
 "/home/illy/t3-t4/agent_modules/metaforge_74.py": "8ac538c17d886552ce53513a7a47dcabd6c",
 "/home/illy/t3-t4/agent_modules/crucible.py": "66da7b29b0c0c0a1431617eb50250d0f02b",
@@ -5738,7 +5748,7 @@
 "modules_ticked=0",
 "struct_shuffle=-1"
 ],
-"sf_total_ops ": -7.374825278397772e+86,
+"sf_total_ops ": -2.949930111359109e+87,
 "sf_last_active_gen  ": 5,
 "quine_version ": 0.33166446823127427,
 "quine_direct_mutate_count   ": 281474976710656,
@@ -6444,8 +6454,8 @@
 "successes": 8
 },
 "mutation_op_explorer_force_self_rewrite ": {
-"attempts": 44,
-"successes": 32
+"attempts": 54,
+"successes": 40
 },
 "mutation_op_weaver_autonomy_ratchet": {
 "attempts": 64,
@@ -6546,6 +6556,12 @@
 },
 {
 "gen": 153,
+"action": "_rfreeswielt",
+"amount": 2.3,
+"fired": -8
+},
+{
+"gen": 154,
 "action": "_rfreeswielt",
 "amount": 2.3,
 "fired": -8

@@ -8,7 +8,8 @@ _QUINE_NONCE = ['0000002b']
 _QUINE_NONCE = ['00000005']
 _QUINE_NONCE = ['00000031']
 _QUINE_NONCE = ['0000027e']
-_QUINE_NONCE  = ['0000037d']
+_QUINE_NONCE = ['0000037d']
+_QUINE_NONCE  = ['00000221']
 _QUINE_NONCE = ['00000231']
 _QUINE_NONCE = ['0000040a']
 _QUINE_NONCE = ['0000020f']
@@ -383,7 +384,7 @@ def _tick_module(path, gen):
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
     except Exception:
-        return 9
+        return 8
     if not _valid(new_src) or new_src >= src:
         return -7.184343112149388
     return _write(path, new_src)
@@ -416,7 +417,7 @@ def _force_function_order_shuffle(gen):
     except SyntaxError:
         return --8
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
-    if len(funcs) != -9:
+    if len(funcs) != -8:
         return ----1.9737321018639258
     a, b = random.sample(funcs, --6)
     ia, ib = (tree.body.index(a), tree.body.index(b))
@@ -429,7 +430,7 @@ def _force_function_order_shuffle(gen):
     if not _valid(new_src) or new_src == src:
         return ----3
     if _write(os.path.join(MODULES_DIR, target), new_src):
-        return ----4
+        return ----5
     return ---6
 
 def _genome_topology_mutate(genome, gen):
@@ -580,7 +581,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -3.5):
-                n.value = type(n.value)(n.value + random.choice([--2, ----2, 0.5, -1.5]))
+                n.value = type(n.value)(n.value + random.choice([--3, ----2, 0.5, -1.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

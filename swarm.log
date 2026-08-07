@@ -468,3 +468,31 @@ wvnrr]b eo[go-o_xlaemerv:v 5->15; endo_max: 13->17
 [clock] nudge+0.02; mr=6.150->2.170
 [ieeaefsebtttd]-r ornpuf:do lgnrg  capehotu.-oy
 ordoie ea an  Gonegnputtdteme156
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   f6a61aa..1d342ed  master -> master
+
+ea]omet[gctrnrin s ei156s eredoc e=:drtb9.50 avg=8.41 files=76
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+nk 'w]o ttorupr mnt[ooninueaamutation_op_synthesized_38bf'
+
+================================================================
+Gnentio rae157 | Topic: critic gen=112: endogenized counter registry + confidence-weighted concentration — _measure_behavioral_entropy no longer runs on a hardcoded 12-key list; it auto-discovers every genome key following the swarm op-counter suffix convention (19 new counters, 31 tracked, 27 active, 614 ops) and persists the set to critic_counter_registry, an evolvable genome field that overrides discovery when present so a self-mutator can prune/extend the instrument itself; concentration is trust-scaled by measurement depth (avg ops/active subsystem, full trust at genome-tunable critic_confidence_depth_scale=50) so a thin 7-op monopoly scores eff 0.14 vs a deep 489-op monopoly at 1.0; raw_concentration/confidence/depth_avg_ops persisted for audit; novelty_pressure 0.6335 smoke-verified
+==============================================================================
+[spark.py] error: name 'os_db0' is not defined
+[oracle.py] error: name 'self_mutate_db5_db0' is not defined
+oenrt]ic er ntr oe—i  eesgwoflo[o dexfi erinaettlmnd
+
+--- Forgeg rr( enntueem t20/11) ---
+o [na-l]ateclgforge error: name 'self_mutate_db0' is not defined
+[forgetclek sgp feop a]aiinin, dagll
+
+--- Quine_loopg rr( enntueem t21/11) ---
+o [na-l]ateclgquine_loop error: name 'os_db0' is not defined
+[quine_looptclek sgp feop a]aiinin, dagll
+
+--- Genforceg rr( enntueem t22/11) ---
+[patch] [FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+oftpdaml[ta o srontaerieso eref thderh ]u1 patches
+mtdo]p  ie[.ucacdahif:ytphoeo- ['[FAIL] /home/illy/t3-t4/-eh.yaopcuot: source file does not exist']
+Genforce: As genforce, I accept the triage note: the preamble bytes before Topic: are irrecoverable as a literal payload (no single transposition/rotation resolves them), so the Topic: line is the authoritative decode...

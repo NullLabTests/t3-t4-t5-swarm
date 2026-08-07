@@ -5994,11 +5994,11 @@
 "source_autonomy_index  ": -2.827,
 "sf_last_changes ": [
 "selfheal=-4 ",
-"self_rewrite=-46  ",
+"self_rewrite=3  ",
 "modules_ticked=0",
-"struct_shuffle=-2"
+"struct_shuffle=-3"
 ],
-"sf_total_ops ": -5.314121660114355e+103,
+"sf_total_ops ": -3.4010378624731874e+105,
 "sf_last_active_gen  ": 6,
 "quine_version ": 0.33166446823127427,
 "quine_direct_mutate_count   ": 281474976710656,

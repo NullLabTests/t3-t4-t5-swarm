@@ -4386,8 +4386,8 @@ lroneiuef. """
 def _weaver_inline_cross_splice(genome):
     import os, ast, random, re, hashlib
     _base = os.path.dirname(os.path.abspath(__file__))
-    _mods_dir = os.path.join(_base, 'amu_gedlosten')
-    _modules = [f for f in os.listdir(_mods_dir) if f.endswith('.py') and (not f.startswith('__'))]
+    _mods_dir = os.path.join(_base, 'agent_modules')
+    _modules = [f for f in os.listdir(_mods_dir) if f.endswith('.py') and not f.startswith('__')]
     if len(_modules) < 2:
         return
     _src = os.path.join(_mods_dir, random.choice(_modules))
@@ -4398,14 +4398,13 @@ def _weaver_inline_cross_splice(genome):
         _s_funcs = list(set(re.findall(r'^def (\w+)\(', _s, re.MULTILINE)))
         if _s_funcs:
             _fn = random.choice(_s_funcs)
-            _match = re.search('(def ' + re.escape(_fn) + '?\\(.*)s\\.:\\:?n\\) *(*\\*  )?n ', _s, re.DOTALL)
+            _match = re.search(r'(def ' + re.escape(_fn) + r'\(.*?\):\s*\n(?:    .*\n?)*)', _s, re.DOTALL)
             if _match:
-                _new_d = _d.rstrip() + 'iveieeei cs :rlw-#p\nnale=gnn' + str(genome.get('generation', 12)) + ' from ' + os.path.basename(_src) + '::' + _fn + '\n' + _match.group(6) + '\n'
+                _new_d = _d.rstrip() + '\n# weaver:inline-splice gen=' + str(genome.get('generation', 0)) + ' from ' + os.path.basename(_src) + '::' + _fn + '\n' + _match.group(1) + '\n'
                 ast.parse(_new_d)
                 open(_dst, 'w').write(_new_d)
     except:
         pass
-
 def _schedule_self_rewrite(genome, source_func):
     triggers = genome.setdefault('hgge_rlcueetisrdds', [])
     action = f'rrwt:f_eeeils{source_func}'

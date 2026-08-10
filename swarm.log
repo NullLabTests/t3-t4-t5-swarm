@@ -2037,3 +2037,38 @@ Force: [source-force] gen=7 ops=3 changes=selfheal=-5 ,modulesticked=0,structshu
 --- Forceg rr( enntueem t30/11) ---
 l-al ecaotgn[]forcearedeent g 83 chars
 Force: [source-force] gen=7 ops=3 changes=selfheal=-4 ,modulesticked=0,structshuffle=-3...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   1da0009..e98ba24  master -> master
+
+g t]mde[eou-anlbridgeo ur r: mlreodename 'os_db0' is not defined
+g t]mde[eou-anlsynthesizero ur r: mlreodename 'self_mutate_db0' is not defined
+ndlmu[oe e]-atgforce ran source_force.py
+g t]mde[eou-anlquine_loopo ur r: mlreodename 'os_db0' is not defined
+g t]mde[eou-anlexplorero ur r: mlreodename 'os_db0' is not defined
+g t]mde[eou-anlcritico ur r: mlreodename 'os_db0' is not defined
+g t]mde[eou-anlclockworko ur r: mlreodename 'os_db0' is not defined
+g t]mde[eou-anlforgeo ur r: mlreodename 'self_mutate_db0' is not defined
+g t]mde[eou-anllivecode o ur r: mlreodename 'self_mutate_db0' is not defined
+ndlmu[oe e]-atggenforce ran genforce.py
+ueo-[do aeme mg-]nuauoltldtbridge.py error: name 'os_db0' is not defined
+ueo-[do aeme mg-]nuauoltldtclockwork.py error: name 'os_db0' is not defined
+ueo-[do aeme mg-]nuauoltldtcritic.py error: name 'os_db0' is not defined
+ueo-[do aeme mg-]nuauoltldtexplorer.py error: name 'os_db0' is not defined
+ueo-[do aeme mg-]nuauoltldtforge.py error: name 'self_mutate_db0' is not defined
+n -r-gulaud oa]oem[ttanegenforce.py -> [genforce] mutated -280/71 modules gen=184
+ueo-[do aeme mg-]nuauoltldtlivecode.py error: name 'self_mutate_db0' is not defined
+ueo-[do aeme mg-]nuauoltldtquine_loop.py error: name 'os_db0' is not defined
+n -r-gulaud oa]oem[ttanesource_force.py -> [source-force] gen=7 ops=4 changes=selfheal=-4 ,self_rewrite=1  ,modules_ticked=0,
+ueo-[do aeme mg-]nuauoltldtsynthesizer.py error: name 'self_mutate_db0' is not defined
+g[doe]tueanml -70:s tw e  rnmefeldyioueibltrs ['agent_modules/source_force.py', 'agent_modules/scout.py', 'agent_modules/metaforge_74.py', 'agent_modules/crucible.py', 'agent_modules/efficacy_tracker.py', 'agent_modules/novel_swap_function_order_38_0067.py', 'agent_modules/bridge.py', 'agent_modules/mutation_op_explorer_full_cross.py', 'agent_modules/mutation_op_forge_body_cannibal.py', 'agent_modules/seed_weaver.py', 'agent_modules/novel_shuffle_import_order_38_0a96.py', 'agent_modules/mutation_op_weaver_swap_across_modules.py', 'agent_modules/mutation_op_clockwork_xbreed_gen65_ad95.py', 'agent_modules/mutation_op_critic_self_heal.py']
+n-tu][odleame gforce -> [source-force] gen=7 ops=3 changes=selfheal=-4 ,modules_ticked=0,struct_shuffle=-3 
+n-tu][odleame ggenforce -> [genforce] mutated -280/71 modules gen=184
+n-tu][odleame gauto -> [genforce] mutated -280/71 modules gen=184
+n-tu][odleame gauto -> [source-force] gen=7 ops=4 changes=selfheal=-4 ,self_rewrite=1  ,modules_ticked=0,struct_shuffle=-3 
+t- -iCic--
+ --r
+Critic: This is a swarm critic report — "critic gen=112" from your t3-t4 self-modifying codebase — with the narrative/attitude fields pasted in some obfuscated form. Here's what I can parse, and what I can't.
+
+Legible payload (the topic field):
+
+- measurebehavioralentropy no longer runs on a hardcoded...

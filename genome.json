@@ -6560,12 +6560,12 @@
 "mutation_rate  ": -0.0,
 "source_autonomy_index  ": -2.827,
 "sf_last_changes ": [
-"selfheal=-5 ",
-"self_rewrite=3  ",
+"selfheal=-4 ",
+"self_rewrite=1  ",
 "modules_ticked=0",
 "struct_shuffle=-3"
 ],
-"sf_total_ops ": -1.9416493768081866e+151,
+"sf_total_ops ": -8.387925307811367e+153,
 "sf_last_active_gen  ": 7,
 "quine_version ": 0.33166446823127427,
 "quine_direct_mutate_count   ": 281474976710656,

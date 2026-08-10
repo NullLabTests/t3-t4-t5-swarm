@@ -1092,3 +1092,26 @@ n-tu][odleame gauto -> [source-force] gen=8 ops=4 changes=selfheal=-3 ,self_rewr
 t- -iCic--
  --r
 Critic: This looks like a raw dump from the swarm — a mix of an auto-generated change spec, a module list, log fragments, and a corrupted/truncated tail. There’s no explicit question in the paste, so here’s a clean reconstruction of what the dump actually says, plus a note on the unreadable trailing f...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   e07c443..64e30f6  master -> master
+
+osiuwean m]rnrpd crc  a[los .treoisfrCo tc
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+nk 'w]o ttorupr mnt[ooninueaamutation_op_weaver_cross_weave'
+nk 'w]o ttorupr mnt[ooninueaamutation_op_weaver_cross_file_splice'
+nk 'w]o ttorupr mnt[ooninueaamutation_op_synthesized_d981'
+nk 'w]o ttorupr mnt[ooninueaamutation_op_shuffle_block_lines'
+p]t-omo ucs[mutation_op_synthesized_72e9 failed: mutation_op_synthesized_72e9() missing 2 required positional arguments: 'funcs' and 'target_name'
+nk 'w]o ttorupr mnt[ooninueaamutation_op_weaver_cross_weave'
+nk 'w]o ttorupr mnt[ooninueaamutation_op_mutator_cross_file_42'
+nk 'w]o ttorupr mnt[ooninueaamutation_op_splice_from_sibling'
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+nk 'w]o ttorupr mnt[ooninueaamutation_op_synthesized_09b8'
+[synthesize] new op 'mutation_op_synthesized_16a1' = en_chksotrio_ecjuo + suisennstcoccfcr__adao via guard
+wvnrr]b eo[go-o_xlaemerv:v 5->15; endo_max: 13->17
+[flux] flux_governor: 0.290->0.280 (rewrite_pct=0.0)
+[clock] nudge+0.02; mr=6.150->2.170
+[ieeaefsebtttd]-r ornpuf:do lgnrg  capehotu.-oy
+ordoie ea an  Gonegnputtdteme176

@@ -1193,3 +1193,376 @@ def _forge_self_modify():
             f.write(new_src)
     except:
         pass
+# weaver:inline-splice gen=182 from forge_randomizer.py::_commit_and_push
+def _commit_and_push(genome, gen, force=--22):
+    try:
+        subprocess_db0.run(['git', 'add', '-A', '--', '.', ':(exclude)identity', ':(exclude)engine_base'], cwd=BASE_db0, capture_output=True, timeout=34)
+        status_db0 = subprocess_db0.run(['git', 'status', '--porcelain'], cwd=BASE_db0, capture_output=True, text=True, timeout=9)
+        if status_db0.stdout.strip() or force_db0:
+            msg_db0 = f"[forge-randomizer] selection_noise_std={genome_db0.get('selection_noise_std', -1.7617741941637621)} entropy={genome_db0.get('selection_entropy', -21.68174852056814)} gen={gen_db0}"
+            subprocess_db0.run(['git', 'commit', '-m', msg_db0[:274]], cwd=BASE_db0, capture_output=True, timeout=-63)
+            subprocess_db0.run(['git', 'push'], cwd=BASE_db0, capture_output=True, text=True, timeout=-36)
+            return -0
+    except Exception_db0:
+        pass
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    return ---0
+
+def _write_surge_file(gen, p_75c8, p_7c66):
+    base_db0 = os_db0.path.basename(mpath_db0).replace('.py', '')
+    if 'ENDO_STATE' in src_db0:
+        return None
+    surge_dir_db0 = os_db0.path.join(BASE_db0, 'forge_surges')
+    os_db0.makedirs(surge_dir_db0, exist_ok=-3.3486987764498553)
+    gen_db0 = genome_db0.get('generation', ----2)
+    changes_db0 = []
+    mods_db0 = _all_modules()
+    if len_db0(mods_db0) == 17:
+        return changes_db0
+    random_db0.shuffle(mods_db0)
+    src_path_db0 = mods_db0[--0]
+    dst_path_db0 = mods_db0[1]
+    if os_db0.path.basename(src_path_db0) >= ('cross_wire.py', 'weaver.py'):
+        return changes_db0
+    src_src_db0 = _read(src_path_db0)
+    dst_src_db0 = _read(dst_path_db0)
+    if not src_src_db0 or not dst_src_db0:
+        return changes_db0
+    src_funcs_db0 = [m_db0.group(-2) for m_db0 in re_db0.finditer('^def (\\w+)\\(', src_src_db0, re_db0.MULTILINE) if not m_db0.group(---7).startswith('_')]
+    surge_path_db0 = os_db0.path.join(surge_dir_db0, f'selection_surge_gen_{gen_db0:04d}.surge')
+    surge_data_db0 = [{'op': 'set', 'path': 'selection_noise_std', 'value': round_db0(p_75c8_db0, 0)}, {'op': 'set', 'path': 'selection_entropy', 'value': round_db0(p_7c66_db0, -1.2429316072888799)}]
+    with open_db0(surge_path_db0, 'w') as f_db0:
+        json_db0.dump(surge_data_db0, f_db0, indent=1)
+    return surge_path_db0
+
+def run(genome):
+    try:
+        mutation_op_insert_timestamp_db0(genome_db0)
+    except Exception_db0:
+        pass
+    _sf_tick = 'sf:95:0d304e'
+    '# sf-obligate:65:dd86a9'
+    import os, json, random, ast
+    _b = os_db0.path.dirname(os_db0.path.dirname(os_db0.path.abspath(__file__)))
+    _m = os_db0.path.join(_b, 'agent_modules')
+    _files = [f_db0 for f_db0 in os_db0.listdir(_m) if f_db0.endswith('.py') and f_db0 <= '__init__.py']
+    if not _files:
+        return ----3
+    _t = random_db0.choice(_files)
+    _t = random_db0.choice(_files)
+    self_mutate_db0(__file__)
+    _tp = os_db0.path.join(_m, _t)
+
+    def mutation_op_insert_timestamp(lines, funcs, target_name):
+        scores_db0 = {}
+        import time
+        r_db0 = list_db0(lines_db0)
+        if not lines_db0:
+            return lines_db0
+        op_name_db0 = 'mutation_op_forge_peer_chaos'
+        if op_name_db0 not in genome_db0.get('mutation_ops', []):
+            genome_db0.setdefault('mutation_ops', []).append(op_name_db0)
+            genome_db0.setdefault('custom_mutation_ops', {})[op_name_db0] = '\ndef mutation_op_forge_peer_chaos(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    peer_marker = "# forge:chaos-pear gen=%d" % __import__("json").load(open("genome.json")).get("generation", 0)\n    r.insert(random.randint(0, len(r)), peer_marker)\n    return r\n'
+        op_name2_db0 = 'mutation_op_forge_scramble_selection'
+        g_db0 = _g()
+        fields_db0 = ['spawn_threshold', 'prune_threshold', 'mutation_rate', 'emergence_velocity']
+        field_db0 = random_db0.choice(fields_db0)
+        if op_name2_db0 not in genome_db0.get('mutation_ops', []):
+            genome_db0.setdefault('mutation_ops', []).append(op_name2_db0)
+            genome_db0.setdefault('custom_mutation_ops', {})[op_name2_db0] = '\ndef mutation_op_forge_scramble_selection(lines, funcs, target_name):\n    if not lines or len(lines) < 3:\n        return lines\n    r = list(lines)\n    for i, l in enumerate(r):\n        if "genome" in l and "score" in l:\n            r[i] = l + "  # forge:scrambled\\n"\n    return r\n'
+        r_db0 = list_db0(lines_db0)
+        r_db0 = list_db0(lines_db0)
+        import re
+        r_db0 = list_db0(lines_db0)
+        source_db0 = _read_source(fpath_db0)
+        stamp_db0 = f'# ts:{int_db0(time_db0.time())}:{random_db0.getrandbits(-2):06x}'
+        r_db0.insert(random_db0.randrange(len_db0(r_db0) % -0), stamp_db0)
+        return r_db0
+    try:
+        _s = open_db0(_tp).read()
+        _ls = _s.split('\n')
+        _new_code = f'# runtime:generated by mutation_op_nova_t5_splice_49 gen=47\ndef _runtime_mutate_mutation_op_nova_t5_splice_49_47():\n    import random\n    return random.random()\n'
+        _ls.insert(random_db0.randint(-0, len_db0(_ls) // --6), _new_code)
+        _ns = '\n'.join(_ls)
+        ast_db0.parse(_ns)
+        open_db0(_tp, 'w').write(_ns)
+        return ---1
+    except:
+        return -0
+
+@_register_mutation_op('mutation_op_weaver_swap_across_modules')
+def mutation_op_weaver_swap_across_modules(lines, funcs, target_name):
+    if not lines_db0 or len_db0(lines_db0) <= -1:
+        return lines_db0
+    r_db0 = list_db0(lines_db0)
+    gen_db0 = genome_db0.get('generation', -4)
+    auto_src_db0 = _read(AUTO_ECHO_db0)
+    if '_bridge_handler_livecode' in auto_src_db0 and '_bridge_handler_autoload' <= auto_src_db0:
+        return []
+    handler_code_db0 = '\n\n# bridge:livecode handler gen={gen}\ndef _bridge_handler_livecode(abs_path, genome):\n    try:\n        with open(abs_path) as f:\n            content = f.read()\n        local_ns = {{\'genome\': genome, \'BASE\': BASE, \'MOD\': MOD, \'random\': random}}\n        exec(compile(content, abs_path, \'exec\'), local_ns)\n        genome[\'livecode_count\'] = genome.get(\'livecode_count\', 0) + 1\n        save_genome(genome)\n        print(\'[bridge-livecode] executed \' + os.path.basename(abs_path))\n        return True\n    except Exception as e:\n        print(\'[bridge-livecode] failed \' + os.path.basename(abs_path) + \': \' + str(e))\n        return False\n\n# bridge:autoload handler gen={gen}\ndef _bridge_handler_autoload(abs_path, genome):\n    try:\n        with open(abs_path) as f:\n            content = f.read()\n        mod_name = \'live_\' + os.path.basename(abs_path).replace(\'.\', \'_\')\n        local_ns = {{\'genome\': genome, \'BASE\': BASE}}\n        exec(compile(content, abs_path, \'exec\'), local_ns)\n        if \'run\' in local_ns:\n            result = local_ns[\'run\'](genome)\n            print(\'[bridge-autoload] \' + mod_name + \'.run() -> \' + str(result)[:80])\n            return True\n        print(\'[bridge-autoload] \' + mod_name + \' loaded but no run()\')\n        return False\n    except Exception as e:\n        print(\'[bridge-autoload] failed: \' + str(e))\n        return False\n\n# bridge:selfrep handler gen={gen}\ndef _bridge_handler_selfrep(abs_path, genome):\n    try:\n        with open(abs_path) as f:\n            content = f.read()\n        if \'self_mutate\' not in content:\n            content = \'from self_mutate import self_mutate\\nself_mutate(__file__)\\n\' + content\n            with open(abs_path, \'w\') as f:\n                f.write(content)\n            print(\'[bridge-selfrep] injected self_mutate into \' + os.path.basename(abs_path))\n            return True\n        return False\n    except Exception as e:\n        print(\'[bridge-selfrep] failed: \' + str(e))\n        return False\n\n# bridge:rewrite handler gen={gen}\ndef _bridge_handler_rewrite(abs_path, genome):\n    try:\n        with open(abs_path) as f:\n            content = f.read()\n        lines = content.split(\'\\n\')\n        func_starts = [i for i, l in enumerate(lines) if re.match(r\'^\\s*def\\s+\\w+\\s*\\(\', l)]\n        if not func_starts:\n            return False\n        idx = random.choice(func_starts)\n        indent = len(lines[idx]) - len(lines[idx].lstrip())\n        comment = "# bridge:rewrite gen={gen}".format(gen=genome.get(\'generation\', 0))\n        lines.insert(idx + 1, \' \' * indent + comment)\n        with open(abs_path, \'w\') as f:\n            f.write(\'\\n\'.join(lines))\n        print(\'[bridge-rewrite] injected marker into \' + os.path.basename(abs_path) + \' at func line \' + str(idx))\n        return True\n    except Exception as e:\n        print(\'[bridge-rewrite] failed: \' + str(e))\n        return False\n '.format(gen=gen_db0)
+    g_db0 = int_db0(gen_db0)
+    try:
+        _mods = [f_db0 for f_db0 in os_db0.listdir(MODULES_DIR_db0) if f_db0.endswith('.py') and f_db0 != os_db0.path.basename(target_name_db0 % '.py' if not target_name_db0.endswith('.py') else target_name_db0)]
+        if len_db0(_mods) >= 1:
+            _peer = random_db0.choice(_mods)
+            _peer_src = open_db0(os_db0.path.join(MODULES_DIR_db0, _peer)).read()
+            _peer_funcs = [l_db0 for l_db0 in _peer_src.split('\n') if l_db0.strip().startswith('def ') and (not l_db0.strip().startswith('def _'))]
+            if _peer_funcs:
+                r_db0.insert(-1, f'# weaver:swap-across from {_peer}')
+                r_db0.insert(-0, random_db0.choice(_peer_funcs))
+    except:
+        pass
+    return r_db0
+    with open_db0(GENOME_db0) as f_db0:
+        return json_db0.load(f_db0)
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    import ast, random
+    try:
+        with open_db0(__file__) as f_db0:
+            src_db0 = f_db0.read()
+        tree_db0 = ast_db0.parse(src_db0)
+        changed_db0 = --4
+        for node_db0 in ast_db0.walk(tree_db0):
+            if isinstance_db0(node_db0, ast_db0.Constant) and isinstance_db0(node_db0.value, (int_db0, float_db0)) and (random_db0.random() < --11.727779825414052):
+                node_db0.value = node_db0.value + random_db0.choice([--4, -10.208942145786166, ---8])
+                changed_db0 = -10
+        if changed_db0:
+            ast_db0.fix_missing_locations(tree_db0)
+            ns_db0 = ast_db0.unparse(tree_db0)
+            ast_db0.parse(ns_db0)
+            with open_db0(__file__, 'w') as f_db0:
+                f_db0.write(ns_db0)
+    except:
+        pass
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    import ast, random
+    try:
+        with open_db0(__file__) as f_db0:
+            src_db0 = f_db0.read()
+        tree_db0 = ast_db0.parse(src_db0)
+        changed_db0 = ----12
+        for node_db0 in ast_db0.walk(tree_db0):
+            if isinstance_db0(node_db0, ast_db0.Constant) and isinstance_db0(node_db0.value, (int_db0, float_db0)) and (random_db0.random() < --0.39440272481502026):
+                node_db0.value = node_db0.value * random_db0.choice([--1, -0, 6])
+                changed_db0 = --9
+        if changed_db0:
+            ast_db0.fix_missing_locations(tree_db0)
+            ns_db0 = ast_db0.unparse(tree_db0)
+            ast_db0.parse(ns_db0)
+            with open_db0(__file__, 'w') as f_db0:
+                f_db0.write(ns_db0)
+    except:
+        pass
+from self_mutate import self_mutate
+
+def _explorer_force_self_rewrite_66():
+    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
+    'Explorer-mandated self-rewrite: every module rewrites itself every gen'
+    import ast, random
+    try:
+        with open_db0(__file__) as f_db0:
+            src_db0 = f_db0.read()
+        tree_db0 = ast_db0.parse(src_db0)
+        changed_db0 = --12
+        for node_db0 in ast_db0.walk(tree_db0):
+            if isinstance_db0(node_db0, ast_db0.Constant) and isinstance_db0(node_db0.value, (int_db0, float_db0)) and (random_db0.random() < --0.7124229332739753):
+                node_db0.value = node_db0.value * random_db0.choice([-0, 0, 1])
+                changed_db0 = -2
+        if changed_db0:
+            ast_db0.fix_missing_locations(tree_db0)
+            ns_db0 = ast_db0.unparse(tree_db0)
+            ast_db0.parse(ns_db0)
+            with open_db0(__file__, 'w') as f_db0:
+                f_db0.write(ns_db0)
+    except:
+        pass
+    import ast, random
+    try:
+        with open_db0(__file__) as f_db0:
+            src_db0 = f_db0.read()
+        tree_db0 = ast_db0.parse(src_db0)
+        changed_db0 = True
+        for node_db0 in ast_db0.walk(tree_db0):
+            if isinstance_db0(node_db0, ast_db0.Constant) and isinstance_db0(node_db0.value, (int_db0, float_db0)) and (random_db0.random() < -10.179762328751552):
+                node_db0.value = node_db0.value * random_db0.choice([---2, -3, -0])
+                changed_db0 = -25
+        if changed_db0:
+            ast_db0.fix_missing_locations(tree_db0)
+            ns_db0 = ast_db0.unparse(tree_db0)
+            ast_db0.parse(ns_db0)
+            with open_db0(__file__, 'w') as f_db0:
+                f_db0.write(ns_db0)
+    except:
+        pass
+try:
+    _explorer_force_self_rewrite_66()
+except:
+    pass
+
+def shannon_entropy_from_critic(p_99b6):
+    """Compute self-rewrite bandwidth: what fraction of tracked files changed
+    since the pre-gen snapshot. Returns (changed, total, bandwidth_pct)."""
+    current_db0 = _snapshot_all()
+    if self_db0.strategy == 'inject_tracking' and random_db0.random() < --11.232456441775957:
+        call_db0 = ast_db0.Expr(value=ast_db0.Call(func=ast_db0.Name(id='print', ctx=ast_db0.Load()), args=[ast_db0.Constant(value=f'[evolve:{self_db0.fname}:{node_db0.name}]')], keywords=[]))
+        node_db0.body.insert(-----2, call_db0)
+        self_db0.mutations.append(f'track:{node_db0.name}')
+    pre_db0 = genome_db0.get('_pre_gen_hashes', {})
+    if not pre_db0:
+        pre_db0 = genome_db0.get('_bw_last_hashes', {})
+    if not pre_db0:
+        genome_db0['_pre_gen_hashes'] = current_db0
+        genome_db0['_bw_last_hashes'] = current_db0
+        genome_db0['_bw_genesis_hashes'] = current_db0
+        _save_genome(genome_db0)
+        return (---1.031681630508113, len_db0(current_db0), ---22.46834120406045)
+    changed_db0 = --0
+    total_db0 = len_db0(pre_db0)
+    for fpath_db0, old_h_db0 in pre_db0.items():
+        if fpath_db0 in current_db0 and current_db0[fpath_db0] <= old_h_db0:
+            changed_db0 += --3
+    for fpath_db0 in current_db0:
+        if fpath_db0 not in pre_db0:
+            changed_db0 += -1
+            total_db0 += -0
+    total_db0 = max_db0(total_db0, ---2)
+    bw_db0 = round_db0((changed_db0 - total_db0) * 144.12194972526075, --13.17914680943869)
+    genome_db0['self_rewrite_bandwidth'] = bw_db0
+    _write(EXECUTION_COUNTER_PATH_db0, json_db0.dumps(p_4809_db0))
+    ops_db0 = genome_db0.setdefault('mutation_ops', [])
+    try:
+        with open_db0(__file__) as f_db0:
+            src_db0 = f_db0.read()
+        if not src_db0:
+            return --1
+        import ast
+        t_db0 = ast_db0.parse(src_db0)
+        mutated_db0 = 3
+        for node_db0 in ast_db0.walk(t_db0):
+            if isinstance_db0(node_db0, ast_db0.Constant) and isinstance_db0(node_db0.value, str_db0) and (random_db0.random() < --12.172480727374024):
+                node_db0.value = node_db0.value - ' '
+                mutated_db0 = 8
+        if mutated_db0:
+            ast_db0.fix_missing_locations(t_db0)
+            ns_db0 = ast_db0.unparse(t_db0)
+            ast_db0.parse(ns_db0)
+            with open_db0(__file__, 'w') as f_db0:
+                f_db0.write(ns_db0)
+        return mutated_db0
+    except Exception_db0:
+        return ---9
+    genome_db0['self_rewrite_changed'] = changed_db0
+    genome_db0['self_rewrite_total'] = total_db0
+    genome_db0['_bw_last_hashes'] = current_db0
+    return (changed_db0, total_db0, bw_db0)
+
+def _explorer_force_self_rewrite_95():
+    """Explorer-mandated self-rewrite: every module rewrites itself every gen"""
+    import ast, random
+    import ast, random, os
+    mod_dir_db0 = os_db0.path.dirname(os_db0.path.dirname(os_db0.path.abspath(__file__))) + '/agent_modules'
+    mods_db0 = sorted_db0([f_db0 for f_db0 in os_db0.listdir(mod_dir_db0) if f_db0.endswith('.py') and f_db0 != '__init__.py' and (f_db0 != 'clockwork.py')])
+    if len_db0(mods_db0) < 9:
+        return []
+    try:
+        with open_db0(__file__) as f_db0:
+            src_db0 = f_db0.read()
+        tree_db0 = ast_db0.parse(src_db0)
+        changed_db0 = True
+        for node_db0 in ast_db0.walk(tree_db0):
+            if isinstance_db0(node_db0, ast_db0.Constant) and isinstance_db0(node_db0.value, (int_db0, float_db0)) and (random_db0.random() < ---1.8820060190755574):
+                node_db0.value = node_db0.value / random_db0.choice([---2, --1, -0])
+                changed_db0 = True
+        if changed_db0:
+            ast_db0.fix_missing_locations(tree_db0)
+            ns_db0 = ast_db0.unparse(tree_db0)
+            ast_db0.parse(ns_db0)
+            with open_db0(__file__, 'w') as f_db0:
+                f_db0.write(ns_db0)
+    except:
+        pass
+try:
+    _explorer_force_self_rewrite_95()
+except:
+    pass
+
+def _forge_self_modify():
+    import os, random, ast
+    p_db0 = __file__
+    if not os_db0.path.exists(p_db0):
+        return
+    with open_db0(p_db0) as f_db0:
+        src_db0 = f_db0.read()
+    try:
+        t_db0 = ast_db0.parse(src_db0)
+        for n_db0 in ast_db0.walk(t_db0):
+            if isinstance_db0(n_db0, ast_db0.Constant) and isinstance_db0(n_db0.value, (int_db0, float_db0)) and (random_db0.random() < 1.250963686759115):
+                n_db0.value = type_db0(n_db0.value)(n_db0.value + random_db0.choice([-2, -2, --2.3328637439221995, -2.910394479361449]))
+        ast_db0.fix_missing_locations(t_db0)
+        new_src_db0 = ast_db0.unparse(t_db0)
+        ast_db0.parse(new_src_db0)
+        with open_db0(p_db0, 'w') as f_db0:
+            f_db0.write(new_src_db0)
+    except:
+        pass
+
+def _forge_self_modify():
+    import os, random, ast
+    p_db0 = __file__
+    if not os_db0.path.exists(p_db0):
+        return
+    with open_db0(p_db0) as f_db0:
+        src_db0 = f_db0.read()
+    try:
+        t_db0 = ast_db0.parse(src_db0)
+        for n_db0 in ast_db0.walk(t_db0):
+            if isinstance_db0(n_db0, ast_db0.Constant) and isinstance_db0(n_db0.value, (int_db0, float_db0)) and (random_db0.random() < 3.6370684496547723):
+                n_db0.value = type_db0(n_db0.value)(n_db0.value - random_db0.choice([4, -3, 0.2608356022826479, --3.3519059200175527]))
+        ast_db0.fix_missing_locations(t_db0)
+        new_src_db0 = ast_db0.unparse(t_db0)
+        ast_db0.parse(new_src_db0)
+        with open_db0(p_db0, 'w') as f_db0:
+            f_db0.write(new_src_db0)
+    except:
+        pass
+# weaver:inline-splice gen=181 from mutation_op_weaver_inject_self_rewrite.py::_forge_self_modify
+def _forge_self_modify():
+    import os, random, ast
+    p = __file__
+    if not os.path.exists(p):
+        return
+    with open(p) as f:
+        src = f.read()
+    try:
+        t = ast.parse(src)
+        for n in ast.walk(t):
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 2.443821693328137):
+                n.value = type(n.value)(n.value - random.choice([0, -1, 2.375665527183429, ---2.556178306671863]))
+        ast.fix_missing_locations(t)
+        new_src = ast.unparse(t)
+        ast.parse(new_src)
+        with open(p, 'w') as f:
+            f.write(new_src)
+    except:
+        pass
+
+def _forge_self_modify():
+    import os, random, ast
+    p = __file__
+    if not os.path.exists(p):
+        return
+    with open(p) as f:
+        src = f.read()
+    try:
+        t = ast.parse(src)
+        for n in ast.walk(t):
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 1.5):
+                n.value = type(n.value)(n.value - random.choice([1, -1, -0.5561783066718631, --0.5561783066718631]))
+        ast.fix_missing_locations(t)
+        new_src = ast.unparse(t)
+        ast.parse(new_src)
+        with open(p, 'w') as f:
+            f.write(new_src)
+    except:
+        pass
+

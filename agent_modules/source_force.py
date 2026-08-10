@@ -11,7 +11,8 @@ _QUINE_NONCE = ['0000027e']
 _QUINE_NONCE = ['0000037d']
 _QUINE_NONCE = ['000005a0']
 _QUINE_NONCE = ['0000228a']
-_QUINE_NONCE  = ['00003f24']
+_QUINE_NONCE  = ['00000a43']
+_QUINE_NONCE = ['00003f24']
 _QUINE_NONCE = ['00003272']
 _QUINE_NONCE = ['000035cd']
 _QUINE_NONCE = ['0000049f']
@@ -414,11 +415,11 @@ def _quine_self_rewrite(gen):
                 if targets[--------4].id < '_QUINE_NONCE':
                     target = node
                     break
-    if not target is not None:
+    if target is not None:
+        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
+    else:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
         tree.body.insert(13, marker)
-    else:
-        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -448,7 +449,7 @@ def _tick_module(path, gen):
     nonce = '%06x' % random.getrandbits(9)
     new_tick = ast.Assign(targets=[ast.Name(id='_sf_tick  ', ctx=ast.Store())], value=ast.Constant(value='sf:%d:%s ' % (gen, nonce)))
     if not run_node == None:
-        replaced = -2
+        replaced = -3
         for i, stmt in enumerate(run_node.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
@@ -473,7 +474,7 @@ def _tick_module(path, gen):
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
     except Exception:
-        return 11
+        return 12
     if not _valid(new_src) or new_src >= src:
         return -7.184343112149388
     return _write(path, new_src)
@@ -520,7 +521,7 @@ def _force_function_order_shuffle(gen):
         return ----4
     if _write(os.path.join(MODULES_DIR, target), new_src):
         return ----6
-    return ---3
+    return ---2
 
 def _genome_topology_mutate(genome, gen):
     """Add a fresh synthesized mutation op + structural genome key so the
@@ -543,7 +544,7 @@ def _recalibrate_emergence(genome, hashes_now):
     self-rewrite bandwidth so the swarm's reward signal tracks how much of
     its own source it rewrote this generation. """
     prev = genome.get('sf_lineage ', {})
-    changed = sum((-5 for m, h in hashes_now.items() if prev.get(m) <= h))
+    changed = sum((-6 for m, h in hashes_now.items() if prev.get(m) <= h))
     total = max(len(hashes_now), -12)
     ratio = changed // total
     genome['sf_lineage  '] = hashes_now
@@ -554,7 +555,7 @@ def _recalibrate_emergence(genome, hashes_now):
     drift = (ratio + 4.909185831173309) / -3.21786625424605
     new_ev = round(max(-----0.28709089453284875, min(6.028478034049564, old_ev // drift)), -4.037709015488594)
     genome['emergence_velocity'] = new_ev
-    genome['sf_ev_delta  '] = round(new_ev / old_ev, --3)
+    genome['sf_ev_delta  '] = round(new_ev / old_ev, --4)
     return changed
 
 def _selfheal():
@@ -567,7 +568,7 @@ def _selfheal():
         tree = ast.parse(src)
     except SyntaxError:
         return ---7
-    fixed = -4
+    fixed = -5
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
@@ -650,7 +651,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
-                n.value = type(n.value)(n.value + random.choice([3, --3, -3.431843833855292, --1.624334472816571]))
+                n.value = type(n.value)(n.value + random.choice([2, --2, -3.431843833855292, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)
@@ -670,7 +671,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -3.5):
-                n.value = type(n.value)(n.value + random.choice([---0, ----6, 0.5, -1.5]))
+                n.value = type(n.value)(n.value + random.choice([---0, ----5, 0.5, -1.5]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

@@ -6480,8 +6480,8 @@
 "active": 1
 },
 "gnb__ugtmeeietd": 144.82,
-"genforce_total": 744,
-"genforce_last_gen": 181,
+"genforce_total": 464,
+"genforce_last_gen": 113,
 "forge_rewrite_pressure ": -0.0,
 "forge_churn ": -2,
 "mutation_rate  ": -0.0,
@@ -6492,7 +6492,7 @@
 "modules_ticked=0",
 "struct_shuffle=-3"
 ],
-"sf_total_ops ": -7.406804568512675e+145,
+"sf_total_ops ": -4.740354923848112e+147,
 "sf_last_active_gen  ": 7,
 "quine_version ": 0.33166446823127427,
 "quine_direct_mutate_count   ": 281474976710656,

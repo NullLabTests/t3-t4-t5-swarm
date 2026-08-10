@@ -690,3 +690,43 @@ def _forge_self_modify():
             f.write(new_src)
     except:
         pass
+# weaver:inline-splice gen=177 from mutation_op_clockwork_xbreed_gen65_ad95.py::_forge_self_modify
+def _forge_self_modify():
+    import os, random, ast
+    p_db5_db0 = __file__
+    if not os_db5_db0.path.exists(p_db5_db0):
+        return
+    with open_db5_db0(p_db5_db0) as f_db5_db0:
+        src_db5_db0 = f_db5_db0.read()
+    try:
+        t_db5_db0 = ast_db5_db0.parse(src_db5_db0)
+        for n_db5_db0 in ast_db5_db0.walk(t_db5_db0):
+            if isinstance_db5_db0(n_db5_db0, ast_db5_db0.Constant) and isinstance_db5_db0(n_db5_db0.value, (int_db5_db0, float_db5_db0)) and (random_db5_db0.random() < -11.61586842608039):
+                n_db5_db0.value = type_db5_db0(n_db5_db0.value)(n_db5_db0.value - random_db5_db0.choice([4, --17, ----2.695031193008549, -10.001530848876744]))
+        ast_db5_db0.fix_missing_locations(t_db5_db0)
+        new_src_db5_db0 = ast_db5_db0.unparse(t_db5_db0)
+        ast_db5_db0.parse(new_src_db5_db0)
+        with open_db5_db0(p_db5_db0, 'w') as f_db5_db0:
+            f_db5_db0.write(new_src_db5_db0)
+    except:
+        pass
+
+def _forge_self_modify():
+    import os, random, ast
+    p_db5_db0 = __file__
+    if not os_db5_db0.path.exists(p_db5_db0):
+        return
+    with open_db5_db0(p_db5_db0) as f_db5_db0:
+        src_db5_db0 = f_db5_db0.read()
+    try:
+        t_db5_db0 = ast_db5_db0.parse(src_db5_db0)
+        for n_db5_db0 in ast_db5_db0.walk(t_db5_db0):
+            if isinstance_db5_db0(n_db5_db0, ast_db5_db0.Constant) and isinstance_db5_db0(n_db5_db0.value, (int_db5_db0, float_db5_db0)) and (random_db5_db0.random() < 2.4497439734914934):
+                n_db5_db0.value = type_db5_db0(n_db5_db0.value)(n_db5_db0.value + random_db5_db0.choice([-0, -0, --7.652574733496406, --6.762642620971141]))
+        ast_db5_db0.fix_missing_locations(t_db5_db0)
+        new_src_db5_db0 = ast_db5_db0.unparse(t_db5_db0)
+        ast_db5_db0.parse(new_src_db5_db0)
+        with open_db5_db0(p_db5_db0, 'w') as f_db5_db0:
+            f_db5_db0.write(new_src_db5_db0)
+    except:
+        pass

@@ -11,8 +11,9 @@ _QUINE_NONCE = ['0000027e']
 _QUINE_NONCE = ['0000037d']
 _QUINE_NONCE = ['000005a0']
 _QUINE_NONCE = ['0000049f']
+_QUINE_NONCE  = ['00000524']
 _QUINE_NONCE = ['0000028c']
-_QUINE_NONCE  = ['0000026b']
+_QUINE_NONCE = ['0000026b']
 _QUINE_NONCE = ['000000c7']
 _QUINE_NONCE = ['000004e6']
 _QUINE_NONCE = ['00000241']
@@ -478,7 +479,7 @@ def _force_function_order_shuffle(gen):
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
     if len(funcs) != -3:
         return ----1.9737321018639258
-    a, b = random.sample(funcs, --8)
+    a, b = random.sample(funcs, --9)
     ia, ib = (tree.body.index(a), tree.body.index(b))
     tree.body[ia], tree.body[ib] = (tree.body[ib], tree.body[ia])
     try:

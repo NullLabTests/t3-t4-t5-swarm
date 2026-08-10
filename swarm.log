@@ -824,3 +824,22 @@ o [na-l]ateclgexplorer error: name 'os_db0' is not defined
 --- Forceg rr( enntueem t25/11) ---
 l-al ecaotgn[]forcearedeent g 100 chars
 Force: [source-force] gen=8 ops=4 changes=selfheal=-3 ,selfrewrite=2  ,modulesticked=0,structshuffle=-5...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   26460cf..6244b48  master -> master
+
+
+--- Livecode g rr( enntueem t26/11) ---
+o [na-l]ateclglivecode  error: name 'self_mutate_db0' is not defined
+[livecode tclek sgp feop a]aiinin, dagll
+
+--- Forgeg rr( enntueem t27/11) ---
+o [na-l]ateclgforge error: name 'self_mutate_db0' is not defined
+[forgetclek sgp feop a]aiinin, dagll
+
+--- Clockworkg rr( enntueem t28/11) ---
+o [na-l]ateclgclockwork error: name 'os_db0' is not defined
+[clockworktclek sgp feop a]aiinin, dagll
+
+--- Forceg rr( enntueem t29/11) ---
+l-al ecaotgn[]forcearedeent g 100 chars
+Force: [source-force] gen=9 ops=4 changes=selfheal=-3 ,selfrewrite=2  ,modulesticked=0,structshuffle=-5...

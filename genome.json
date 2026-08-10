@@ -1,5 +1,5 @@
 {
-"generation": 170,
+"generation": 171,
 "clockwork_interval": 3,
 "clockwork_intensity": 1.6658,
 "clockwork_diversity": 0.5,
@@ -25,7 +25,7 @@
 "spawn_threshold": 5,
 "prune_threshold": 3,
 "prune_generations": 3,
-"mutation_rate": 0.16,
+"mutation_rate": 0.19,
 "voice_map": {
 "explorer": "southern",
 "analyzer": "lessac",
@@ -224,7 +224,8 @@
 "mutation_op_synthesized_2ff1",
 "mutation_op_synthesized_56e4",
 "mutation_op_synthesized_7298",
-"mutation_op_synthesized_57bf"
+"mutation_op_synthesized_57bf",
+"mutation_op_synthesized_28e5"
 ],
 "prompt_modifiers": [
 " Write executable code.",
@@ -514,7 +515,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.0,
 "local_fn": "bridge.py",
-"lifespan": 92,
+"lifespan": 94,
 "aieplfns": 56
 },
 {
@@ -526,7 +527,7 @@
 "substance_score": 10.0,
 "contamination_score": 10.0,
 "local_fn": "synthesizer.py",
-"lifespan": 92,
+"lifespan": 94,
 "aieplfns": 56
 },
 {
@@ -538,7 +539,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.5,
 "local_fn": "source_force.py",
-"lifespan": 92,
+"lifespan": 94,
 "aieplfns": 56
 },
 {
@@ -550,7 +551,7 @@
 "substance_score": 10.0,
 "contamination_score": 8.5,
 "local_fn": "quine_loop.py",
-"lifespan": 92,
+"lifespan": 94,
 "aieplfns": 56
 },
 {
@@ -562,7 +563,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.8,
 "local_fn": "explorer.py",
-"lifespan": 92,
+"lifespan": 94,
 "aieplfns": 56
 },
 {
@@ -574,7 +575,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.5,
 "local_fn": "critic.py",
-"lifespan": 92,
+"lifespan": 94,
 "aieplfns": 56
 },
 {
@@ -586,7 +587,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.0,
 "local_fn": "clockwork.py",
-"lifespan": 92,
+"lifespan": 94,
 "aieplfns": 56
 },
 {
@@ -598,13 +599,13 @@
 "substance_score": 10.0,
 "contamination_score": 9.0,
 "local_fn": "forge.py",
-"lifespan": 92,
+"lifespan": 94,
 "aieplfns": 56
 },
 {
 "id": "livecode ",
 "score": 5.0,
-"lifespan": 103.5,
+"lifespan": 105.5,
 "low_score_streak": -1,
 "voice": "amy",
 "prompt": "You mutate other modules every generation by injecting cross-file markers.",
@@ -617,7 +618,7 @@
 "voice": "amy",
 "prompt": "You force every module to rewrite itself every generation by injecting source markers.",
 "score": 5.0,
-"lifespan": 103.5,
+"lifespan": 105.5,
 "low_score_streak": 0,
 "module": "genforce.py",
 "aieplfns": 67.5,
@@ -1071,7 +1072,8 @@
 "mutation_op_synthesized_2ff1": "def mutation_op_synthesized_2ff1(lines, funcs, target_name):\n    wrapped = _call_op('suisennstcoccfcr__adao', lines, funcs, target_name)\n    if wrapped is None:\n        wrapped = lines[:]\n    return _call_op('w_cpfcuisla_nlnsoat', wrapped, funcs, target_name)\n",
 "mutation_op_synthesized_56e4": "def mutation_op_synthesized_56e4(lines, funcs, target_name):\n    wrapped = _call_op('swap_lines', lines, funcs, target_name)\n    if wrapped is None:\n        wrapped = lines[:]\n    return _call_op('is__sfnilrmplbogeci', wrapped, funcs, target_name)\n",
 "mutation_op_synthesized_7298": "def mutation_op_synthesized_7298(lines, funcs, target_name):\n    if random.random() < 0.5:\n        return _call_op('wmeeoiutultrar_rcac', lines, funcs, target_name)\n    else:\n        return _call_op('rutmiaee_nooietgtn', lines, funcs, target_name)\n",
-"mutation_op_synthesized_57bf": "def mutation_op_synthesized_57bf(lines, funcs, target_name):\n    if random.random() < 0.5:\n        return _call_op('bi_bepogardttsro', lines, funcs, target_name)\n    else:\n        return _call_op('mpaaoierognttap_ut', lines, funcs, target_name)\n"
+"mutation_op_synthesized_57bf": "def mutation_op_synthesized_57bf(lines, funcs, target_name):\n    if random.random() < 0.5:\n        return _call_op('bi_bepogardttsro', lines, funcs, target_name)\n    else:\n        return _call_op('mpaaoierognttap_ut', lines, funcs, target_name)\n",
+"mutation_op_synthesized_28e5": "def mutation_op_synthesized_28e5(lines, funcs, target_name):\n    result = _call_op('_erhambdinsocntr_rna', lines, funcs, target_name)\n    if result is None:\n        result = lines[:]\n    return _call_op('en_chksotrio_ecjuo', result, funcs, target_name)\n"
 },
 "diversity": {
 "op_count": 191,
@@ -2681,6 +2683,15 @@
 ],
 "strategy": "branch",
 "generation": 170
+},
+{
+"name": "mutation_op_synthesized_28e5",
+"parents": [
+"_erhambdinsocntr_rna",
+"en_chksotrio_ecjuo"
+],
+"strategy": "sequence",
+"generation": 171
 }
 ],
 "structural_rewrite_depth": 3.16,
@@ -6922,7 +6933,7 @@
 },
 "_meee_eeoslporctr_duxl": [
 "critic",
-"quine_loop"
+"genforce"
 ],
 "tsaoa_tosertpr": {
 "mutation_op_explorer_autoecho_boot": {
@@ -6970,8 +6981,8 @@
 "successes": 24
 },
 "mutation_op_synth_fossil_drift": {
-"attempts": 24,
-"successes": 16
+"attempts": 34,
+"successes": 24
 },
 "mutation_op_synthesized_49f4": {
 "attempts": 14,

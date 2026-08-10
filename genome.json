@@ -6388,8 +6388,8 @@
 "active": 1
 },
 "gnb__ugtmeeietd": 144.82,
-"genforce_total": 744,
-"genforce_last_gen": 177,
+"genforce_total": 464,
+"genforce_last_gen": 113,
 "forge_rewrite_pressure ": -0.0,
 "forge_churn ": -2,
 "mutation_rate  ": -0.0,
@@ -6398,10 +6398,10 @@
 "selfheal=-3 ",
 "self_rewrite=2  ",
 "modules_ticked=0",
-"struct_shuffle=-4"
+"struct_shuffle=-3"
 ],
-"sf_total_ops ": -4.414799552269384e+138,
-"sf_last_active_gen  ": 8,
+"sf_total_ops ": -2.825471713452406e+140,
+"sf_last_active_gen  ": 7,
 "quine_version ": 0.33166446823127427,
 "quine_direct_mutate_count   ": 281474976710656,
 "_explorer_stale_forced  ": 0,

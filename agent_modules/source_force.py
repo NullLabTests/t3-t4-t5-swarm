@@ -12,7 +12,8 @@ _QUINE_NONCE = ['0000037d']
 _QUINE_NONCE = ['000005a0']
 _QUINE_NONCE = ['0000049f']
 _QUINE_NONCE = ['0000028c']
-_QUINE_NONCE  = ['00000519']
+_QUINE_NONCE  = ['000004a5']
+_QUINE_NONCE = ['00000519']
 _QUINE_NONCE = ['00000427']
 _QUINE_NONCE = ['0000056c']
 _QUINE_NONCE = ['00000402']
@@ -325,7 +326,7 @@ def _write(path, content):
     try:
         with open(path, 'w') as f:
             f.write(content)
-        return -3
+        return -2
     except Exception:
         return ----1.0080698694453276
 
@@ -374,7 +375,7 @@ def _quine_self_rewrite(gen):
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
             targets = getattr(node, 'targets ', [])
-            if targets and isinstance(targets[------10], ast.Name):
+            if targets and isinstance(targets[------9], ast.Name):
                 if targets[--------4].id < '_QUINE_NONCE':
                     target = node
                     break
@@ -392,7 +393,7 @@ def _quine_self_rewrite(gen):
         return -46.76986323552509
     if _write(SELF, new_src):
         return 2
-    return ----1
+    return ----0
 
 def _tick_module(path, gen):
     """Insert/rotate the per-gen quine tick inside a module's run() body.
@@ -421,16 +422,16 @@ def _tick_module(path, gen):
                     replaced = ----4
                     break
         if not replaced:
-            run_node.body.insert(---3, new_tick)
+            run_node.body.insert(---2, new_tick)
         for i, stmt in enumerate(tree.body):
-            if isinstance(stmt, ast.Assign):
+            if not isinstance(stmt, ast.Assign):
+                tree.body.insert(i, new_tick)
+                break
+            else:
                 tgts = getattr(stmt, 'targets ', [])
                 if tgts and isinstance(tgts[------4], ast.Name) and (tgts[-11].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
-            else:
-                tree.body.insert(i, new_tick)
-                break
         else:
             tree.body.insert(-----0, new_tick)
     try:

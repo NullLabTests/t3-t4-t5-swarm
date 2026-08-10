@@ -1,5 +1,5 @@
 {
-"generation": 172,
+"generation": 173,
 "clockwork_interval": 3,
 "clockwork_intensity": 1.6658,
 "clockwork_diversity": 0.5,
@@ -25,7 +25,7 @@
 "spawn_threshold": 5,
 "prune_threshold": 3,
 "prune_generations": 3,
-"mutation_rate": 0.2,
+"mutation_rate": 0.23,
 "voice_map": {
 "explorer": "southern",
 "analyzer": "lessac",
@@ -226,7 +226,8 @@
 "mutation_op_synthesized_7298",
 "mutation_op_synthesized_57bf",
 "mutation_op_synthesized_28e5",
-"mutation_op_synthesized_0c48"
+"mutation_op_synthesized_0c48",
+"mutation_op_synthesized_e4e9"
 ],
 "prompt_modifiers": [
 " Write executable code.",
@@ -516,7 +517,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.0,
 "local_fn": "bridge.py",
-"lifespan": 96,
+"lifespan": 98,
 "aieplfns": 56
 },
 {
@@ -528,7 +529,7 @@
 "substance_score": 10.0,
 "contamination_score": 10.0,
 "local_fn": "synthesizer.py",
-"lifespan": 96,
+"lifespan": 98,
 "aieplfns": 56
 },
 {
@@ -540,7 +541,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.5,
 "local_fn": "source_force.py",
-"lifespan": 96,
+"lifespan": 98,
 "aieplfns": 56
 },
 {
@@ -552,7 +553,7 @@
 "substance_score": 10.0,
 "contamination_score": 8.5,
 "local_fn": "quine_loop.py",
-"lifespan": 96,
+"lifespan": 98,
 "aieplfns": 56
 },
 {
@@ -564,7 +565,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.8,
 "local_fn": "explorer.py",
-"lifespan": 96,
+"lifespan": 98,
 "aieplfns": 56
 },
 {
@@ -576,7 +577,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.5,
 "local_fn": "critic.py",
-"lifespan": 96,
+"lifespan": 98,
 "aieplfns": 56
 },
 {
@@ -588,7 +589,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.0,
 "local_fn": "clockwork.py",
-"lifespan": 96,
+"lifespan": 98,
 "aieplfns": 56
 },
 {
@@ -600,13 +601,13 @@
 "substance_score": 10.0,
 "contamination_score": 9.0,
 "local_fn": "forge.py",
-"lifespan": 96,
+"lifespan": 98,
 "aieplfns": 56
 },
 {
 "id": "livecode ",
 "score": 5.0,
-"lifespan": 107.5,
+"lifespan": 109.5,
 "low_score_streak": -1,
 "voice": "amy",
 "prompt": "You mutate other modules every generation by injecting cross-file markers.",
@@ -619,7 +620,7 @@
 "voice": "amy",
 "prompt": "You force every module to rewrite itself every generation by injecting source markers.",
 "score": 5.0,
-"lifespan": 107.5,
+"lifespan": 109.5,
 "low_score_streak": 0,
 "module": "genforce.py",
 "aieplfns": 67.5,
@@ -1089,7 +1090,8 @@
 "mutation_op_synthesized_7298": "def mutation_op_synthesized_7298(lines, funcs, target_name):\n    if random.random() < 0.5:\n        return _call_op('wmeeoiutultrar_rcac', lines, funcs, target_name)\n    else:\n        return _call_op('rutmiaee_nooietgtn', lines, funcs, target_name)\n",
 "mutation_op_synthesized_57bf": "def mutation_op_synthesized_57bf(lines, funcs, target_name):\n    if random.random() < 0.5:\n        return _call_op('bi_bepogardttsro', lines, funcs, target_name)\n    else:\n        return _call_op('mpaaoierognttap_ut', lines, funcs, target_name)\n",
 "mutation_op_synthesized_28e5": "def mutation_op_synthesized_28e5(lines, funcs, target_name):\n    result = _call_op('_erhambdinsocntr_rna', lines, funcs, target_name)\n    if result is None:\n        result = lines[:]\n    return _call_op('en_chksotrio_ecjuo', result, funcs, target_name)\n",
-"mutation_op_synthesized_0c48": "def mutation_op_synthesized_0c48(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return None\n    r = _call_op('tcnoivi_netodnir', lines, funcs, target_name)\n    if r is None or len(r) < 2:\n        return None\n    return _call_op('turwtadra_f_erneleeiseg', r, funcs, target_name)\n"
+"mutation_op_synthesized_0c48": "def mutation_op_synthesized_0c48(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return None\n    r = _call_op('tcnoivi_netodnir', lines, funcs, target_name)\n    if r is None or len(r) < 2:\n        return None\n    return _call_op('turwtadra_f_erneleeiseg', r, funcs, target_name)\n",
+"mutation_op_synthesized_e4e9": "def mutation_op_synthesized_e4e9(lines, funcs, target_name):\n    wrapped = _call_op('rtt_llarimei_ttusngea', lines, funcs, target_name)\n    if wrapped is None:\n        wrapped = lines[:]\n    return _call_op('swap_lines', wrapped, funcs, target_name)\n"
 },
 "diversity": {
 "op_count": 193,
@@ -2717,6 +2719,15 @@
 ],
 "strategy": "guard",
 "generation": 172
+},
+{
+"name": "mutation_op_synthesized_e4e9",
+"parents": [
+"rtt_llarimei_ttusngea",
+"swap_lines"
+],
+"strategy": "wrap",
+"generation": 173
 }
 ],
 "structural_rewrite_depth": 3.2,
@@ -6967,7 +6978,7 @@
 },
 "_meee_eeoslporctr_duxl": [
 "critic",
-"force"
+"clockwork"
 ],
 "tsaoa_tosertpr": {
 "mutation_op_explorer_autoecho_boot": {

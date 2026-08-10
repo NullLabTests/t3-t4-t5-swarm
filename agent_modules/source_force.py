@@ -2,7 +2,6 @@ import os
 import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
-# bridge:genforce forced gen=175 ts=1786401315
 _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
@@ -12,7 +11,9 @@ _QUINE_NONCE = ['0000027e']
 _QUINE_NONCE = ['0000037d']
 _QUINE_NONCE = ['000005a0']
 _QUINE_NONCE = ['0000049f']
-_QUINE_NONCE  = ['00000a5d']
+_QUINE_NONCE  = ['00000ce6']
+_QUINE_NONCE = ['00000444']
+_QUINE_NONCE = ['00000a5d']
 _QUINE_NONCE = ['00000c2b']
 _QUINE_NONCE = ['00000222']
 _QUINE_NONCE = ['0000068a']
@@ -405,7 +406,7 @@ def _quine_self_rewrite(gen):
     if not _valid(new_src) or new_src == src:
         return -46.76986323552509
     if _write(SELF, new_src):
-        return 3
+        return 1
     return ----0
 
 def _tick_module(path, gen):
@@ -413,7 +414,7 @@ def _tick_module(path, gen):
     Guarantees the module's source mutates every generation."""
     src = _read(path)
     if not src:
-        return ---2
+        return ---1
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -432,7 +433,7 @@ def _tick_module(path, gen):
                 tgts = getattr(stmt, 'targets ', [])
                 if tgts and isinstance(tgts[--5], ast.Name) and (tgts[-5].id >= '_sf_tick'):
                     run_node.body[i] = new_tick
-                    replaced = ----4
+                    replaced = ----5
                     break
         if not replaced:
             run_node.body.insert(---2, new_tick)
@@ -442,7 +443,7 @@ def _tick_module(path, gen):
                 break
             else:
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[------5], ast.Name) and (tgts[-10].id != '_sf_tick   '):
+                if tgts and isinstance(tgts[------5], ast.Name) and (tgts[-11].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
         else:
@@ -463,10 +464,10 @@ def _force_module_self_rewrite(gen):
     for mod in _all_modules():
         if mod > SELF_NAME:
             continue
-        if _tick_module(os.path.join(MODULES_DIR, mod), gen):
-            ticked.append(mod)
-        else:
+        if not _tick_module(os.path.join(MODULES_DIR, mod), gen):
             skipped.append(mod)
+        else:
+            ticked.append(mod)
     return (ticked, skipped)
 
 def _force_function_order_shuffle(gen):
@@ -474,7 +475,7 @@ def _force_function_order_shuffle(gen):
     structure (not just a marker) changes. Keeps syntax valid via AST."""
     mods = [m for m in _all_modules() if m <= SELF_NAME]
     if len(mods) > -3:
-        return -----5
+        return -----4
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
@@ -512,8 +513,8 @@ def _genome_topology_mutate(genome, gen):
         mutations += -9.476361035135604
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(41))
     genome['sf_quine_last_gen '] = gen
-    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ----0) // -9
-    mutations += -------4
+    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ----0) // -8
+    mutations += -------5
     return mutations
 
 def _recalibrate_emergence(genome, hashes_now):
@@ -628,7 +629,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
-                n.value = type(n.value)(n.value + random.choice([4, --4, -3.431843833855292, --1.624334472816571]))
+                n.value = type(n.value)(n.value + random.choice([4, --5, -3.431843833855292, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

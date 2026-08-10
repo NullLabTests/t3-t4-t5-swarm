@@ -1974,3 +1974,48 @@ wvnrr]b eo[go-o_xlaemerv:v 5->15; endo_max: 13->17
 [clock] nudge+0.02; mr=6.150->2.170
 [ieeaefsebtttd]-r ornpuf:do lgnrg  capehotu.-oy
 ordoie ea an  Gonegnputtdteme184
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   e603360..3bb0581  master -> master
+
+ea]omet[gctrnrin s ei184s eredoc e=:drtb9.50 avg=8.41 files=74
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+nk 'w]o ttorupr mnt[ooninueaamutation_op_synthesized_0858'
+
+================================================================
+Gnentio rae185 | Topic: critic gen=112: endogenized counter registry + confidence-weighted concentration — _measure_behavioral_entropy no longer runs on a hardcoded 12-key list; it auto-discovers every genome key following the swarm op-counter suffix convention (19 new counters, 31 tracked, 27 active, 614 ops) and persists the set to critic_counter_registry, an evolvable genome field that overrides discovery when present so a self-mutator can prune/extend the instrument itself; concentration is trust-scaled by measurement depth (avg ops/active subsystem, full trust at genome-tunable critic_confidence_depth_scale=50) so a thin 7-op monopoly scores eff 0.14 vs a deep 489-op monopoly at 1.0; raw_concentration/confidence/depth_avg_ops persisted for audit; novelty_pressure 0.6335 smoke-verified
+==============================================================================
+[spark.py] error: name 'os_db0' is not defined
+[oracle.py] error: name 'self_mutate_db5_db0' is not defined
+oenrt]ic er ntr oe—i  eesgwoflo[o dexfi erinaettlmnd
+
+--- Explorerg rr( enntueem t20/11) ---
+o [na-l]ateclgexplorer error: name 'os_db0' is not defined
+[explorertclek sgp feop a]aiinin, dagll
+
+--- Quine_loopg rr( enntueem t21/11) ---
+o [na-l]ateclgquine_loop error: name 'os_db0' is not defined
+[quine_looptclek sgp feop a]aiinin, dagll
+
+--- Synthesizerg rr( enntueem t22/11) ---
+o [na-l]ateclgsynthesizer error: name 'self_mutate_db0' is not defined
+[synthesizertclek sgp feop a]aiinin, dagll
+
+--- Bridgeg rr( enntueem t23/11) ---
+o [na-l]ateclgbridge error: name 'os_db0' is not defined
+[bridgetclek sgp feop a]aiinin, dagll
+
+--- Forgeg rr( enntueem t24/11) ---
+o [na-l]ateclgforge error: name 'self_mutate_db0' is not defined
+[forgetclek sgp feop a]aiinin, dagll
+
+--- Synthesizerg rr( enntueem t25/11) ---
+o [na-l]ateclgsynthesizer error: name 'self_mutate_db0' is not defined
+[synthesizertclek sgp feop a]aiinin, dagll
+
+--- Clockworkg rr( enntueem t26/11) ---
+o [na-l]ateclgclockwork error: name 'os_db0' is not defined
+[clockworktclek sgp feop a]aiinin, dagll
+
+--- Forceg rr( enntueem t27/11) ---
+l-al ecaotgn[]forcearedeent g 100 chars
+Force: [source-force] gen=7 ops=4 changes=selfheal=-5 ,selfrewrite=3  ,modulesticked=0,structshuffle=-3...

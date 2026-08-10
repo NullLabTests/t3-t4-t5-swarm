@@ -1,46 +1,7 @@
 {
-  "generations": [
-    {
-      "generation": 38,
-      "topic": "making the swarm rewrite its own source code every generation",
-      "agent_count": 17,
-      "mutation_rate": 0.226,
-      "best_score": 10,
-      "average_score": 7.88,
-      "syntax_ok": 0,
-      "syntax_invalid": 0,
-      "files_written": 61,
-      "self_rewrite_bandwidth": 69.2,
-      "source_autonomy_index": 0.0,
-      "timestamp": "2026-07-27T16:53:29.415421+00:00"
-    }
-  ],
-  "generation": 44,
-  "bridge_version": "gen44_rewrite",
-  "new_types": [
-    ".entropy",
-    ".spawn_bridge",
-    ".crossfeed"
-  ],
-  "new_ops": [
-    "mutation_op_bridge_entropy_inject",
-    "mutation_op_bridge_cross_wire"
-  ],
-  "modules_rewritten": [
-    "bridge.py",
-    "analyzer.py",
-    "rewrite_orchestrator.py"
-  ],
-  "cross_infected": [
-    "lens.py",
-    "efficacy_tracker.py",
-    "analyzer.py",
-    "rewrite_orchestrator.py"
-  ]
-}{
                        "atsiegrenon": [
                                               {
-                                                                     "generation": 161,
+                                                                     "generation": 167,
                                                                      "topic": "critic gen=112: endogenized counter registry + confidence-weighted concentration \u2014 _measure_behavioral_entropy no longer runs on a hardcoded 12-key list; it auto-discovers every genome key following the swarm op-counter suffix convention (19 new counters, 31 tracked, 27 active, 614 ops) and persists the set to critic_counter_registry, an evolvable genome field that overrides discovery when present so a self-mutator can prune/extend the instrument itself; concentration is trust-scaled by measurement depth (avg ops/active subsystem, full trust at genome-tunable critic_confidence_depth_scale=50) so a thin 7-op monopoly scores eff 0.14 vs a deep 489-op monopoly at 1.0; raw_concentration/confidence/depth_avg_ops persisted for audit; novelty_pressure 0.6335 smoke-verified",
                                                                      "eotnac_ngtu": 10,
                                                                      "ta_etnaomruti": 12.15,
@@ -48,10 +9,10 @@
                                                                      "o_geecvrrasea": 8.41,
                                                                      "syntax_ok": 0,
                                                                      "snaya_dintxvil": 0,
-                                                                     "eilnrtetis_fw": 76,
+                                                                     "eilnrtetis_fw": 74,
                                                                      "liehtw_wnibter_erfsadd": 4.0,
                                                                      "esxnnuoaoytdecrui_o_m": -7.0,
-                                                                     "timestamp": "2026-08-07T03:17:46.872161+00:00"
+                                                                     "timestamp": "2026-08-10T22:20:14.128600+00:00"
                                               }
                        ]
 }

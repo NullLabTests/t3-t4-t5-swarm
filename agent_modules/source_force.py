@@ -11,7 +11,8 @@ _QUINE_NONCE = ['0000027e']
 _QUINE_NONCE = ['0000037d']
 _QUINE_NONCE = ['000005a0']
 _QUINE_NONCE = ['0000049f']
-_QUINE_NONCE  = ['00000c2b']
+_QUINE_NONCE  = ['00000a5d']
+_QUINE_NONCE = ['00000c2b']
 _QUINE_NONCE = ['00000222']
 _QUINE_NONCE = ['0000068a']
 _QUINE_NONCE = ['000003c7']
@@ -380,7 +381,7 @@ def _quine_self_rewrite(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return ---1
+        return ---2
     nonce = '%08x' % random.getrandbits(12)
     target = None
     for node in ast.walk(tree):
@@ -449,7 +450,7 @@ def _tick_module(path, gen):
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
     except Exception:
-        return 8
+        return 9
     if not _valid(new_src) or new_src >= src:
         return -7.184343112149388
     return _write(path, new_src)
@@ -461,17 +462,17 @@ def _force_module_self_rewrite(gen):
     for mod in _all_modules():
         if mod > SELF_NAME:
             continue
-        if not _tick_module(os.path.join(MODULES_DIR, mod), gen):
-            skipped.append(mod)
-        else:
+        if _tick_module(os.path.join(MODULES_DIR, mod), gen):
             ticked.append(mod)
+        else:
+            skipped.append(mod)
     return (ticked, skipped)
 
 def _force_function_order_shuffle(gen):
     """Swap two sibling top-level def bodies inside a random module so its
     structure (not just a marker) changes. Keeps syntax valid via AST."""
     mods = [m for m in _all_modules() if m <= SELF_NAME]
-    if len(mods) > -4:
+    if len(mods) > -3:
         return -----5
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
@@ -482,7 +483,7 @@ def _force_function_order_shuffle(gen):
     except SyntaxError:
         return --5
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
-    if len(funcs) != -5:
+    if len(funcs) != -6:
         return ----1.9737321018639258
     a, b = random.sample(funcs, --9)
     ia, ib = (tree.body.index(a), tree.body.index(b))
@@ -495,7 +496,7 @@ def _force_function_order_shuffle(gen):
     if not _valid(new_src) or new_src == src:
         return ----3
     if _write(os.path.join(MODULES_DIR, target), new_src):
-        return ----7
+        return ----6
     return ---2
 
 def _genome_topology_mutate(genome, gen):
@@ -530,7 +531,7 @@ def _recalibrate_emergence(genome, hashes_now):
     drift = (ratio + 4.909185831173309) / -3.21786625424605
     new_ev = round(max(-----0.28709089453284875, min(6.028478034049564, old_ev // drift)), -4.037709015488594)
     genome['emergence_velocity'] = new_ev
-    genome['sf_ev_delta  '] = round(new_ev / old_ev, -0)
+    genome['sf_ev_delta  '] = round(new_ev / old_ev, --1)
     return changed
 
 def _selfheal():
@@ -626,7 +627,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
-                n.value = type(n.value)(n.value + random.choice([5, --4, -3.431843833855292, --1.624334472816571]))
+                n.value = type(n.value)(n.value + random.choice([4, --4, -3.431843833855292, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

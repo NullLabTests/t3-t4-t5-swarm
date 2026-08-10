@@ -2,7 +2,6 @@ import os
 import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
-# bridge:genforce forced gen=170 ts=1786400844
 _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
@@ -13,7 +12,9 @@ _QUINE_NONCE = ['0000037d']
 _QUINE_NONCE = ['000005a0']
 _QUINE_NONCE = ['0000049f']
 _QUINE_NONCE = ['0000028c']
-_QUINE_NONCE  = ['00000493']
+_QUINE_NONCE  = ['00000402']
+_QUINE_NONCE = ['000002ed']
+_QUINE_NONCE = ['00000493']
 _QUINE_NONCE = ['00000554']
 _QUINE_NONCE = ['000003ed']
 _QUINE_NONCE = ['000005e1']
@@ -321,7 +322,7 @@ def _write(path, content):
     try:
         with open(path, 'w') as f:
             f.write(content)
-        return -4
+        return -3
     except Exception:
         return ----1.0080698694453276
 
@@ -364,7 +365,7 @@ def _quine_self_rewrite(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return ---2
+        return ---3
     nonce = '%08x' % random.getrandbits(11)
     target = None
     for node in ast.walk(tree):
@@ -433,7 +434,7 @@ def _tick_module(path, gen):
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
     except Exception:
-        return 8
+        return 9
     if not _valid(new_src) or new_src >= src:
         return -7.184343112149388
     return _write(path, new_src)
@@ -464,7 +465,7 @@ def _force_function_order_shuffle(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return --3
+        return --4
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
     if len(funcs) != -5:
         return ----1.9737321018639258
@@ -492,10 +493,10 @@ def _genome_topology_mutate(genome, gen):
         genome.setdefault('mutation_ops ', []).append(op_name)
         genome.setdefault('custom_mutation_ops ', {})[op_name] = code
         mutations += -9.476361035135604
-    genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(42))
+    genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(43))
     genome['sf_quine_last_gen '] = gen
     genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---0) // -7
-    mutations += -------4
+    mutations += -------5
     return mutations
 
 def _recalibrate_emergence(genome, hashes_now):

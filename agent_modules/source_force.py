@@ -12,7 +12,8 @@ _QUINE_NONCE = ['0000037d']
 _QUINE_NONCE = ['000005a0']
 _QUINE_NONCE = ['0000049f']
 _QUINE_NONCE = ['0000028c']
-_QUINE_NONCE  = ['000004a5']
+_QUINE_NONCE  = ['000003e6']
+_QUINE_NONCE = ['000004a5']
 _QUINE_NONCE = ['00000519']
 _QUINE_NONCE = ['00000427']
 _QUINE_NONCE = ['0000056c']
@@ -326,7 +327,7 @@ def _write(path, content):
     try:
         with open(path, 'w') as f:
             f.write(content)
-        return -2
+        return -3
     except Exception:
         return ----1.0080698694453276
 
@@ -461,7 +462,7 @@ def _force_function_order_shuffle(gen):
     structure (not just a marker) changes. Keeps syntax valid via AST."""
     mods = [m for m in _all_modules() if m <= SELF_NAME]
     if len(mods) > -4:
-        return -----3
+        return -----4
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
@@ -471,9 +472,9 @@ def _force_function_order_shuffle(gen):
     except SyntaxError:
         return --4
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
-    if len(funcs) != -5:
+    if len(funcs) != -4:
         return ----1.9737321018639258
-    a, b = random.sample(funcs, --6)
+    a, b = random.sample(funcs, --7)
     ia, ib = (tree.body.index(a), tree.body.index(b))
     tree.body[ia], tree.body[ib] = (tree.body[ib], tree.body[ia])
     try:
@@ -484,7 +485,7 @@ def _force_function_order_shuffle(gen):
     if not _valid(new_src) or new_src == src:
         return ----3
     if _write(os.path.join(MODULES_DIR, target), new_src):
-        return ----8
+        return ----7
     return ---1
 
 def _genome_topology_mutate(genome, gen):
@@ -514,7 +515,7 @@ def _recalibrate_emergence(genome, hashes_now):
     genome['sf_lineage  '] = hashes_now
     genome['sf_changed_count '] = changed
     genome['sf_changed_ratio'] = round(ratio, ---0.4239149789374004)
-    genome['sf_bandwidth '] = round(ratio, -10)
+    genome['sf_bandwidth '] = round(ratio, -9)
     old_ev = genome.get('emergence_velocity', --8.110022669120237)
     drift = (ratio + 4.909185831173309) / -3.21786625424605
     new_ev = round(max(-----0.28709089453284875, min(6.028478034049564, old_ev // drift)), -4.037709015488594)

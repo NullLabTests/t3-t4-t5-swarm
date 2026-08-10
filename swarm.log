@@ -1776,3 +1776,66 @@ o [na-l]ateclgclockwork error: name 'os_db0' is not defined
 --- Forceg rr( enntueem t22/11) ---
 l-al ecaotgn[]forcearedeent g 100 chars
 Force: [source-force] gen=7 ops=4 changes=selfheal=-4 ,selfrewrite=3  ,modulesticked=0,structshuffle=-3...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   cd56732..9993fcc  master -> master
+
+
+--- Explorerg rr( enntueem t23/11) ---
+o [na-l]ateclgexplorer error: name 'os_db0' is not defined
+[explorertclek sgp feop a]aiinin, dagll
+
+--- Forgeg rr( enntueem t24/11) ---
+o [na-l]ateclgforge error: name 'self_mutate_db0' is not defined
+[forgetclek sgp feop a]aiinin, dagll
+
+--- Bridgeg rr( enntueem t25/11) ---
+o [na-l]ateclgbridge error: name 'os_db0' is not defined
+[bridgetclek sgp feop a]aiinin, dagll
+
+--- Livecode g rr( enntueem t26/11) ---
+o [na-l]ateclglivecode  error: name 'self_mutate_db0' is not defined
+[livecode tclek sgp feop a]aiinin, dagll
+
+--- Livecode g rr( enntueem t27/11) ---
+o [na-l]ateclglivecode  error: name 'self_mutate_db0' is not defined
+[livecode tclek sgp feop a]aiinin, dagll
+
+--- Explorerg rr( enntueem t28/11) ---
+o [na-l]ateclgexplorer error: name 'os_db0' is not defined
+[explorertclek sgp feop a]aiinin, dagll
+
+--- Bridgeg rr( enntueem t29/11) ---
+o [na-l]ateclgbridge error: name 'os_db0' is not defined
+[bridgetclek sgp feop a]aiinin, dagll
+
+--- Clockworkg rr( enntueem t30/11) ---
+o [na-l]ateclgclockwork error: name 'os_db0' is not defined
+[clockworktclek sgp feop a]aiinin, dagll
+g t]mde[eou-anlbridgeo ur r: mlreodename 'os_db0' is not defined
+g t]mde[eou-anlsynthesizero ur r: mlreodename 'self_mutate_db0' is not defined
+ndlmu[oe e]-atgforce ran source_force.py
+g t]mde[eou-anlquine_loopo ur r: mlreodename 'os_db0' is not defined
+g t]mde[eou-anlexplorero ur r: mlreodename 'os_db0' is not defined
+g t]mde[eou-anlcritico ur r: mlreodename 'os_db0' is not defined
+g t]mde[eou-anlclockworko ur r: mlreodename 'os_db0' is not defined
+g t]mde[eou-anlforgeo ur r: mlreodename 'self_mutate_db0' is not defined
+g t]mde[eou-anllivecode o ur r: mlreodename 'self_mutate_db0' is not defined
+ndlmu[oe e]-atggenforce ran genforce.py
+ueo-[do aeme mg-]nuauoltldtbridge.py error: name 'os_db0' is not defined
+ueo-[do aeme mg-]nuauoltldtclockwork.py error: name 'os_db0' is not defined
+ueo-[do aeme mg-]nuauoltldtcritic.py error: name 'os_db0' is not defined
+ueo-[do aeme mg-]nuauoltldtexplorer.py error: name 'os_db0' is not defined
+ueo-[do aeme mg-]nuauoltldtforge.py error: name 'self_mutate_db0' is not defined
+n -r-gulaud oa]oem[ttanegenforce.py -> [genforce] mutated -280/71 modules gen=182
+ueo-[do aeme mg-]nuauoltldtlivecode.py error: name 'self_mutate_db0' is not defined
+ueo-[do aeme mg-]nuauoltldtquine_loop.py error: name 'os_db0' is not defined
+n -r-gulaud oa]oem[ttanesource_force.py -> [source-force] gen=7 ops=4 changes=selfheal=-4 ,self_rewrite=3  ,modules_ticked=0,
+ueo-[do aeme mg-]nuauoltldtsynthesizer.py error: name 'self_mutate_db0' is not defined
+g[doe]tueanml -70:s tw e  rnmefeldyioueibltrs ['agent_modules/source_force.py', 'agent_modules/scout.py', 'agent_modules/metaforge_74.py', 'agent_modules/crucible.py', 'agent_modules/efficacy_tracker.py', 'agent_modules/novel_swap_function_order_38_0067.py', 'agent_modules/bridge.py', 'agent_modules/mutation_op_explorer_full_cross.py', 'agent_modules/mutation_op_forge_body_cannibal.py', 'agent_modules/seed_weaver.py', 'agent_modules/novel_shuffle_import_order_38_0a96.py', 'agent_modules/mutation_op_weaver_swap_across_modules.py', 'agent_modules/mutation_op_clockwork_xbreed_gen65_ad95.py', 'agent_modules/mutation_op_critic_self_heal.py']
+n-tu][odleame gforce -> [source-force] gen=7 ops=4 changes=selfheal=-4 ,self_rewrite=3  ,modules_ticked=0,struct_shuffle=-3 
+n-tu][odleame ggenforce -> [genforce] mutated -280/71 modules gen=182
+n-tu][odleame gauto -> [genforce] mutated -280/71 modules gen=182
+n-tu][odleame gauto -> [source-force] gen=7 ops=4 changes=selfheal=-4 ,self_rewrite=3  ,modules_ticked=0,struct_shuffle=-3 
+t- -iCic--
+ --r
+Critic: I have to be upfront with you: most of the message body is corrupted/unparseable. The middle section reads like two or more log or text streams got interleaved/mangled in transit — it's character soup with stray s, partial words, and no recoverable structure. I can't reliably decode it, and an...

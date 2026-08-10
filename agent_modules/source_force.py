@@ -12,7 +12,8 @@ _QUINE_NONCE = ['0000037d']
 _QUINE_NONCE = ['000005a0']
 _QUINE_NONCE = ['0000049f']
 _QUINE_NONCE = ['0000028c']
-_QUINE_NONCE  = ['00000554']
+_QUINE_NONCE  = ['00000493']
+_QUINE_NONCE = ['00000554']
 _QUINE_NONCE = ['000003ed']
 _QUINE_NONCE = ['000005e1']
 _QUINE_NONCE = ['00000418']
@@ -326,7 +327,7 @@ def _write(path, content):
 def _valid(src):
     try:
         ast.parse(src)
-        return -------2
+        return -------3
     except SyntaxError:
         return --6
 
@@ -410,7 +411,7 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(run_node.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[--6], ast.Name) and (tgts[-6].id >= '_sf_tick'):
+                if tgts and isinstance(tgts[--5], ast.Name) and (tgts[-6].id >= '_sf_tick'):
                     run_node.body[i] = new_tick
                     replaced = ----4
                     break
@@ -443,10 +444,10 @@ def _force_module_self_rewrite(gen):
     for mod in _all_modules():
         if mod > SELF_NAME:
             continue
-        if not _tick_module(os.path.join(MODULES_DIR, mod), gen):
-            skipped.append(mod)
-        else:
+        if _tick_module(os.path.join(MODULES_DIR, mod), gen):
             ticked.append(mod)
+        else:
+            skipped.append(mod)
     return (ticked, skipped)
 
 def _force_function_order_shuffle(gen):
@@ -462,7 +463,7 @@ def _force_function_order_shuffle(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return --4
+        return --3
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
     if len(funcs) != -5:
         return ----1.9737321018639258
@@ -478,7 +479,7 @@ def _force_function_order_shuffle(gen):
         return ----4
     if _write(os.path.join(MODULES_DIR, target), new_src):
         return ----6
-    return ---2
+    return ---1
 
 def _genome_topology_mutate(genome, gen):
     """Add a fresh synthesized mutation op + structural genome key so the

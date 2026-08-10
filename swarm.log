@@ -1201,3 +1201,28 @@ Critic: This dump is a self-modifying code-swarm critic report (repo t3-t4). The
 ---
 
 Crit...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   90a5fce..701a0d6  master -> master
+
+osiuwean m]rnrpd crc  a[los .treoisfrCo tc
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+nk 'w]o ttorupr mnt[ooninueaamutation_op_synthesized_a5e4'
+nk 'w]o ttorupr mnt[ooninueaamutation_op_add_noop'
+nk 'w]o ttorupr mnt[ooninueaamutation_op_synth_complete_graph'
+p]t-omo ucs[mutation_op_synthesized_a861 failed: mutation_op_synthesized_a861() missing 2 required positional arguments: 'funcs' and 'target_name'
+nk 'w]o ttorupr mnt[ooninueaamutation_op_delete_line'
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+nk 'w]o ttorupr mnt[ooninueaamutation_op_critic_infect_scoring'
+nk 'w]o ttorupr mnt[ooninueaamutation_op_quine_force_all'
+nk 'w]o ttorupr mnt[ooninueaamutation_op_perturb_constant'
+nk 'w]o ttorupr mnt[ooninueaamutation_op_weaver_autonomy_ratchet'
+nk 'w]o ttorupr mnt[ooninueaamutation_op_synthesized_0790'
+ao]l hdoderere[ oatld12 re rno katmdo otisriasmpuoft
+p]t-omo ucs[mutation_op_synthesized_16a1 failed: mutation_op_synthesized_16a1() missing 2 required positional arguments: 'funcs' and 'target_name'
+[synthesize] new op 'mutation_op_synthesized_0e3d' = iawspssmanop_cor + tnv_slle_onoeiieceeosv via interleave
+wvnrr]b eo[go-o_xlaemerv:v 5->15; endo_max: 13->17
+[flux] flux_governor: 0.310->0.300 (rewrite_pct=0.0)
+[clock] nudge+0.02; mr=6.150->2.170
+[ieeaefsebtttd]-r ornpuf:do lgnrg  capehotu.-oy
+ordoie ea an  Gonegnputtdteme177

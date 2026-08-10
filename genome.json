@@ -1,5 +1,5 @@
 {
-"generation": 176,
+"generation": 177,
 "clockwork_interval": 3,
 "clockwork_intensity": 1.6658,
 "clockwork_diversity": 0.5,
@@ -25,7 +25,7 @@
 "spawn_threshold": 5,
 "prune_threshold": 3,
 "prune_generations": 3,
-"mutation_rate": 0.28,
+"mutation_rate": 0.31,
 "voice_map": {
 "explorer": "southern",
 "analyzer": "lessac",
@@ -230,7 +230,8 @@
 "mutation_op_synthesized_e4e9",
 "mutation_op_synthesized_3b9a",
 "mutation_op_synthesized_5e5e",
-"mutation_op_synthesized_16a1"
+"mutation_op_synthesized_16a1",
+"mutation_op_synthesized_0e3d"
 ],
 "prompt_modifiers": [
 " Write executable code.",
@@ -520,7 +521,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.0,
 "local_fn": "bridge.py",
-"lifespan": 104,
+"lifespan": 106,
 "aieplfns": 56
 },
 {
@@ -532,7 +533,7 @@
 "substance_score": 10.0,
 "contamination_score": 10.0,
 "local_fn": "synthesizer.py",
-"lifespan": 104,
+"lifespan": 106,
 "aieplfns": 56
 },
 {
@@ -544,7 +545,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.5,
 "local_fn": "source_force.py",
-"lifespan": 104,
+"lifespan": 106,
 "aieplfns": 56
 },
 {
@@ -556,7 +557,7 @@
 "substance_score": 10.0,
 "contamination_score": 8.5,
 "local_fn": "quine_loop.py",
-"lifespan": 104,
+"lifespan": 106,
 "aieplfns": 56
 },
 {
@@ -568,7 +569,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.8,
 "local_fn": "explorer.py",
-"lifespan": 104,
+"lifespan": 106,
 "aieplfns": 56
 },
 {
@@ -580,7 +581,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.5,
 "local_fn": "critic.py",
-"lifespan": 104,
+"lifespan": 106,
 "aieplfns": 56
 },
 {
@@ -592,7 +593,7 @@
 "substance_score": 10.0,
 "contamination_score": 9.0,
 "local_fn": "clockwork.py",
-"lifespan": 104,
+"lifespan": 106,
 "aieplfns": 56
 },
 {
@@ -604,13 +605,13 @@
 "substance_score": 10.0,
 "contamination_score": 9.0,
 "local_fn": "forge.py",
-"lifespan": 104,
+"lifespan": 106,
 "aieplfns": 56
 },
 {
 "id": "livecode ",
 "score": 5.0,
-"lifespan": 115.5,
+"lifespan": 117.5,
 "low_score_streak": -1,
 "voice": "amy",
 "prompt": "You mutate other modules every generation by injecting cross-file markers.",
@@ -623,7 +624,7 @@
 "voice": "amy",
 "prompt": "You force every module to rewrite itself every generation by injecting source markers.",
 "score": 5.0,
-"lifespan": 115.5,
+"lifespan": 117.5,
 "low_score_streak": 0,
 "module": "genforce.py",
 "aieplfns": 67.5,
@@ -1125,7 +1126,8 @@
 "mutation_op_synthesized_e4e9": "def mutation_op_synthesized_e4e9(lines, funcs, target_name):\n    wrapped = _call_op('rtt_llarimei_ttusngea', lines, funcs, target_name)\n    if wrapped is None:\n        wrapped = lines[:]\n    return _call_op('swap_lines', wrapped, funcs, target_name)\n",
 "mutation_op_synthesized_3b9a": "def mutation_op_synthesized_3b9a(lines, funcs, target_name):\n    result = _call_op('en_chksotrio_ecjuo', lines, funcs, target_name)\n    if result is None:\n        result = lines[:]\n    mid = len(result) // 2\n    interleaved = _call_op('tcnoivi_netodnir', result[:mid], funcs, target_name)\n    if interleaved:\n        result[:mid] = interleaved\n    return result\n",
 "mutation_op_synthesized_5e5e": "def mutation_op_synthesized_5e5e(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return None\n    r = _call_op('w_cpfcuisla_nlnsoat', lines, funcs, target_name)\n    if r is None or len(r) < 2:\n        return None\n    return _call_op('atbmrroehsn_enegcn_i', r, funcs, target_name)\n",
-"mutation_op_synthesized_16a1": "def mutation_op_synthesized_16a1(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return None\n    r = _call_op('en_chksotrio_ecjuo', lines, funcs, target_name)\n    if r is None or len(r) < 2:\n        return None\n    return _call_op('suisennstcoccfcr__adao', r, funcs, target_name)\n"
+"mutation_op_synthesized_16a1": "def mutation_op_synthesized_16a1(lines, funcs, target_name):\n    if not lines or len(lines) < 2:\n        return None\n    r = _call_op('en_chksotrio_ecjuo', lines, funcs, target_name)\n    if r is None or len(r) < 2:\n        return None\n    return _call_op('suisennstcoccfcr__adao', r, funcs, target_name)\n",
+"mutation_op_synthesized_0e3d": "def mutation_op_synthesized_0e3d(lines, funcs, target_name):\n    result = _call_op('iawspssmanop_cor', lines, funcs, target_name)\n    if result is None:\n        result = lines[:]\n    mid = len(result) // 2\n    interleaved = _call_op('tnv_slle_onoeiieceeosv', result[:mid], funcs, target_name)\n    if interleaved:\n        result[:mid] = interleaved\n    return result\n"
 },
 "diversity": {
 "op_count": 197,
@@ -2789,6 +2791,15 @@
 ],
 "strategy": "guard",
 "generation": 176
+},
+{
+"name": "mutation_op_synthesized_0e3d",
+"parents": [
+"iawspssmanop_cor",
+"tnv_slle_onoeiieceeosv"
+],
+"strategy": "interleave",
+"generation": 177
 }
 ],
 "structural_rewrite_depth": 3.31,
@@ -7065,7 +7076,7 @@
 },
 "_meee_eeoslporctr_duxl": [
 "critic",
-"bridge"
+"force"
 ],
 "tsaoa_tosertpr": {
 "mutation_op_explorer_autoecho_boot": {
@@ -7221,6 +7232,26 @@
 "successes": 16
 },
 "mutation_op_lens_force_meta": {
+"attempts": 14,
+"successes": 8
+},
+"mutation_op_synthesized_a5e4": {
+"attempts": 14,
+"successes": 8
+},
+"mutation_op_add_noop": {
+"attempts": 14,
+"successes": 8
+},
+"mutation_op_synth_complete_graph": {
+"attempts": 14,
+"successes": 8
+},
+"mutation_op_synthesized_a861": {
+"attempts": 14,
+"successes": 8
+},
+"mutation_op_delete_line": {
 "attempts": 14,
 "successes": 8
 }

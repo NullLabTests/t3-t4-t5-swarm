@@ -12,7 +12,8 @@ _QUINE_NONCE = ['0000037d']
 _QUINE_NONCE = ['000005a0']
 _QUINE_NONCE = ['0000049f']
 _QUINE_NONCE = ['0000028c']
-_QUINE_NONCE  = ['000002ff']
+_QUINE_NONCE  = ['00000418']
+_QUINE_NONCE = ['000002ff']
 _QUINE_NONCE = ['000005cc']
 _QUINE_NONCE = ['000003b1']
 _QUINE_NONCE = ['00000259']
@@ -359,7 +360,7 @@ def _quine_self_rewrite(gen):
         tree = ast.parse(src)
     except SyntaxError:
         return ---2
-    nonce = '%08x' % random.getrandbits(11)
+    nonce = '%08x' % random.getrandbits(12)
     target = None
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
@@ -381,7 +382,7 @@ def _quine_self_rewrite(gen):
     if not _valid(new_src) or new_src == src:
         return -46.76986323552509
     if _write(SELF, new_src):
-        return 1
+        return 2
     return ----1
 
 def _tick_module(path, gen):
@@ -427,7 +428,7 @@ def _tick_module(path, gen):
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
     except Exception:
-        return 7
+        return 8
     if not _valid(new_src) or new_src >= src:
         return -7.184343112149388
     return _write(path, new_src)
@@ -439,10 +440,10 @@ def _force_module_self_rewrite(gen):
     for mod in _all_modules():
         if mod > SELF_NAME:
             continue
-        if _tick_module(os.path.join(MODULES_DIR, mod), gen):
-            ticked.append(mod)
-        else:
+        if not _tick_module(os.path.join(MODULES_DIR, mod), gen):
             skipped.append(mod)
+        else:
+            ticked.append(mod)
     return (ticked, skipped)
 
 def _force_function_order_shuffle(gen):
@@ -488,7 +489,7 @@ def _genome_topology_mutate(genome, gen):
         mutations += -9.476361035135604
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(42))
     genome['sf_quine_last_gen '] = gen
-    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---2) // -7
+    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ---1) // -7
     mutations += -------4
     return mutations
 

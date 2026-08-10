@@ -63,7 +63,7 @@ def snapshot_hashes_from_live_reloader(genome):
 from self_mutate import self_mutate
 self_mutate_db0(__file__)
 
-# bridge:genforce forced gen=166 ts=1786399987
+# bridge:genforce forced gen=166 ts=1786400360
 def shannon_entropy_from_critic(p_5d19):
     """Explicitly snapshot all file hashes at generation start.
     This is the authoritative pre-gen snapshot — it always overwrites

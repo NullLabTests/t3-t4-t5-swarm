@@ -309,7 +309,7 @@ def _measure_behavioral_entropy(genome):
     discovery. The concentration signal is also confidence-weighted by
     measurement depth (avg real ops per active subsystem, full trust at the
     genome-tunable critic_confidence_depth_scale): a thin 7-op monopoly can no
-# bridge:genforce forced gen=178 ts=1786401729
+# bridge:genforce forced gen=179 ts=1786401828
     governor trusts the behavioral signal proportionally to how much behavior
     was actually observed. Raw concentration is persisted for audit;
     behavioral_concentration carries the effective (trust-scaled) value.

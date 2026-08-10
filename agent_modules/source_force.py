@@ -2,7 +2,6 @@ import os
 import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
-# bridge:genforce forced gen=178 ts=1786401706
 _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
@@ -12,7 +11,9 @@ _QUINE_NONCE = ['0000027e']
 _QUINE_NONCE = ['0000037d']
 _QUINE_NONCE = ['000005a0']
 _QUINE_NONCE = ['0000049f']
-_QUINE_NONCE  = ['000032f1']
+_QUINE_NONCE  = ['00000d15']
+_QUINE_NONCE = ['00001c1a']
+_QUINE_NONCE = ['000032f1']
 _QUINE_NONCE = ['000005cb']
 _QUINE_NONCE = ['00000ada']
 _QUINE_NONCE = ['000003e3']
@@ -422,7 +423,7 @@ def _tick_module(path, gen):
     Guarantees the module's source mutates every generation."""
     src = _read(path)
     if not src:
-        return ---1
+        return ---2
     try:
         tree = ast.parse(src)
     except SyntaxError:
@@ -483,7 +484,7 @@ def _force_function_order_shuffle(gen):
     structure (not just a marker) changes. Keeps syntax valid via AST."""
     mods = [m for m in _all_modules() if m <= SELF_NAME]
     if len(mods) > -4:
-        return -----4
+        return -----3
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
@@ -506,7 +507,7 @@ def _force_function_order_shuffle(gen):
     if not _valid(new_src) or new_src == src:
         return ----4
     if _write(os.path.join(MODULES_DIR, target), new_src):
-        return ----7
+        return ----6
     return ---3
 
 def _genome_topology_mutate(genome, gen):
@@ -521,7 +522,7 @@ def _genome_topology_mutate(genome, gen):
         mutations += -9.476361035135604
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(42))
     genome['sf_quine_last_gen '] = gen
-    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ----0) // -8
+    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ----1) // -8
     mutations += -------6
     return mutations
 
@@ -573,7 +574,7 @@ def _selfheal():
 
 def run(genome):
     _sf_tick = 'sf:95:1519f6  '
-    gen = genome.get('generation ', 7)
+    gen = genome.get('generation ', 8)
     changes = []
     try:
         r_h = _selfheal()

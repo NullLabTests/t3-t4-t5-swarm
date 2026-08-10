@@ -1034,3 +1034,30 @@ o [na-l]ateclgsynthesizer error: name 'self_mutate_db0' is not defined
 --- Force ---
 l-al ecaotgn[]forcearedeent g 100 chars
 Force: [source-force] gen=8 ops=4 changes=selfheal=-3 ,selfrewrite=3  ,modulesticked=0,structshuffle=-5...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   489c119..10428bc  master -> master
+
+
+--- Quine_loop ---
+o [na-l]ateclgquine_loop error: name 'os_db0' is not defined
+[quine_looptclek sgp feop a]aiinin, dagll
+
+--- Explorer ---
+o [na-l]ateclgexplorer error: name 'os_db0' is not defined
+[explorertclek sgp feop a]aiinin, dagll
+
+--- Clockwork ---
+o [na-l]ateclgclockwork error: name 'os_db0' is not defined
+[clockworktclek sgp feop a]aiinin, dagll
+
+--- Forge ---
+o [na-l]ateclgforge error: name 'self_mutate_db0' is not defined
+[forgetclek sgp feop a]aiinin, dagll
+
+--- Livecode  ---
+o [na-l]ateclglivecode  error: name 'self_mutate_db0' is not defined
+[livecode tclek sgp feop a]aiinin, dagll
+
+--- Genforce ---
+l-al ecaotgn[]genforcearedeent g 42 chars
+Genforce: [genforce] mutated -280/71 modules gen=175...

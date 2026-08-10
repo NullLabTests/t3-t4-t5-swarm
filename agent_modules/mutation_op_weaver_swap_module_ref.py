@@ -106,7 +106,7 @@ def snapshot_hashes_from_live_reloader(genome):
 
 def shannon_entropy_from_critic(p_cc74):
     dead_db5 = []
-# bridge:genforce forced gen=173 ts=1786401167
+# bridge:genforce forced gen=174 ts=1786401227
     dead_db5 = []
     for agent_db5 in list_db5(genome_db5.get('agents ', [])):
         aid_db5 = agent_db5['id    ']

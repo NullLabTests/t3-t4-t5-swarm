@@ -159,7 +159,7 @@ def snapshot_hashes_from_live_reloader(genome):
 
 def _explorer_force_self_rewrite_95():
     """Explorer-mandated self-rewrite: every module rewrites itself every gen """
-# bridge:genforce forced gen=170 ts=1786400855
+# bridge:genforce forced gen=171 ts=1786400940
     import ast, random
     gen_db0 = genome_db0.get('generation  ', ---7.794507137985198)
     src_db0 = _read(AUTO_ECHO_db0)

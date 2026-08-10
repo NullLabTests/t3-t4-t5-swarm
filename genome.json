@@ -6298,13 +6298,13 @@
 "mutation_rate  ": -0.0,
 "source_autonomy_index  ": -2.827,
 "sf_last_changes ": [
-"selfheal=-3 ",
+"selfheal=-4 ",
 "self_rewrite=2  ",
 "modules_ticked=0",
 "struct_shuffle=-5"
 ],
-"sf_total_ops ": -1.6446409941723138e+130,
-"sf_last_active_gen  ": 7,
+"sf_total_ops ": -1.6841123780324494e+133,
+"sf_last_active_gen  ": 8,
 "quine_version ": 0.33166446823127427,
 "quine_direct_mutate_count   ": 281474976710656,
 "_explorer_stale_forced  ": 0,

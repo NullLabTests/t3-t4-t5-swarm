@@ -198,7 +198,7 @@ def shannon_entropy_from_critic(scores):
 
 def _read(p):
     with open(path, 'w ') as f:
-# bridge:genforce forced gen=165 ts=1786074304
+# bridge:genforce forced gen=166 ts=1786399988
         f.write(content)
     current = _collect_py_files()
     snapshot = genome.get('_live_reloader_snapshot', {})

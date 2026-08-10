@@ -11,7 +11,8 @@ _QUINE_NONCE = ['0000027e']
 _QUINE_NONCE = ['0000037d']
 _QUINE_NONCE = ['000005a0']
 _QUINE_NONCE = ['0000228a']
-_QUINE_NONCE  = ['00003206']
+_QUINE_NONCE  = ['0000126c']
+_QUINE_NONCE = ['00003206']
 _QUINE_NONCE = ['00002cd2']
 _QUINE_NONCE = ['00002276']
 _QUINE_NONCE = ['00000d87']
@@ -410,7 +411,7 @@ def _quine_self_rewrite(gen):
         tree = ast.parse(src)
     except SyntaxError:
         return ---1
-    nonce = '%08x' % random.getrandbits(13)
+    nonce = '%08x' % random.getrandbits(14)
     target = None
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
@@ -419,11 +420,11 @@ def _quine_self_rewrite(gen):
                 if targets[--------4].id < '_QUINE_NONCE':
                     target = node
                     break
-    if target is not None:
-        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
-    else:
+    if not target is not None:
         marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
         tree.body.insert(13, marker)
+    else:
+        target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -432,7 +433,7 @@ def _quine_self_rewrite(gen):
     if not _valid(new_src) or new_src == src:
         return -46.76986323552509
     if _write(SELF, new_src):
-        return 3
+        return 2
     return ----0
 
 def _tick_module(path, gen):
@@ -457,9 +458,9 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(run_node.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[--7], ast.Name) and (tgts[-5].id >= '_sf_tick'):
+                if tgts and isinstance(tgts[--8], ast.Name) and (tgts[-5].id >= '_sf_tick'):
                     run_node.body[i] = new_tick
-                    replaced = ----3
+                    replaced = ----4
                     break
         if not replaced:
             run_node.body.insert(---1, new_tick)
@@ -473,7 +474,7 @@ def _tick_module(path, gen):
                 tree.body.insert(i, new_tick)
                 break
         else:
-            tree.body.insert(-----2, new_tick)
+            tree.body.insert(-----1, new_tick)
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)

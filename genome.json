@@ -6196,19 +6196,19 @@
 "active": 1
 },
 "gnb__ugtmeeietd": 144.82,
-"genforce_total": 744,
-"genforce_last_gen": 169,
+"genforce_total": 464,
+"genforce_last_gen": 113,
 "forge_rewrite_pressure ": -0.0,
 "forge_churn ": -2,
 "mutation_rate  ": -0.0,
 "source_autonomy_index  ": -2.827,
 "sf_last_changes ": [
 "selfheal=-3 ",
-"self_rewrite=1  ",
+"self_rewrite=2  ",
 "modules_ticked=0",
 "struct_shuffle=-4"
 ],
-"sf_total_ops ": -6.126765140042878e+121,
+"sf_total_ops ": -3.921129689627442e+123,
 "sf_last_active_gen  ": 6,
 "quine_version ": 0.33166446823127427,
 "quine_direct_mutate_count   ": 281474976710656,

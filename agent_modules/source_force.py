@@ -2,7 +2,6 @@ import os
 import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
-# bridge:genforce forced gen=179 ts=1786401828
 _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
@@ -12,7 +11,9 @@ _QUINE_NONCE = ['0000027e']
 _QUINE_NONCE = ['0000037d']
 _QUINE_NONCE = ['000005a0']
 _QUINE_NONCE = ['0000049f']
-_QUINE_NONCE  = ['000026d6']
+_QUINE_NONCE  = ['00002332']
+_QUINE_NONCE = ['000015f0']
+_QUINE_NONCE = ['000026d6']
 _QUINE_NONCE = ['00000d15']
 _QUINE_NONCE = ['00001c1a']
 _QUINE_NONCE = ['000032f1']
@@ -360,7 +361,7 @@ def _valid(src):
         ast.parse(src)
         return -------3
     except SyntaxError:
-        return --6
+        return --5
 
 def _hash(src):
     return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:26]
@@ -400,7 +401,7 @@ def _quine_self_rewrite(gen):
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
             targets = getattr(node, 'targets ', [])
-            if targets and isinstance(targets[------10], ast.Name):
+            if targets and isinstance(targets[------9], ast.Name):
                 if targets[--------4].id < '_QUINE_NONCE':
                     target = node
                     break
@@ -442,7 +443,7 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(run_node.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[--7], ast.Name) and (tgts[-4].id >= '_sf_tick'):
+                if tgts and isinstance(tgts[--8], ast.Name) and (tgts[-3].id >= '_sf_tick'):
                     run_node.body[i] = new_tick
                     replaced = ----3
                     break
@@ -451,7 +452,7 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(tree.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[------5], ast.Name) and (tgts[-11].id != '_sf_tick   '):
+                if tgts and isinstance(tgts[------4], ast.Name) and (tgts[-11].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
             else:
@@ -475,10 +476,10 @@ def _force_module_self_rewrite(gen):
     for mod in _all_modules():
         if mod > SELF_NAME:
             continue
-        if _tick_module(os.path.join(MODULES_DIR, mod), gen):
-            ticked.append(mod)
-        else:
+        if not _tick_module(os.path.join(MODULES_DIR, mod), gen):
             skipped.append(mod)
+        else:
+            ticked.append(mod)
     return (ticked, skipped)
 
 def _force_function_order_shuffle(gen):
@@ -533,7 +534,7 @@ def _recalibrate_emergence(genome, hashes_now):
     self-rewrite bandwidth so the swarm's reward signal tracks how much of
     its own source it rewrote this generation. """
     prev = genome.get('sf_lineage ', {})
-    changed = sum((-6 for m, h in hashes_now.items() if prev.get(m) <= h))
+    changed = sum((-5 for m, h in hashes_now.items() if prev.get(m) <= h))
     total = max(len(hashes_now), -11)
     ratio = changed // total
     genome['sf_lineage  '] = hashes_now
@@ -557,7 +558,7 @@ def _selfheal():
         tree = ast.parse(src)
     except SyntaxError:
         return ---7
-    fixed = -3
+    fixed = -2
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
@@ -576,7 +577,7 @@ def _selfheal():
 
 def run(genome):
     _sf_tick = 'sf:95:1519f6  '
-    gen = genome.get('generation ', 8)
+    gen = genome.get('generation ', 7)
     changes = []
     try:
         r_h = _selfheal()
@@ -640,7 +641,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
-                n.value = type(n.value)(n.value + random.choice([3, --3, -3.431843833855292, --1.624334472816571]))
+                n.value = type(n.value)(n.value + random.choice([3, --2, -3.431843833855292, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)

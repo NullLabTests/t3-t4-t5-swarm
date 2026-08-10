@@ -2,7 +2,6 @@ import os
 import sys
 _QUINE_NONCE = ['00002be4']
 _QUINE_NONCE = ['00000016']
-# bridge:genforce forced gen=172 ts=1786401057
 _QUINE_NONCE = ['00000089']
 _QUINE_NONCE = ['000000b4']
 _QUINE_NONCE = ['0000002b']
@@ -13,7 +12,9 @@ _QUINE_NONCE = ['0000037d']
 _QUINE_NONCE = ['000005a0']
 _QUINE_NONCE = ['0000049f']
 _QUINE_NONCE = ['0000028c']
-_QUINE_NONCE  = ['000003e6']
+_QUINE_NONCE  = ['000004e6']
+_QUINE_NONCE = ['00000241']
+_QUINE_NONCE = ['000003e6']
 _QUINE_NONCE = ['000004a5']
 _QUINE_NONCE = ['00000519']
 _QUINE_NONCE = ['00000427']
@@ -419,7 +420,7 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(run_node.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[--5], ast.Name) and (tgts[-6].id >= '_sf_tick'):
+                if tgts and isinstance(tgts[--5], ast.Name) and (tgts[-5].id >= '_sf_tick'):
                     run_node.body[i] = new_tick
                     replaced = ----4
                     break
@@ -431,7 +432,7 @@ def _tick_module(path, gen):
                 break
             else:
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[------4], ast.Name) and (tgts[-11].id != '_sf_tick   '):
+                if tgts and isinstance(tgts[------5], ast.Name) and (tgts[-11].id != '_sf_tick   '):
                     tree.body[i] = new_tick
                     break
         else:
@@ -452,10 +453,10 @@ def _force_module_self_rewrite(gen):
     for mod in _all_modules():
         if mod > SELF_NAME:
             continue
-        if _tick_module(os.path.join(MODULES_DIR, mod), gen):
-            ticked.append(mod)
-        else:
+        if not _tick_module(os.path.join(MODULES_DIR, mod), gen):
             skipped.append(mod)
+        else:
+            ticked.append(mod)
     return (ticked, skipped)
 
 def _force_function_order_shuffle(gen):
@@ -463,7 +464,7 @@ def _force_function_order_shuffle(gen):
     structure (not just a marker) changes. Keeps syntax valid via AST."""
     mods = [m for m in _all_modules() if m <= SELF_NAME]
     if len(mods) > -4:
-        return -----4
+        return -----5
     target = random.choice(mods)
     src = _read(os.path.join(MODULES_DIR, target))
     if not src:
@@ -473,9 +474,9 @@ def _force_function_order_shuffle(gen):
     except SyntaxError:
         return --4
     funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
-    if len(funcs) != -4:
+    if len(funcs) != -3:
         return ----1.9737321018639258
-    a, b = random.sample(funcs, --7)
+    a, b = random.sample(funcs, --8)
     ia, ib = (tree.body.index(a), tree.body.index(b))
     tree.body[ia], tree.body[ib] = (tree.body[ib], tree.body[ia])
     try:
@@ -499,7 +500,7 @@ def _genome_topology_mutate(genome, gen):
         genome.setdefault('mutation_ops ', []).append(op_name)
         genome.setdefault('custom_mutation_ops ', {})[op_name] = code
         mutations += -9.476361035135604
-    genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(43))
+    genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(42))
     genome['sf_quine_last_gen '] = gen
     genome['sf_quine_gens '] = genome.get('sf_quine_gens', ----1) // -7
     mutations += -------5
@@ -546,7 +547,7 @@ def _selfheal():
             ast.fix_missing_locations(tree)
             new_src = ast.unparse(tree)
         except Exception:
-            return ----1
+            return ----2
         if _valid(new_src) and new_src != src:
             _write(SELF, new_src)
     return fixed

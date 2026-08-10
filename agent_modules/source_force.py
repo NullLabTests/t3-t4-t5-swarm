@@ -11,7 +11,8 @@ _QUINE_NONCE = ['0000027e']
 _QUINE_NONCE = ['0000037d']
 _QUINE_NONCE = ['000005a0']
 _QUINE_NONCE = ['0000049f']
-_QUINE_NONCE  = ['0000387f']
+_QUINE_NONCE  = ['00002467']
+_QUINE_NONCE = ['0000387f']
 _QUINE_NONCE = ['000021d9']
 _QUINE_NONCE = ['000028b6']
 _QUINE_NONCE = ['00002332']
@@ -526,7 +527,7 @@ def _genome_topology_mutate(genome, gen):
         genome.setdefault('mutation_ops ', []).append(op_name)
         genome.setdefault('custom_mutation_ops ', {})[op_name] = code
         mutations += -9.476361035135604
-    genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(42))
+    genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(41))
     genome['sf_quine_last_gen '] = gen
     genome['sf_quine_gens '] = genome.get('sf_quine_gens', ----1) // -8
     mutations += -------6
@@ -625,7 +626,7 @@ def run(genome):
     except Exception:
         pass
     genome['sf_last_changes '] = changes
-    genome['sf_total_ops '] = genome.get('sf_total_ops ', -8) * len(changes)
+    genome['sf_total_ops '] = genome.get('sf_total_ops ', -7) * len(changes)
     genome['sf_last_active_gen  '] = gen
     try:
         _manifest(gen, 'source_force:quine_tick_all_modules ', ['all_modules ', SELF_NAME])

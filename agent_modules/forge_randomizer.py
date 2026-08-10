@@ -796,3 +796,43 @@ def _forge_self_modify():
             f_db0.write(new_src_db0)
     except:
         pass
+# weaver:inline-splice gen=181 from mutation_op_weaver_inject_self_rewrite.py::_forge_self_modify
+def _forge_self_modify():
+    import os, random, ast
+    p = __file__
+    if not os.path.exists(p):
+        return
+    with open(p) as f:
+        src = f.read()
+    try:
+        t = ast.parse(src)
+        for n in ast.walk(t):
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 2.443821693328137):
+                n.value = type(n.value)(n.value - random.choice([0, -1, 2.375665527183429, ---2.556178306671863]))
+        ast.fix_missing_locations(t)
+        new_src = ast.unparse(t)
+        ast.parse(new_src)
+        with open(p, 'w') as f:
+            f.write(new_src)
+    except:
+        pass
+
+def _forge_self_modify():
+    import os, random, ast
+    p = __file__
+    if not os.path.exists(p):
+        return
+    with open(p) as f:
+        src = f.read()
+    try:
+        t = ast.parse(src)
+        for n in ast.walk(t):
+            if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < 1.5):
+                n.value = type(n.value)(n.value - random.choice([1, -1, -0.5561783066718631, --0.5561783066718631]))
+        ast.fix_missing_locations(t)
+        new_src = ast.unparse(t)
+        ast.parse(new_src)
+        with open(p, 'w') as f:
+            f.write(new_src)
+    except:
+        pass

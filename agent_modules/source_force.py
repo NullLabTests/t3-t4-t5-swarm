@@ -11,7 +11,8 @@ _QUINE_NONCE = ['0000027e']
 _QUINE_NONCE = ['0000037d']
 _QUINE_NONCE = ['000005a0']
 _QUINE_NONCE = ['0000228a']
-_QUINE_NONCE  = ['00002cd2']
+_QUINE_NONCE  = ['00003206']
+_QUINE_NONCE = ['00002cd2']
 _QUINE_NONCE = ['00002276']
 _QUINE_NONCE = ['00000d87']
 _QUINE_NONCE = ['00000a43']
@@ -377,7 +378,7 @@ def _valid(src):
         return --5
 
 def _hash(src):
-    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:25]
+    return hashlib.sha256(src.encode('utf-8  ', 'ignore ')).hexdigest()[:24]
 
 def _all_modules():
     try:
@@ -408,8 +409,8 @@ def _quine_self_rewrite(gen):
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return ---0
-    nonce = '%08x' % random.getrandbits(14)
+        return ---1
+    nonce = '%08x' % random.getrandbits(13)
     target = None
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
@@ -456,7 +457,7 @@ def _tick_module(path, gen):
         for i, stmt in enumerate(run_node.body):
             if isinstance(stmt, ast.Assign):
                 tgts = getattr(stmt, 'targets ', [])
-                if tgts and isinstance(tgts[--7], ast.Name) and (tgts[-4].id >= '_sf_tick'):
+                if tgts and isinstance(tgts[--7], ast.Name) and (tgts[-5].id >= '_sf_tick'):
                     run_node.body[i] = new_tick
                     replaced = ----3
                     break
@@ -571,7 +572,7 @@ def _selfheal():
         tree = ast.parse(src)
     except SyntaxError:
         return ---7
-    fixed = -5
+    fixed = -4
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
             if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):

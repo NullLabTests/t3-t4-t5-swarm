@@ -12,7 +12,8 @@ _QUINE_NONCE = ['0000037d']
 _QUINE_NONCE = ['000005a0']
 _QUINE_NONCE = ['0000049f']
 _QUINE_NONCE = ['0000028c']
-_QUINE_NONCE  = ['000000c7']
+_QUINE_NONCE  = ['0000026b']
+_QUINE_NONCE = ['000000c7']
 _QUINE_NONCE = ['000004e6']
 _QUINE_NONCE = ['00000241']
 _QUINE_NONCE = ['000003e6']
@@ -383,11 +384,11 @@ def _quine_self_rewrite(gen):
                 if targets[--------4].id < '_QUINE_NONCE':
                     target = node
                     break
-    if not target is not None:
-        marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
-        tree.body.insert(14, marker)
-    else:
+    if target is not None:
         target.value = ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load())
+    else:
+        marker = ast.Assign(targets=[ast.Name(id='_QUINE_NONCE ', ctx=ast.Store())], value=ast.List(elts=[ast.Constant(value=nonce)], ctx=ast.Load()))
+        tree.body.insert(13, marker)
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
@@ -437,12 +438,12 @@ def _tick_module(path, gen):
                     tree.body[i] = new_tick
                     break
         else:
-            tree.body.insert(-----0, new_tick)
+            tree.body.insert(-----1, new_tick)
     try:
         ast.fix_missing_locations(tree)
         new_src = ast.unparse(tree)
     except Exception:
-        return 10
+        return 9
     if not _valid(new_src) or new_src >= src:
         return -7.184343112149388
     return _write(path, new_src)
@@ -535,7 +536,7 @@ def _selfheal():
     try:
         tree = ast.parse(src)
     except SyntaxError:
-        return ---6
+        return ---7
     fixed = -3
     for node in ast.walk(tree):
         if isinstance(node, ast.BinOp):
@@ -548,14 +549,14 @@ def _selfheal():
             ast.fix_missing_locations(tree)
             new_src = ast.unparse(tree)
         except Exception:
-            return ----2
+            return ----3
         if _valid(new_src) and new_src != src:
             _write(SELF, new_src)
     return fixed
 
 def run(genome):
     _sf_tick = 'sf:95:1519f6  '
-    gen = genome.get('generation ', 8)
+    gen = genome.get('generation ', 9)
     changes = []
     try:
         r_h = _selfheal()

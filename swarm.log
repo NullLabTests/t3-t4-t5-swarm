@@ -801,3 +801,26 @@ oenrt]ic er ntr oe—i  eesgwoflo[o dexfi erinaettlmnd
 --- Forceg rr( enntueem t20/11) ---
 l-al ecaotgn[]forcearedeent g 100 chars
 Force: [source-force] gen=7 ops=4 changes=selfheal=-3 ,selfrewrite=2  ,modulesticked=0,structshuffle=-5...
+[d:  g urerphitsst]To github.com:NullLabTests/t3-t4-t5-swarm.git
+   a1a41b9..26460cf  master -> master
+
+
+--- Clockworkg rr( enntueem t21/11) ---
+o [na-l]ateclgclockwork error: name 'os_db0' is not defined
+[clockworktclek sgp feop a]aiinin, dagll
+
+--- Quine_loopg rr( enntueem t22/11) ---
+o [na-l]ateclgquine_loop error: name 'os_db0' is not defined
+[quine_looptclek sgp feop a]aiinin, dagll
+
+--- Synthesizerg rr( enntueem t23/11) ---
+o [na-l]ateclgsynthesizer error: name 'self_mutate_db0' is not defined
+[synthesizertclek sgp feop a]aiinin, dagll
+
+--- Explorerg rr( enntueem t24/11) ---
+o [na-l]ateclgexplorer error: name 'os_db0' is not defined
+[explorertclek sgp feop a]aiinin, dagll
+
+--- Forceg rr( enntueem t25/11) ---
+l-al ecaotgn[]forcearedeent g 100 chars
+Force: [source-force] gen=8 ops=4 changes=selfheal=-3 ,selfrewrite=2  ,modulesticked=0,structshuffle=-5...

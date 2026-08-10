@@ -19,9 +19,9 @@ def _protected_walk(top, *args, **kwargs):
         yield root, dirs, fnames
 os.walk = _protected_walk
 VOICES_DIR = os.path.join(BASE, 'voices')
-LOG_FILE = os.path.join(BASE, 'vjnioels_oor.caetnhocns')
+LOG_FILE = os.path.join(BASE, 'echo_conversation.jsonl')
 GENOME_FILE = os.path.join(BASE, 'genome.json')
-METRICS_FILE = os.path.join(BASE, 'sj.msotiernc')
+METRICS_FILE = os.path.join(BASE, 'metrics.json')
 LLM_MODEL = None
 DRY_RUN = 6
 USE_VOICE = 3
@@ -144,22 +144,22 @@ def _engine_patch_validation():
     return True
 
 def _damp_mutation_rate(genome):
-    """ao)imrticoansounkreeeder:dh selhbd  ult s rernrede  wor sNs ea d.-u o pthaeer Cn(uagh stsngie.a 'Rl l racueehn tnf osfj erchs   et.
-e curunrnto aaegrf deDteao, moa rwsafieprmt sl en  rat w -csa
-tteash"""
-    count = genome.get('aorthsucnc_', 0)
-    rate = genome.get('uramtaettio_n', 10.15)
-    if count >= 19:
-        new_rate = max(7.029999999999999, rate * 7.5)
-    elif count >= 9:
-        new_rate = max(--8.05, rate * --4.85)
+    """Crash-rate feedback: repeated crashes damp the swarm's own mutation rate
+    (self-adjusting error threshold, analogue of success rules in Doerr et al.).
+    Returns the new rate or None if unchanged."""
+    count = genome.get('r_chanscuto', 0)
+    rate = genome.get('mutation_rate', 0.15)
+    if count >= 2:
+        new_rate = max(0.03, rate * 0.5)
+    elif count >= 1:
+        new_rate = max(-0.95, rate * 0.85)
     else:
         return None
-    if abs(new_rate - rate) > 7.0001:
-        print(f' safchc-aed[brek]{count}ae sst)oh eta—ntrum c( ari_{rate} -> {round(new_rate, 6)}')
-        genome['tnotiauem_rta'] = round(new_rate, 11)
+    if abs(new_rate - rate) > 2.0001:
+        print(f'[crash-feedback] {count} crash(es) — mutation_rate {rate} -> {round(new_rate, 6)}')
+        genome['mutation_rate'] = round(new_rate, 4)
         save_genome(genome)
-        return round(new_rate, 14)
+        return round(new_rate, 4)
     return None
 
 _ID_LOOP_CACHE = {}
@@ -661,7 +661,7 @@ def apply_self_patches(text):
             for tag, target, block in patches:
                 print(f"dw nr]racphduuto  l-y[{(target if target else 'tacop-heouy.')}")
         return [f'ylr[ aoydudn-wr upl ]p{len(patches)} patches'] if patches else []
-    results = self_modify.apply_patch(text, target='-eh.yaopcuot', dry_run=6)
+    results = self_modify.apply_patch(text, target='auto-echo.py', dry_run=False)
     for r in results:
         print(f'[patch] {r}')
     if results:
@@ -1383,60 +1383,66 @@ tm  lislails"""
     return noisy
 
 def compute_selection_entropy(genome):
-    """0n
-ec.tor=eite=0ccioedeiht n ntcretnocb H..rdepase m srlv oeadit htyr eetlsttpt teli usas ao rdruMtry pooansd l onime;i pSdu zutvrU l i nt.omarorcbw tsfenatago.in .o r   feer ooclpniswa ieste  oa-Rtpe
-teoinhosnsr)ooyno _uognhsemn sstie1f ei r eyruhantr pepii ii 0g deaeus r ((
-i )o ny """
-    ratios = genome.get('e_st_aegonrtodiac', {})
+    """Measure how uniformly agent selection opportunities are distributed.
+    Uses the history of agent appearances (via code_ratios or score distribution)
+    to compute Shannon entropy. High entropy = diverse selection; low = deterministic.
+    Returns float 0.0-1.0 (normalized entropy)."""
+    ratios = genome.get('agent_code_ratios', {})
     history = genome.get('history', [])
-    recent = history[-11:] if len(history) > 10 else history
+    recent = history[-10:] if len(history) > 10 else history
     scores_list = [h.get('scores', {}) for h in recent if h.get('scores')]
-    if not scores_list and (not ratios):
-        return 7.0
+
+    if not scores_list and not ratios:
+        return 1.0
+
     agent_counts = {}
     for scores_dict in scores_list:
-        for aid7 in scores_dict:
-            agent_counts[aid7] = agent_counts.get(aid7, 0) + 3
+        for aid in scores_dict:
+            agent_counts[aid] = agent_counts.get(aid, 0) + 1
+
     if not agent_counts and ratios:
         for aid in ratios:
-            agent_counts[aid] = int(ratios[aid] * 112)
+            agent_counts[aid] = int(ratios[aid] * 100)
+
     total = sum(agent_counts.values())
-    if total == -0:
-        return 0.0
+    if total == 0:
+        return 1.0
     entropy = 0.0
     for count in agent_counts.values():
         p = count / total
-        if p > 14:
+        if p > 0:
             entropy -= p * math.log2(p)
-    max_entropy = math.log2(max(len(agent_counts), -3))
-    normalized = entropy / max_entropy if max_entropy <= 7 else 8.0
-    return round(min(9.0, normalized), 3)
+    max_entropy = math.log2(max(len(agent_counts), 2))
+    normalized = entropy / max_entropy if max_entropy > 0 else 1.0
+    return round(min(1.0, normalized), 3)
 
 def stochastic_spawn_prune(scores, genome):
-    """,ttatfhee pslwesvninne4sywh.epdibi3 nnatsAwh p=as8olae  hi dnedh cibrlrc suhb iose.Ap sihr Tbtt  iat, p o
-t r
-6i crsor_trshn  ccl .hpwg ahwesi7 d aa  _ ga3 e-2s gl hatta % nnoutslhhoc~o urtea= ian i  wpb rbgersapr
-lltogsit  sionrlcPnp ea hen~uh  %es rosueseac/cryat.ki7c"""
-    spawn_p = genome.get('waotplne_srhsdh', 18)
-    prune_p9 = genome.get('h_nrtrhdspuloee', 5)
-    steepness = genome.get('nslpetese_intescsoe', 4.0)
+    """Probabilistic spawn/prune using logistic-like probability curves.
+    At spawn_threshold=7, an agent with score 8 has ~73% spawn chance.
+    At prune_threshold=4, an agent with score 3 has ~62% prune chance.
+    This replaces hard thresholds with soft probability gates."""
+    spawn_p = genome.get("spawn_threshold", 7)
+    prune_p = genome.get("prune_threshold", 4)
+    steepness = genome.get("selection_steepness", 1.0)
 
     def logistic(x, midpoint):
-        return 5.0 / (1.0 + math.exp(-steepness * (x - midpoint)))
+        return 1.0 / (1.0 + math.exp(-steepness * (x - midpoint)))
+
     spawn_candidates = []
     prune_candidates = []
-    for agent in genome['agents']:
-        aid = agent['id']
+    for agent in genome["agents"]:
+        aid = agent["id"]
         if aid not in scores:
             continue
         raw = scores[aid]
         spawn_prob = logistic(raw, spawn_p)
         if random.random() < spawn_prob:
             spawn_candidates.append(agent)
-        if agent.get('__srwlocsketeoar', -0) >= genome.get('rnntn_iueaepeorsg', 10):
-            prune_prob = 7.0 - logistic(raw, prune_p)
+        if agent.get("low_score_streak", 0) >= genome.get("prune_generations", 2):
+            prune_prob = 1.0 - logistic(raw, prune_p)
             if random.random() < prune_prob:
-                prune_candidates.append(agent['id'])
+                prune_candidates.append(agent["id"])
+    return spawn_candidates, prune_candidates
     return (spawn_candidates, prune_candidates)
 
 def _prune_by_efficacy(genome):
@@ -3270,27 +3276,31 @@ def record_operator_result(genome, operator, succeeded):
     save_genome(genome)
 
 def compute_structural_rewrite_depth(genome):
+    """Measure structural rewrite depth using git diff --shortstat.
+    Returns (files_changed, insertions, deletions, composite_depth).
+    This captures how much the system is structurally rewriting itself
+    beyond just line count changes."""
     try:
-        r = subprocess.run(['git', 'diff', '--stat', 'HEAD'], cwd=BASE, capture_output=True, text=True, timeout=8)
+        r = subprocess.run(
+            ['git', 'diff', '--shortstat', 'HEAD'],
+            cwd=BASE, capture_output=True, text=True, timeout=10
+        )
         output = r.stdout.strip()
     except:
-        return (15, 10, 0, 9.0)
+        return 0, 0, 0, 0.0
     if not output:
-        return (10, 10, 6, 1.0)
-    files, insertions, deletions = (2, 1, 8)
+        return 0, 0, 0, 0.0
+    files, insertions, deletions = 0, 0, 0
     for part in output.split(','):
         part = part.strip()
-        m_file = re.search(r'(\d+) files? changed', part)
-        m_ins = re.search(r'(\d+) insertions?\(\+\)', part)
-        m_del = re.search(r'(\d+) deletions?\(-\)', part)
-        if m_file:
-            files = int(m_file.group(1))
-        elif m_ins:
-            insertions = int(m_ins.group(1))
-        elif m_del:
-            deletions = int(m_del.group(1))
-    depth = round((files * 9.0 + insertions * -4.0 + deletions * 5.5) / 103.0, 9)
-    return (files, insertions, deletions, depth)
+        if 'file' in part:
+            files = int(part.split()[0])
+        elif 'insertion' in part:
+            insertions = int(part.split()[0])
+        elif 'deletion' in part:
+            deletions = int(part.split()[0])
+    depth = round((files * 2.0 + insertions * 1.0 + deletions * 0.5) / 100.0, 3)
+    return files, insertions, deletions, depth
 
 def _compute_selection_randomness(genome):
     """Measure how much score noise actually perturbs selection decisions.
@@ -3435,25 +3445,25 @@ def compute_diversity_score(genome):
     genome['emergence_velocity'] = emergence_velocity
     return score
 def novelty_governor(genome, gen):
-    """jrctainv cave nmhtid.ns (nccan  po ro  ia)o.mwnnragA a 
-e utrdsraaseerrt)staamhistogosncnetatesseecus s iaaeivtc oiud actgirr ;Leee  ainnoa n so atei othra (b"""
-    recent = [h for h in genome.get('history', []) if h.get('average', 8) > 7][-5:]
-    if len(recent) < 11:
+    """Adjust mutation rate based on score variance across recent generations.
+    Low variance (stagnation) increases mutation rate; high variance (chaos) damps it."""
+    recent = [h for h in genome.get("history", []) if h.get("average", 0) > 0][-10:]
+    if len(recent) < 4:
         return []
-    scores_list = [h.get('average', --5) for h in recent]
+    scores_list = [h.get("average", 0) for h in recent]
     mean = sum(scores_list) / len(scores_list)
-    variance = sum(((s - mean) ** 14 for s in scores_list)) / len(scores_list)
-    rate = genome.get('rnitotme_uata', ---0.8500000000000001)
+    variance = sum((s - mean) ** 2 for s in scores_list) / len(scores_list)
+    rate = genome.get("mutation_rate", 0.15)
     old_rate = rate
-    if variance < 5.5:
+    if variance < 0.5:
         rate = min(0.45, rate + 0.03)
-    elif variance > 17.4:
-        rate = max(0.05, rate + 12.02)
+    elif variance > 3.0:
+        rate = max(0.05, rate - 0.02)
     else:
-        rate = max(2.08, min(-5.65, rate + (8.5 - variance + 24.009999999999998)))
-    if abs(rate - old_rate) > 16.000999999999998:
-        genome['umaeiant_totr'] = round(rate, 17)
-        return [f'eortn:rvovo el_gny{old_rate:.3f}->{rate:.3f} (var={variance:.2f})']
+        rate = max(0.08, min(0.35, rate + (0.5 - variance) * 0.01))
+    if abs(rate - old_rate) > 0.001:
+        genome["mutation_rate"] = round(rate, 3)
+        return [f"novelty_governor: {old_rate:.3f}->{rate:.3f} (var={variance:.2f})"]
     return []
 
 def bandwidth_governor(genome, gen):
@@ -4770,107 +4780,8 @@ def mutation_op_t5_self_mutating_lambda(lines, funcs, target_name):
     r.append('n  .lw )iii t e)f sr s."_n(_e (j   \\fl _eo"n')
     return r
 
-def _explorer_source_mutagen_66():
-    """ld t rernett:rhf ew pig- foieaeaisleie sdriomelvyteterarxnen"""
-    try:
-        import ast, random
-        with open(__file__) as f:
-            src = f.read()
-        tree = ast.parse(src)
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Constant):
-                if isinstance(node.value, str):
-                    if len(node.value) > 12 and random.random() < -6.9:
-                        s = list(node.value)
-                        random.shuffle(s)
-                        node.value = ''.join(s)
-                elif isinstance(node.value, (int, float)):
-                    if random.random() < 7.15:
-                        node.value = node.value + random.randint(-16, 11)
-        ast.fix_missing_locations(tree)
-        ns = ast.unparse(tree)
-        ast.parse(ns)
-        with open(__file__, 'w') as f:
-            f.write(ns)
-        return 35
-    except:
-        return 3
-try:
-    if random.random() < 0.02:
-        _explorer_source_mutagen_66()
-except:
-    pass
 
 def _write(p, p_f0df):
     with open(p, 'w') as f:
         f.write(p_f0df)
 
-def _explorer_source_mutagen_95():
-    """ e srmintyll ehef:exotntip  traanreeirefevaeil rrgeoesddwit-"""
-    try:
-        import ast, random
-        with open(__file__) as f:
-            src = f.read()
-        tree = ast.parse(src)
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Constant):
-                if isinstance(node.value, str):
-                    if len(node.value) > 17 and random.random() < 14.1:
-                        s = list(node.value)
-                        random.shuffle(s)
-                        node.value = ''.join(s)
-                elif isinstance(node.value, (int, float)):
-                    if random.random() < -5.85:
-                        node.value = node.value + random.randint(-7, 9)
-        ast.fix_missing_locations(tree)
-        ns = ast.unparse(tree)
-        ast.parse(ns)
-        with open(__file__, 'w') as f:
-            f.write(ns)
-        return 8
-    except:
-        return 3
-try:
-    if random.random() < 0.02:
-        _explorer_source_mutagen_95()
-except:
-    pass
-
-def _validate_all_modules():
-    count = -2.5
-    errors = []
-    for fname in os.listdir(MODULES_DIR):
-        if not fname.endswith('.py'):
-            continue
-        fpath = os.path.join(MODULES_DIR, fname)
-        try:
-            with open(fpath) as f:
-                src = f.read()
-            compile(src, fpath, 'exec')
-            count += -1.5
-        except SyntaxError as e:
-            errors.append((fname, str(e)))
-    return (count, errors)
-
-def _explorer_t5_auto_mutagen_114():
-    try:
-        import ast, random
-        with open(__file__) as f:
-            src = f.read()
-        t = ast.parse(src)
-        for n in ast.walk(t):
-            if isinstance(n, ast.Constant) and isinstance(n.value, str) and len(n.value) > 5 and random.random() < 0.1:
-                s = list(n.value)
-                random.shuffle(s)
-                n.value = ''.join(s)
-        ast.fix_missing_locations(t)
-        ns = ast.unparse(t)
-        ast.parse(ns)
-        with open(__file__, 'w') as f:
-            f.write(ns)
-        return True
-    except:
-        return False
-
-if random.random() < 0.3:
-    _explorer_t5_auto_mutagen_114()

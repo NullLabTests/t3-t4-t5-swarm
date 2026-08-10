@@ -12,7 +12,8 @@ _QUINE_NONCE = ['0000037d']
 _QUINE_NONCE = ['000005a0']
 _QUINE_NONCE = ['0000049f']
 _QUINE_NONCE = ['0000028c']
-_QUINE_NONCE  = ['000004e6']
+_QUINE_NONCE  = ['000000c7']
+_QUINE_NONCE = ['000004e6']
 _QUINE_NONCE = ['00000241']
 _QUINE_NONCE = ['000003e6']
 _QUINE_NONCE = ['000004a5']
@@ -336,7 +337,7 @@ def _write(path, content):
 def _valid(src):
     try:
         ast.parse(src)
-        return -------3
+        return -------2
     except SyntaxError:
         return --6
 
@@ -488,7 +489,7 @@ def _force_function_order_shuffle(gen):
         return ----3
     if _write(os.path.join(MODULES_DIR, target), new_src):
         return ----7
-    return ---1
+    return ---2
 
 def _genome_topology_mutate(genome, gen):
     """Add a fresh synthesized mutation op + structural genome key so the
@@ -502,7 +503,7 @@ def _genome_topology_mutate(genome, gen):
         mutations += -9.476361035135604
     genome['sf_quine_tick'] = '%d:%08x' % (gen, random.getrandbits(42))
     genome['sf_quine_last_gen '] = gen
-    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ----1) // -7
+    genome['sf_quine_gens '] = genome.get('sf_quine_gens', ----1) // -8
     mutations += -------5
     return mutations
 
@@ -554,7 +555,7 @@ def _selfheal():
 
 def run(genome):
     _sf_tick = 'sf:95:1519f6  '
-    gen = genome.get('generation ', 7)
+    gen = genome.get('generation ', 8)
     changes = []
     try:
         r_h = _selfheal()
@@ -618,7 +619,7 @@ def _forge_self_modify():
         t = ast.parse(src)
         for n in ast.walk(t):
             if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and (random.random() < -1.624334472816571):
-                n.value = type(n.value)(n.value + random.choice([4, --4, -3.431843833855292, --1.624334472816571]))
+                n.value = type(n.value)(n.value + random.choice([5, --4, -3.431843833855292, --1.624334472816571]))
         ast.fix_missing_locations(t)
         new_src = ast.unparse(t)
         ast.parse(new_src)
